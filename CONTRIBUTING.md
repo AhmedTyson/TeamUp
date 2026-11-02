@@ -4,10 +4,10 @@
 
 | Member | Focus Area | Entities / Tables Owned |
 |---|---|---|
-| **M1** (Tech Lead) | Architecture, Auth, Identity | `University`, `Faculty`, `Student`, `StudentInterest`, `StudentProfile`, Base Entities, CI |
-| **M2** | Skills, Projects & Teams | `Skill`, `StudentSkill`, `Project`, `ProjectRequiredSkill`, `ProjectMember`, `ProjectApplication`, `ProjectTask` |
-| **M3** | Student Activities & Events | `Organization`, `OrganizationMember`, `MembershipApplication`, `Event`, `EventRegistration`, `EventSession`, `SessionAttendance` |
-| **M4** | Gamification, Alerts & Docs | `ScoreTransaction`, `Badge`, `StudentBadge`, `Notification`, OpenAPI / Scalar, Postman, API Docs |
+| **M1 (Tyson)** (Tech Lead) | Architecture, Auth, Identity | `University`, `Faculty`, `Student`, `StudentInterest`, `StudentProfile`, Base Entities, CI |
+| **M2 (Ossama)** | Skills, Projects & Teams | `Skill`, `StudentSkill`, `Project`, `ProjectRequiredSkill`, `ProjectMember`, `ProjectApplication`, `ProjectTask` |
+| **M3 (Ibrahim)** | Student Activities & Events | `Organization`, `OrganizationMember`, `MembershipApplication`, `Event`, `EventRegistration`, `EventSession`, `SessionAttendance` |
+| **M4 (Youssef)** | Gamification, Alerts & Docs | `ScoreTransaction`, `Badge`, `StudentBadge`, `Notification`, OpenAPI / Scalar, Postman, API Docs |
 
 ---
 
@@ -28,10 +28,11 @@
 
 ## 3. Database & EF Core Rules
 
-1. **Soft Delete Standard:**
-   - Every entity except `ScoreTransaction` implements `ISoftDelete` (`IsDeleted`, `DeletedAt`).
-   - Physical deletion (`DELETE FROM`) is prohibited in application code. Use `db.Remove(...)` which our `SoftDeleteInterceptor` converts to an update, or call soft-delete methods directly.
-   - Global query filter `!e.IsDeleted` automatically hides deleted rows. Use `.IgnoreQueryFilters()` only for administrative restores.
+1. **Single-Column Soft Delete Standard:**
+   - Every entity except `ScoreTransaction` implements `ISoftDelete` (`DeletedAt DATETIME2 NULL`).
+   - Active records: `DeletedAt IS NULL`. Soft-deleted records: `DeletedAt IS NOT NULL`.
+   - Physical deletion (`DELETE FROM`) is prohibited in application code. Use `db.Remove(...)` which our `SoftDeleteInterceptor` converts to an update setting `DeletedAt = UtcNow`.
+   - Global query filter `e.DeletedAt == null` automatically hides deleted rows. Use `.IgnoreQueryFilters()` only for administrative restores.
 2. **Foreign Key Integrity:**
    - All foreign keys must be configured with `DeleteBehavior.Restrict` (`ON DELETE NO ACTION`).
    - All updates use `ON UPDATE NO ACTION`.
