@@ -1,0 +1,38 @@
+namespace TeamUp.Application.Auth;
+
+public sealed record RegisterRequest(
+    string Email,
+    string Password,
+    string FirstName,
+    string LastName,
+    int AcademicYear,
+    int FacultyId
+);
+
+public sealed record LoginRequest(
+    string Email,
+    string Password
+);
+
+public sealed record RefreshTokenRequest(
+    string RefreshToken
+);
+
+public sealed record StudentSummaryDto(
+    int StudentId,
+    string Email,
+    string FirstName,
+    string LastName,
+    int AcademicYear,
+    string Role,
+    int FacultyId,
+    string FacultyName,
+    string UniversityName
+);
+
+public sealed record AuthResponse(
+    string AccessToken,
+    string RefreshToken,
+    DateTime ExpiresAt,
+    StudentSummaryDto Student
+);

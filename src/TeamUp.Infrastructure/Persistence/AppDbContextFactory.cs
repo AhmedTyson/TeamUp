@@ -10,8 +10,11 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
 {
     public AppDbContext CreateDbContext(string[] args)
     {
+        var cs = Environment.GetEnvironmentVariable("ConnectionStrings__TeamUpDb")
+            ?? "Server=localhost;Database=TeamUpDb;Trusted_Connection=True;TrustServerCertificate=True;";
+
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer("Server=localhost;Database=TeamUpDb;Trusted_Connection=True;TrustServerCertificate=True;")
+            .UseSqlServer(cs)
             .Options;
 
         return new AppDbContext(options);

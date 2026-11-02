@@ -1,7 +1,13 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TeamUp.Application.Auth;
+using TeamUp.Application.Common.Security;
+using TeamUp.Application.Students;
+using TeamUp.Domain.Entities;
 using TeamUp.Infrastructure.Persistence;
+using TeamUp.Infrastructure.Services;
 
 namespace TeamUp.Infrastructure;
 
@@ -9,14 +15,23 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
-        var cs = config.GetConnectionString("TeamUpDb")
-            ?? throw new InvalidOperationException(
-                "ConnectionStrings:TeamUpDb is missing. Set it with user-secrets or the ConnectionStrings__TeamUpDb env var.");
-
+        services.Configure<JwtOptions>(config.GetSection(JwtOptions.SectionName));
+        services.AddSingleton<IPasswordHasher<Student>, PasswordHasher<Student>>();
+        services.AddSingleton<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IProfileService, ProfileService>();
         services.AddSingleton<SoftDeleteInterceptor>();
-        services.AddDbContext<AppDbContext>((sp, o) => o
-            .UseSqlServer(cs, sql => sql.EnableRetryOnFailure())
-            .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>()));
+
+        var cs = config.GetConnectionString("TeamUpDb");
+        var provider = config["DatabaseProvider"] ?? "SqlServer";
+
+        if (!provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(cs))
+        {
+            services.AddDbContext<AppDbContext>((sp, o) => o
+                .UseSqlServer(cs, sql => sql.EnableRetryOnFailure())
+                .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>()));
+        }
+
         return services;
     }
 }

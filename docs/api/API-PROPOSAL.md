@@ -61,10 +61,10 @@
 
 | # | Method | Route | Description | Authorize | Backend | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2 | POST | `/api/v1/auth/register` | Student user registration with faculty affiliation. | 🌐 Public | Tyson | ⏳ Pending (T12) |
-| 3 | POST | `/api/v1/auth/login` | Login with email/password; returns JWT access & refresh token. | 🌐 Public | Tyson | ⏳ Pending (T12) |
-| 4 | POST | `/api/v1/auth/refresh` | Rotate expired access token using valid refresh token. | 🌐 Public | Tyson | ⏳ Pending (T13) |
-| 5 | POST | `/api/v1/auth/logout` | Invalidate active session and revoke refresh token. | 🔒 Auth | Tyson | ⏳ Pending (T13) |
+| 2 | POST | `/api/v1/auth/register` | Student user registration with faculty affiliation. | 🌐 Public | Tyson | ✅ Done (T12) |
+| 3 | POST | `/api/v1/auth/login` | Login with email/password; returns JWT access & refresh token. | 🌐 Public | Tyson | ✅ Done (T12) |
+| 4 | POST | `/api/v1/auth/refresh` | Rotate expired access token using valid refresh token. | 🌐 Public | Tyson | ✅ Done (T13) |
+| 5 | POST | `/api/v1/auth/logout` | Invalidate active session and revoke refresh token. | 🔒 Auth | Tyson | ✅ Done (T13) |
 | 6 | POST | `/api/v1/auth/forgot-password` | Request password reset token via university email. | 🌐 Public | Tyson | ⏳ Pending |
 | 7 | POST | `/api/v1/auth/reset-password` | Reset password using verified reset token. | 🌐 Public | Tyson | ⏳ Pending |
 
@@ -92,14 +92,14 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 17 | GET | `/api/v1/students` | Search / filter student directory by faculty or academic year. | 🔒 Auth | Tyson | ⏳ Pending (T15) |
 | 18 | GET | `/api/v1/students/{id}` | Public student portfolio card & badges. | 🔒 Auth | Tyson | ⏳ Pending (T15) |
-| 19 | GET | `/api/v1/students/me` | Fetch authenticated student’s full profile and credentials. | 👤 Owner | Tyson | ⏳ Pending (T15) |
-| 20 | PATCH | `/api/v1/students/me` | Update student academic year or personal names. | 👤 Owner | Tyson | ⏳ Pending (T15) |
+| 19 | GET | `/api/v1/students/me` | Fetch authenticated student’s full profile and credentials. | 👤 Owner | Tyson | ✅ Done (T15) |
+| 20 | PATCH | `/api/v1/students/me` | Update student academic year or personal names. | 👤 Owner | Tyson | ✅ Done (T15) |
 | 21 | DELETE | `/api/v1/students/me` | Soft-delete student account. | 👤 Owner / 👑 Admin | Tyson | ⏳ Pending (T15) |
-| 22 | GET | `/api/v1/students/{id}/profile` | Get student extended portfolio (Bio, Photo, GitHub, LinkedIn). | 🔒 Auth | Tyson | ⏳ Pending (T15) |
-| 23 | PUT | `/api/v1/students/me/profile` | Upsert bio, portfolio photo, GitHub URL, LinkedIn URL. | 👤 Owner | Tyson | ⏳ Pending (T15) |
-| 24 | GET | `/api/v1/students/{id}/interests` | Get student list of academic/extracurricular interests. | 🔒 Auth | Tyson | ⏳ Pending (T15) |
-| 25 | POST | `/api/v1/students/me/interests` | Add an interest tag (e.g. `AI`, `Robotics`). | 👤 Owner | Tyson | ⏳ Pending (T15) |
-| 26 | DELETE | `/api/v1/students/me/interests/{tag}` | Remove an interest tag. | 👤 Owner | Tyson | ⏳ Pending (T15) |
+| 22 | GET | `/api/v1/students/{id}/profile` | Get student extended portfolio (Bio, Photo, GitHub, LinkedIn). | 🔒 Auth | Tyson | ✅ Done (T15) |
+| 23 | PUT | `/api/v1/students/me/profile` | Upsert bio, portfolio photo, GitHub URL, LinkedIn URL. | 👤 Owner | Tyson | ✅ Done (T15) |
+| 24 | GET | `/api/v1/students/{id}/interests` | Get student list of academic/extracurricular interests. | 🔒 Auth | Tyson | ✅ Done (T15) |
+| 25 | POST | `/api/v1/students/me/interests` | Add an interest tag (e.g. `AI`, `Robotics`). | 👤 Owner | Tyson | ✅ Done (T15) |
+| 26 | DELETE | `/api/v1/students/me/interests/{tag}` | Remove an interest tag. | 👤 Owner | Tyson | ✅ Done (T15) |
 
 ---
 
@@ -107,13 +107,13 @@
 
 | # | Method | Route | Description | Authorize | Backend | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 27 | GET | `/api/v1/skills` | List standard skills catalog grouped by category. | 🔒 Auth | Tyson | ⏳ Pending (T16) |
-| 28 | POST | `/api/v1/skills` | Add new technical or soft skill to master catalog. | 👑 PlatformAdmin | Tyson | ⏳ Pending (T16) |
-| 29 | PUT | `/api/v1/skills/{id}` | Update skill name, category, or description. | 👑 PlatformAdmin | Tyson | ⏳ Pending (T16) |
-| 30 | DELETE | `/api/v1/skills/{id}` | Soft-delete skill (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Tyson | ⏳ Pending (T16) |
-| 31 | GET | `/api/v1/students/{id}/skills` | List skills claimed by student with proficiency ratings. | 🔒 Auth | Tyson | ⏳ Pending (T16) |
-| 32 | PUT | `/api/v1/students/me/skills/{skillId}` | Claim skill / update proficiency and years of experience. | 👤 Owner | Tyson | ⏳ Pending (T16) |
-| 33 | DELETE | `/api/v1/students/me/skills/{skillId}` | Remove claimed skill from student profile. | 👤 Owner | Tyson | ⏳ Pending (T16) |
+| 27 | GET | `/api/v1/skills` | List standard skills catalog grouped by category. | 🔒 Auth | Ossama | ⏳ Pending (T16) |
+| 28 | POST | `/api/v1/skills` | Add new technical or soft skill to master catalog. | 👑 PlatformAdmin | Ossama | ⏳ Pending (T16) |
+| 29 | PUT | `/api/v1/skills/{id}` | Update skill name, category, or description. | 👑 PlatformAdmin | Ossama | ⏳ Pending (T16) |
+| 30 | DELETE | `/api/v1/skills/{id}` | Soft-delete skill (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Ossama | ⏳ Pending (T16) |
+| 31 | GET | `/api/v1/students/{id}/skills` | List skills claimed by student with proficiency ratings. | 🔒 Auth | Ossama | ⏳ Pending (T16) |
+| 32 | PUT | `/api/v1/students/me/skills/{skillId}` | Claim skill / update proficiency and years of experience. | 👤 Owner | Ossama | ⏳ Pending (T16) |
+| 33 | DELETE | `/api/v1/students/me/skills/{skillId}` | Remove claimed skill from student profile. | 👤 Owner | Ossama | ⏳ Pending (T16) |
 
 ---
 

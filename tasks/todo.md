@@ -1,7 +1,13 @@
 # TeamUp Backend: Task List
 
-Plan, defects D1-D10, REST table and team split: see `plan.md`.
+Plan, defects D1-D10, REST table and team split: see `plan.md` and `docs/api/API-PROPOSAL.md`.
 Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `dotnet test` green unless stated.
+
+### Modular Implementation Plans
+- [Module 01: Auth, Identity & Profiles (Tyson)](./modules/01-auth-identity-profile.md)
+- [Module 02: Skills, Projects, Teams & Tasks (Ossama)](./modules/02-skills-projects-tasks.md)
+- [Module 03: Activities, Organizations, Events & Attendance (Ibrahim)](./modules/03-organizations-and-events.md)
+- [Module 04: Gamification, Scoring Ledger, Badges & Notifications (Youssef)](./modules/04-gamification-and-alerts.md)
 
 ## Phase 0: Foundation (M1 leads, others review)
 
@@ -64,22 +70,22 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
 ### Checkpoint B (after T5-T11)
 - [x] DB created from migration, schema matches fixed mapping diagram, FK action query clean, review with team.
 
-## Phase 2: Auth (M1)
+## Phase 2: Auth (M1 - Tyson)
 
-- [ ] **T12 (M, M1): Register and login with JWT**
+- [x] **T12 (M, M1): Register and login with JWT**
   - AC: `POST /auth/register`, `POST /auth/login`; password hashed (Identity `PasswordHasher` or BCrypt); JWT carries `sub`, `role`; `[Authorize]` and role policies wired.
   - Verify: integration tests: register 201, duplicate email 409, bad password 401, protected route 401 without token.
   - Deps: T10.
 
-- [ ] **T13 (S, M1): Refresh token and logout**
-  - AC: refresh token stored hashed, rotates on use, logout revokes; short access token lifetime.
+- [x] **T13 (S, M1): Refresh token and logout**
+  - AC: refresh token stored hashed/crypto-random, rotates on use, logout revokes; short access token lifetime.
   - Deps: T12.
 
 ## Phase 3: Vertical API slices (parallel by owner, each: service + controller + validators + tests)
 
-M1
+M1 (Tyson)
 - [ ] **T14 (S): Universities and Faculties CRUD** - paging, soft delete, `PlatformAdmin` writes.
-- [ ] **T15 (M): Students, profile, interests** - `GET /students/me`, `PUT /students/{id}/profile`, interests add/remove; owner or admin only; `DELETE /students/{id}` soft deletes and anonymises nothing else.
+- [x] **T15 (M): Students, profile, interests** - `GET /students/me`, `PATCH /students/me`, `GET/PUT /students/me/profile`, `GET /students/{id}/profile`, interests add/remove/restore; owner or admin only; `DELETE /students/{id}` soft deletes and anonymises nothing else.
 
 M2
 - [ ] **T16 (S): Skills CRUD + `StudentSkill`** - `PUT/DELETE /students/{id}/skills/{skillId}`.

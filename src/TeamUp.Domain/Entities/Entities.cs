@@ -36,6 +36,8 @@ public class Student : BaseEntity
     public int FacultyId { get; set; }
     public Faculty Faculty { get; set; } = null!;
     public StudentProfile? Profile { get; set; }
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiresAt { get; set; }
     public ICollection<StudentInterest> Interests { get; set; } = [];
     public ICollection<StudentSkill> Skills { get; set; } = [];
 }
