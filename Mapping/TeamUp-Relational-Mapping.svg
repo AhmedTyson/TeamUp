@@ -2,7 +2,7 @@
 <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="#1f3a68"/></marker></defs>
 <rect width="3900" height="2700" fill="#fbfcfd"/>
 <text x="80" y="55" font-size="34" font-weight="bold" fill="#0b2e59">TeamUpDB — Relational Schema Mapping (23 Tables)</text>
-<text x="80" y="82" font-size="16" fill="#555">Normalized (3NF) • All FKs ON DELETE NO ACTION / ON UPDATE NO ACTION • DELETE = soft delete (IsDeleted, DeletedAt on every table except ScoreTransaction)</text>
+<text x="80" y="82" font-size="16" fill="#555">Normalized (3NF) • All FKs ON DELETE NO ACTION / ON UPDATE NO ACTION • DELETE = soft delete (single column: DeletedAt IS NULL = active, timestamp = deleted)</text>
 <polyline points="1036.0,170.0 1036.0,115.0 110.0,115.0 110.0,170.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
 <polyline points="2017.5,170.0 2017.5,130.0 780.0,130.0 780.0,170.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
 <polyline points="2505.0,170.0 2505.0,115.0 1325.0,115.0 1325.0,170.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
@@ -397,7 +397,7 @@
 <rect x="2708" y="2295" width="95" height="32" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
 <text x="2755" y="2317" text-anchor="middle" font-size="13">Email</text>
 <text x="2798" y="2306" text-anchor="end" font-size="9" fill="#c62828" font-weight="bold">UQ</text>
-<text x="2833" y="2317" font-size="15" fill="#222">UQ badge = filtered UNIQUE index WHERE IsDeleted = 0 (e.g., Student.Email)</text>
+<text x="2833" y="2317" font-size="15" fill="#222">UQ badge = filtered UNIQUE index WHERE DeletedAt IS NULL (e.g., Student.Email)</text>
 <polyline points="2708,2355 2803,2355" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
 <text x="2833" y="2359" font-size="15" fill="#222">Orthogonal Arrow: Foreign Key column -&gt; referenced table Primary Key cell</text>
 <rect x="2708" y="2379" width="95" height="32" fill="#eef2f9" stroke="#999" stroke-dasharray="4 3"/>

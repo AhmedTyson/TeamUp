@@ -79,7 +79,7 @@ public class ProjectApplicationConfig : IEntityTypeConfiguration<ProjectApplicat
         b.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
         // One open application per student per project; re-applying after a rejection is allowed.
         b.HasIndex(x => new { x.ProjectId, x.StudentId }).IsUnique()
-            .HasFilter("[IsDeleted] = 0 AND [Status] = 'Pending'");
+            .HasFilter("[DeletedAt] IS NULL AND [Status] = 'Pending'");
         b.HasIndex(x => x.StudentId);
     }
 }

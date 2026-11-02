@@ -43,10 +43,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             // Singular table names, same as the relational mapping diagram.
             entity.SetTableName(entity.ClrType.Name);
 
-            // Soft delete: hide deleted rows and add the filtered-index friendly columns.
+            // Soft delete: hide deleted rows (DeletedAt IS NOT NULL).
             if (typeof(ISoftDelete).IsAssignableFrom(entity.ClrType))
             {
-                modelBuilder.Entity(entity.ClrType).Property(nameof(ISoftDelete.IsDeleted)).HasDefaultValue(false);
                 modelBuilder.Entity(entity.ClrType).HasQueryFilter(SoftDeleteFilter(entity.ClrType));
             }
 
@@ -77,7 +76,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     private static LambdaExpression SoftDeleteFilter(Type type)
     {
         var p = Expression.Parameter(type, "e");
-        var isDeleted = Expression.Call(typeof(EF), nameof(EF.Property), [typeof(bool)], p, Expression.Constant(nameof(ISoftDelete.IsDeleted)));
-        return Expression.Lambda(Expression.Not(isDeleted), p);
+        var deletedAt = Expression.Call(typeof(EF), nameof(EF.Property), [typeof(DateTime?)], p, Expression.Constant(nameof(ISoftDelete.DeletedAt)));
+        var isNull = Expression.Equal(deletedAt, Expression.Constant(null, typeof(DateTime?)));
+        return Expression.Lambda(isNull, p);
     }
 }

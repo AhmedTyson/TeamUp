@@ -37,9 +37,8 @@ public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
             if (entry.State == EntityState.Deleted && entry.Entity is ISoftDelete soft)
             {
                 entry.State = EntityState.Modified;
-                soft.IsDeleted = true;
                 soft.DeletedAt = now;
-                MarkOnly(entry, nameof(ISoftDelete.IsDeleted), nameof(ISoftDelete.DeletedAt));
+                MarkOnly(entry, nameof(ISoftDelete.DeletedAt));
             }
         }
     }

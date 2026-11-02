@@ -22,7 +22,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     IconUrl = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
                     CriteriaType = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false),
                     CriteriaValue = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -41,7 +40,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LogoUrl = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -58,7 +56,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     Name = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
                     Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -76,7 +73,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Website = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -98,7 +94,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Capacity = table.Column<int>(type: "int", nullable: false),
                     OrganizationId = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -124,7 +119,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     Code = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     UniversityId = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -150,7 +144,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Room = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -178,7 +171,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     AcademicYear = table.Column<int>(type: "int", nullable: false),
                     Role = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false, defaultValue: "Student"),
                     FacultyId = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -202,7 +194,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     RegisteredAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
                     Status = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false, defaultValue: "Confirmed"),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -235,7 +226,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     Status = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false, defaultValue: "Pending"),
                     AppliedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
                     ReviewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -268,7 +258,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     Type = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -291,7 +280,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
                     JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -323,7 +311,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
                     MaxTeamSize = table.Column<int>(type: "int", nullable: false),
                     CreatorId = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -371,7 +358,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     CheckInTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
                     VerificationMethod = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -399,7 +385,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     BadgeId = table.Column<int>(type: "int", nullable: false),
                     AwardedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -425,7 +410,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                 {
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     Interest = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -450,7 +434,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     PhotoUrl = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
                     GitHubUrl = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     LinkedInUrl = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -472,7 +455,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     SkillId = table.Column<int>(type: "int", nullable: false),
                     ProficiencyLevel = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false),
                     YearsOfExperience = table.Column<decimal>(type: "decimal(3,1)", nullable: false, defaultValue: 0m),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -505,7 +487,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     Message = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Status = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false, defaultValue: "Pending"),
                     AppliedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -534,7 +515,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
                     JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -562,7 +542,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     SkillId = table.Column<int>(type: "int", nullable: false),
                     RequiredLevel = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false),
                     IsMandatory = table.Column<bool>(type: "bit", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -596,7 +575,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     Priority = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false),
                     ProjectId = table.Column<int>(type: "int", nullable: false),
                     AssignedStudentId = table.Column<int>(type: "int", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -623,7 +601,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                 table: "Badge",
                 column: "Name",
                 unique: true,
-                filter: "[IsDeleted] = 0");
+                filter: "[DeletedAt] IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Event_OrganizationId",
@@ -645,21 +623,21 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                 table: "EventSession",
                 columns: new[] { "EventId", "SessionNo" },
                 unique: true,
-                filter: "[IsDeleted] = 0");
+                filter: "[DeletedAt] IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Faculty_UniversityId_Code",
                 table: "Faculty",
                 columns: new[] { "UniversityId", "Code" },
                 unique: true,
-                filter: "[IsDeleted] = 0");
+                filter: "[DeletedAt] IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MembershipApplication_OrganizationId_StudentId",
                 table: "MembershipApplication",
                 columns: new[] { "OrganizationId", "StudentId" },
                 unique: true,
-                filter: "[IsDeleted] = 0 AND [Status] = 'Pending'");
+                filter: "[DeletedAt] IS NULL AND [Status] = 'Pending'");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MembershipApplication_StudentId",
@@ -676,7 +654,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                 table: "Organization",
                 column: "Name",
                 unique: true,
-                filter: "[IsDeleted] = 0");
+                filter: "[DeletedAt] IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrganizationMember_StudentId",
@@ -693,7 +671,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                 table: "ProjectApplication",
                 columns: new[] { "ProjectId", "StudentId" },
                 unique: true,
-                filter: "[IsDeleted] = 0 AND [Status] = 'Pending'");
+                filter: "[DeletedAt] IS NULL AND [Status] = 'Pending'");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProjectApplication_StudentId",
@@ -735,14 +713,14 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                 table: "Skill",
                 column: "Name",
                 unique: true,
-                filter: "[IsDeleted] = 0");
+                filter: "[DeletedAt] IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Student_Email",
                 table: "Student",
                 column: "Email",
                 unique: true,
-                filter: "[IsDeleted] = 0");
+                filter: "[DeletedAt] IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Student_FacultyId",
@@ -759,7 +737,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                 table: "StudentProfile",
                 column: "StudentId",
                 unique: true,
-                filter: "[IsDeleted] = 0");
+                filter: "[DeletedAt] IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentSkill_SkillId",
@@ -771,7 +749,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                 table: "University",
                 column: "Name",
                 unique: true,
-                filter: "[IsDeleted] = 0");
+                filter: "[DeletedAt] IS NULL");
         }
 
         /// <inheritdoc />

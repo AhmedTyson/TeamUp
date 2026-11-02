@@ -13,8 +13,8 @@ public class ScoreTransactionConfig : IEntityTypeConfiguration<ScoreTransaction>
         b.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         b.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
         b.HasIndex(x => new { x.StudentId, x.CreatedAt });
-        // Ledger has no IsDeleted of its own; hide rows whose student was soft-deleted.
-        b.HasQueryFilter(x => !x.Student.IsDeleted);
+        // Ledger has no DeletedAt of its own; hide rows whose student was soft-deleted.
+        b.HasQueryFilter(x => x.Student.DeletedAt == null);
     }
 }
 

@@ -52,11 +52,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -66,7 +61,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Name")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("Badge", t =>
                         {
@@ -94,11 +89,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Location")
                         .IsRequired()
@@ -149,11 +139,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<DateTime>("RegisteredAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -194,11 +179,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Room")
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
@@ -218,7 +198,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EventId", "SessionNo")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("EventSession", t =>
                         {
@@ -242,11 +222,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -259,7 +234,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UniversityId", "Code")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("Faculty");
                 });
@@ -279,11 +254,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Message")
                         .HasMaxLength(600)
@@ -312,7 +282,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("OrganizationId", "StudentId")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0 AND [Status] = 'Pending'");
+                        .HasFilter("[DeletedAt] IS NULL AND [Status] = 'Pending'");
 
                     b.ToTable("MembershipApplication", t =>
                         {
@@ -335,11 +305,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsRead")
                         .ValueGeneratedOnAdd()
@@ -395,11 +360,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("LogoUrl")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
@@ -413,7 +373,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Name")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("Organization");
                 });
@@ -428,11 +388,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<DateTime>("JoinedAt")
                         .ValueGeneratedOnAdd()
@@ -473,11 +428,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<int>("MaxTeamSize")
                         .HasColumnType("int");
@@ -523,11 +473,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Message")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -552,7 +497,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ProjectId", "StudentId")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0 AND [Status] = 'Pending'");
+                        .HasFilter("[DeletedAt] IS NULL AND [Status] = 'Pending'");
 
                     b.ToTable("ProjectApplication", t =>
                         {
@@ -570,11 +515,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<DateTime>("JoinedAt")
                         .ValueGeneratedOnAdd()
@@ -603,11 +543,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsMandatory")
                         .HasColumnType("bit");
@@ -648,11 +583,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Priority")
                         .IsRequired()
@@ -746,11 +676,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("VerificationMethod")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -787,11 +712,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -801,7 +721,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Name")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("Skill");
                 });
@@ -833,11 +753,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -860,7 +775,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.HasIndex("FacultyId");
 
@@ -888,11 +803,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.HasKey("StudentId", "BadgeId");
 
                     b.HasIndex("BadgeId");
@@ -911,11 +821,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.HasKey("StudentId", "Interest");
 
@@ -941,11 +846,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("LinkedInUrl")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -961,7 +861,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("StudentId")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("StudentProfile");
                 });
@@ -976,11 +876,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("ProficiencyLevel")
                         .IsRequired()
@@ -1026,11 +921,6 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -1044,7 +934,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Name")
                         .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("University");
                 });

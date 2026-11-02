@@ -6,7 +6,7 @@ namespace TeamUp.Infrastructure.Persistence.Configurations;
 
 internal static class Sql
 {
-    public const string NotDeleted = "[IsDeleted] = 0";
+    public const string NotDeleted = "[DeletedAt] IS NULL";
 }
 
 public class UniversityConfig : IEntityTypeConfiguration<University>

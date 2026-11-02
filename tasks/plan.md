@@ -11,9 +11,9 @@ Team: 4 members (M1 to M4) plus shared foundation done first by M1.
 | D1 | Every FK uses `ON DELETE CASCADE`/`SET NULL`. Conflicts with the soft-delete rule (rows are never physically removed, so cascades never fire or, worse, wipe history if someone hard-deletes). | All FKs: `ON DELETE NO ACTION`. Soft-delete cascade done in the application (service layer) where needed. |
 | D2 | `ON UPDATE` never specified anywhere. | All FKs: `ON UPDATE NO ACTION`. SQL Server only supports `NO ACTION` for update on identity keys, and PKs are immutable (IDENTITY). Document it. |
 | D3 | `ProjectTask.AssignedStudentID` uses `ON DELETE SET NULL`. Soft delete never nulls it. | `NO ACTION`. Unassign in the service when a member is soft-removed. |
-| D4 | No soft-delete columns. | Add `IsDeleted BIT NOT NULL DEFAULT 0`, `DeletedAt DATETIME2 NULL` to every table (via `ISoftDelete` base). |
-| D5 | UNIQUE on `Student.Email`, `Skill.Name`, `Organization.Name`, `StudentProfile.StudentID` blocks reuse after soft delete. | Filtered unique indexes `WHERE IsDeleted = 0`. |
-| D6 | Junction PKs `(ProjectID, StudentID)` on `ProjectApplication` and `MembershipApplication` contradict the ERD text ("student may re-apply after rejection"). | Add surrogate `ApplicationID` PK + filtered unique index on (ProjectID, StudentID) `WHERE Status = 'Pending' AND IsDeleted = 0`. Same for MembershipApplication. |
+| D4 | No soft-delete column. | Add single column `DeletedAt DATETIME2 NULL` to every table except `ScoreTransaction` (NULL = active, timestamp = deleted). Eliminates bit/timestamp desync and captures audit time natively. |
+| D5 | UNIQUE on `Student.Email`, `Skill.Name`, `Organization.Name`, `StudentProfile.StudentID` blocks reuse after soft delete. | Filtered unique indexes `WHERE DeletedAt IS NULL`. |
+| D6 | Junction PKs `(ProjectID, StudentID)` on `ProjectApplication` and `MembershipApplication` contradict the ERD text ("student may re-apply after rejection"). | Add surrogate `ApplicationID` PK + filtered unique index on (ProjectID, StudentID) `WHERE Status = 'Pending' AND DeletedAt IS NULL`. Same for MembershipApplication. |
 | D7 | `EventSession` composite PK `(EventID, SessionID)` with a non-identity `SessionID` means manual numbering. | Surrogate `SessionID` IDENTITY PK, unique `(EventID, SessionNo)`. `SessionAttendance` then references `SessionID` only, so the PK becomes `(SessionID, StudentID)`. |
 | D8 | Names differ between ERD (`Task`, `EventAttendance`) and mapping (`ProjectTask`, `SessionAttendance`). | Keep mapping names, add a rename note in docs. |
 | D9 | No CHECK on enums-as-strings (`Status`, `Role`, `Priority`...). | CHECK constraints or EF `HasConversion<string>()` with enums plus CHECK. |
@@ -21,8 +21,8 @@ Team: 4 members (M1 to M4) plus shared foundation done first by M1.
 
 ## Soft delete policy (to be documented)
 
-- `DELETE /resource/{id}` sets `IsDeleted = 1`, `DeletedAt = UTC now`, returns `204`.
-- A global EF query filter `HasQueryFilter(e => !e.IsDeleted)` hides deleted rows.
+- `DELETE /resource/{id}` sets `DeletedAt = UTC now`, returns `204`.
+- A global EF query filter `HasQueryFilter(e => e.DeletedAt == null)` hides deleted rows.
 - `SaveChanges` interceptor converts `EntityState.Deleted` into the soft-delete update.
 - Admin-only `POST /resource/{id}/restore` and `?includeDeleted=true` for admins.
 - Re-creating a unique value (email, skill name) is allowed once the old row is soft-deleted.

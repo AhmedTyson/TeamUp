@@ -42,7 +42,7 @@ public class MembershipApplicationConfig : IEntityTypeConfiguration<MembershipAp
         b.HasOne(x => x.Organization).WithMany().HasForeignKey(x => x.OrganizationId);
         b.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
         b.HasIndex(x => new { x.OrganizationId, x.StudentId }).IsUnique()
-            .HasFilter("[IsDeleted] = 0 AND [Status] = 'Pending'");
+            .HasFilter("[DeletedAt] IS NULL AND [Status] = 'Pending'");
         b.HasIndex(x => x.StudentId);
     }
 }

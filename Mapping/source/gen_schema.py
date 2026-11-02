@@ -295,7 +295,7 @@ def svg():
         '<text x="80" y="55" font-size="34" font-weight="bold" fill="#0b2e59">'
         'TeamUpDB — Relational Schema Mapping (23 Tables)</text>',
         '<text x="80" y="82" font-size="16" fill="#555">'
-        'Normalized (3NF) • All FKs ON DELETE NO ACTION / ON UPDATE NO ACTION • DELETE = soft delete (IsDeleted, DeletedAt on every table except ScoreTransaction)</text>'
+        'Normalized (3NF) • All FKs ON DELETE NO ACTION / ON UPDATE NO ACTION • DELETE = soft delete (single column: DeletedAt IS NULL = active, timestamp = deleted)</text>'
     ]
 
     # Draw routes first so table boxes overlay cleanly
@@ -355,7 +355,7 @@ def svg():
         ("fk", "Foreign Key (dashed underline inside cell)"),
         ("pkfk", "Composite Primary Key &amp; Foreign Key (both solid and dashed underlines)"),
         ("comp", "Underline below table spanning key cells = Composite Primary Key"),
-        ("uq", "UQ badge = filtered UNIQUE index WHERE IsDeleted = 0 (e.g., Student.Email)"),
+        ("uq", "UQ badge = filtered UNIQUE index WHERE DeletedAt IS NULL (e.g., Student.Email)"),
         ("arrow", "Orthogonal Arrow: Foreign Key column -&gt; referenced table Primary Key cell"),
         ("derived", "Derived attributes (TotalPoints, Level, TeamSize, RegisteredCount) are computed, not stored")
     ]

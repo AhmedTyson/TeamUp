@@ -11,7 +11,7 @@ GO
 BEGIN TRANSACTION;
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Badge] (
@@ -21,7 +21,6 @@ BEGIN
         [IconUrl] nvarchar(300) NOT NULL,
         [CriteriaType] varchar(30) NOT NULL,
         [CriteriaValue] int NOT NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_Badge] PRIMARY KEY ([BadgeId]),
         CONSTRAINT [CK_Badge_CriteriaType] CHECK ([CriteriaType] IN ('PointsThreshold', 'EventCount', 'TaskCount'))
@@ -30,7 +29,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Organization] (
@@ -39,7 +38,6 @@ BEGIN
         [Description] nvarchar(max) NOT NULL,
         [Category] nvarchar(50) NOT NULL,
         [LogoUrl] nvarchar(300) NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_Organization] PRIMARY KEY ([OrganizationId])
     );
@@ -47,7 +45,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Skill] (
@@ -55,7 +53,6 @@ BEGIN
         [Name] nvarchar(60) NOT NULL,
         [Category] nvarchar(50) NOT NULL,
         [Description] nvarchar(250) NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_Skill] PRIMARY KEY ([SkillId])
     );
@@ -63,7 +60,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [University] (
@@ -72,7 +69,6 @@ BEGIN
         [City] nvarchar(100) NOT NULL,
         [Country] nvarchar(100) NOT NULL,
         [Website] nvarchar(200) NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_University] PRIMARY KEY ([UniversityId])
     );
@@ -80,7 +76,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Event] (
@@ -93,7 +89,6 @@ BEGIN
         [EndDate] datetime2 NOT NULL,
         [Capacity] int NOT NULL,
         [OrganizationId] int NOT NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_Event] PRIMARY KEY ([EventId]),
         CONSTRAINT [CK_Event_Capacity] CHECK ([Capacity] >= 1),
@@ -105,7 +100,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Faculty] (
@@ -113,7 +108,6 @@ BEGIN
         [Name] nvarchar(150) NOT NULL,
         [Code] nvarchar(20) NOT NULL,
         [UniversityId] int NOT NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_Faculty] PRIMARY KEY ([FacultyId]),
         CONSTRAINT [FK_Faculty_University_UniversityId] FOREIGN KEY ([UniversityId]) REFERENCES [University] ([UniversityId]) ON DELETE NO ACTION
@@ -122,7 +116,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [EventSession] (
@@ -133,7 +127,6 @@ BEGIN
         [StartTime] datetime2 NOT NULL,
         [EndTime] datetime2 NOT NULL,
         [Room] nvarchar(60) NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_EventSession] PRIMARY KEY ([SessionId]),
         CONSTRAINT [CK_EventSession_Times] CHECK ([EndTime] >= [StartTime]),
@@ -143,7 +136,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Student] (
@@ -155,7 +148,6 @@ BEGIN
         [AcademicYear] int NOT NULL,
         [Role] varchar(30) NOT NULL DEFAULT 'Student',
         [FacultyId] int NOT NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_Student] PRIMARY KEY ([StudentId]),
         CONSTRAINT [CK_Student_AcademicYear] CHECK ([AcademicYear] BETWEEN 1 AND 7),
@@ -166,7 +158,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [EventRegistration] (
@@ -174,7 +166,6 @@ BEGIN
         [StudentId] int NOT NULL,
         [RegisteredAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
         [Status] varchar(30) NOT NULL DEFAULT 'Confirmed',
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_EventRegistration] PRIMARY KEY ([EventId], [StudentId]),
         CONSTRAINT [CK_EventRegistration_Status] CHECK ([Status] IN ('Confirmed', 'Waitlisted', 'Cancelled')),
@@ -185,7 +176,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [MembershipApplication] (
@@ -196,7 +187,6 @@ BEGIN
         [Status] varchar(30) NOT NULL DEFAULT 'Pending',
         [AppliedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
         [ReviewedAt] datetime2 NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_MembershipApplication] PRIMARY KEY ([ApplicationId]),
         CONSTRAINT [CK_MembershipApplication_Status] CHECK ([Status] IN ('Pending', 'Accepted', 'Rejected', 'Withdrawn')),
@@ -207,7 +197,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Notification] (
@@ -218,7 +208,6 @@ BEGIN
         [Type] varchar(30) NOT NULL,
         [IsRead] bit NOT NULL DEFAULT CAST(0 AS bit),
         [CreatedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_Notification] PRIMARY KEY ([NotificationId]),
         CONSTRAINT [CK_Notification_Type] CHECK ([Type] IN ('ApplicationStatus', 'TaskAssigned', 'BadgeEarned', 'EventReminder')),
@@ -228,7 +217,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [OrganizationMember] (
@@ -236,7 +225,6 @@ BEGIN
         [StudentId] int NOT NULL,
         [Role] nvarchar(60) NOT NULL,
         [JoinedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_OrganizationMember] PRIMARY KEY ([OrganizationId], [StudentId]),
         CONSTRAINT [FK_OrganizationMember_Organization_OrganizationId] FOREIGN KEY ([OrganizationId]) REFERENCES [Organization] ([OrganizationId]) ON DELETE NO ACTION,
@@ -246,7 +234,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [Project] (
@@ -257,7 +245,6 @@ BEGIN
         [CreatedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
         [MaxTeamSize] int NOT NULL,
         [CreatorId] int NOT NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_Project] PRIMARY KEY ([ProjectId]),
         CONSTRAINT [CK_Project_MaxTeamSize] CHECK ([MaxTeamSize] >= 1),
@@ -268,7 +255,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [ScoreTransaction] (
@@ -286,7 +273,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [SessionAttendance] (
@@ -294,7 +281,6 @@ BEGIN
         [StudentId] int NOT NULL,
         [CheckInTime] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
         [VerificationMethod] varchar(30) NOT NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_SessionAttendance] PRIMARY KEY ([SessionId], [StudentId]),
         CONSTRAINT [CK_SessionAttendance_VerificationMethod] CHECK ([VerificationMethod] IN ('QRCode', 'RFID', 'ManualByOrganizer')),
@@ -305,14 +291,13 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentBadge] (
         [StudentId] int NOT NULL,
         [BadgeId] int NOT NULL,
         [AwardedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_StudentBadge] PRIMARY KEY ([StudentId], [BadgeId]),
         CONSTRAINT [FK_StudentBadge_Badge_BadgeId] FOREIGN KEY ([BadgeId]) REFERENCES [Badge] ([BadgeId]) ON DELETE NO ACTION,
@@ -322,13 +307,12 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentInterest] (
         [StudentId] int NOT NULL,
         [Interest] nvarchar(50) NOT NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_StudentInterest] PRIMARY KEY ([StudentId], [Interest]),
         CONSTRAINT [FK_StudentInterest_Student_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Student] ([StudentId]) ON DELETE NO ACTION
@@ -337,7 +321,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentProfile] (
@@ -347,7 +331,6 @@ BEGIN
         [PhotoUrl] nvarchar(300) NULL,
         [GitHubUrl] nvarchar(200) NULL,
         [LinkedInUrl] nvarchar(200) NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_StudentProfile] PRIMARY KEY ([ProfileId]),
         CONSTRAINT [FK_StudentProfile_Student_StudentId] FOREIGN KEY ([StudentId]) REFERENCES [Student] ([StudentId]) ON DELETE NO ACTION
@@ -356,7 +339,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [StudentSkill] (
@@ -364,7 +347,6 @@ BEGIN
         [SkillId] int NOT NULL,
         [ProficiencyLevel] varchar(30) NOT NULL,
         [YearsOfExperience] decimal(3,1) NOT NULL DEFAULT 0.0,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_StudentSkill] PRIMARY KEY ([StudentId], [SkillId]),
         CONSTRAINT [CK_StudentSkill_ProficiencyLevel] CHECK ([ProficiencyLevel] IN ('Beginner', 'Intermediate', 'Advanced')),
@@ -376,7 +358,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [ProjectApplication] (
@@ -386,7 +368,6 @@ BEGIN
         [Message] nvarchar(500) NULL,
         [Status] varchar(30) NOT NULL DEFAULT 'Pending',
         [AppliedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_ProjectApplication] PRIMARY KEY ([ApplicationId]),
         CONSTRAINT [CK_ProjectApplication_Status] CHECK ([Status] IN ('Pending', 'Accepted', 'Rejected', 'Withdrawn')),
@@ -397,7 +378,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [ProjectMember] (
@@ -405,7 +386,6 @@ BEGIN
         [StudentId] int NOT NULL,
         [Role] nvarchar(60) NOT NULL,
         [JoinedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_ProjectMember] PRIMARY KEY ([ProjectId], [StudentId]),
         CONSTRAINT [FK_ProjectMember_Project_ProjectId] FOREIGN KEY ([ProjectId]) REFERENCES [Project] ([ProjectId]) ON DELETE NO ACTION,
@@ -415,7 +395,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [ProjectRequiredSkill] (
@@ -423,7 +403,6 @@ BEGIN
         [SkillId] int NOT NULL,
         [RequiredLevel] varchar(30) NOT NULL,
         [IsMandatory] bit NOT NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_ProjectRequiredSkill] PRIMARY KEY ([ProjectId], [SkillId]),
         CONSTRAINT [CK_ProjectRequiredSkill_RequiredLevel] CHECK ([RequiredLevel] IN ('Beginner', 'Intermediate', 'Advanced')),
@@ -434,7 +413,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE TABLE [ProjectTask] (
@@ -446,7 +425,6 @@ BEGIN
         [Priority] varchar(30) NOT NULL,
         [ProjectId] int NOT NULL,
         [AssignedStudentId] int NULL,
-        [IsDeleted] bit NOT NULL DEFAULT CAST(0 AS bit),
         [DeletedAt] datetime2 NULL,
         CONSTRAINT [PK_ProjectTask] PRIMARY KEY ([TaskId]),
         CONSTRAINT [CK_ProjectTask_Priority] CHECK ([Priority] IN ('Low', 'Medium', 'High', 'Urgent')),
@@ -458,15 +436,15 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_Badge_Name] ON [Badge] ([Name]) WHERE [IsDeleted] = 0');
+    EXEC(N'CREATE UNIQUE INDEX [IX_Badge_Name] ON [Badge] ([Name]) WHERE [DeletedAt] IS NULL');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Event_OrganizationId] ON [Event] ([OrganizationId]);
@@ -474,7 +452,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Event_StartDate] ON [Event] ([StartDate]);
@@ -482,7 +460,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_EventRegistration_StudentId] ON [EventRegistration] ([StudentId]);
@@ -490,31 +468,31 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_EventSession_EventId_SessionNo] ON [EventSession] ([EventId], [SessionNo]) WHERE [IsDeleted] = 0');
+    EXEC(N'CREATE UNIQUE INDEX [IX_EventSession_EventId_SessionNo] ON [EventSession] ([EventId], [SessionNo]) WHERE [DeletedAt] IS NULL');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_Faculty_UniversityId_Code] ON [Faculty] ([UniversityId], [Code]) WHERE [IsDeleted] = 0');
+    EXEC(N'CREATE UNIQUE INDEX [IX_Faculty_UniversityId_Code] ON [Faculty] ([UniversityId], [Code]) WHERE [DeletedAt] IS NULL');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_MembershipApplication_OrganizationId_StudentId] ON [MembershipApplication] ([OrganizationId], [StudentId]) WHERE [IsDeleted] = 0 AND [Status] = ''Pending''');
+    EXEC(N'CREATE UNIQUE INDEX [IX_MembershipApplication_OrganizationId_StudentId] ON [MembershipApplication] ([OrganizationId], [StudentId]) WHERE [DeletedAt] IS NULL AND [Status] = ''Pending''');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_MembershipApplication_StudentId] ON [MembershipApplication] ([StudentId]);
@@ -522,7 +500,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Notification_StudentId_IsRead_CreatedAt] ON [Notification] ([StudentId], [IsRead], [CreatedAt]);
@@ -530,15 +508,15 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_Organization_Name] ON [Organization] ([Name]) WHERE [IsDeleted] = 0');
+    EXEC(N'CREATE UNIQUE INDEX [IX_Organization_Name] ON [Organization] ([Name]) WHERE [DeletedAt] IS NULL');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_OrganizationMember_StudentId] ON [OrganizationMember] ([StudentId]);
@@ -546,7 +524,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Project_CreatorId] ON [Project] ([CreatorId]);
@@ -554,15 +532,15 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_ProjectApplication_ProjectId_StudentId] ON [ProjectApplication] ([ProjectId], [StudentId]) WHERE [IsDeleted] = 0 AND [Status] = ''Pending''');
+    EXEC(N'CREATE UNIQUE INDEX [IX_ProjectApplication_ProjectId_StudentId] ON [ProjectApplication] ([ProjectId], [StudentId]) WHERE [DeletedAt] IS NULL AND [Status] = ''Pending''');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ProjectApplication_StudentId] ON [ProjectApplication] ([StudentId]);
@@ -570,7 +548,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ProjectMember_StudentId] ON [ProjectMember] ([StudentId]);
@@ -578,7 +556,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ProjectRequiredSkill_SkillId] ON [ProjectRequiredSkill] ([SkillId]);
@@ -586,7 +564,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ProjectTask_AssignedStudentId] ON [ProjectTask] ([AssignedStudentId]);
@@ -594,7 +572,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ProjectTask_ProjectId] ON [ProjectTask] ([ProjectId]);
@@ -602,7 +580,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_ScoreTransaction_StudentId_CreatedAt] ON [ScoreTransaction] ([StudentId], [CreatedAt]);
@@ -610,7 +588,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_SessionAttendance_StudentId] ON [SessionAttendance] ([StudentId]);
@@ -618,23 +596,23 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_Skill_Name] ON [Skill] ([Name]) WHERE [IsDeleted] = 0');
+    EXEC(N'CREATE UNIQUE INDEX [IX_Skill_Name] ON [Skill] ([Name]) WHERE [DeletedAt] IS NULL');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_Student_Email] ON [Student] ([Email]) WHERE [IsDeleted] = 0');
+    EXEC(N'CREATE UNIQUE INDEX [IX_Student_Email] ON [Student] ([Email]) WHERE [DeletedAt] IS NULL');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_Student_FacultyId] ON [Student] ([FacultyId]);
@@ -642,7 +620,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentBadge_BadgeId] ON [StudentBadge] ([BadgeId]);
@@ -650,15 +628,15 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_StudentProfile_StudentId] ON [StudentProfile] ([StudentId]) WHERE [IsDeleted] = 0');
+    EXEC(N'CREATE UNIQUE INDEX [IX_StudentProfile_StudentId] ON [StudentProfile] ([StudentId]) WHERE [DeletedAt] IS NULL');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     CREATE INDEX [IX_StudentSkill_SkillId] ON [StudentSkill] ([SkillId]);
@@ -666,19 +644,19 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
-    EXEC(N'CREATE UNIQUE INDEX [IX_University_Name] ON [University] ([Name]) WHERE [IsDeleted] = 0');
+    EXEC(N'CREATE UNIQUE INDEX [IX_University_Name] ON [University] ([Name]) WHERE [DeletedAt] IS NULL');
 END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20261102211537_InitialCreate'
+    WHERE [MigrationId] = N'20261102213307_InitialCreate'
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261102211537_InitialCreate', N'10.0.14');
+    VALUES (N'20261102213307_InitialCreate', N'10.0.14');
 END;
 
 COMMIT;

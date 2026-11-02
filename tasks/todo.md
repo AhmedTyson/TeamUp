@@ -16,7 +16,7 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
   - Deps: T1. Files: `.github/workflows/ci.yml`, `.github/pull_request_template.md`, `CONTRIBUTING.md`.
 
 - [x] **T3 (M, M1): Domain base + soft delete infrastructure**
-  - AC: `BaseEntity` (`IsDeleted`, `DeletedAt`), `ISoftDelete`; `AppDbContext` with global query filter for all `ISoftDelete`; `SaveChanges` interceptor converts hard deletes into soft deletes; `IgnoreQueryFilters` helper for admin.
+  - AC: `BaseEntity` (`DeletedAt`), `ISoftDelete`; `AppDbContext` with global query filter for all `ISoftDelete` (`DeletedAt == null`); `SaveChanges` interceptor converts hard deletes into soft deletes; `IgnoreQueryFilters` helper for admin.
   - Verify: unit tests: delete sets flags, deleted row not returned, admin query returns it.
   - Deps: T1. Files: `Domain/Common/*`, `Infrastructure/Persistence/AppDbContext.cs`, `SoftDeleteInterceptor.cs`.
 
@@ -99,7 +99,7 @@ M4
 - [ ] **T26 (S): Badges CRUD + award** - background check of criteria after score change; award idempotent.
 - [ ] **T27 (S): Notifications** - list, mark read, mark all read, soft delete; raised by T18, T21, T26.
 
-Each of T14-T27 AC (common): endpoints from `plan.md` table exist, correct status codes (`201`+`Location`, `204`, `404`, `409`), `DELETE` is soft (row remains with `IsDeleted=1`), ownership/role enforced, integration tests cover happy path + one auth failure + one soft-delete assertion.
+Each of T14-T27 AC (common): endpoints from `plan.md` table exist, correct status codes (`201`+`Location`, `204`, `404`, `409`), `DELETE` is soft (row remains with `DeletedAt` set), ownership/role enforced, integration tests cover happy path + one auth failure + one soft-delete assertion.
 
 ### Checkpoint C (after T12-T27)
 - [ ] Full flow works: register, create project, apply, accept, complete task, score and badge, notification received.

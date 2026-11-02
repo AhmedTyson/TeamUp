@@ -9,7 +9,7 @@ The relational schema for **TeamUpDB** was derived systematically from the Chen 
 - **Primary Key (PK):** Marked with a **solid underline** beneath the attribute text.
 - **Foreign Key (FK):** Marked with a **dashed underline** beneath the attribute text.
 - **Composite Primary Key:** Marked with **both solid & dashed underlines** (when a key component is also an FK), plus a continuous **underline below the table box** spanning all primary key cells.
-- **Filtered Unique Indexes (`UQ`):** Marked with a red **`UQ`** badge in the upper-right corner of the cell. Enforced in SQL Server via filtered unique indexes (`WHERE [IsDeleted] = 0`), which allows re-use of unique values (such as an email address or skill name) after an account or record is soft-deleted.
+- **Filtered Unique Indexes (`UQ`):** Marked with a red **`UQ`** badge in the upper-right corner of the cell. Enforced in SQL Server via filtered unique indexes (`WHERE [DeletedAt] IS NULL`), which allows re-use of unique values (such as an email address or skill name) after an account or record is soft-deleted.
 - **Orthogonal Relationships:** All foreign key constraints are visualized as orthogonal, bent-corner arrows originating from the FK cell and terminating at the primary key cell of the referenced table. Arrows route through dedicated inter-tier corridors with zero crossings through table boxes.
 
 ---
@@ -23,10 +23,10 @@ The original raw mapping contained classical modeling traps that have been corre
 | **D1: Cascade Delete vs Soft Delete** | Used `ON DELETE CASCADE` and `SET NULL` across FKs. | **All 29 Foreign Keys use `ON DELETE NO ACTION` (Restrict).** | With soft delete, rows are never physically deleted. Physical cascades would either never fire or catastrophically wipe historical records if a hard delete was ever issued. Cascade soft-deletion is handled explicitly at the application / service level. |
 | **D2: Missing Update Constraints** | `ON UPDATE` was omitted. | **All 29 Foreign Keys use `ON UPDATE NO ACTION`.** | Primary keys are immutable (surrogate `IDENTITY` or fixed IDs). `NO ACTION` prevents accidental key mutations and aligns with SQL Server best practices. |
 | **D3: Nullable FK Cleansing** | `ProjectTask.AssignedStudentID` used `ON DELETE SET NULL`. | `ON DELETE NO ACTION`. | Soft-deleting a student does not invoke SQL Server `SET NULL`. The application service explicitly unassigns active tasks when soft-deleting a student. |
-| **D4: Soft-Delete Columns** | Missing from raw schema. | `IsDeleted BIT NOT NULL DEFAULT 0` and `DeletedAt DATETIME2 NULL` added to 22 tables. | Standardizes enterprise auditability. Global EF Core query filters hide soft-deleted records transparently. |
-| **D5: Unique Index Soft-Delete Collisions** | Standard `UNIQUE` constraints would block re-registering an email or re-creating a deleted skill. | Filtered Unique Indexes: `CREATE UNIQUE INDEX ... WHERE [IsDeleted] = 0`. | Allows clean reuse of business identifiers while preserving soft-deleted audit history. |
-| **D6: Multi-Application Lockout** | `ProjectApplication` & `MembershipApplication` used composite PK `(ProjectID, StudentID)`, blocking re-applying after rejection. | Surrogate PK `ApplicationID INT IDENTITY`, plus a filtered unique index: `WHERE [IsDeleted] = 0 AND [Status] = 'Pending'`. | Matches real student workflow: students can re-apply if an earlier application was rejected or withdrawn, but cannot spam multiple simultaneous pending applications. |
-| **D7: Manual Weak Key Fragility** | `EventSession` used composite PK `(EventID, SessionID)` with manual non-identity numbering. | Surrogate PK `SessionID INT IDENTITY`, plus filtered unique index on `(EventID, SessionNo) WHERE [IsDeleted] = 0`. | Simplifies foreign keys from `SessionAttendance` down to a single `SessionID` column and delegates key generation safely to SQL Server. |
+| **D4: Single Soft-Delete Column** | Missing from raw schema. | `DeletedAt DATETIME2 NULL` added to 22 tables (`NULL` = active, timestamp = deleted). | Single-column architecture: eliminates desynchronization between boolean flags and timestamps, saves storage, and captures exact audit timestamp natively. |
+| **D5: Unique Index Soft-Delete Collisions** | Standard `UNIQUE` constraints would block re-registering an email or re-creating a deleted skill. | Filtered Unique Indexes: `CREATE UNIQUE INDEX ... WHERE [DeletedAt] IS NULL`. | Allows clean reuse of business identifiers while preserving soft-deleted audit history. |
+| **D6: Multi-Application Lockout** | `ProjectApplication` & `MembershipApplication` used composite PK `(ProjectID, StudentID)`, blocking re-applying after rejection. | Surrogate PK `ApplicationID INT IDENTITY`, plus a filtered unique index: `WHERE [DeletedAt] IS NULL AND [Status] = 'Pending'`. | Matches real student workflow: students can re-apply if an earlier application was rejected or withdrawn, but cannot spam multiple simultaneous pending applications. |
+| **D7: Manual Weak Key Fragility** | `EventSession` used composite PK `(EventID, SessionID)` with manual non-identity numbering. | Surrogate PK `SessionID INT IDENTITY`, plus filtered unique index on `(EventID, SessionNo) WHERE [DeletedAt] IS NULL`. | Simplifies foreign keys from `SessionAttendance` down to a single `SessionID` column and delegates key generation safely to SQL Server. |
 | **D8: Naming Harmonization** | ERD used `Task` (reserved C# keyword) and `EventAttendance`. | Renamed to `ProjectTask` and `SessionAttendance`. | Eliminates namespace collisions with `System.Threading.Tasks.Task` and clarifies domain ownership. |
 | **D9: Unchecked Enums-as-Strings** | Enums were unconstrained strings. | SQL Server `CHECK` constraints on all enum columns (`CK_Student_Role`, `CK_Project_Status`, etc.). | Guarantees database-level domain integrity even if accessed outside EF Core. |
 | **D10: Ledger Immutability** | `ScoreTransaction` treated as a mutable entity. | Marked `IAppendOnly`. `AppDbContext` interceptor blocks any update or delete. | Financial/gamification audit ledgers must never be altered or soft-deleted; corrections require compensating transaction rows. |
@@ -58,7 +58,7 @@ The original raw mapping contained classical modeling traps that have been corre
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-> **Note on Soft-Delete Columns:** Every table except `ScoreTransaction` contains `IsDeleted BIT NOT NULL DEFAULT 0` and `DeletedAt DATETIME2 NULL`. To preserve diagram readability, these universal audit columns are documented here rather than repeated inside every cell box.
+> **Note on Soft-Delete Column:** Every table except `ScoreTransaction` contains a single audit column: `DeletedAt DATETIME2 NULL` (`NULL` = active, timestamp = soft-deleted). To preserve diagram readability, this column is documented here rather than repeated inside every cell box.
 
 ---
 
@@ -69,11 +69,10 @@ The original raw mapping contained classical modeling traps that have been corre
 #### 1. `University`
 *Root accredited higher-education institution.*
 - `UniversityID` (INT, IDENTITY, **PK**)
-- `Name` (NVARCHAR(150), NOT NULL) — Filtered UNIQUE index `WHERE [IsDeleted] = 0`
+- `Name` (NVARCHAR(150), NOT NULL) — Filtered UNIQUE index `WHERE [DeletedAt] IS NULL`
 - `City` (NVARCHAR(100), NOT NULL)
 - `Country` (NVARCHAR(100), NOT NULL)
 - `Website` (NVARCHAR(200), NULL)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 
 #### 2. `Faculty`
@@ -82,28 +81,25 @@ The original raw mapping contained classical modeling traps that have been corre
 - `Name` (NVARCHAR(150), NOT NULL)
 - `Code` (NVARCHAR(20), NOT NULL)
 - `UniversityID` (INT, NOT NULL, **FK** → `University.UniversityID` ON DELETE NO ACTION ON UPDATE NO ACTION)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
-- **Constraint:** Filtered UNIQUE index on `(UniversityID, Code) WHERE [IsDeleted] = 0`
+- **Constraint:** Filtered UNIQUE index on `(UniversityID, Code) WHERE [DeletedAt] IS NULL`
 
 #### 3. `Student`
 *Central student user account. Holds login credentials and academic enrollment.*
 - `StudentID` (INT, IDENTITY, **PK**)
-- `Email` (NVARCHAR(150), NOT NULL) — Filtered UNIQUE index `WHERE [IsDeleted] = 0` (Candidate key for JWT auth)
+- `Email` (NVARCHAR(150), NOT NULL) — Filtered UNIQUE index `WHERE [DeletedAt] IS NULL` (Candidate key for JWT auth)
 - `PasswordHash` (NVARCHAR(256), NOT NULL) — Argon2id / ASP.NET Identity PasswordHasher
 - `FirstName` (NVARCHAR(50), NOT NULL) — Flattened from composite `Name`
 - `LastName` (NVARCHAR(50), NOT NULL) — Flattened from composite `Name`
 - `AcademicYear` (INT, NOT NULL) — CHECK `[AcademicYear] BETWEEN 1 AND 7`
 - `Role` (VARCHAR(30), NOT NULL, DEFAULT `'Student'`) — CHECK `[Role] IN ('Student', 'OrgAdmin', 'PlatformAdmin')`
 - `FacultyID` (INT, NOT NULL, **FK** → `Faculty.FacultyID` ON DELETE NO ACTION ON UPDATE NO ACTION)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 
 #### 4. `StudentInterest`
 *Multivalued attribute table for student areas of interest (e.g., AI, Web, Robotics).*
 - `StudentID` (INT, NOT NULL, **PK, FK** → `Student.StudentID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `Interest` (NVARCHAR(50), NOT NULL, **PK**)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 - **Composite PK:** `(StudentID, Interest)`
 
@@ -115,9 +111,8 @@ The original raw mapping contained classical modeling traps that have been corre
 - `PhotoUrl` (NVARCHAR(300), NULL)
 - `GitHubUrl` (NVARCHAR(200), NULL)
 - `LinkedInUrl` (NVARCHAR(200), NULL)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
-- **Constraint:** Filtered UNIQUE index on `StudentID WHERE [IsDeleted] = 0` (enforces 1:1)
+- **Constraint:** Filtered UNIQUE index on `StudentID WHERE [DeletedAt] IS NULL` (enforces 1:1)
 
 ---
 
@@ -132,7 +127,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `Type` (VARCHAR(30), NOT NULL) — CHECK `[Type] IN ('ApplicationStatus', 'TaskAssigned', 'BadgeEarned', 'EventReminder')`
 - `IsRead` (BIT, NOT NULL, DEFAULT 0)
 - `CreatedAt` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 - **Index:** `(StudentID, IsRead, CreatedAt)`
 
@@ -144,17 +138,16 @@ The original raw mapping contained classical modeling traps that have been corre
 - `Reason` (NVARCHAR(200), NOT NULL)
 - `SourceType` (VARCHAR(30), NOT NULL) — CHECK `[SourceType] IN ('EventAttendance', 'TaskCompleted', 'ProjectDelivered', 'Manual')`
 - `CreatedAt` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
-- **Note:** No `IsDeleted` column. Entity implements `IAppendOnly`. The `SoftDeleteInterceptor` blocks any SQL `UPDATE` or `DELETE`. EF Core global query filter hides transactions whose parent `Student` is soft-deleted.
+- **Note:** No `DeletedAt` column. Entity implements `IAppendOnly`. The `SoftDeleteInterceptor` blocks any SQL `UPDATE` or `DELETE`. EF Core global query filter hides transactions whose parent `Student` is soft-deleted.
 
 #### 8. `Badge`
 *Catalog of unlockable gamification achievements.*
 - `BadgeID` (INT, IDENTITY, **PK**)
-- `Name` (NVARCHAR(80), NOT NULL) — Filtered UNIQUE index `WHERE [IsDeleted] = 0`
+- `Name` (NVARCHAR(80), NOT NULL) — Filtered UNIQUE index `WHERE [DeletedAt] IS NULL`
 - `Description` (NVARCHAR(250), NOT NULL)
 - `IconUrl` (NVARCHAR(300), NOT NULL)
 - `CriteriaType` (VARCHAR(30), NOT NULL) — CHECK `[CriteriaType] IN ('PointsThreshold', 'EventCount', 'TaskCount')`
 - `CriteriaValue` (INT, NOT NULL)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 
 #### 9. `StudentBadge`
@@ -162,17 +155,15 @@ The original raw mapping contained classical modeling traps that have been corre
 - `StudentID` (INT, NOT NULL, **PK, FK** → `Student.StudentID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `BadgeID` (INT, NOT NULL, **PK, FK** → `Badge.BadgeID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `AwardedAt` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 - **Composite PK:** `(StudentID, BadgeID)`
 
 #### 10. `Skill`
 *Master lookup catalog of skills.*
 - `SkillID` (INT, IDENTITY, **PK**)
-- `Name` (NVARCHAR(60), NOT NULL) — Filtered UNIQUE index `WHERE [IsDeleted] = 0`
+- `Name` (NVARCHAR(60), NOT NULL) — Filtered UNIQUE index `WHERE [DeletedAt] IS NULL`
 - `Category` (NVARCHAR(50), NOT NULL)
 - `Description` (NVARCHAR(250), NULL)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 
 #### 11. `StudentSkill`
@@ -181,7 +172,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `SkillID` (INT, NOT NULL, **PK, FK** → `Skill.SkillID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `ProficiencyLevel` (VARCHAR(30), NOT NULL) — CHECK `[ProficiencyLevel] IN ('Beginner', 'Intermediate', 'Advanced')`
 - `YearsOfExperience` (DECIMAL(3,1), NOT NULL, DEFAULT 0.0) — CHECK `[YearsOfExperience] >= 0`
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 - **Composite PK:** `(StudentID, SkillID)`
 
@@ -198,7 +188,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `CreatedAt` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
 - `MaxTeamSize` (INT, NOT NULL) — CHECK `[MaxTeamSize] >= 1`
 - `CreatorID` (INT, NOT NULL, **FK** → `Student.StudentID` ON DELETE NO ACTION ON UPDATE NO ACTION)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 
 #### 13. `ProjectRequiredSkill`
@@ -207,7 +196,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `SkillID` (INT, NOT NULL, **PK, FK** → `Skill.SkillID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `RequiredLevel` (VARCHAR(30), NOT NULL) — CHECK `[RequiredLevel] IN ('Beginner', 'Intermediate', 'Advanced')`
 - `IsMandatory` (BIT, NOT NULL)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 - **Composite PK:** `(ProjectID, SkillID)`
 
@@ -217,7 +205,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `StudentID` (INT, NOT NULL, **PK, FK** → `Student.StudentID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `Role` (NVARCHAR(60), NOT NULL) — e.g., `Team Lead`, `Backend Dev`, `UI/UX`
 - `JoinedAt` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 - **Composite PK:** `(ProjectID, StudentID)`
 
@@ -229,9 +216,8 @@ The original raw mapping contained classical modeling traps that have been corre
 - `Message` (NVARCHAR(500), NULL)
 - `Status` (VARCHAR(30), NOT NULL, DEFAULT `'Pending'`) — CHECK `[Status] IN ('Pending', 'Accepted', 'Rejected', 'Withdrawn')`
 - `AppliedAt` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
-- **Constraint:** Filtered UNIQUE index on `(ProjectID, StudentID) WHERE [IsDeleted] = 0 AND [Status] = 'Pending'`
+- **Constraint:** Filtered UNIQUE index on `(ProjectID, StudentID) WHERE [DeletedAt] IS NULL AND [Status] = 'Pending'`
 
 #### 16. `ProjectTask`
 *Task breakdown inside a project with optional assignment to a student team member.*
@@ -243,7 +229,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `Priority` (VARCHAR(20), NOT NULL) — CHECK `[Priority] IN ('Low', 'Medium', 'High', 'Urgent')`
 - `ProjectID` (INT, NOT NULL, **FK** → `Project.ProjectID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `AssignedStudentID` (INT, NULL, **FK** → `Student.StudentID` ON DELETE NO ACTION ON UPDATE NO ACTION)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 
 ---
@@ -253,11 +238,10 @@ The original raw mapping contained classical modeling traps that have been corre
 #### 17. `Organization`
 *Student organizations, chapters, and extracurricular societies.*
 - `OrganizationID` (INT, IDENTITY, **PK**)
-- `Name` (NVARCHAR(120), NOT NULL) — Filtered UNIQUE index `WHERE [IsDeleted] = 0`
+- `Name` (NVARCHAR(120), NOT NULL) — Filtered UNIQUE index `WHERE [DeletedAt] IS NULL`
 - `Description` (NVARCHAR(MAX), NOT NULL)
 - `Category` (NVARCHAR(50), NOT NULL)
 - `LogoUrl` (NVARCHAR(300), NULL)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 
 #### 18. `OrganizationMember`
@@ -266,7 +250,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `StudentID` (INT, NOT NULL, **PK, FK** → `Student.StudentID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `Role` (NVARCHAR(60), NOT NULL) — e.g., `President`, `PR Head`, `Member`
 - `JoinedAt` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 - **Composite PK:** `(OrganizationID, StudentID)`
 
@@ -279,9 +262,8 @@ The original raw mapping contained classical modeling traps that have been corre
 - `Status` (VARCHAR(30), NOT NULL, DEFAULT `'Pending'`) — CHECK `[Status] IN ('Pending', 'Accepted', 'Rejected', 'Withdrawn')`
 - `AppliedAt` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
 - `ReviewedAt` (DATETIME2, NULL)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
-- **Constraint:** Filtered UNIQUE index on `(OrganizationID, StudentID) WHERE [IsDeleted] = 0 AND [Status] = 'Pending'`
+- **Constraint:** Filtered UNIQUE index on `(OrganizationID, StudentID) WHERE [DeletedAt] IS NULL AND [Status] = 'Pending'`
 
 ---
 
@@ -298,7 +280,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `EndDate` (DATETIME2, NOT NULL) — CHECK `[EndDate] >= [StartDate]`
 - `Capacity` (INT, NOT NULL) — CHECK `[Capacity] >= 1`
 - `OrganizationID` (INT, NOT NULL, **FK** → `Organization.OrganizationID` ON DELETE NO ACTION ON UPDATE NO ACTION)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 
 #### 21. `EventRegistration`
@@ -307,7 +288,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `StudentID` (INT, NOT NULL, **PK, FK** → `Student.StudentID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `RegisteredAt` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
 - `Status` (VARCHAR(30), NOT NULL, DEFAULT `'Confirmed'`) — CHECK `[Status] IN ('Confirmed', 'Waitlisted', 'Cancelled')`
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 - **Composite PK:** `(EventID, StudentID)`
 
@@ -320,9 +300,8 @@ The original raw mapping contained classical modeling traps that have been corre
 - `StartTime` (DATETIME2, NOT NULL)
 - `EndTime` (DATETIME2, NOT NULL) — CHECK `[EndTime] >= [StartTime]`
 - `Room` (NVARCHAR(60), NULL)
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
-- **Constraint:** Filtered UNIQUE index on `(EventID, SessionNo) WHERE [IsDeleted] = 0`
+- **Constraint:** Filtered UNIQUE index on `(EventID, SessionNo) WHERE [DeletedAt] IS NULL`
 
 #### 23. `SessionAttendance`
 *Junction table representing M:N relationship `Attends`.*
@@ -330,7 +309,6 @@ The original raw mapping contained classical modeling traps that have been corre
 - `StudentID` (INT, NOT NULL, **PK, FK** → `Student.StudentID` ON DELETE NO ACTION ON UPDATE NO ACTION)
 - `CheckInTime` (DATETIME2, NOT NULL, DEFAULT `SYSUTCDATETIME()`)
 - `VerificationMethod` (VARCHAR(30), NOT NULL) — CHECK `[VerificationMethod] IN ('QRCode', 'RFID', 'ManualByOrganizer')`
-- `IsDeleted` (BIT, NOT NULL, DEFAULT 0)
 - `DeletedAt` (DATETIME2, NULL)
 - **Composite PK:** `(SessionID, StudentID)`
 
