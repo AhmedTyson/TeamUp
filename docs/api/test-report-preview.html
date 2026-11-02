@@ -111,7 +111,7 @@
   <div class="header">
     <div>
       <h1>TeamUp — API Validation Evidence Dashboard</h1>
-      <p>Target: ASP.NET Core 10 Web API • Microsoft SQL Server 2022 • Single-Column Soft Delete (DeletedAt)</p>
+      <p>FluentValidation Pipeline • RFC 7807 Structured ProblemDetails • Single-Column Soft Delete (DeletedAt)</p>
     </div>
     <div class="badge-pill">
       <span>●</span> 25 / 25 Tests Passed (100%)
@@ -128,8 +128,8 @@
       <div class="value">25 Scenarios</div>
     </div>
     <div class="metric-card">
-      <div class="title">Average Response Time</div>
-      <div class="value">&lt; 15 ms</div>
+      <div class="title">Validation Engine</div>
+      <div class="value">FluentValidation 11</div>
     </div>
     <div class="metric-card">
       <div class="title">Database Integrity</div>
@@ -166,7 +166,7 @@
   "refreshToken": "k9N5B9TIsRiNbmsaGD01QLG4...",
   "expiresAt": "2026-11-03T00:53:47Z",
   "student": {
-    "studentId": 3,
+    "studentId": 4,
     "email": "live_student@teamup.edu",
     "role": "Student",
     "facultyName": "Faculty of Computers and AI"
@@ -175,7 +175,43 @@
       </div>
     </div>
 
-    <!-- Card 2: Duplicate Email Conflict -->
+    <!-- Card 2: Field-Level Validation Failure (FluentValidation) -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="method-tag method-POST">POST</span>
+          <span class="endpoint-path">/api/v1/auth/register</span>
+        </div>
+        <span class="status-badge status-400">400 Bad Request</span>
+      </div>
+      <div>
+        <div class="label">Invalid Request (Empty Password &amp; Malformed Fields)</div>
+        <div class="code-block">{
+  "email": "invalid_user@teamup.edu",
+  "password": "",
+  "firstName": "Empty",
+  "lastName": "Password",
+  "academicYear": 1,
+  "facultyId": 1
+}</div>
+      </div>
+      <div>
+        <div class="label">Structured Field Errors Response (ErrorResponse)</div>
+        <div class="code-block">{
+  "type": "https://tools.ietf.org/html/rfc9110",
+  "title": "Validation Failed",
+  "status": 400,
+  "detail": "One or more validation errors occurred.",
+  "errors": [
+    { "field": "password", "message": "Password is required." },
+    { "field": "password", "message": "Password must be at least 8 characters long." },
+    { "field": "password", "message": "Password must contain at least one digit." }
+  ]
+}</div>
+      </div>
+    </div>
+
+    <!-- Card 3: Duplicate Email Conflict -->
     <div class="card">
       <div class="card-header">
         <div>
@@ -193,10 +229,10 @@
 }</div>
       </div>
       <div>
-        <div class="label">RFC 7807 Conflict ProblemDetails</div>
+        <div class="label">Conflict ProblemDetails</div>
         <div class="code-block">{
   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.10",
-  "title": "Conflict detected.",
+  "title": "Conflict Detected",
   "status": 409,
   "detail": "A student with this email address already exists.",
   "instance": "/api/v1/auth/register"
@@ -204,7 +240,7 @@
       </div>
     </div>
 
-    <!-- Card 3: Login Success -->
+    <!-- Card 4: Login Success -->
     <div class="card">
       <div class="card-header">
         <div>
@@ -221,42 +257,15 @@
 }</div>
       </div>
       <div>
-        <div class="label">Response</div>
+        <div class="label">Rotated Tokens Response</div>
         <div class="code-block">{
   "accessToken": "eyJhbGciOiJIUzI1NiIs...",
   "refreshToken": "fresh_rotated_refresh_token_string==",
   "student": {
-    "studentId": 3,
+    "studentId": 4,
     "fullName": "Ahmed Tyson",
     "role": "Student"
   }
-}</div>
-      </div>
-    </div>
-
-    <!-- Card 4: Invalid Password -->
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <span class="method-tag method-POST">POST</span>
-          <span class="endpoint-path">/api/v1/auth/login</span>
-        </div>
-        <span class="status-badge status-401">401 Unauthorized</span>
-      </div>
-      <div>
-        <div class="label">Wrong Password Attempt</div>
-        <div class="code-block">{
-  "email": "live_student@teamup.edu",
-  "password": "WrongPasswordXYZ!"
-}</div>
-      </div>
-      <div>
-        <div class="label">RFC 7807 Unauthorized ProblemDetails</div>
-        <div class="code-block">{
-  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
-  "title": "Unauthorized access.",
-  "status": 401,
-  "detail": "Invalid email or password."
 }</div>
       </div>
     </div>
@@ -277,7 +286,7 @@
       <div>
         <div class="label">Student Details &amp; Academic Info</div>
         <div class="code-block">{
-  "studentId": 3,
+  "studentId": 4,
   "email": "live_student@teamup.edu",
   "firstName": "Ahmed (Lead)",
   "lastName": "Tyson",

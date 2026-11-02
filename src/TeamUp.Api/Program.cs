@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using TeamUp.Application;
 using TeamUp.Domain.Entities;
 using TeamUp.Infrastructure;
 using TeamUp.Infrastructure.Persistence;
@@ -12,11 +13,12 @@ using TeamUp.Infrastructure.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add<TeamUp.Api.Filters.ValidationFilter>());
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<TeamUp.Api.Middleware.GlobalExceptionHandler>();
 
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

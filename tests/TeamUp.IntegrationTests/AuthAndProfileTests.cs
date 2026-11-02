@@ -42,6 +42,22 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     }
 
     [Fact]
+    public async Task Register_InvalidPayload_Returns400WithStructuredValidationErrors()
+    {
+        var req = new RegisterRequest("not-an-email", "weak", "", "", 0, -1);
+
+        var res = await _client.PostAsJsonAsync("/api/v1/auth/register", req);
+
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+        var err = await res.Content.ReadFromJsonAsync<TeamUp.Application.Common.Models.ErrorResponse>();
+        Assert.NotNull(err);
+        Assert.Equal(400, err.Status);
+        Assert.NotEmpty(err.Errors);
+        Assert.Contains(err.Errors, e => e.Field == "email");
+        Assert.Contains(err.Errors, e => e.Field == "password");
+    }
+
+    [Fact]
     public async Task Register_InvalidFaculty_Returns404NotFound()
     {
         var email = $"bad_faculty_{Guid.NewGuid():N}@test.com";
