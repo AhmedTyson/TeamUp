@@ -1,0 +1,412 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3900" height="2700" viewBox="0 0 3900 2700" font-family="Segoe UI, Arial, sans-serif" font-size="13">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="#1f3a68"/></marker></defs>
+<rect width="3900" height="2700" fill="#fbfcfd"/>
+<text x="80" y="55" font-size="34" font-weight="bold" fill="#0b2e59">TeamUpDB — Relational Schema Mapping (23 Tables)</text>
+<text x="80" y="82" font-size="16" fill="#555">Normalized Relational Mapping (3NF) • Row-of-Cells Style with Orthogonal Foreign Key Constraints</text>
+<polyline points="1036.0,170.0 1036.0,115.0 110.0,115.0 110.0,170.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2017.5,170.0 2017.5,130.0 780.0,130.0 780.0,170.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2505.0,170.0 2505.0,115.0 1325.0,115.0 1325.0,170.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2994.0,170.0 2994.0,100.0 1345.0,100.0 1345.0,170.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="80.0,560.0 40.0,560.0 40.0,240.0 1315.0,240.0 1315.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="1003.0,540.0 1003.0,260.0 1330.0,260.0 1330.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2548.0,540.0 2548.0,480.0 1660.0,480.0 1660.0,540.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2445.0,540.0 2445.0,280.0 1345.0,280.0 1345.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="3508.0,540.0 3508.0,480.0 2860.0,480.0 2860.0,540.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="3831.0,560.0 3840.0,560.0 3840.0,85.0 1365.0,85.0 1365.0,170.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="691.5,960.0 691.5,660.0 1270.0,660.0 1270.0,300.0 1360.0,300.0 1360.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="960.0,960.0 960.0,880.0 105.0,880.0 105.0,1000.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="1058.0,960.0 1058.0,640.0 2845.0,640.0 2845.0,580.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="1660.0,960.0 1660.0,860.0 125.0,860.0 125.0,1000.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="1785.0,960.0 1785.0,680.0 1275.0,680.0 1275.0,320.0 1375.0,320.0 1375.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2240.0,960.0 2240.0,840.0 145.0,840.0 145.0,1000.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2365.0,960.0 2365.0,700.0 1280.0,700.0 1280.0,340.0 1390.0,340.0 1390.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="3449.0,960.0 3449.0,820.0 165.0,820.0 165.0,1000.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="3582.0,960.0 3582.0,720.0 1285.0,720.0 1285.0,360.0 1405.0,360.0 1405.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="900.0,1440.0 900.0,1340.0 105.0,1340.0 105.0,1480.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="840.0,1460.0 55.0,1460.0 55.0,380.0 1418.0,380.0 1418.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="1640.0,1440.0 1640.0,1320.0 130.0,1320.0 130.0,1480.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="1765.0,1440.0 1765.0,1200.0 1290.0,1200.0 1290.0,400.0 1424.0,400.0 1424.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="844.0,1920.0 844.0,1680.0 155.0,1680.0 155.0,1480.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="1100.0,1920.0 1100.0,1820.0 105.0,1820.0 105.0,1960.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="1225.0,1920.0 1225.0,1740.0 70.0,1740.0 70.0,420.0 1430.0,420.0 1430.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="1700.0,1920.0 1700.0,1800.0 130.0,1800.0 130.0,1960.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2400.0,1920.0 2400.0,1840.0 1665.0,1840.0 1665.0,1960.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2504.5,1920.0 2504.5,1860.0 1785.0,1860.0 1785.0,1960.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<polyline points="2614.0,1920.0 2614.0,1760.0 1295.0,1760.0 1295.0,440.0 1438.0,440.0 1438.0,210.0" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<text x="80" y="158" font-size="20" font-weight="bold" fill="#0b2e59">University</text>
+<rect x="80" y="170" width="110" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="135.0" y="195" text-anchor="middle" fill="#111">UniversityID</text>
+<line x1="93.0" y1="198.0" x2="177.0" y2="198.0" stroke="#111" stroke-width="1.3"/>
+<rect x="190" y="170" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="228.0" y="195" text-anchor="middle" fill="#111">Name</text>
+<rect x="266" y="170" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="304.0" y="195" text-anchor="middle" fill="#111">City</text>
+<rect x="342" y="170" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="380.0" y="195" text-anchor="middle" fill="#111">Country</text>
+<rect x="418" y="170" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="456.0" y="195" text-anchor="middle" fill="#111">Website</text>
+<text x="740" y="158" font-size="20" font-weight="bold" fill="#0b2e59">Faculty</text>
+<rect x="740" y="170" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="784.5" y="195" text-anchor="middle" fill="#111">FacultyID</text>
+<line x1="753.0" y1="198.0" x2="816.0" y2="198.0" stroke="#111" stroke-width="1.3"/>
+<rect x="829" y="170" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="867.0" y="195" text-anchor="middle" fill="#111">Name</text>
+<rect x="905" y="170" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="943.0" y="195" text-anchor="middle" fill="#111">Code</text>
+<rect x="981" y="170" width="110" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1036.0" y="195" text-anchor="middle" fill="#111">UniversityID</text>
+<line x1="994.0" y1="198.0" x2="1078.0" y2="198.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="1300" y="158" font-size="20" font-weight="bold" fill="#0b2e59">Student</text>
+<rect x="1300" y="170" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1365.0" y="195" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="1333.5" y1="198.0" x2="1396.5" y2="198.0" stroke="#111" stroke-width="1.3"/>
+<rect x="1430" y="170" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1468.0" y="195" text-anchor="middle" fill="#111">Email</text>
+<text x="1502" y="182" text-anchor="end" font-size="9" fill="#c62828" font-weight="bold">UQ</text>
+<rect x="1506" y="170" width="110" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1561.0" y="195" text-anchor="middle" fill="#111">PasswordHash</text>
+<rect x="1616" y="170" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1660.5" y="195" text-anchor="middle" fill="#111">FirstName</text>
+<rect x="1705" y="170" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1746.0" y="195" text-anchor="middle" fill="#111">LastName</text>
+<rect x="1787" y="170" width="110" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1842.0" y="195" text-anchor="middle" fill="#111">AcademicYear</text>
+<rect x="1897" y="170" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1935.0" y="195" text-anchor="middle" fill="#111">Role</text>
+<rect x="1973" y="170" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2017.5" y="195" text-anchor="middle" fill="#111">FacultyID</text>
+<line x1="1986.0" y1="198.0" x2="2049.0" y2="198.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="2440" y="158" font-size="20" font-weight="bold" fill="#0b2e59">StudentInterest</text>
+<rect x="2440" y="170" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2505.0" y="195" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="2473.5" y1="197.0" x2="2536.5" y2="197.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2473.5" y1="201.0" x2="2536.5" y2="201.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="2570" y="170" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2611.0" y="195" text-anchor="middle" fill="#111">Interest</text>
+<line x1="2583.0" y1="198.0" x2="2639.0" y2="198.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2444" y1="216" x2="2648" y2="216" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="2840" y="158" font-size="20" font-weight="bold" fill="#0b2e59">StudentProfile</text>
+<rect x="2840" y="170" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2884.5" y="195" text-anchor="middle" fill="#111">ProfileID</text>
+<line x1="2853.0" y1="198.0" x2="2916.0" y2="198.0" stroke="#111" stroke-width="1.3"/>
+<rect x="2929" y="170" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2994.0" y="195" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="2962.5" y1="198.0" x2="3025.5" y2="198.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="3055" y="182" text-anchor="end" font-size="9" fill="#c62828" font-weight="bold">UQ</text>
+<rect x="3059" y="170" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3097.0" y="195" text-anchor="middle" fill="#111">Bio</text>
+<rect x="3135" y="170" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3176.0" y="195" text-anchor="middle" fill="#111">PhotoUrl</text>
+<rect x="3217" y="170" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3261.5" y="195" text-anchor="middle" fill="#111">GitHubUrl</text>
+<rect x="3306" y="170" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3357.5" y="195" text-anchor="middle" fill="#111">LinkedInUrl</text>
+<text x="80" y="528" font-size="20" font-weight="bold" fill="#0b2e59">Notification</text>
+<rect x="80" y="540" width="125" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="142.5" y="565" text-anchor="middle" fill="#111">NotificationID</text>
+<line x1="93.5" y1="568.0" x2="191.5" y2="568.0" stroke="#111" stroke-width="1.3"/>
+<rect x="205" y="540" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="270.0" y="565" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="238.5" y1="568.0" x2="301.5" y2="568.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="335" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="373.0" y="565" text-anchor="middle" fill="#111">Title</text>
+<rect x="411" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="449.0" y="565" text-anchor="middle" fill="#111">Message</text>
+<rect x="487" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="525.0" y="565" text-anchor="middle" fill="#111">Type</text>
+<rect x="563" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="601.0" y="565" text-anchor="middle" fill="#111">IsRead</text>
+<rect x="639" y="540" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="683.5" y="565" text-anchor="middle" fill="#111">CreatedAt</text>
+<text x="820" y="528" font-size="20" font-weight="bold" fill="#0b2e59">ScoreTransaction</text>
+<rect x="820" y="540" width="118" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="879.0" y="565" text-anchor="middle" fill="#111">TransactionID</text>
+<line x1="833.5" y1="568.0" x2="924.5" y2="568.0" stroke="#111" stroke-width="1.3"/>
+<rect x="938" y="540" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1003.0" y="565" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="971.5" y1="568.0" x2="1034.5" y2="568.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1068" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1106.0" y="565" text-anchor="middle" fill="#111">Points</text>
+<rect x="1144" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1182.0" y="565" text-anchor="middle" fill="#111">Reason</text>
+<rect x="1220" y="540" width="96" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1268.0" y="565" text-anchor="middle" fill="#111">SourceType</text>
+<rect x="1316" y="540" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1360.5" y="565" text-anchor="middle" fill="#111">CreatedAt</text>
+<text x="1620" y="528" font-size="20" font-weight="bold" fill="#0b2e59">Badge</text>
+<rect x="1620" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1658.0" y="565" text-anchor="middle" fill="#111">BadgeID</text>
+<line x1="1633.5" y1="568.0" x2="1682.5" y2="568.0" stroke="#111" stroke-width="1.3"/>
+<rect x="1696" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1734.0" y="565" text-anchor="middle" fill="#111">Name</text>
+<rect x="1772" y="540" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1823.5" y="565" text-anchor="middle" fill="#111">Description</text>
+<rect x="1875" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1913.0" y="565" text-anchor="middle" fill="#111">IconUrl</text>
+<rect x="1951" y="540" width="110" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2006.0" y="565" text-anchor="middle" fill="#111">CriteriaType</text>
+<rect x="2061" y="540" width="118" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2120.0" y="565" text-anchor="middle" fill="#111">CriteriaValue</text>
+<text x="2380" y="528" font-size="20" font-weight="bold" fill="#0b2e59">StudentBadge</text>
+<rect x="2380" y="540" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2445.0" y="565" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="2413.5" y1="567.0" x2="2476.5" y2="567.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2413.5" y1="571.0" x2="2476.5" y2="571.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="2510" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2548.0" y="565" text-anchor="middle" fill="#111">BadgeID</text>
+<line x1="2523.5" y1="567.0" x2="2572.5" y2="567.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2523.5" y1="571.0" x2="2572.5" y2="571.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="2586" y="540" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2630.5" y="565" text-anchor="middle" fill="#111">AwardedAt</text>
+<line x1="2384" y1="586" x2="2582" y2="586" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="2820" y="528" font-size="20" font-weight="bold" fill="#0b2e59">Skill</text>
+<rect x="2820" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2858.0" y="565" text-anchor="middle" fill="#111">SkillID</text>
+<line x1="2833.5" y1="568.0" x2="2882.5" y2="568.0" stroke="#111" stroke-width="1.3"/>
+<rect x="2896" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2934.0" y="565" text-anchor="middle" fill="#111">Name</text>
+<rect x="2972" y="540" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3013.0" y="565" text-anchor="middle" fill="#111">Category</text>
+<rect x="3054" y="540" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3105.5" y="565" text-anchor="middle" fill="#111">Description</text>
+<text x="3340" y="528" font-size="20" font-weight="bold" fill="#0b2e59">StudentSkill</text>
+<rect x="3340" y="540" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3405.0" y="565" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="3373.5" y1="567.0" x2="3436.5" y2="567.0" stroke="#111" stroke-width="1.3"/>
+<line x1="3373.5" y1="571.0" x2="3436.5" y2="571.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="3470" y="540" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3508.0" y="565" text-anchor="middle" fill="#111">SkillID</text>
+<line x1="3483.5" y1="567.0" x2="3532.5" y2="567.0" stroke="#111" stroke-width="1.3"/>
+<line x1="3483.5" y1="571.0" x2="3532.5" y2="571.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="3546" y="540" width="139" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3615.5" y="565" text-anchor="middle" fill="#111">ProficiencyLevel</text>
+<rect x="3685" y="540" width="146" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3758.0" y="565" text-anchor="middle" fill="#111">YearsOfExperience</text>
+<line x1="3344" y1="586" x2="3542" y2="586" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="80" y="948" font-size="20" font-weight="bold" fill="#0b2e59">Project</text>
+<rect x="80" y="960" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="140.0" y="985" text-anchor="middle" fill="#111">ProjectID</text>
+<line x1="108.5" y1="988.0" x2="171.5" y2="988.0" stroke="#111" stroke-width="1.3"/>
+<rect x="200" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="238.0" y="985" text-anchor="middle" fill="#111">Title</text>
+<rect x="276" y="960" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="327.5" y="985" text-anchor="middle" fill="#111">Description</text>
+<rect x="379" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="417.0" y="985" text-anchor="middle" fill="#111">Status</text>
+<rect x="455" y="960" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="499.5" y="985" text-anchor="middle" fill="#111">CreatedAt</text>
+<rect x="544" y="960" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="595.5" y="985" text-anchor="middle" fill="#111">MaxTeamSize</text>
+<rect x="647" y="960" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="691.5" y="985" text-anchor="middle" fill="#111">CreatorID</text>
+<line x1="660.0" y1="988.0" x2="723.0" y2="988.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="900" y="948" font-size="20" font-weight="bold" fill="#0b2e59">ProjectRequiredSkill</text>
+<rect x="900" y="960" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="960.0" y="985" text-anchor="middle" fill="#111">ProjectID</text>
+<line x1="928.5" y1="987.0" x2="991.5" y2="987.0" stroke="#111" stroke-width="1.3"/>
+<line x1="928.5" y1="991.0" x2="991.5" y2="991.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1020" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1058.0" y="985" text-anchor="middle" fill="#111">SkillID</text>
+<line x1="1033.5" y1="987.0" x2="1082.5" y2="987.0" stroke="#111" stroke-width="1.3"/>
+<line x1="1033.5" y1="991.0" x2="1082.5" y2="991.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1096" y="960" width="118" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1155.0" y="985" text-anchor="middle" fill="#111">RequiredLevel</text>
+<rect x="1214" y="960" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1265.5" y="985" text-anchor="middle" fill="#111">IsMandatory</text>
+<line x1="904" y1="1006" x2="1092" y2="1006" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="1600" y="948" font-size="20" font-weight="bold" fill="#0b2e59">ProjectMember</text>
+<rect x="1600" y="960" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1660.0" y="985" text-anchor="middle" fill="#111">ProjectID</text>
+<line x1="1628.5" y1="987.0" x2="1691.5" y2="987.0" stroke="#111" stroke-width="1.3"/>
+<line x1="1628.5" y1="991.0" x2="1691.5" y2="991.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1720" y="960" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1785.0" y="985" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="1753.5" y1="987.0" x2="1816.5" y2="987.0" stroke="#111" stroke-width="1.3"/>
+<line x1="1753.5" y1="991.0" x2="1816.5" y2="991.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1850" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1888.0" y="985" text-anchor="middle" fill="#111">Role</text>
+<rect x="1926" y="960" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1967.0" y="985" text-anchor="middle" fill="#111">JoinedAt</text>
+<line x1="1604" y1="1006" x2="1846" y2="1006" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="2180" y="948" font-size="20" font-weight="bold" fill="#0b2e59">ProjectApplication</text>
+<rect x="2180" y="960" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2240.0" y="985" text-anchor="middle" fill="#111">ProjectID</text>
+<line x1="2208.5" y1="987.0" x2="2271.5" y2="987.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2208.5" y1="991.0" x2="2271.5" y2="991.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="2300" y="960" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2365.0" y="985" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="2333.5" y1="987.0" x2="2396.5" y2="987.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2333.5" y1="991.0" x2="2396.5" y2="991.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="2430" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2468.0" y="985" text-anchor="middle" fill="#111">Message</text>
+<rect x="2506" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2544.0" y="985" text-anchor="middle" fill="#111">Status</text>
+<rect x="2582" y="960" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2626.5" y="985" text-anchor="middle" fill="#111">AppliedAt</text>
+<line x1="2184" y1="1006" x2="2426" y2="1006" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="2900" y="948" font-size="20" font-weight="bold" fill="#0b2e59">ProjectTask</text>
+<rect x="2900" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2938.0" y="985" text-anchor="middle" fill="#111">TaskID</text>
+<line x1="2917.0" y1="988.0" x2="2959.0" y2="988.0" stroke="#111" stroke-width="1.3"/>
+<rect x="2976" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3014.0" y="985" text-anchor="middle" fill="#111">Title</text>
+<rect x="3052" y="960" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3103.5" y="985" text-anchor="middle" fill="#111">Description</text>
+<rect x="3155" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3193.0" y="985" text-anchor="middle" fill="#111">Status</text>
+<rect x="3231" y="960" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3269.0" y="985" text-anchor="middle" fill="#111">DueDate</text>
+<rect x="3307" y="960" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3348.0" y="985" text-anchor="middle" fill="#111">Priority</text>
+<rect x="3389" y="960" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3449.0" y="985" text-anchor="middle" fill="#111">ProjectID</text>
+<line x1="3417.5" y1="988.0" x2="3480.5" y2="988.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="3509" y="960" width="146" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="3582.0" y="985" text-anchor="middle" fill="#111">AssignedStudentID</text>
+<line x1="3522.5" y1="988.0" x2="3641.5" y2="988.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="80" y="1428" font-size="20" font-weight="bold" fill="#0b2e59">Organization</text>
+<rect x="80" y="1440" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="140.0" y="1465" text-anchor="middle" fill="#111">OrganizationID</text>
+<line x1="91.0" y1="1468.0" x2="189.0" y2="1468.0" stroke="#111" stroke-width="1.3"/>
+<rect x="200" y="1440" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="238.0" y="1465" text-anchor="middle" fill="#111">Name</text>
+<rect x="276" y="1440" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="327.5" y="1465" text-anchor="middle" fill="#111">Description</text>
+<rect x="379" y="1440" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="420.0" y="1465" text-anchor="middle" fill="#111">Category</text>
+<rect x="461" y="1440" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="499.0" y="1465" text-anchor="middle" fill="#111">LogoUrl</text>
+<text x="840" y="1428" font-size="20" font-weight="bold" fill="#0b2e59">OrganizationMember</text>
+<rect x="840" y="1440" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="900.0" y="1465" text-anchor="middle" fill="#111">OrganizationID</text>
+<line x1="851.0" y1="1467.0" x2="949.0" y2="1467.0" stroke="#111" stroke-width="1.3"/>
+<line x1="851.0" y1="1471.0" x2="949.0" y2="1471.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="960" y="1440" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1025.0" y="1465" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="993.5" y1="1467.0" x2="1056.5" y2="1467.0" stroke="#111" stroke-width="1.3"/>
+<line x1="993.5" y1="1471.0" x2="1056.5" y2="1471.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1090" y="1440" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1128.0" y="1465" text-anchor="middle" fill="#111">Role</text>
+<rect x="1166" y="1440" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1207.0" y="1465" text-anchor="middle" fill="#111">JoinedAt</text>
+<line x1="844" y1="1486" x2="1086" y2="1486" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="1580" y="1428" font-size="20" font-weight="bold" fill="#0b2e59">MembershipApplication</text>
+<rect x="1580" y="1440" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1640.0" y="1465" text-anchor="middle" fill="#111">OrganizationID</text>
+<line x1="1591.0" y1="1467.0" x2="1689.0" y2="1467.0" stroke="#111" stroke-width="1.3"/>
+<line x1="1591.0" y1="1471.0" x2="1689.0" y2="1471.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1700" y="1440" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1765.0" y="1465" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="1733.5" y1="1467.0" x2="1796.5" y2="1467.0" stroke="#111" stroke-width="1.3"/>
+<line x1="1733.5" y1="1471.0" x2="1796.5" y2="1471.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1830" y="1440" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1868.0" y="1465" text-anchor="middle" fill="#111">Message</text>
+<rect x="1906" y="1440" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1944.0" y="1465" text-anchor="middle" fill="#111">Status</text>
+<rect x="1982" y="1440" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2026.5" y="1465" text-anchor="middle" fill="#111">AppliedAt</text>
+<rect x="2071" y="1440" width="96" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2119.0" y="1465" text-anchor="middle" fill="#111">ReviewedAt</text>
+<line x1="1584" y1="1486" x2="1826" y2="1486" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="80" y="1908" font-size="20" font-weight="bold" fill="#0b2e59">Event</text>
+<rect x="80" y="1920" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="140.0" y="1945" text-anchor="middle" fill="#111">EventID</text>
+<line x1="115.5" y1="1948.0" x2="164.5" y2="1948.0" stroke="#111" stroke-width="1.3"/>
+<rect x="200" y="1920" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="238.0" y="1945" text-anchor="middle" fill="#111">Title</text>
+<rect x="276" y="1920" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="327.5" y="1945" text-anchor="middle" fill="#111">Description</text>
+<rect x="379" y="1920" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="417.0" y="1945" text-anchor="middle" fill="#111">Type</text>
+<rect x="455" y="1920" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="496.0" y="1945" text-anchor="middle" fill="#111">Location</text>
+<rect x="537" y="1920" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="581.5" y="1945" text-anchor="middle" fill="#111">StartDate</text>
+<rect x="626" y="1920" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="664.0" y="1945" text-anchor="middle" fill="#111">EndDate</text>
+<rect x="702" y="1920" width="82" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="743.0" y="1945" text-anchor="middle" fill="#111">Capacity</text>
+<rect x="784" y="1920" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="844.0" y="1945" text-anchor="middle" fill="#111">OrganizationID</text>
+<line x1="795.0" y1="1948.0" x2="893.0" y2="1948.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="1040" y="1908" font-size="20" font-weight="bold" fill="#0b2e59">EventRegistration</text>
+<rect x="1040" y="1920" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1100.0" y="1945" text-anchor="middle" fill="#111">EventID</text>
+<line x1="1075.5" y1="1947.0" x2="1124.5" y2="1947.0" stroke="#111" stroke-width="1.3"/>
+<line x1="1075.5" y1="1951.0" x2="1124.5" y2="1951.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1160" y="1920" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1225.0" y="1945" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="1193.5" y1="1947.0" x2="1256.5" y2="1947.0" stroke="#111" stroke-width="1.3"/>
+<line x1="1193.5" y1="1951.0" x2="1256.5" y2="1951.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1290" y="1920" width="110" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1345.0" y="1945" text-anchor="middle" fill="#111">RegisteredAt</text>
+<rect x="1400" y="1920" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1438.0" y="1945" text-anchor="middle" fill="#111">Status</text>
+<line x1="1044" y1="1966" x2="1286" y2="1966" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="1640" y="1908" font-size="20" font-weight="bold" fill="#0b2e59">EventSession</text>
+<rect x="1640" y="1920" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1700.0" y="1945" text-anchor="middle" fill="#111">EventID</text>
+<line x1="1675.5" y1="1947.0" x2="1724.5" y2="1947.0" stroke="#111" stroke-width="1.3"/>
+<line x1="1675.5" y1="1951.0" x2="1724.5" y2="1951.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="1760" y="1920" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1804.5" y="1945" text-anchor="middle" fill="#111">SessionID</text>
+<line x1="1773.0" y1="1948.0" x2="1836.0" y2="1948.0" stroke="#111" stroke-width="1.3"/>
+<rect x="1849" y="1920" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1887.0" y="1945" text-anchor="middle" fill="#111">Title</text>
+<rect x="1925" y="1920" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="1969.5" y="1945" text-anchor="middle" fill="#111">StartTime</text>
+<rect x="2014" y="1920" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2052.0" y="1945" text-anchor="middle" fill="#111">EndTime</text>
+<rect x="2090" y="1920" width="76" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2128.0" y="1945" text-anchor="middle" fill="#111">Room</text>
+<line x1="1644" y1="1966" x2="1845" y2="1966" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="2340" y="1908" font-size="20" font-weight="bold" fill="#0b2e59">SessionAttendance</text>
+<rect x="2340" y="1920" width="120" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2400.0" y="1945" text-anchor="middle" fill="#111">EventID</text>
+<line x1="2375.5" y1="1947.0" x2="2424.5" y2="1947.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2375.5" y1="1951.0" x2="2424.5" y2="1951.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="2460" y="1920" width="89" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2504.5" y="1945" text-anchor="middle" fill="#111">SessionID</text>
+<line x1="2473.0" y1="1947.0" x2="2536.0" y2="1947.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2473.0" y1="1951.0" x2="2536.0" y2="1951.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="2549" y="1920" width="130" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2614.0" y="1945" text-anchor="middle" fill="#111">StudentID</text>
+<line x1="2582.5" y1="1947.0" x2="2645.5" y2="1947.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2582.5" y1="1951.0" x2="2645.5" y2="1951.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="2679" y="1920" width="103" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2730.5" y="1945" text-anchor="middle" fill="#111">CheckInTime</text>
+<rect x="2782" y="1920" width="154" height="40" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2859.0" y="1945" text-anchor="middle" fill="#111">VerificationMethod</text>
+<line x1="2344" y1="1966" x2="2675" y2="1966" stroke="#0b2e59" stroke-width="1.6"/>
+<rect x="2680" y="2040" width="1120" height="540" fill="white" stroke="#999" rx="8"/>
+<text x="2708" y="2082" font-size="22" font-weight="bold" fill="#0b2e59">TeamUpDB Relational Schema Legend</text>
+<text x="2708" y="2108" font-size="14" fill="#555">Standard Relational Mapping Notation (23 Tables, 3NF Certified)</text>
+<rect x="2708" y="2127" width="95" height="32" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2755" y="2149" text-anchor="middle" font-size="13">ID</text>
+<line x1="2748.0" y1="2153.0" x2="2762.0" y2="2153.0" stroke="#111" stroke-width="1.3"/>
+<text x="2833" y="2149" font-size="15" fill="#222">Primary Key (solid underline inside cell)</text>
+<rect x="2708" y="2169" width="95" height="32" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2755" y="2191" text-anchor="middle" font-size="13">ID</text>
+<line x1="2748.0" y1="2195.0" x2="2762.0" y2="2195.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="2833" y="2191" font-size="15" fill="#222">Foreign Key (dashed underline inside cell)</text>
+<rect x="2708" y="2211" width="95" height="32" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2755" y="2233" text-anchor="middle" font-size="13">ID</text>
+<line x1="2748.0" y1="2236.0" x2="2762.0" y2="2236.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2748.0" y1="2240.0" x2="2762.0" y2="2240.0" stroke="#111" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="2833" y="2233" font-size="15" fill="#222">Composite Primary Key &amp; Foreign Key (both solid and dashed underlines)</text>
+<rect x="2708" y="2253" width="95" height="32" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2755" y="2275" text-anchor="middle" font-size="13">ID</text>
+<line x1="2748.0" y1="2279.0" x2="2762.0" y2="2279.0" stroke="#111" stroke-width="1.3"/>
+<line x1="2712" y1="2293" x2="2799" y2="2293" stroke="#0b2e59" stroke-width="1.6"/>
+<text x="2833" y="2275" font-size="15" fill="#222">Underline below table spanning key cells = Composite Primary Key</text>
+<rect x="2708" y="2295" width="95" height="32" fill="white" stroke="#1f3a68" stroke-width="1.2"/>
+<text x="2755" y="2317" text-anchor="middle" font-size="13">Email</text>
+<text x="2798" y="2306" text-anchor="end" font-size="9" fill="#c62828" font-weight="bold">UQ</text>
+<text x="2833" y="2317" font-size="15" fill="#222">UQ badge = Candidate Key / UNIQUE constraint (e.g., Student.Email)</text>
+<polyline points="2708,2355 2803,2355" fill="none" stroke="#1f3a68" stroke-width="1.4" marker-end="url(#arr)"/>
+<text x="2833" y="2359" font-size="15" fill="#222">Orthogonal Arrow: Foreign Key column -&gt; referenced table Primary Key cell</text>
+<rect x="2708" y="2379" width="95" height="32" fill="#eef2f9" stroke="#999" stroke-dasharray="4 3"/>
+<text x="2755" y="2401" text-anchor="middle" font-size="11" fill="#555">[Computed]</text>
+<text x="2833" y="2401" font-size="15" fill="#222">Derived / Non-persisted attributes (TotalPoints, Level, TeamSize) are computed via SQL / EF Core, not stored</text>
+<text x="2708" y="2545" font-size="13" fill="#666">Designed for Microsoft SQL Server &amp; Entity Framework Core (ASP.NET Core Web API / JWT Auth)</text>
+</svg>
