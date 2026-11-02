@@ -5,64 +5,64 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
 
 ## Phase 0: Foundation (M1 leads, others review)
 
-- [ ] **T1 (S, M1): Init .NET solution**
+- [x] **T1 (S, M1): Init .NET solution**
   - AC: `TeamUp.sln` with Api, Application, Domain, Infrastructure, UnitTests, IntegrationTests on net10.0; project refs follow Api -> Application -> Domain, Infrastructure -> Application; `.gitignore`, `Directory.Build.props` (nullable on, warnings as errors), `.editorconfig`.
   - Verify: `dotnet build` ok; `dotnet run --project src/TeamUp.Api` serves `/health`.
   - Deps: none. Files: `TeamUp.sln`, `src/*/*.csproj`, `Directory.Build.props`.
 
-- [ ] **T2 (S, M1): CI + branch rules**
+- [x] **T2 (S, M1): CI + branch rules**
   - AC: GitHub Actions runs restore, build, test on PR; `main` protected, 1 review required; PR template; `CONTRIBUTING.md` with branch naming and who owns what.
-  - Verify: opened test PR shows green check.
+  - Verify: opened test PR shows green check; branch protection active via GitHub API.
   - Deps: T1. Files: `.github/workflows/ci.yml`, `.github/pull_request_template.md`, `CONTRIBUTING.md`.
 
-- [ ] **T3 (M, M1): Domain base + soft delete infrastructure**
+- [x] **T3 (M, M1): Domain base + soft delete infrastructure**
   - AC: `BaseEntity` (`IsDeleted`, `DeletedAt`), `ISoftDelete`; `AppDbContext` with global query filter for all `ISoftDelete`; `SaveChanges` interceptor converts hard deletes into soft deletes; `IgnoreQueryFilters` helper for admin.
   - Verify: unit tests: delete sets flags, deleted row not returned, admin query returns it.
   - Deps: T1. Files: `Domain/Common/*`, `Infrastructure/Persistence/AppDbContext.cs`, `SoftDeleteInterceptor.cs`.
 
-- [ ] **T4 (S, M1): Config, secrets, error handling**
+- [x] **T4 (S, M1): Config, secrets, error handling**
   - AC: connection string and JWT key from user-secrets/env, `appsettings` holds placeholders only; global RFC 7807 problem details middleware; API versioning `/api/v1`; paging helper `PagedResult<T>`.
   - Verify: bad request returns `application/problem+json`.
   - Deps: T1. Files: `Api/Program.cs`, `Api/Middleware/*`, `Application/Common/PagedResult.cs`.
 
 ### Checkpoint A (after T1-T4)
-- [ ] Solution builds, CI green, soft-delete tests pass, team agrees on conventions.
+- [x] Solution builds, CI green, soft-delete tests pass, team agrees on conventions.
 
 ## Phase 1: Schema, fixed (all four members, parallel after T5)
 
-- [ ] **T5 (S, M1): Fix mapping docs and diagram (defects D1-D10)**
+- [x] **T5 (S, M2): Fix mapping docs and diagram (defects D1-D10)**
   - AC: `Mapping/description.md` updated: all FKs `ON DELETE NO ACTION ON UPDATE NO ACTION`; soft-delete columns; filtered unique indexes; surrogate `ApplicationID` for both application tables; `EventSession` surrogate PK + `(EventID, SessionNo)` unique; `SessionAttendance` PK `(SessionID, StudentID)`; naming note; PNG/SVG regenerated.
   - Verify: grep shows no `CASCADE` or `SET NULL` left; PNG viewed.
   - Deps: none. Files: `Mapping/description.md`, `Mapping/source/gen_schema.py`, `Mapping/*.png|svg`.
 
-- [ ] **T6 (M, M1): Identity module entities + configs**
+- [x] **T6 (M, M1): Identity module entities + configs**
   - AC: `University`, `Faculty`, `Student`, `StudentInterest`, `StudentProfile` entities; `IEntityTypeConfiguration` each; `Email` filtered unique; profile 1:1 unique; FKs `OnDelete(Restrict)`; enums stored as string with CHECK.
   - Verify: unit test builds model; migration script inspected for `NO ACTION`.
   - Deps: T3, T5.
 
-- [ ] **T7 (M, M2): Skills and Projects entities + configs**
+- [x] **T7 (M, M2): Skills and Projects entities + configs**
   - AC: `Skill`, `StudentSkill`, `Project`, `ProjectRequiredSkill`, `ProjectMember`, `ProjectApplication` (surrogate PK + pending-unique filtered index), `ProjectTask`; all `Restrict`; CHECK `MaxTeamSize >= 1`.
   - Deps: T3, T5, T6 (Student FK).
 
-- [ ] **T8 (M, M3): Organizations and Events entities + configs**
+- [x] **T8 (M, M3): Organizations and Events entities + configs**
   - AC: `Organization`, `OrganizationMember`, `MembershipApplication`, `Event`, `EventRegistration`, `EventSession`, `SessionAttendance`; CHECK `EndDate >= StartDate`, `Capacity >= 1`; unique `(EventID, SessionNo)`.
   - Deps: T3, T5, T6.
 
-- [ ] **T9 (S, M4): Gamification entities + configs**
+- [x] **T9 (S, M4): Gamification entities + configs**
   - AC: `ScoreTransaction` (append-only, no update/delete allowed in interceptor), `Badge`, `StudentBadge`, `Notification`; indexes on `(StudentID, CreatedAt)`.
   - Deps: T3, T5, T6.
 
-- [ ] **T10 (M, M1): Initial migration + SQL Server verification**
+- [x] **T10 (M, M1): Initial migration + SQL Server verification**
   - AC: single `InitialCreate` migration covering all 23 tables; applied to local SQL Server; generated script has zero `CASCADE`/`SET NULL`; every FK shows `NO ACTION` for update and delete; filtered indexes present.
   - Verify: `dotnet ef database update`; query `sys.foreign_keys` for `delete_referential_action = 0` and `update_referential_action = 0` on all rows.
   - Deps: T6-T9. Files: `Infrastructure/Migrations/*`.
 
-- [ ] **T11 (S, M4): Seed data**
+- [x] **T11 (S, M4): Seed data**
   - AC: universities, faculties, ~30 skills, badges, one admin; idempotent; dev-only.
   - Deps: T10.
 
 ### Checkpoint B (after T5-T11)
-- [ ] DB created from migration, schema matches fixed mapping diagram, FK action query clean, review with team.
+- [x] DB created from migration, schema matches fixed mapping diagram, FK action query clean, review with team.
 
 ## Phase 2: Auth (M1)
 
@@ -107,10 +107,10 @@ Each of T14-T27 AC (common): endpoints from `plan.md` table exist, correct statu
 
 ## Phase 4: API documentation (M4 leads, owners review own module)
 
-- [ ] **T28 (S, M4): API proposal doc** - `docs/api/API-PROPOSAL.md`: conventions, auth, pagination, error format, full endpoint table with request/response examples, status codes per endpoint, role matrix.
-  - Deps: none (can start right after Checkpoint A, refine after Phase 3).
+- [x] **T28 (S, M4): API proposal doc** - `docs/api/API-PROPOSAL.md`: conventions, auth, pagination, error format, full endpoint table with request/response examples, status codes per endpoint, role matrix.
+  - Deps: none (drafted and reviewed across all 4 module owners).
 
-- [ ] **T29 (XS, M4): Soft delete policy doc** - `docs/api/SOFT-DELETE.md`: `DELETE` = soft delete, flags, restore endpoint, query filter, unique-after-delete rule, ledger exception, FK `NO ACTION` rationale, how deletes cascade in services.
+- [x] **T29 (XS, M4): Soft delete policy doc** - `docs/api/SOFT-DELETE.md`: `DELETE` = soft delete, flags, restore endpoint, query filter, unique-after-delete rule, ledger exception, FK `NO ACTION` rationale, how deletes cascade in services.
   - Deps: T3.
 
 - [ ] **T30 (S, M4): OpenAPI + Scalar/Swagger UI** - spec generated from controllers with XML comments, JWT scheme, export `docs/api/openapi.json` in CI.

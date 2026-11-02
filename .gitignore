@@ -1,3 +1,10 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+TestResults/
 __pycache__/
 *.pyc
-
+appsettings.*.local.json

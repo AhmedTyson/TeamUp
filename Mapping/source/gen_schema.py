@@ -79,7 +79,7 @@ T = {
         ("ProjectID", "PK,FK"), ("StudentID", "PK,FK"), ("Role", ""), ("JoinedAt", "")
     ]),
     "ProjectApplication": (2180, 960, [
-        ("ProjectID", "PK,FK"), ("StudentID", "PK,FK"), ("Message", ""), ("Status", ""), ("AppliedAt", "")
+        ("ApplicationID", "PK"), ("ProjectID", "FK"), ("StudentID", "FK"), ("Message", ""), ("Status", ""), ("AppliedAt", "")
     ]),
     "ProjectTask": (2900, 960, [
         ("TaskID", "PK"), ("Title", ""), ("Description", ""), ("Status", ""),
@@ -94,7 +94,7 @@ T = {
         ("OrganizationID", "PK,FK"), ("StudentID", "PK,FK"), ("Role", ""), ("JoinedAt", "")
     ]),
     "MembershipApplication": (1580, 1440, [
-        ("OrganizationID", "PK,FK"), ("StudentID", "PK,FK"), ("Message", ""),
+        ("ApplicationID", "PK"), ("OrganizationID", "FK"), ("StudentID", "FK"), ("Message", ""),
         ("Status", ""), ("AppliedAt", ""), ("ReviewedAt", "")
     ]),
 
@@ -107,11 +107,11 @@ T = {
         ("EventID", "PK,FK"), ("StudentID", "PK,FK"), ("RegisteredAt", ""), ("Status", "")
     ]),
     "EventSession": (1640, 1920, [
-        ("EventID", "PK,FK"), ("SessionID", "PK"), ("Title", ""), ("StartTime", ""),
+        ("SessionID", "PK"), ("EventID", "FK"), ("SessionNo", ""), ("Title", ""), ("StartTime", ""),
         ("EndTime", ""), ("Room", "")
     ]),
     "SessionAttendance": (2340, 1920, [
-        ("EventID", "PK,FK"), ("SessionID", "PK,FK"), ("StudentID", "PK,FK"),
+        ("SessionID", "PK,FK"), ("StudentID", "PK,FK"),
         ("CheckInTime", ""), ("VerificationMethod", "")
     ]),
 }
@@ -270,12 +270,9 @@ route(s, (s[0], 1740), (70, 1740), (70, 420), (e[0], 420), e)
 s, e = top("EventSession", "EventID"), bot("Event", "EventID", 50)
 route(s, (s[0], 1800), (e[0], 1800), e)
 
-# SessionAttendance.(EventID, SessionID) -> EventSession.(EventID, SessionID)
-s, e = top("SessionAttendance", "EventID"), bot("EventSession", "EventID", 25)
-route(s, (s[0], 1840), (e[0], 1840), e)
-
+# SessionAttendance.SessionID -> EventSession.SessionID
 s, e = top("SessionAttendance", "SessionID"), bot("EventSession", "SessionID", 25)
-route(s, (s[0], 1860), (e[0], 1860), e)
+route(s, (s[0], 1840), (e[0], 1840), e)
 
 # SessionAttendance.StudentID -> Student.StudentID
 s, e = top("SessionAttendance", "StudentID"), bot("Student", "StudentID", 138)
@@ -298,7 +295,7 @@ def svg():
         '<text x="80" y="55" font-size="34" font-weight="bold" fill="#0b2e59">'
         'TeamUpDB — Relational Schema Mapping (23 Tables)</text>',
         '<text x="80" y="82" font-size="16" fill="#555">'
-        'Normalized Relational Mapping (3NF) • Row-of-Cells Style with Orthogonal Foreign Key Constraints</text>'
+        'Normalized (3NF) • All FKs ON DELETE NO ACTION / ON UPDATE NO ACTION • DELETE = soft delete (IsDeleted, DeletedAt on every table except ScoreTransaction)</text>'
     ]
 
     # Draw routes first so table boxes overlay cleanly
@@ -358,9 +355,9 @@ def svg():
         ("fk", "Foreign Key (dashed underline inside cell)"),
         ("pkfk", "Composite Primary Key &amp; Foreign Key (both solid and dashed underlines)"),
         ("comp", "Underline below table spanning key cells = Composite Primary Key"),
-        ("uq", "UQ badge = Candidate Key / UNIQUE constraint (e.g., Student.Email)"),
+        ("uq", "UQ badge = filtered UNIQUE index WHERE IsDeleted = 0 (e.g., Student.Email)"),
         ("arrow", "Orthogonal Arrow: Foreign Key column -&gt; referenced table Primary Key cell"),
-        ("derived", "Derived / Non-persisted attributes (TotalPoints, Level, TeamSize) are computed via SQL / EF Core, not stored")
+        ("derived", "Derived attributes (TotalPoints, Level, TeamSize, RegisteredCount) are computed, not stored")
     ]
     ly = ly0 + 105
     for kind, text in rows:

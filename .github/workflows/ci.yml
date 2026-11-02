@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (.NET 10)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore TeamUp.sln
+
+      - name: Build solution
+        run: dotnet build TeamUp.sln --no-restore --configuration Release
+
+      - name: Run unit & integration tests
+        run: dotnet test TeamUp.sln --no-build --configuration Release --verbosity normal
+
+      - name: Install dotnet-ef tool
+        run: dotnet tool restore
+
+      - name: Verify migration idempotency & zero cascades
+        run: |
+          dotnet ef migrations script --project src/TeamUp.Infrastructure --startup-project src/TeamUp.Api -i -o idempotency-check.sql
+          if grep -E "ON DELETE CASCADE|ON DELETE SET NULL" idempotency-check.sql; then
+            echo "ERROR: Physical cascades or SET NULL detected in generated SQL!"
+            exit 1
+          fi
+          echo "Verified: Zero physical cascades in generated migrations."
