@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Auth;
 using TeamUp.Application.Common.Models;
@@ -7,6 +8,7 @@ using TeamUp.Application.Common.Models;
 namespace TeamUp.Api.Controllers;
 
 [Route("api/v1/auth")]
+[EnableRateLimiting("auth-policy")]
 public class AuthController(IAuthService authService) : BaseApiController
 {
     [HttpPost("register")]
