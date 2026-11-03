@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using TeamUp.Application.Auth;
+using TeamUp.Application.Common.Models;
 using TeamUp.Application.Students;
 
 namespace TeamUp.IntegrationTests;
@@ -9,6 +10,15 @@ namespace TeamUp.IntegrationTests;
 public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamUpApiFactory>
 {
     private readonly HttpClient _client = factory.CreateClient();
+
+    private static async Task<T> GetDataAsync<T>(HttpResponseMessage res)
+    {
+        var envelope = await res.Content.ReadFromJsonAsync<BaseResponse<T>>();
+        Assert.NotNull(envelope);
+        Assert.True(envelope.Success);
+        Assert.NotNull(envelope.Data);
+        return envelope.Data;
+    }
 
     [Fact]
     public async Task Register_Returns201_AndSetsJwtToken()
@@ -19,8 +29,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var res = await _client.PostAsJsonAsync("/api/v1/auth/register", req);
 
         Assert.Equal(HttpStatusCode.Created, res.StatusCode);
-        var auth = await res.Content.ReadFromJsonAsync<AuthResponse>();
-        Assert.NotNull(auth);
+        var auth = await GetDataAsync<AuthResponse>(res);
         Assert.False(string.IsNullOrWhiteSpace(auth.AccessToken));
         Assert.False(string.IsNullOrWhiteSpace(auth.RefreshToken));
         Assert.Equal(email, auth.Student.Email);
@@ -49,7 +58,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var res = await _client.PostAsJsonAsync("/api/v1/auth/register", req);
 
         Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
-        var err = await res.Content.ReadFromJsonAsync<TeamUp.Application.Common.Models.ErrorResponse>();
+        var err = await res.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(err);
         Assert.Equal(400, err.Status);
         Assert.NotEmpty(err.Errors);
@@ -78,8 +87,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var res = await _client.PostAsJsonAsync("/api/v1/auth/login", login);
 
         Assert.Equal(HttpStatusCode.OK, res.StatusCode);
-        var auth = await res.Content.ReadFromJsonAsync<AuthResponse>();
-        Assert.NotNull(auth);
+        var auth = await GetDataAsync<AuthResponse>(res);
         Assert.False(string.IsNullOrWhiteSpace(auth.AccessToken));
     }
 
@@ -102,15 +110,13 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var email = $"refresh_{Guid.NewGuid():N}@test.com";
         var reg = new RegisterRequest(email, "Secret123!", "Laila", "Hassan", 2, factory.SeededFacultyId);
         var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
-        var initialAuth = await regRes.Content.ReadFromJsonAsync<AuthResponse>();
-        Assert.NotNull(initialAuth);
+        var initialAuth = await GetDataAsync<AuthResponse>(regRes);
 
         var refreshReq = new RefreshTokenRequest(initialAuth.RefreshToken);
         var res = await _client.PostAsJsonAsync("/api/v1/auth/refresh", refreshReq);
 
         Assert.Equal(HttpStatusCode.OK, res.StatusCode);
-        var newAuth = await res.Content.ReadFromJsonAsync<AuthResponse>();
-        Assert.NotNull(newAuth);
+        var newAuth = await GetDataAsync<AuthResponse>(res);
         Assert.NotEqual(initialAuth.RefreshToken, newAuth.RefreshToken);
     }
 
@@ -136,8 +142,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var email = $"profile_lifecycle_{Guid.NewGuid():N}@test.com";
         var reg = new RegisterRequest(email, "Password123!", "Kareem", "Adel", 2, factory.SeededFacultyId);
         var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
-        var auth = await regRes.Content.ReadFromJsonAsync<AuthResponse>();
-        Assert.NotNull(auth);
+        var auth = await GetDataAsync<AuthResponse>(regRes);
 
         using var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
@@ -145,8 +150,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         // 2. Get /students/me
         var meRes = await client.GetAsync("/api/v1/students/me");
         Assert.Equal(HttpStatusCode.OK, meRes.StatusCode);
-        var me = await meRes.Content.ReadFromJsonAsync<StudentDetailDto>();
-        Assert.NotNull(me);
+        var me = await GetDataAsync<StudentDetailDto>(meRes);
         Assert.Equal("Kareem", me.FirstName);
         Assert.Equal("Adel", me.LastName);
         Assert.Equal(2, me.AcademicYear);
@@ -155,8 +159,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         // 3. Update /students/me
         var updateRes = await client.PatchAsJsonAsync("/api/v1/students/me", new UpdateStudentRequest("Karim", "Adel", 3));
         Assert.Equal(HttpStatusCode.OK, updateRes.StatusCode);
-        var updatedMe = await updateRes.Content.ReadFromJsonAsync<StudentDetailDto>();
-        Assert.NotNull(updatedMe);
+        var updatedMe = await GetDataAsync<StudentDetailDto>(updateRes);
         Assert.Equal("Karim", updatedMe.FirstName);
         Assert.Equal(3, updatedMe.AcademicYear);
 
@@ -164,16 +167,14 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var profileReq = new UpsertProfileRequest("Passionate about AI", "https://img.local/avatar.png", "https://github.com/karim", "https://linkedin.com/in/karim");
         var upsertRes = await client.PutAsJsonAsync("/api/v1/students/me/profile", profileReq);
         Assert.Equal(HttpStatusCode.OK, upsertRes.StatusCode);
-        var profileDto = await upsertRes.Content.ReadFromJsonAsync<StudentProfileDto>();
-        Assert.NotNull(profileDto);
+        var profileDto = await GetDataAsync<StudentProfileDto>(upsertRes);
         Assert.Equal("Passionate about AI", profileDto.Bio);
         Assert.Equal("https://github.com/karim", profileDto.GitHubUrl);
 
         // 5. Fetch public extended profile by ID
         var publicProfileRes = await client.GetAsync($"/api/v1/students/{me.StudentId}/profile");
         Assert.Equal(HttpStatusCode.OK, publicProfileRes.StatusCode);
-        var publicProfile = await publicProfileRes.Content.ReadFromJsonAsync<StudentProfileDto>();
-        Assert.NotNull(publicProfile);
+        var publicProfile = await GetDataAsync<StudentProfileDto>(publicProfileRes);
         Assert.Equal("Passionate about AI", publicProfile.Bio);
 
         // 6. Manage interests
@@ -182,24 +183,21 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
 
         var listInterestsRes = await client.GetAsync($"/api/v1/students/{me.StudentId}/interests");
         Assert.Equal(HttpStatusCode.OK, listInterestsRes.StatusCode);
-        var interests = await listInterestsRes.Content.ReadFromJsonAsync<List<string>>();
-        Assert.NotNull(interests);
+        var interests = await GetDataAsync<List<string>>(listInterestsRes);
         Assert.Contains("Artificial Intelligence", interests);
 
         // 7. Delete interest (soft delete)
         var deleteInterestRes = await client.DeleteAsync("/api/v1/students/me/interests/Artificial Intelligence");
         Assert.Equal(HttpStatusCode.NoContent, deleteInterestRes.StatusCode);
 
-        var listAfterDelete = await (await client.GetAsync($"/api/v1/students/{me.StudentId}/interests")).Content.ReadFromJsonAsync<List<string>>();
-        Assert.NotNull(listAfterDelete);
+        var listAfterDelete = await GetDataAsync<List<string>>(await client.GetAsync($"/api/v1/students/{me.StudentId}/interests"));
         Assert.DoesNotContain("Artificial Intelligence", listAfterDelete);
 
         // 8. Re-adding the same interest tag restores the soft-deleted record without throwing unique PK error
         var reAddRes = await client.PostAsJsonAsync("/api/v1/students/me/interests", new AddInterestRequest("Artificial Intelligence"));
         Assert.Equal(HttpStatusCode.OK, reAddRes.StatusCode);
 
-        var listAfterReAdd = await (await client.GetAsync($"/api/v1/students/{me.StudentId}/interests")).Content.ReadFromJsonAsync<List<string>>();
-        Assert.NotNull(listAfterReAdd);
+        var listAfterReAdd = await GetDataAsync<List<string>>(await client.GetAsync($"/api/v1/students/{me.StudentId}/interests"));
         Assert.Contains("Artificial Intelligence", listAfterReAdd);
 
         // 9. Logout

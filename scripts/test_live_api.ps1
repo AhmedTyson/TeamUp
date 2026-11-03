@@ -179,9 +179,9 @@ $regRes = Send-HttpReq -Name "02. Student Registration (Happy Path)" -Method "PO
         facultyId = 1
     } -ExpectedStatus 201
 
-$jwtToken = $regRes.Json.accessToken
-$refreshToken = $regRes.Json.refreshToken
-$studentId = $regRes.Json.student.studentId
+$jwtToken = if ($regRes.Json.data) { $regRes.Json.data.accessToken } else { $regRes.Json.accessToken }
+$refreshToken = if ($regRes.Json.data) { $regRes.Json.data.refreshToken } else { $regRes.Json.refreshToken }
+$studentId = if ($regRes.Json.data) { $regRes.Json.data.student.studentId } else { $regRes.Json.student.studentId }
 
 # Test 3: Duplicate Email
 Send-HttpReq -Name "03. Registration Conflict (Duplicate Email)" -Method "POST" -Path "/api/v1/auth/register" `
@@ -224,8 +224,8 @@ $loginRes = Send-HttpReq -Name "06. Student Login (Valid Credentials)" -Method "
     } -ExpectedStatus 200
 
 # Update token from login
-$jwtToken = $loginRes.Json.accessToken
-$refreshToken = $loginRes.Json.refreshToken
+$jwtToken = if ($loginRes.Json.data) { $loginRes.Json.data.accessToken } else { $loginRes.Json.accessToken }
+$refreshToken = if ($loginRes.Json.data) { $loginRes.Json.data.refreshToken } else { $loginRes.Json.refreshToken }
 
 # Test 7: Login Wrong Password
 Send-HttpReq -Name "07. Login Authentication Failure (Incorrect Password)" -Method "POST" -Path "/api/v1/auth/login" `
@@ -247,8 +247,8 @@ $refreshRes = Send-HttpReq -Name "09. Refresh Access Token (Token Rotation)" -Me
         refreshToken = $refreshToken
     } -ExpectedStatus 200
 
-$jwtToken = $refreshRes.Json.accessToken
-$refreshToken = $refreshRes.Json.refreshToken
+$jwtToken = if ($refreshRes.Json.data) { $refreshRes.Json.data.accessToken } else { $refreshRes.Json.accessToken }
+$refreshToken = if ($refreshRes.Json.data) { $refreshRes.Json.data.refreshToken } else { $refreshRes.Json.refreshToken }
 
 # Test 10: Invalid Refresh Token
 Send-HttpReq -Name "10. Refresh Token Failure (Tampered/Invalid Token)" -Method "POST" -Path "/api/v1/auth/refresh" `
