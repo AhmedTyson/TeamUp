@@ -33,7 +33,7 @@ public sealed class ProfileService(AppDbContext db)
         var interests = student.Interests.Select(i => i.Interest).ToList();
 
         return new StudentDetailDto(
-            student.StudentId, student.Email, student.FirstName, student.LastName,
+            student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
             student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
             profileDto, interests);

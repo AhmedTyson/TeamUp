@@ -14,7 +14,7 @@ public class ValidatorTests
     [Fact]
     public void RegisterValidator_ValidRequest_PassesValidation()
     {
-        var req = new RegisterRequest("student@university.edu", "P@ssword123!", "Omar", "Kamal", 2, 1);
+        var req = new RegisterRequest("Omar", "Kamal", "student@university.edu", "P@ssword123!", 2, 1);
         var res = _registerValidator.Validate(req);
         Assert.True(res.IsValid);
         Assert.Empty(res.Errors);
@@ -25,7 +25,7 @@ public class ValidatorTests
     [InlineData("not-an-email", "A valid email address is required.")]
     public void RegisterValidator_InvalidEmail_FailsValidation(string email, string expectedMessage)
     {
-        var req = new RegisterRequest(email, "P@ssword123!", "Omar", "Kamal", 2, 1);
+        var req = new RegisterRequest("Omar", "Kamal", email, "P@ssword123!", 2, 1);
         var res = _registerValidator.Validate(req);
         Assert.False(res.IsValid);
         Assert.Contains(res.Errors, e => e.PropertyName == "Email" && e.ErrorMessage.Contains(expectedMessage));
@@ -38,7 +38,7 @@ public class ValidatorTests
     [InlineData("NoDigitsInPassword!", "digit")]
     public void RegisterValidator_WeakPassword_FailsValidation(string password, string expectedError)
     {
-        var req = new RegisterRequest("student@university.edu", password, "Omar", "Kamal", 2, 1);
+        var req = new RegisterRequest("Omar", "Kamal", "student@university.edu", password, 2, 1);
         var res = _registerValidator.Validate(req);
         Assert.False(res.IsValid);
         Assert.Contains(res.Errors, e => e.PropertyName == "Password" && e.ErrorMessage.Contains(expectedError));
@@ -50,7 +50,7 @@ public class ValidatorTests
     [InlineData(-1)]
     public void RegisterValidator_InvalidAcademicYear_FailsValidation(int year)
     {
-        var req = new RegisterRequest("student@university.edu", "P@ssword123!", "Omar", "Kamal", year, 1);
+        var req = new RegisterRequest("Omar", "Kamal", "student@university.edu", "P@ssword123!", year, 1);
         var res = _registerValidator.Validate(req);
         Assert.False(res.IsValid);
         Assert.Contains(res.Errors, e => e.PropertyName == "AcademicYear");

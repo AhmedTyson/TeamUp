@@ -1,10 +1,10 @@
 namespace TeamUp.Application.Auth;
 
 public sealed record RegisterRequest(
-    string Email,
-    string Password,
     string FirstName,
     string LastName,
+    string Email,
+    string Password,
     int AcademicYear,
     int FacultyId
 );
@@ -35,9 +35,9 @@ public sealed record ResetPasswordRequest(
 
 public sealed record StudentSummaryDto(
     int StudentId,
-    string Email,
     string FirstName,
     string LastName,
+    string Email,
     int AcademicYear,
     string Role,
     int FacultyId,

@@ -24,7 +24,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task Register_Returns201_AndSetsJwtToken()
     {
         var email = $"register_{Guid.NewGuid():N}@test.com";
-        var req = new RegisterRequest(email, "P@ssword123!", "John", "Doe", 2, factory.SeededFacultyId);
+        var req = new RegisterRequest("John", "Doe", email, "P@ssword123!", 2, factory.SeededFacultyId);
 
         var res = await _client.PostAsJsonAsync("/api/v1/auth/register", req);
 
@@ -41,7 +41,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task Register_DuplicateEmail_Returns409Conflict()
     {
         var email = $"dup_{Guid.NewGuid():N}@test.com";
-        var req = new RegisterRequest(email, "P@ssword123!", "Alice", "Smith", 1, factory.SeededFacultyId);
+        var req = new RegisterRequest("Alice", "Smith", email, "P@ssword123!", 1, factory.SeededFacultyId);
 
         var first = await _client.PostAsJsonAsync("/api/v1/auth/register", req);
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
@@ -53,7 +53,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     [Fact]
     public async Task Register_InvalidPayload_Returns400WithStructuredValidationErrors()
     {
-        var req = new RegisterRequest("not-an-email", "weak", "", "", 0, -1);
+        var req = new RegisterRequest("", "", "not-an-email", "weak", 0, -1);
 
         var res = await _client.PostAsJsonAsync("/api/v1/auth/register", req);
 
@@ -70,7 +70,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task Register_InvalidFaculty_Returns404NotFound()
     {
         var email = $"bad_faculty_{Guid.NewGuid():N}@test.com";
-        var req = new RegisterRequest(email, "P@ssword123!", "Bob", "Smith", 1, 999999);
+        var req = new RegisterRequest("Bob", "Smith", email, "P@ssword123!", 1, 999999);
 
         var res = await _client.PostAsJsonAsync("/api/v1/auth/register", req);
         Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
@@ -80,7 +80,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task Login_ValidCredentials_Returns200AndTokens()
     {
         var email = $"login_ok_{Guid.NewGuid():N}@test.com";
-        var reg = new RegisterRequest(email, "Secret123!", "Omar", "Tarek", 3, factory.SeededFacultyId);
+        var reg = new RegisterRequest("Omar", "Tarek", email, "Secret123!", 3, factory.SeededFacultyId);
         await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
 
         var login = new LoginRequest(email, "Secret123!");
@@ -95,7 +95,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task Login_InvalidPassword_Returns401Unauthorized()
     {
         var email = $"bad_pass_{Guid.NewGuid():N}@test.com";
-        var reg = new RegisterRequest(email, "Correct123!", "Sara", "Ali", 1, factory.SeededFacultyId);
+        var reg = new RegisterRequest("Sara", "Ali", email, "Correct123!", 1, factory.SeededFacultyId);
         await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
 
         var login = new LoginRequest(email, "WrongPassword!");
@@ -108,7 +108,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task RefreshToken_Valid_ReturnsRotatedToken()
     {
         var email = $"refresh_{Guid.NewGuid():N}@test.com";
-        var reg = new RegisterRequest(email, "Secret123!", "Laila", "Hassan", 2, factory.SeededFacultyId);
+        var reg = new RegisterRequest("Laila", "Hassan", email, "Secret123!", 2, factory.SeededFacultyId);
         var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
         var initialAuth = await GetDataAsync<AuthResponse>(regRes);
 
@@ -140,7 +140,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     {
         // 1. Register student
         var email = $"profile_lifecycle_{Guid.NewGuid():N}@test.com";
-        var reg = new RegisterRequest(email, "Password123!", "Kareem", "Adel", 2, factory.SeededFacultyId);
+        var reg = new RegisterRequest("Kareem", "Adel", email, "Password123!", 2, factory.SeededFacultyId);
         var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
         var auth = await GetDataAsync<AuthResponse>(regRes);
 
@@ -213,7 +213,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task StudentsDirectory_ReturnsFilteredStudents_AndPublicProfile()
     {
         var email = $"dir_{Guid.NewGuid():N}@test.com";
-        var reg = new RegisterRequest(email, "Password123!", "Nader", "Fahmy", 4, factory.SeededFacultyId);
+        var reg = new RegisterRequest("Nader", "Fahmy", email, "Password123!", 4, factory.SeededFacultyId);
         var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
         var auth = await GetDataAsync<AuthResponse>(regRes);
 
@@ -241,7 +241,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task Student_SelfSoftDelete_PreventsSubsequentLoginAndDirectoryInclusion()
     {
         var email = $"delete_me_{Guid.NewGuid():N}@test.com";
-        var reg = new RegisterRequest(email, "Password123!", "Tamer", "Hosny", 1, factory.SeededFacultyId);
+        var reg = new RegisterRequest("Tamer", "Hosny", email, "Password123!", 1, factory.SeededFacultyId);
         var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
         var auth = await GetDataAsync<AuthResponse>(regRes);
 
@@ -266,7 +266,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task PasswordRecovery_FullFlow_WorksAsExpected()
     {
         var email = $"recovery_{Guid.NewGuid():N}@test.com";
-        var reg = new RegisterRequest(email, "InitialPassword123!", "Kareem", "Reset", 2, factory.SeededFacultyId);
+        var reg = new RegisterRequest("Kareem", "Reset", email, "InitialPassword123!", 2, factory.SeededFacultyId);
         await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
 
         // 1. Request forgot password
@@ -293,7 +293,7 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
     public async Task PasswordRecovery_InvalidOrExpiredToken_Fails()
     {
         var email = $"recovery_fail_{Guid.NewGuid():N}@test.com";
-        var reg = new RegisterRequest(email, "ValidPassword123!", "Sami", "Fail", 2, factory.SeededFacultyId);
+        var reg = new RegisterRequest("Sami", "Fail", email, "ValidPassword123!", 2, factory.SeededFacultyId);
         await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
 
         // Invalid token

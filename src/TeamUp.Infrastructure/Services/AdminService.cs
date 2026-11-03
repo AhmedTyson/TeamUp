@@ -47,9 +47,9 @@ public sealed class AdminService(AppDbContext db) : IAdminService
 
         return new StudentSummaryDto(
             student.StudentId,
-            student.Email,
             student.FirstName,
             student.LastName,
+            student.Email,
             student.AcademicYear,
             student.Role.ToString(),
             student.Faculty.FacultyId,

@@ -54,7 +54,7 @@ public sealed class AuthService(
             student.StudentId, student.Email, student.Role.ToString(), $"{student.FirstName} {student.LastName}");
 
         var summary = new StudentSummaryDto(
-            student.StudentId, student.Email, student.FirstName, student.LastName,
+            student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
             faculty.FacultyId, faculty.Name, faculty.University.Name);
 
@@ -86,7 +86,7 @@ public sealed class AuthService(
         await db.SaveChangesAsync(ct);
 
         var summary = new StudentSummaryDto(
-            student.StudentId, student.Email, student.FirstName, student.LastName,
+            student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
             student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name);
 
@@ -114,7 +114,7 @@ public sealed class AuthService(
         await db.SaveChangesAsync(ct);
 
         var summary = new StudentSummaryDto(
-            student.StudentId, student.Email, student.FirstName, student.LastName,
+            student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
             student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name);
 

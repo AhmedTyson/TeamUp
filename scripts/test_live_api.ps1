@@ -171,10 +171,10 @@ Send-HttpReq -Name "01. Service Health Check" -Method "GET" -Path "/health" -Exp
 # Test 2: Register Success
 $regRes = Send-HttpReq -Name "02. Student Registration (Happy Path)" -Method "POST" -Path "/api/v1/auth/register" `
     -Body @{
-        email = $testEmail
-        password = $password
         firstName = "Ahmed"
         lastName = "Tyson"
+        email = $testEmail
+        password = $password
         academicYear = 3
         facultyId = 1
     } -ExpectedStatus 201
@@ -186,10 +186,10 @@ $studentId = if ($regRes.Json.data) { $regRes.Json.data.student.studentId } else
 # Test 3: Duplicate Email
 Send-HttpReq -Name "03. Registration Conflict (Duplicate Email)" -Method "POST" -Path "/api/v1/auth/register" `
     -Body @{
-        email = $testEmail
-        password = "AnotherPassword123!"
         firstName = "Duplicate"
         lastName = "User"
+        email = $testEmail
+        password = "AnotherPassword123!"
         academicYear = 2
         facultyId = 1
     } -ExpectedStatus 409
@@ -197,10 +197,10 @@ Send-HttpReq -Name "03. Registration Conflict (Duplicate Email)" -Method "POST" 
 # Test 4: Missing Required Fields
 Send-HttpReq -Name "04. Registration Validation (Empty Password)" -Method "POST" -Path "/api/v1/auth/register" `
     -Body @{
-        email = "invalid_user@teamup.edu"
-        password = ""
         firstName = "Empty"
         lastName = "Password"
+        email = "invalid_user@teamup.edu"
+        password = ""
         academicYear = 1
         facultyId = 1
     } -ExpectedStatus 400
@@ -208,10 +208,10 @@ Send-HttpReq -Name "04. Registration Validation (Empty Password)" -Method "POST"
 # Test 5: Non-Existent Faculty
 Send-HttpReq -Name "05. Registration ForeignKey Failure (Invalid Faculty ID)" -Method "POST" -Path "/api/v1/auth/register" `
     -Body @{
-        email = "bad_faculty_$(Get-Random)@teamup.edu"
-        password = "ValidPassword123!"
         firstName = "Ghost"
         lastName = "Faculty"
+        email = "bad_faculty_$(Get-Random)@teamup.edu"
+        password = "ValidPassword123!"
         academicYear = 1
         facultyId = 99999
     } -ExpectedStatus 404

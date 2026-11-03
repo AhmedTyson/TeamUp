@@ -1,6 +1,6 @@
 ﻿# TeamUp — Live API Endpoint Validation & Response Evidence Report
 
-> **Execution Timestamp:** 2026-11-03 21:33:42 UTC
+> **Execution Timestamp:** 2026-11-03 21:44:05 UTC
 > **Target Environment:** ASP.NET Core 10 Web API (http://localhost:5199)
 > **Database Engine:** Microsoft SQL Server 2022 (Docker container 	eamup-sql:14333)
 > **Architecture Standards:** RFC 7807 ProblemDetails, JWT Bearer Token, Single-Column Soft Delete (DeletedAt)
@@ -36,7 +36,7 @@ Content-Type: application/json
     "password":  "StrongP@ssw0rd2026!",
     "academicYear":  3,
     "lastName":  "Tyson",
-    "email":  "live_student_885254441@teamup.edu",
+    "email":  "live_student_1385543752@teamup.edu",
     "firstName":  "Ahmed",
     "facultyId":  1
 }
@@ -46,14 +46,14 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiZmExYWMzYjYtMmU1Ny00ODI3LWJlNWEtZGM4OTNkYWE3MmE4IiwiZXhwIjoxNzkzNzM4MDI1LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.DIMZr9mmLbSqbaeFVFdFChtvMgyP2J3GebXo1V0duF8",
-                 "refreshToken":  "4ycZCBxBLRdRCgdmzNdgVBnQObxBkiu7K+Qm9/4TarrdRtEizj24WLpOvHNJOc06EZnyA8zxRtiOwfY99BYC8g==",
-                 "expiresAt":  "2026-11-03T20:33:45.3848321Z",
+                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6IjAwNjRiOWQxLWJlZTgtNDA0Ny1hYmNlLWQ4MWJmODRkZTZkZSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.HzSL86AlhIhUOW7RWq4UkxQmwsWALqyf3WmazNiZuLs",
+                 "refreshToken":  "3l1he5e3cAoSAt25HOpl79yqFnHX+w5scnDnekAXppvBrHZMwjSKnDHtqqgfUZjWlrhSZrGRSeY3ZGoDJVlyhg==",
+                 "expiresAt":  "2026-11-03T20:44:09.0630992Z",
                  "student":  {
-                                 "studentId":  9,
-                                 "email":  "live_student_885254441@teamup.edu",
+                                 "studentId":  10,
                                  "firstName":  "Ahmed",
                                  "lastName":  "Tyson",
+                                 "email":  "live_student_1385543752@teamup.edu",
                                  "academicYear":  3,
                                  "role":  "Student",
                                  "facultyId":  1,
@@ -64,7 +64,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Student registered successfully.",
     "statusCode":  201,
-    "timestamp":  "2026-11-03T19:33:45.4128488Z"
+    "timestamp":  "2026-11-03T19:44:09.0898523Z"
 }
 ```
 
@@ -82,7 +82,7 @@ Content-Type: application/json
     "password":  "AnotherPassword123!",
     "academicYear":  2,
     "lastName":  "User",
-    "email":  "live_student_885254441@teamup.edu",
+    "email":  "live_student_1385543752@teamup.edu",
     "firstName":  "Duplicate",
     "facultyId":  1
 }
@@ -96,7 +96,7 @@ Content-Type: application/json
     "status":  409,
     "detail":  "A student with this email address already exists.",
     "instance":  "/api/v1/auth/register",
-    "traceId":  "00-9b4651a879a8cfde03daff45299227a5-9cc5f413b38ade9e-00"
+    "traceId":  "00-24db444a8d8ee3030b72fac484bab592-18799caa09bff01b-00"
 }
 ```
 
@@ -150,7 +150,7 @@ Content-Type: application/json
                        "message":  "Password must contain at least one digit."
                    }
                ],
-    "timestamp":  "2026-11-03T19:33:45.6942434Z"
+    "timestamp":  "2026-11-03T19:44:09.3676681Z"
 }
 ```
 
@@ -168,7 +168,7 @@ Content-Type: application/json
     "password":  "ValidPassword123!",
     "academicYear":  1,
     "lastName":  "Faculty",
-    "email":  "bad_faculty_691028526@teamup.edu",
+    "email":  "bad_faculty_1643605571@teamup.edu",
     "firstName":  "Ghost",
     "facultyId":  99999
 }
@@ -182,7 +182,7 @@ Content-Type: application/json
     "status":  404,
     "detail":  "Faculty with ID 99999 was not found.",
     "instance":  "/api/v1/auth/register",
-    "traceId":  "00-d97ccefa3bfd7357ed4e27b337fe6357-a64c3113c3fe472f-00"
+    "traceId":  "00-599650d45ad24bd9f8169748ca859efc-e21f30a7208967f1-00"
 }
 ```
 
@@ -198,7 +198,7 @@ Content-Type: application/json
 
 {
     "password":  "StrongP@ssw0rd2026!",
-    "email":  "live_student_885254441@teamup.edu"
+    "email":  "live_student_1385543752@teamup.edu"
 }
 ```
 
@@ -206,14 +206,14 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiMjYxZTZkM2MtZmM5NC00NDQxLTlmZDMtYjUzMTk2MWM1M2M1IiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.Y4s69wUpp_e9dwjVavLCsENxXCUc3p205Y1W4GdIZuQ",
-                 "refreshToken":  "Hi8nUrfdzHL2jPu9NYEcM4lF/vTfPF8VpXHwYsPWuP/7aIJsPi4jzZjk2a2LmjIOItc5mpCM1yOK+bVbEw3aRQ==",
-                 "expiresAt":  "2026-11-03T20:33:46.0082629Z",
+                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6IjAzZjY3M2VmLTMxOGMtNGJlMS04YjZjLWY1YTc1YjUxNWI1OCIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.nAAMsKBp5Gpe5zcvEka49DHteB1Ab4F1uWGObEOc3mA",
+                 "refreshToken":  "H34Zg4qAxrTDjXwhjjxA2TvxpQLKnw+poiLXvZw+zVxHjG7dJvWNl566R9K1d3ChPgFScXxGLZgfcJYQgeWW/Q==",
+                 "expiresAt":  "2026-11-03T20:44:09.6629019Z",
                  "student":  {
-                                 "studentId":  9,
-                                 "email":  "live_student_885254441@teamup.edu",
+                                 "studentId":  10,
                                  "firstName":  "Ahmed",
                                  "lastName":  "Tyson",
+                                 "email":  "live_student_1385543752@teamup.edu",
                                  "academicYear":  3,
                                  "role":  "Student",
                                  "facultyId":  1,
@@ -224,7 +224,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Login successful.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:46.0446985Z"
+    "timestamp":  "2026-11-03T19:44:09.7168684Z"
 }
 ```
 
@@ -240,7 +240,7 @@ Content-Type: application/json
 
 {
     "password":  "WrongPasswordXYZ!",
-    "email":  "live_student_885254441@teamup.edu"
+    "email":  "live_student_1385543752@teamup.edu"
 }
 ```
 
@@ -252,7 +252,7 @@ Content-Type: application/json
     "status":  401,
     "detail":  "Invalid email or password.",
     "instance":  "/api/v1/auth/login",
-    "traceId":  "00-9ee7cbbc96065320ef96927738132c8c-70870e84bfb37b5b-00"
+    "traceId":  "00-db2d48471edf997a4245f1b0abb72078-5d03c5a1b96e95ad-00"
 }
 ```
 
@@ -280,7 +280,7 @@ Content-Type: application/json
     "status":  401,
     "detail":  "Invalid email or password.",
     "instance":  "/api/v1/auth/login",
-    "traceId":  "00-1f997a733b24d865776cc90921019a53-dc7c0b9a6cf26433-00"
+    "traceId":  "00-1a166e49e5aea54863f78f54496db60d-e09befda99c9a2a6-00"
 }
 ```
 
@@ -295,7 +295,7 @@ Host: localhost:5199
 Content-Type: application/json
 
 {
-    "refreshToken":  "Hi8nUrfdzHL2jPu9NYEcM4lF/vTfPF8VpXHwYsPWuP/7aIJsPi4jzZjk2a2LmjIOItc5mpCM1yOK+bVbEw3aRQ=="
+    "refreshToken":  "H34Zg4qAxrTDjXwhjjxA2TvxpQLKnw+poiLXvZw+zVxHjG7dJvWNl566R9K1d3ChPgFScXxGLZgfcJYQgeWW/Q=="
 }
 ```
 
@@ -303,14 +303,14 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ",
-                 "refreshToken":  "9kwLhwsCWoyb6tk7I7tqoMWACB1YoNyrfYzWpLh6vqLuyivB9N6gloOEglQxkgTy+Wp6yfgRQZ4dLHb3H2yH6g==",
-                 "expiresAt":  "2026-11-03T20:33:46.3040483Z",
+                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE",
+                 "refreshToken":  "rA5q/GJG1U6eb/7gket49CtJvnwmDgM2IFBreUXv7KjRYqJAcDYmPM66mEs6RqjZJvTFzdY6uh1GzryQir6siQ==",
+                 "expiresAt":  "2026-11-03T20:44:09.9947968Z",
                  "student":  {
-                                 "studentId":  9,
-                                 "email":  "live_student_885254441@teamup.edu",
+                                 "studentId":  10,
                                  "firstName":  "Ahmed",
                                  "lastName":  "Tyson",
+                                 "email":  "live_student_1385543752@teamup.edu",
                                  "academicYear":  3,
                                  "role":  "Student",
                                  "facultyId":  1,
@@ -321,7 +321,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Token refreshed successfully.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:46.3160185Z"
+    "timestamp":  "2026-11-03T19:44:10.0116911Z"
 }
 ```
 
@@ -348,7 +348,7 @@ Content-Type: application/json
     "status":  401,
     "detail":  "Invalid or expired refresh token.",
     "instance":  "/api/v1/auth/refresh",
-    "traceId":  "00-c70dfc2763db919155742e55c147c5d3-0bfa7f3332d573e3-00"
+    "traceId":  "00-f0d41e2bc665f6d2a13fd725e81693d4-6345f87748f8dab1-00"
 }
 ```
 
@@ -368,7 +368,7 @@ Host: localhost:5199
     "type":  "https://tools.ietf.org/html/rfc9110#section-15.5.2",
     "title":  "Unauthorized",
     "status":  401,
-    "traceId":  "00-e015ef416fb555d2cd9801932b0bb942-d57ba09ba1cd9c0b-00"
+    "traceId":  "00-2db3744f06b8d56e07d388f96f7d2dce-fb7ff5c094c7634e-00"
 }
 ```
 
@@ -380,17 +380,17 @@ Host: localhost:5199
 ```http
 GET /api/v1/students/me HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
 ```json
 {
     "data":  {
-                 "studentId":  9,
-                 "email":  "live_student_885254441@teamup.edu",
+                 "studentId":  10,
                  "firstName":  "Ahmed",
                  "lastName":  "Tyson",
+                 "email":  "live_student_1385543752@teamup.edu",
                  "academicYear":  3,
                  "role":  "Student",
                  "facultyId":  1,
@@ -404,7 +404,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:46.6310454Z"
+    "timestamp":  "2026-11-03T19:44:10.3242919Z"
 }
 ```
 
@@ -416,7 +416,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 ```http
 PATCH /api/v1/students/me HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 Content-Type: application/json
 
 {
@@ -430,10 +430,10 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "studentId":  9,
-                 "email":  "live_student_885254441@teamup.edu",
+                 "studentId":  10,
                  "firstName":  "Ahmed (Lead)",
                  "lastName":  "Tyson",
+                 "email":  "live_student_1385543752@teamup.edu",
                  "academicYear":  4,
                  "role":  "Student",
                  "facultyId":  1,
@@ -447,7 +447,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Student account updated successfully.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:46.7562302Z"
+    "timestamp":  "2026-11-03T19:44:10.4518358Z"
 }
 ```
 
@@ -457,9 +457,9 @@ Content-Type: application/json
 
 **Request:**
 ```http
-GET /api/v1/students/9/profile HTTP/1.1
+GET /api/v1/students/10/profile HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -474,7 +474,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:46.8338628Z"
+    "timestamp":  "2026-11-03T19:44:10.5531973Z"
 }
 ```
 
@@ -486,7 +486,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 ```http
 PUT /api/v1/students/me/profile HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 Content-Type: application/json
 
 {
@@ -509,7 +509,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Profile updated successfully.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:46.9785492Z"
+    "timestamp":  "2026-11-03T19:44:10.6953373Z"
 }
 ```
 
@@ -519,9 +519,9 @@ Content-Type: application/json
 
 **Request:**
 ```http
-GET /api/v1/students/9/profile HTTP/1.1
+GET /api/v1/students/10/profile HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -536,7 +536,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:47.0302945Z"
+    "timestamp":  "2026-11-03T19:44:10.7481527Z"
 }
 ```
 
@@ -548,7 +548,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 ```http
 POST /api/v1/students/me/interests HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 Content-Type: application/json
 
 {
@@ -562,7 +562,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Interest added successfully.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:47.140861Z"
+    "timestamp":  "2026-11-03T19:44:10.8596416Z"
 }
 ```
 
@@ -574,7 +574,7 @@ Content-Type: application/json
 ```http
 POST /api/v1/students/me/interests HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 Content-Type: application/json
 
 {
@@ -588,7 +588,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Interest added successfully.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:47.2013622Z"
+    "timestamp":  "2026-11-03T19:44:10.9211804Z"
 }
 ```
 
@@ -598,9 +598,9 @@ Content-Type: application/json
 
 **Request:**
 ```http
-GET /api/v1/students/9/interests HTTP/1.1
+GET /api/v1/students/10/interests HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -613,7 +613,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:47.2811664Z"
+    "timestamp":  "2026-11-03T19:44:11.0022668Z"
 }
 ```
 
@@ -625,7 +625,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 ```http
 DELETE /api/v1/students/me/interests/Artificial%20Intelligence HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `204 No Content` — **🟢 PASSED** (Expected: `204`)
@@ -639,9 +639,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 
 **Request:**
 ```http
-GET /api/v1/students/9/interests HTTP/1.1
+GET /api/v1/students/10/interests HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -653,7 +653,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:47.408588Z"
+    "timestamp":  "2026-11-03T19:44:11.1293807Z"
 }
 ```
 
@@ -665,7 +665,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 ```http
 POST /api/v1/students/me/interests HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 Content-Type: application/json
 
 {
@@ -679,7 +679,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Interest added successfully.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:47.4700568Z"
+    "timestamp":  "2026-11-03T19:44:11.192939Z"
 }
 ```
 
@@ -689,9 +689,9 @@ Content-Type: application/json
 
 **Request:**
 ```http
-GET /api/v1/students/9/interests HTTP/1.1
+GET /api/v1/students/10/interests HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -704,7 +704,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:47.5191917Z"
+    "timestamp":  "2026-11-03T19:44:11.2432907Z"
 }
 ```
 
@@ -728,14 +728,14 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k",
-                 "refreshToken":  "SY+qxXyTF64+mkkGWUpt9NHZ4cRTUb3n+kOjy/Gih748/6kq6PPKLBmLHlNY3yZB7QF/yOD7OaQh7GnCYqQwDw==",
-                 "expiresAt":  "2026-11-03T20:33:49.7192615Z",
+                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY",
+                 "refreshToken":  "Or6aq2pPU1vVxhS+hQ4R58U141S4wIx15AHF7L6S7Zvn+1oKxwCaDfWANDnYqL923c6VKqrbM6V8Pt5BLlnNOg==",
+                 "expiresAt":  "2026-11-03T20:44:13.448696Z",
                  "student":  {
                                  "studentId":  1,
-                                 "email":  "admin@teamup.local",
                                  "firstName":  "Platform",
                                  "lastName":  "Admin",
+                                 "email":  "admin@teamup.local",
                                  "academicYear":  1,
                                  "role":  "PlatformAdmin",
                                  "facultyId":  1,
@@ -746,7 +746,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Login successful.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:49.7431308Z"
+    "timestamp":  "2026-11-03T19:44:13.467017Z"
 }
 ```
 
@@ -787,7 +787,7 @@ Host: localhost:5199
     "success":  true,
     "message":  "Academic catalog retrieved successfully for registration lookups.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:49.8811705Z"
+    "timestamp":  "2026-11-03T19:44:13.5835706Z"
 }
 ```
 
@@ -799,7 +799,7 @@ Host: localhost:5199
 ```http
 GET /api/v1/universities?page=1&pageSize=10 HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -824,7 +824,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:50.0358067Z"
+    "timestamp":  "2026-11-03T19:44:13.7326178Z"
 }
 ```
 
@@ -836,7 +836,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 ```http
 GET /api/v1/universities/1 HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -864,7 +864,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:50.140397Z"
+    "timestamp":  "2026-11-03T19:44:13.8384318Z"
 }
 ```
 
@@ -876,7 +876,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 ```http
 POST /api/v1/universities HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 Content-Type: application/json
 
 {
@@ -892,7 +892,7 @@ Content-Type: application/json
     "type":  "https://tools.ietf.org/html/rfc9110#section-15.5.4",
     "title":  "Forbidden",
     "status":  403,
-    "traceId":  "00-e8214f6fcb42e6b2e436259b2d563df2-9e76fecc3f2054b1-00"
+    "traceId":  "00-6bfaedcbd1c25ea82f2936585f9412c5-d5669a630b8befde-00"
 }
 ```
 
@@ -904,12 +904,12 @@ Content-Type: application/json
 ```http
 POST /api/v1/universities HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 Content-Type: application/json
 
 {
     "country":  "Egypt",
-    "name":  "Alexandria University 983230740",
+    "name":  "Alexandria University 583737299",
     "website":  "https://alexu.edu.eg",
     "city":  "Alexandria"
 }
@@ -919,8 +919,8 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "universityId":  4,
-                 "name":  "Alexandria University 983230740",
+                 "universityId":  5,
+                 "name":  "Alexandria University 583737299",
                  "city":  "Alexandria",
                  "country":  "Egypt",
                  "website":  "https://alexu.edu.eg",
@@ -931,7 +931,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "University created successfully.",
     "statusCode":  201,
-    "timestamp":  "2026-11-03T19:33:50.259636Z"
+    "timestamp":  "2026-11-03T19:44:13.9705901Z"
 }
 ```
 
@@ -943,12 +943,12 @@ Content-Type: application/json
 ```http
 POST /api/v1/universities HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 Content-Type: application/json
 
 {
     "country":  "Egypt",
-    "name":  "Alexandria University 983230740",
+    "name":  "Alexandria University 583737299",
     "city":  "Alexandria"
 }
 ```
@@ -959,9 +959,9 @@ Content-Type: application/json
     "type":  "https://tools.ietf.org/html/rfc9110#section-15.5.10",
     "title":  "Conflict Detected",
     "status":  409,
-    "detail":  "A university named \u0027Alexandria University 983230740\u0027 already exists.",
+    "detail":  "A university named \u0027Alexandria University 583737299\u0027 already exists.",
     "instance":  "/api/v1/universities",
-    "traceId":  "00-5c8c02ac16732154a714a57c5db046c2-ee6068f35ac0c221-00"
+    "traceId":  "00-90abfcb10515a2be3012df58f14cdec8-cbed35952fec66b8-00"
 }
 ```
 
@@ -971,14 +971,14 @@ Content-Type: application/json
 
 **Request:**
 ```http
-PUT /api/v1/universities/4 HTTP/1.1
+PUT /api/v1/universities/5 HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 Content-Type: application/json
 
 {
     "country":  "Egypt",
-    "name":  "Alexandria University 983230740 Updated",
+    "name":  "Alexandria University 583737299 Updated",
     "website":  "https://updated.alexu.edu.eg",
     "city":  "Alexandria"
 }
@@ -988,8 +988,8 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "universityId":  4,
-                 "name":  "Alexandria University 983230740 Updated",
+                 "universityId":  5,
+                 "name":  "Alexandria University 583737299 Updated",
                  "city":  "Alexandria",
                  "country":  "Egypt",
                  "website":  "https://updated.alexu.edu.eg",
@@ -1000,7 +1000,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "University updated successfully.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:50.4285599Z"
+    "timestamp":  "2026-11-03T19:44:14.1373483Z"
 }
 ```
 
@@ -1010,9 +1010,9 @@ Content-Type: application/json
 
 **Request:**
 ```http
-GET /api/v1/universities/4/faculties HTTP/1.1
+GET /api/v1/universities/5/faculties HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -1024,7 +1024,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:50.551308Z"
+    "timestamp":  "2026-11-03T19:44:14.244499Z"
 }
 ```
 
@@ -1034,9 +1034,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 
 **Request:**
 ```http
-POST /api/v1/universities/4/faculties HTTP/1.1
+POST /api/v1/universities/5/faculties HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 Content-Type: application/json
 
 {
@@ -1049,17 +1049,17 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "facultyId":  5,
+                 "facultyId":  6,
                  "name":  "Faculty of Medicine",
                  "code":  "MED_ALEX",
-                 "universityId":  4,
-                 "universityName":  "Alexandria University 983230740 Updated",
+                 "universityId":  5,
+                 "universityName":  "Alexandria University 583737299 Updated",
                  "studentCount":  0
              },
     "success":  true,
     "message":  "Faculty created successfully.",
     "statusCode":  201,
-    "timestamp":  "2026-11-03T19:33:50.6625479Z"
+    "timestamp":  "2026-11-03T19:44:14.3622995Z"
 }
 ```
 
@@ -1069,9 +1069,9 @@ Content-Type: application/json
 
 **Request:**
 ```http
-POST /api/v1/universities/4/faculties HTTP/1.1
+POST /api/v1/universities/5/faculties HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 Content-Type: application/json
 
 {
@@ -1086,9 +1086,9 @@ Content-Type: application/json
     "type":  "https://tools.ietf.org/html/rfc9110#section-15.5.10",
     "title":  "Conflict Detected",
     "status":  409,
-    "detail":  "A faculty with code \u0027MED_ALEX\u0027 already exists in Alexandria University 983230740 Updated.",
-    "instance":  "/api/v1/universities/4/faculties",
-    "traceId":  "00-b2ebeafa54e1614fd71bd4beac8f0b48-d05068b54706aaee-00"
+    "detail":  "A faculty with code \u0027MED_ALEX\u0027 already exists in Alexandria University 583737299 Updated.",
+    "instance":  "/api/v1/universities/5/faculties",
+    "traceId":  "00-29e35e2b0097976b38661bcd404313df-dad62e4d56f03bab-00"
 }
 ```
 
@@ -1098,9 +1098,9 @@ Content-Type: application/json
 
 **Request:**
 ```http
-PUT /api/v1/faculties/5 HTTP/1.1
+PUT /api/v1/faculties/6 HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 Content-Type: application/json
 
 {
@@ -1113,17 +1113,17 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "facultyId":  5,
+                 "facultyId":  6,
                  "name":  "Faculty of Medicine \u0026 Health",
                  "code":  "MED_HEALTH",
-                 "universityId":  4,
-                 "universityName":  "Alexandria University 983230740 Updated",
+                 "universityId":  5,
+                 "universityName":  "Alexandria University 583737299 Updated",
                  "studentCount":  0
              },
     "success":  true,
     "message":  "Faculty updated successfully.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:50.810957Z"
+    "timestamp":  "2026-11-03T19:44:14.5045295Z"
 }
 ```
 
@@ -1133,9 +1133,9 @@ Content-Type: application/json
 
 **Request:**
 ```http
-DELETE /api/v1/faculties/5 HTTP/1.1
+DELETE /api/v1/faculties/6 HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 ```
 
 **Response:** `204 No Content` — **🟢 PASSED** (Expected: `204`)
@@ -1149,9 +1149,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0c
 
 **Request:**
 ```http
-DELETE /api/v1/universities/4 HTTP/1.1
+DELETE /api/v1/universities/5 HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 ```
 
 **Response:** `204 No Content` — **🟢 PASSED** (Expected: `204`)
@@ -1167,7 +1167,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0c
 ```http
 GET /api/v1/students?search=Ahmed&page=1&pageSize=10 HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -1266,10 +1266,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
                                                  ]
                                },
                                {
-                                   "studentId":  9,
+                                   "studentId":  10,
                                    "firstName":  "Ahmed (Lead)",
                                    "lastName":  "Tyson",
-                                   "email":  "live_student_885254441@teamup.edu",
+                                   "email":  "live_student_1385543752@teamup.edu",
                                    "academicYear":  4,
                                    "role":  "Student",
                                    "facultyId":  1,
@@ -1289,7 +1289,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:51.0788979Z"
+    "timestamp":  "2026-11-03T19:44:14.774196Z"
 }
 ```
 
@@ -1299,16 +1299,16 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
 
 **Request:**
 ```http
-GET /api/v1/students/9 HTTP/1.1
+GET /api/v1/students/10 HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgVHlzb24iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJTdHVkZW50IiwianRpIjoiOWE3ODBiNTgtNzI0Yy00YWRjLTg5NDktNjY1ZDY3YTI0MTMzIiwiZXhwIjoxNzkzNzM4MDI2LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.tW56oCCrvc5YIqZ4M1c5qW5mEBfAOeGWsNg5cj5KQlQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6ImI3ZjY0ZjRkLWM1NTgtNDk3Ny1hOTJkLThjZjNiMGNlZTdiNSIsImV4cCI6MTc5MzczODY0OSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.bSL__02WXbaxblzBzeQVJ03kIn6r-d0dKtoJb6LLpUE
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
 ```json
 {
     "data":  {
-                 "studentId":  9,
+                 "studentId":  10,
                  "firstName":  "Ahmed (Lead)",
                  "lastName":  "Tyson",
                  "academicYear":  4,
@@ -1328,7 +1328,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:51.1480801Z"
+    "timestamp":  "2026-11-03T19:44:14.845624Z"
 }
 ```
 
@@ -1343,7 +1343,7 @@ Host: localhost:5199
 Content-Type: application/json
 
 {
-    "email":  "live_student_885254441@teamup.edu"
+    "email":  "live_student_1385543752@teamup.edu"
 }
 ```
 
@@ -1352,12 +1352,12 @@ Content-Type: application/json
 {
     "data":  {
                  "message":  "If your email is registered, a password reset link has been dispatched.",
-                 "resetToken":  "H8DdibUHKsrELqIMDvGz5uVj3s26zsHfeV0DffCRl8CXQ6RdfGkm71z6IOWkVhaEmzL+IPz/dhc4jBF0o5em1A=="
+                 "resetToken":  "5G346AnVgEQ1teVYajWuX25PAssTB0lrnn1FdLI8gonB5/FpjafzEvovXRUPiDSbUoCEKJz107Zag8uTYH1OcA=="
              },
     "success":  true,
     "message":  "Password reset request processed.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:51.2485297Z"
+    "timestamp":  "2026-11-03T19:44:14.9458054Z"
 }
 ```
 
@@ -1372,9 +1372,9 @@ Host: localhost:5199
 Content-Type: application/json
 
 {
-    "email":  "live_student_885254441@teamup.edu",
+    "email":  "live_student_1385543752@teamup.edu",
     "newPassword":  "UpdatedSecurePassword2026!",
-    "token":  "H8DdibUHKsrELqIMDvGz5uVj3s26zsHfeV0DffCRl8CXQ6RdfGkm71z6IOWkVhaEmzL+IPz/dhc4jBF0o5em1A=="
+    "token":  "5G346AnVgEQ1teVYajWuX25PAssTB0lrnn1FdLI8gonB5/FpjafzEvovXRUPiDSbUoCEKJz107Zag8uTYH1OcA=="
 }
 ```
 
@@ -1384,7 +1384,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Password reset successfully. You can now login with your new credentials.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:51.4252203Z"
+    "timestamp":  "2026-11-03T19:44:15.1169039Z"
 }
 ```
 
@@ -1400,7 +1400,7 @@ Content-Type: application/json
 
 {
     "password":  "UpdatedSecurePassword2026!",
-    "email":  "live_student_885254441@teamup.edu"
+    "email":  "live_student_1385543752@teamup.edu"
 }
 ```
 
@@ -1408,14 +1408,14 @@ Content-Type: application/json
 ```json
 {
     "data":  {
-                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgKExlYWQpIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6IjUzNGM2NjdlLTdiZWUtNDhmNS1hMDQ0LTdjNzQ3NThjNTU3YyIsImV4cCI6MTc5MzczODAzMSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.WCKcaCRX7MeNkI0rnk0RnccSuiTTUzDI0sWwmMfwU7I",
-                 "refreshToken":  "0jCTeOKloDqjI1CaXWc+0H5y16RNiQqhA0ja4sV++LmjxIm0FiB3A1RNozEuF7Ess7ec98NCHYnze4GeivWoOQ==",
-                 "expiresAt":  "2026-11-03T20:33:51.585095Z",
+                 "accessToken":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIChMZWFkKSBUeXNvbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlN0dWRlbnQiLCJqdGkiOiJiMzg4NjQ3Zi1jZTZhLTQ2N2ItOGUyOS1iYzFiODMxOGJhOWUiLCJleHAiOjE3OTM3Mzg2NTUsImlzcyI6IlRlYW1VcCIsImF1ZCI6IlRlYW1VcC5DbGllbnRzIn0.dzNH2TBHnRJ6figsV7S46cHBDHNDHJcBXI_EK75rYyE",
+                 "refreshToken":  "KXSX41uF3c/SByRoB7mb4T62HFF4U7j4AjeedbdySoCj8XVcevBZjh8jDfrkIhwWxPNWuKx6lPuTgwH8CZMDdQ==",
+                 "expiresAt":  "2026-11-03T20:44:15.2680388Z",
                  "student":  {
-                                 "studentId":  9,
-                                 "email":  "live_student_885254441@teamup.edu",
+                                 "studentId":  10,
                                  "firstName":  "Ahmed (Lead)",
                                  "lastName":  "Tyson",
+                                 "email":  "live_student_1385543752@teamup.edu",
                                  "academicYear":  4,
                                  "role":  "Student",
                                  "facultyId":  1,
@@ -1426,7 +1426,7 @@ Content-Type: application/json
     "success":  true,
     "message":  "Login successful.",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:51.5946975Z"
+    "timestamp":  "2026-11-03T19:44:15.2770663Z"
 }
 ```
 
@@ -1438,7 +1438,7 @@ Content-Type: application/json
 ```http
 DELETE /api/v1/students/me HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI5IiwiZW1haWwiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfODg1MjU0NDQxQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWhtZWQgKExlYWQpIFR5c29uIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU3R1ZGVudCIsImp0aSI6IjUzNGM2NjdlLTdiZWUtNDhmNS1hMDQ0LTdjNzQ3NThjNTU3YyIsImV4cCI6MTc5MzczODAzMSwiaXNzIjoiVGVhbVVwIiwiYXVkIjoiVGVhbVVwLkNsaWVudHMifQ.WCKcaCRX7MeNkI0rnk0RnccSuiTTUzDI0sWwmMfwU7I
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTAiLCJlbWFpbCI6ImxpdmVfc3R1ZGVudF8xMzg1NTQzNzUyQHRlYW11cC5lZHUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJsaXZlX3N0dWRlbnRfMTM4NTU0Mzc1MkB0ZWFtdXAuZWR1IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6IkFobWVkIChMZWFkKSBUeXNvbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlN0dWRlbnQiLCJqdGkiOiJiMzg4NjQ3Zi1jZTZhLTQ2N2ItOGUyOS1iYzFiODMxOGJhOWUiLCJleHAiOjE3OTM3Mzg2NTUsImlzcyI6IlRlYW1VcCIsImF1ZCI6IlRlYW1VcC5DbGllbnRzIn0.dzNH2TBHnRJ6figsV7S46cHBDHNDHJcBXI_EK75rYyE
 ```
 
 **Response:** `204 No Content` — **🟢 PASSED** (Expected: `204`)
@@ -1458,7 +1458,7 @@ Content-Type: application/json
 
 {
     "password":  "UpdatedSecurePassword2026!",
-    "email":  "live_student_885254441@teamup.edu"
+    "email":  "live_student_1385543752@teamup.edu"
 }
 ```
 
@@ -1470,7 +1470,7 @@ Content-Type: application/json
     "status":  401,
     "detail":  "Invalid email or password.",
     "instance":  "/api/v1/auth/login",
-    "traceId":  "00-8dca899d13535aef8139b9aa18187aef-935b218cabd8c981-00"
+    "traceId":  "00-057d20f227625133055409f65aab4df9-4a08d5b97088a113-00"
 }
 ```
 
@@ -1480,9 +1480,9 @@ Content-Type: application/json
 
 **Request:**
 ```http
-GET /api/v1/students?search=live_student_885254441@teamup.edu HTTP/1.1
+GET /api/v1/students?search=live_student_1385543752@teamup.edu HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 ```
 
 **Response:** `200 OK` — **🟢 PASSED** (Expected: `200`)
@@ -1500,7 +1500,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0c
     "success":  true,
     "message":  "Success",
     "statusCode":  200,
-    "timestamp":  "2026-11-03T19:33:51.7372879Z"
+    "timestamp":  "2026-11-03T19:44:15.4202842Z"
 }
 ```
 
@@ -1512,7 +1512,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0c
 ```http
 POST /api/v1/auth/logout HTTP/1.1
 Host: localhost:5199
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNWM5OGJjYTUtMzA0Yi00NzgyLTk3MDktNzYxYzY1MmY3ODI3IiwiZXhwIjoxNzkzNzM4MDI5LCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.AZB_jN3yx2DiOfX5r0GNk0LpeXctewuf4sdJtl-Kk2k
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiZW1haWwiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhZG1pbkB0ZWFtdXAubG9jYWwiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUGxhdGZvcm0gQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQbGF0Zm9ybUFkbWluIiwianRpIjoiNjQwZWU5ODctYjJhOS00MDI0LWJlMzEtMDRkYWY1NTliMWM2IiwiZXhwIjoxNzkzNzM4NjUzLCJpc3MiOiJUZWFtVXAiLCJhdWQiOiJUZWFtVXAuQ2xpZW50cyJ9.NyfNrXoFE9ruahyoT1OMbgYwaKe8I0ybonzllgE-YsY
 ```
 
 **Response:** `204 No Content` — **🟢 PASSED** (Expected: `204`)
@@ -1531,7 +1531,7 @@ Host: localhost:5199
 Content-Type: application/json
 
 {
-    "refreshToken":  "9kwLhwsCWoyb6tk7I7tqoMWACB1YoNyrfYzWpLh6vqLuyivB9N6gloOEglQxkgTy+Wp6yfgRQZ4dLHb3H2yH6g=="
+    "refreshToken":  "rA5q/GJG1U6eb/7gket49CtJvnwmDgM2IFBreUXv7KjRYqJAcDYmPM66mEs6RqjZJvTFzdY6uh1GzryQir6siQ=="
 }
 ```
 
@@ -1543,7 +1543,7 @@ Content-Type: application/json
     "status":  401,
     "detail":  "Invalid or expired refresh token.",
     "instance":  "/api/v1/auth/refresh",
-    "traceId":  "00-276b673f3265501988bc35838a23c4fe-de229aacd0e9122a-00"
+    "traceId":  "00-a39b0bbc72a3745625b036707ddb897a-59b7e24ea34bdf95-00"
 }
 ```
 

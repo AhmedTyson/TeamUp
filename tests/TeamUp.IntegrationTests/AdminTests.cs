@@ -55,7 +55,7 @@ public class AdminTests(TeamUpApiFactory factory) : IClassFixture<TeamUpApiFacto
     {
         using var publicClient = factory.CreateClient();
         var email = $"promote_{Guid.NewGuid():N}@test.com";
-        var reg = new RegisterRequest(email, "Password123!", "Tariq", "Lead", 2, factory.SeededFacultyId);
+        var reg = new RegisterRequest("Tariq", "Lead", email, "Password123!", 2, factory.SeededFacultyId);
         var regRes = await publicClient.PostAsJsonAsync("/api/v1/auth/register", reg);
         var auth = await GetDataAsync<AuthResponse>(regRes);
 

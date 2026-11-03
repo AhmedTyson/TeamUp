@@ -24,9 +24,9 @@ public sealed record UpdateStudentRequest(
 
 public sealed record StudentDetailDto(
     int StudentId,
-    string Email,
     string FirstName,
     string LastName,
+    string Email,
     int AcademicYear,
     string Role,
     int FacultyId,
