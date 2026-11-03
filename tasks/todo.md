@@ -84,11 +84,11 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
 ## Phase 2.5: N-Tier & SOLID Architecture Alignment (Architecture Blueprint)
 *Full design document: `docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md`*
 
-- [ ] **T-ARCH1 (S, M1): Domain Events & Aggregate Invariants**
+- [x] **T-ARCH1 (S, M1): Domain Events & Aggregate Invariants**
   - AC: `IDomainEvent` interface, `BaseEntity.AddDomainEvent()`, `DomainEventDispatcher` publishing events on `SaveChangesAsync()`.
   - Deps: T3.
 
-- [ ] **T-ARCH2 (S, M1): Controller Single Responsibility Decomposition**
+- [x] **T-ARCH2 (S, M1): Controller Single Responsibility Decomposition**
   - AC: Decompose multi-purpose controllers into focused, single-responsibility controllers (`StudentsController`, `StudentProfilesController`, `StudentInterestsController`).
   - Deps: T15.
 

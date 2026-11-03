@@ -6,8 +6,15 @@ using TeamUp.Infrastructure.Persistence;
 
 namespace TeamUp.Infrastructure.Services;
 
-public sealed class ProfileService(AppDbContext db) : IProfileService
+public sealed class ProfileService(AppDbContext db)
+    : IProfileService, IStudentAccountService, IStudentProfileService, IStudentInterestService
 {
+    public Task<StudentDetailDto> GetMyAccountAsync(int studentId, CancellationToken ct = default) =>
+        GetMyProfileAsync(studentId, ct);
+
+    public Task<StudentDetailDto> UpdateMyAccountAsync(int studentId, UpdateStudentRequest req, CancellationToken ct = default) =>
+        UpdateMyProfileAsync(studentId, req, ct);
+
     public async Task<StudentDetailDto> GetMyProfileAsync(int studentId, CancellationToken ct = default)
     {
         var student = await db.Students

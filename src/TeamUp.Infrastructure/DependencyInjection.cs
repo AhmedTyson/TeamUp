@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TeamUp.Application.Auth;
+using TeamUp.Application.Common.Events;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Students;
 using TeamUp.Domain.Entities;
+using TeamUp.Infrastructure.EventDispatching;
 using TeamUp.Infrastructure.Persistence;
 using TeamUp.Infrastructure.Services;
 
@@ -18,8 +20,13 @@ public static class DependencyInjection
         services.Configure<JwtOptions>(config.GetSection(JwtOptions.SectionName));
         services.AddSingleton<IPasswordHasher<Student>, PasswordHasher<Student>>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IProfileService, ProfileService>();
+        services.AddScoped<ProfileService>();
+        services.AddScoped<IProfileService>(sp => sp.GetRequiredService<ProfileService>());
+        services.AddScoped<IStudentAccountService>(sp => sp.GetRequiredService<ProfileService>());
+        services.AddScoped<IStudentProfileService>(sp => sp.GetRequiredService<ProfileService>());
+        services.AddScoped<IStudentInterestService>(sp => sp.GetRequiredService<ProfileService>());
         services.AddSingleton<SoftDeleteInterceptor>();
 
         var cs = config.GetConnectionString("TeamUpDb");

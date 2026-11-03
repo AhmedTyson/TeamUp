@@ -1,11 +1,14 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using TeamUp.Application.Common.Events;
 using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
 
 namespace TeamUp.Infrastructure.Persistence;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext(
+    DbContextOptions<AppDbContext> options,
+    IDomainEventDispatcher? dispatcher = null) : DbContext(options)
 {
     public DbSet<University> Universities => Set<University>();
     public DbSet<Faculty> Faculties => Set<Faculty>();
@@ -34,8 +37,33 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<StudentBadge> StudentBadges => Set<StudentBadge>();
     public DbSet<Notification> Notifications => Set<Notification>();
 
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var domainEntities = ChangeTracker
+            .Entries<IHasDomainEvents>()
+            .Where(x => x.Entity.DomainEvents.Count > 0)
+            .Select(x => x.Entity)
+            .ToList();
+
+        var domainEvents = domainEntities
+            .SelectMany(x => x.DomainEvents)
+            .ToList();
+
+        domainEntities.ForEach(x => x.ClearDomainEvents());
+
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        if (dispatcher is not null && domainEvents.Count > 0)
+        {
+            await dispatcher.DispatchAsync(domainEvents, cancellationToken);
+        }
+
+        return result;
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Ignore<IDomainEvent>();
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         foreach (var entity in modelBuilder.Model.GetEntityTypes().ToList())
