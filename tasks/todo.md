@@ -96,26 +96,84 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
   - AC: Scaffold vertical slices (`Commands/`, `Queries/`, `Handlers/`) across module directories in `TeamUp.Application`.
   - Deps: T-ARCH1.
 
-## Phase 3: Vertical API slices (parallel by owner, each: service + controller + validators + tests)
+## Phase 3: Vertical API Slices (Tyson Phases B–E & Team Modules)
 
-M1 (Tyson)
-- [ ] **T14 (S): Universities and Faculties CRUD** - paging, soft delete, `PlatformAdmin` writes.
-- [x] **T15 (M): Students, profile, interests** - `GET /students/me`, `PATCH /students/me`, `GET/PUT /students/me/profile`, `GET /students/{id}/profile`, interests add/remove/restore; owner or admin only; `DELETE /students/{id}` soft deletes and anonymises nothing else.
+### Tyson Work Breakdown (Phases B–E)
+*Detailed module specification: `tasks/modules/01-auth-identity-profile.md`*
 
-M2
+#### Tyson Phase B: Universities & Faculties Module (9 Endpoints — T14)
+- [ ] **T14.1 (S, Tyson): University & Faculty DTOs and Validators**
+  - AC: `CreateUniversityRequest`, `UpdateUniversityRequest`, `CreateFacultyRequest`, `UpdateFacultyRequest`; FluentValidators for names, codes, URLs.
+  - Verify: unit tests pass in `ValidatorTests.cs`.
+  - Deps: T1. Files: `Application/Universities/*`.
+- [ ] **T14.2 (M, Tyson): University Service & Controller**
+  - AC: `IUniversityService`, `UniversitiesController` (`GET /universities` paged search, `GET /{id}`, `POST`, `PUT`, `DELETE` soft-delete cascade). `PlatformAdmin` writes.
+  - Verify: integration tests for university CRUD & soft-delete.
+  - Deps: T14.1. Files: `Infrastructure/Services/UniversityService.cs`, `Api/Controllers/UniversitiesController.cs`.
+- [ ] **T14.3 (M, Tyson): Faculty Service & Controller**
+  - AC: `IFacultyService`, `FacultiesController` (`GET /universities/{id}/faculties`, `POST .../faculties`, `PUT /faculties/{id}`, `DELETE /faculties/{id}`). Code uniqueness check.
+  - Verify: integration tests for nested faculty operations.
+  - Deps: T14.2. Files: `Infrastructure/Services/FacultyService.cs`, `Api/Controllers/FacultiesController.cs`.
+- [ ] **T14.4 (S, Tyson): Integration Tests for Universities & Faculties**
+  - AC: Full CRUD test suite: list, create, duplicate conflict, nested faculty, soft-delete, role rejection.
+  - Verify: `dotnet test tests/TeamUp.IntegrationTests` green.
+  - Deps: T14.3.
+
+#### Tyson Phase C: Student Directory, Public Discovery & Account Deletion
+- [ ] **T15.2A (S, Tyson): Student Directory Query & DTOs**
+  - AC: `StudentDirectoryQuery(Search, FacultyId, AcademicYear, Page, PageSize)`, `StudentCardDto`.
+  - Deps: T15. Files: `Application/Students/*`.
+- [ ] **T15.2B (M, Tyson): Student Discovery Endpoints**
+  - AC: `GET /api/v1/students` (filtered directory search), `GET /api/v1/students/{id}` (public profile card).
+  - Verify: integration tests assert filtering and public profile data.
+  - Deps: T15.2A. Files: `Infrastructure/Services/ProfileService.cs`, `Api/Controllers/StudentsController.cs`.
+- [ ] **T15.2C (S, Tyson): Student Account Soft Deletion**
+  - AC: `DELETE /api/v1/students/me` (self), `DELETE /api/v1/students/{id}` (`PlatformAdmin`). Sets `DeletedAt = UtcNow`, revokes refresh token, cleans task assignments.
+  - Verify: test asserts soft-deleted student cannot login and omitted from directory.
+  - Deps: T15.2B.
+- [ ] **T15.2D (S, Tyson): Integration Tests for Directory & Deletion**
+  - Verify: `dotnet test` green.
+
+#### Tyson Phase D: Password Recovery & Reset Flow
+- [ ] **T-AUTH4.1 (S, Tyson): Password Reset Token Column & Migration**
+  - AC: Add `PasswordResetToken` and `PasswordResetTokenExpiresAt` to `Student`. Generate migration and update DB.
+  - Verify: `dotnet ef database update` succeeds.
+  - Deps: T12. Files: `Domain/Entities/*`, `Infrastructure/Persistence/*`.
+- [ ] **T-AUTH4.2 (M, Tyson): Password Reset DTOs, Validators & Endpoints**
+  - AC: `POST /api/v1/auth/forgot-password` (safe response, no email enumeration), `POST /api/v1/auth/reset-password` (verifies token, complexity rules, resets hash).
+  - Verify: integration test covers forgot-password -> reset-password -> login with new password.
+  - Deps: T-AUTH4.1. Files: `Application/Auth/*`, `Api/Controllers/AuthController.cs`.
+- [ ] **T-AUTH4.3 (S, Tyson): Integration Tests for Password Reset Flow**
+  - Verify: tests assert expired token rejection (401), invalid token (401), successful reset.
+
+#### Tyson Phase E: Authorization Hardening & Governance
+- [ ] **T-AUTH5.1 (XS, Tyson): PlatformAdmin Policy Configuration**
+  - AC: Register explicit policies (`PlatformAdminOnly`, `SelfOrAdmin`) in `Program.cs`.
+  - Deps: T14.
+- [ ] **T-AUTH5.2 (S, Tyson): Rate Limiting for Public Auth Endpoints**
+  - AC: Rate limiting (10 req/min) on `/api/v1/auth/*` using ASP.NET Core RateLimiter.
+  - Deps: T12.
+- [ ] **T-AUTH5.3 (S, Tyson): Master Tyson Verification (All 26 Endpoints)**
+  - AC: Automated live runner covers all 26 endpoints. Update `AUTH-PROFILE-TEST-REPORT.md` and HTML preview.
+
+---
+
+### Other Team Members Work (Ossama, Ibrahim, Youssef)
+
+M2 (Ossama)
 - [ ] **T16 (S): Skills CRUD + `StudentSkill`** - `PUT/DELETE /students/{id}/skills/{skillId}`.
 - [ ] **T17 (M): Projects CRUD + required skills** - creator-only update/delete; `TeamSize` computed, not stored.
 - [ ] **T18 (M): Project applications and members** - apply, accept/reject (creator), accept creates `ProjectMember` in one transaction, respect `MaxTeamSize`, re-apply allowed after rejection.
 - [ ] **T19 (S): Project tasks** - CRUD, assign/unassign only to current members, soft-removing a member unassigns their tasks.
 
-M3
+M3 (Ibrahim)
 - [ ] **T20 (S): Organizations CRUD + members** - `OrgAdmin` manages members.
 - [ ] **T21 (M): Membership applications** - same pattern as T18.
 - [ ] **T22 (M): Events + sessions CRUD** - organizer-only; soft delete of event soft-deletes its sessions (service level, one transaction).
 - [ ] **T23 (M): Registrations** - capacity check, waitlist status, `RegisteredCount` computed.
 - [ ] **T24 (S): Session attendance check-in** - requires registration, one check-in per student per session, verification method enum.
 
-M4
+M4 (Youssef)
 - [ ] **T25 (M): Scoring** - `ScoreTransaction` append-only, `GET /students/{id}/score` returns total and `Level = FLOOR(SQRT(total/100)) + 1`, hooks called by T19 (task done) and T24 (attendance).
 - [ ] **T26 (S): Badges CRUD + award** - background check of criteria after score change; award idempotent.
 - [ ] **T27 (S): Notifications** - list, mark read, mark all read, soft delete; raised by T18, T21, T26.

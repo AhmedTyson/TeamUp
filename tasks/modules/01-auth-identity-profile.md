@@ -1,89 +1,188 @@
-# Module Plan 01: Authentication, Identity & Student Profiles
+# Module Plan 01: Authentication, Identity, Universities & Student Management
 
 **Owner:** Tyson (M1 - Tech Lead)  
-**Entities:** `Student`, `Faculty`, `University`, `StudentProfile`, `StudentInterest`  
-**Dependencies:** `AppDbContext`, `SoftDeleteInterceptor`, `InitialCreate` migration  
-**Status:** Verified & Done  
+**Entities Owned:** `Student`, `Faculty`, `University`, `StudentProfile`, `StudentInterest`  
+**Total Endpoints:** 26 (11 Completed, 15 Planned in Phases)  
+**Status:** In Progress (Phases B–E active)  
 
 ---
 
-## 1. Module Overview & Scope
+## 1. Master Scope & Ownership
 
-This module handles:
-1. **Authentication & Token Lifecycle:**
-   - Registration with password hashing (Argon2 / PBKDF2 via ASP.NET Identity).
-   - Role-based JWT access token issuance (`sub`, `email`, `role`).
-   - Refresh token issuance, rotation, and revocation (`logout`).
-2. **Current Student Identity (`/api/v1/students/me`):**
-   - Fetching authenticated student details, faculty, and role.
-   - Updating mutable account fields (academic year, personal names).
-   - Account soft deletion.
-3. **Student Profile (`/api/v1/students/me/profile` & `.../{id}/profile`):**
-   - 1:1 extended profile with portfolio links (Bio, PhotoUrl, GitHubUrl, LinkedInUrl).
-   - Upserting profile data for the authenticated student.
-4. **Student Interests (`/api/v1/students/me/interests`):**
-   - Tagging student with areas of interest (AI, Web, DevOps, etc.).
-   - Idempotent add and soft-delete removal.
+Tyson is responsible for the platform's core identity, authentication lifecycle, academic institutions, and student governance:
+1. **Authentication & Session Security:** Registration, Login, Token Rotation, Logout, Password Recovery.
+2. **Academic Affiliation:** Accredited Universities and Faculties catalog, academic code validation, and nested lookups.
+3. **Student Identity & Profile:** Account settings (`/me`), Extended Portfolio (`/profile`), Interest Tags (`/interests`).
+4. **Student Directory & Discovery:** Public profile cards, multi-criteria directory search (faculty, academic year, skills).
+5. **Platform Governance:** `PlatformAdmin` role-based access control, account soft-deletion, and rate limiting.
 
 ---
 
-## 2. API Endpoint Specification
+## 2. All 26 Endpoints Owned by Tyson
 
-| # | Method | Route | Description | Authorize | Status |
-|---|---|---|---|---|---|
-| 1 | `POST` | `/api/v1/auth/register` | Student user registration with faculty affiliation. | 🌐 Public | ✅ Done |
-| 2 | `POST` | `/api/v1/auth/login` | Login with email/password; returns JWT access + refresh token. | 🌐 Public | ✅ Done |
-| 3 | `POST` | `/api/v1/auth/refresh` | Rotate expired access token using valid refresh token. | 🌐 Public | ✅ Done |
-| 4 | `POST` | `/api/v1/auth/logout` | Invalidate active session and revoke refresh token. | 🔒 Auth | ✅ Done |
-| 5 | `GET` | `/api/v1/students/me` | Fetch authenticated student profile and account details. | 👤 Owner | ✅ Done |
-| 6 | `PATCH` | `/api/v1/students/me` | Update personal names or academic year. | 👤 Owner | ✅ Done |
-| 7 | `GET` | `/api/v1/students/{id}/profile`| Fetch student public extended profile. | 🔒 Auth | ✅ Done |
-| 8 | `PUT` | `/api/v1/students/me/profile` | Upsert bio, portfolio photo, GitHub, LinkedIn. | 👤 Owner | ✅ Done |
-| 9 | `GET` | `/api/v1/students/{id}/interests`| List student interest tags. | 🔒 Auth | ✅ Done |
-| 10 | `POST` | `/api/v1/students/me/interests`| Add interest tag to profile. | 👤 Owner | ✅ Done |
-| 11 | `DELETE`| `/api/v1/students/me/interests/{tag}`| Remove interest tag from profile. | 👤 Owner | ✅ Done |
-
----
-
-## 3. Ordered Task Breakdown
-
-### Task 1.1: JWT & Refresh Token Infrastructure
-- **Description:** Configure JWT Bearer authentication in `TeamUp.Api`, add `JwtOptions`, implement `IJwtTokenService` to generate signed tokens with claims (`sub`, `email`, `role`, `name`), and add `RefreshToken` + `RefreshTokenExpiresAt` properties to `Student`.
-- **Acceptance Criteria:**
-  - Token signed with HMAC-SHA256 using key from configuration / user-secrets.
-  - Generates cryptographically secure random refresh token (64-byte base64 string).
-  - Validates issuer, audience, and lifetime.
-- **Verification:** Unit tests generate and validate token claims.
-
-### Task 1.2: Auth Service & Endpoints (`Register`, `Login`, `Refresh`, `Logout`)
-- **Description:** Implement `IAuthService` and `AuthController` with endpoints for registration, login, token refresh, and logout.
-- **Acceptance Criteria:**
-  - `POST /api/v1/auth/register`: Returns `201 Created` with JWT + refresh token. Rejects duplicate emails with `409 Conflict`. Validates faculty exists.
-  - `POST /api/v1/auth/login`: Returns `200 OK` on valid credentials, `401 Unauthorized` on wrong password or email not found.
-  - `POST /api/v1/auth/refresh`: Rotates refresh token, returns new JWT + refresh token. Rejects expired or revoked token with `401 Unauthorized`.
-  - `POST /api/v1/auth/logout`: Clears `RefreshToken` and `RefreshTokenExpiresAt`, returns `204 No Content`.
-- **Verification:** Integration tests cover all 4 endpoints with success and failure paths.
-
-### Task 1.3: Student Profile & Account Endpoints (`GET /students/me`, `PUT /students/me/profile`)
-- **Description:** Implement `IProfileService` and `StudentsController` for fetching and updating current student account and 1:1 `StudentProfile`.
-- **Acceptance Criteria:**
-  - `GET /api/v1/students/me`: Returns student basic info, faculty name & university, role, academic year.
-  - `PATCH /api/v1/students/me`: Partially updates names or academic year.
-  - `GET /api/v1/students/{id}/profile`: Returns extended bio and social links. Returns `404 Not Found` if student doesn't exist.
-  - `PUT /api/v1/students/me/profile`: Upserts `StudentProfile` record (creates if not existing, updates if present).
-- **Verification:** Integration tests verify profile retrieval and update with JWT bearer token.
-
-### Task 1.4: Student Interests Endpoints (`Interests`)
-- **Description:** Add support for managing student interest tags via `StudentsController`.
-- **Acceptance Criteria:**
-  - `GET /api/v1/students/{id}/interests`: Returns list of strings.
-  - `POST /api/v1/students/me/interests`: Adds tag, idempotent if tag already active.
-  - `DELETE /api/v1/students/me/interests/{tag}`: Soft-deletes interest tag (`DeletedAt = UtcNow`).
-- **Verification:** Tests assert interests added, listed, and soft-deleted.
+| # | Method | Route | Description | Authorize | Phase | Status |
+|---|---|---|---|---|---|---|
+| 1 | `GET` | `/health` | Service & DB connectivity health check. | 🌐 Public | Phase A | ✅ Done |
+| 2 | `POST` | `/api/v1/auth/register` | Student registration with faculty linkage. | 🌐 Public | Phase A | ✅ Done |
+| 3 | `POST` | `/api/v1/auth/login` | Login credentials verification & JWT issuance. | 🌐 Public | Phase A | ✅ Done |
+| 4 | `POST` | `/api/v1/auth/refresh` | Cryptographic refresh token rotation. | 🌐 Public | Phase A | ✅ Done |
+| 5 | `POST` | `/api/v1/auth/logout` | Revoke active refresh token. | 🔒 Auth | Phase A | ✅ Done |
+| 6 | `POST` | `/api/v1/auth/forgot-password` | Request password reset token. | 🌐 Public | Phase D | ⏳ Scheduled |
+| 7 | `POST` | `/api/v1/auth/reset-password` | Set new password with reset token. | 🌐 Public | Phase D | ⏳ Scheduled |
+| 8 | `GET` | `/api/v1/universities` | Paginated list of universities. | 🔒 Auth | Phase B | ⏳ Scheduled |
+| 9 | `POST` | `/api/v1/universities` | Create accredited university. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
+| 10 | `GET` | `/api/v1/universities/{id}` | Get university details + constituent faculties. | 🔒 Auth | Phase B | ⏳ Scheduled |
+| 11 | `PUT` | `/api/v1/universities/{id}` | Update university information. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
+| 12 | `DELETE` | `/api/v1/universities/{id}` | Soft-delete university & child faculties. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
+| 13 | `GET` | `/api/v1/universities/{id}/faculties` | List faculties in university. | 🔒 Auth | Phase B | ⏳ Scheduled |
+| 14 | `POST` | `/api/v1/universities/{id}/faculties` | Add faculty to university. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
+| 15 | `PUT` | `/api/v1/faculties/{id}` | Update faculty details & academic code. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
+| 16 | `DELETE` | `/api/v1/faculties/{id}` | Soft-delete faculty (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
+| 17 | `GET` | `/api/v1/students` | Search / filter student directory. | 🔒 Auth | Phase C | ⏳ Scheduled |
+| 18 | `GET` | `/api/v1/students/{id}` | Public student profile card & badges. | 🔒 Auth | Phase C | ⏳ Scheduled |
+| 19 | `GET` | `/api/v1/students/me` | Fetch authenticated student profile. | 👤 Owner | Phase A | ✅ Done |
+| 20 | `PATCH` | `/api/v1/students/me` | Update personal names or academic year. | 👤 Owner | Phase A | ✅ Done |
+| 21 | `DELETE` | `/api/v1/students/me` | Soft-delete student account. | 👤 Owner / 👑 Admin | Phase C | ⏳ Scheduled |
+| 22 | `GET` | `/api/v1/students/{id}/profile` | Fetch public extended portfolio. | 🔒 Auth | Phase A | ✅ Done |
+| 23 | `PUT` | `/api/v1/students/me/profile` | Upsert bio, portfolio photo, GitHub, LinkedIn. | 👤 Owner | Phase A | ✅ Done |
+| 24 | `GET` | `/api/v1/students/{id}/interests` | List student interest tags. | 🔒 Auth | Phase A | ✅ Done |
+| 25 | `POST` | `/api/v1/students/me/interests` | Add interest tag to profile. | 👤 Owner | Phase A | ✅ Done |
+| 26 | `DELETE` | `/api/v1/students/me/interests/{tag}` | Soft-delete interest tag from profile. | 👤 Owner | Phase A | ✅ Done |
 
 ---
 
-## 4. Verification Checkpoint
-- [ ] `dotnet build TeamUp.sln` compiles with 0 warnings.
-- [ ] Integration test suite covers registration -> login -> profile update -> interests -> token refresh -> logout flow end-to-end.
-- [ ] Unauthorized requests (`401`) and forbidden requests (`403`) verified on protected routes.
+## 3. Tyson Implementation Phases
+
+### Phase A: Foundation, Core Auth & Profile (Completed)
+- **T-TYSON-01 to T-TYSON-11:**
+  - Solution scaffolding, CI pipeline, branch rules.
+  - Single-column soft delete (`DeletedAt`), `SoftDeleteInterceptor`.
+  - Database migration & SQL Server verification (23 tables, 29 FKs all `NO ACTION`, 10 filtered unique indexes).
+  - JWT Bearer auth, password hasher, crypto refresh token rotation.
+  - SRP Controllers (`AuthController`, `StudentsController`, `StudentProfilesController`, `StudentInterestsController`).
+  - Standard `BaseApiController` & `BaseResponse<T>` JSON envelope.
+  - FluentValidation action filter & RFC 7807 `ErrorResponse`.
+  - 33 automated tests passing (21 Unit + 12 Integration).
+
+---
+
+### Phase B: Universities & Faculties Module (Target: T14)
+
+#### Task B.1: University & Faculty DTOs and Validators (Size: S)
+- **Description:** Define request and response records for universities and faculties with FluentValidation rules.
+- **Acceptance Criteria:**
+  - `CreateUniversityRequest(string Name, string City, string Country, string? Website)`: Name, City, Country required. Website must be absolute URL if provided.
+  - `UpdateUniversityRequest(string Name, string City, string Country, string? Website)`: Same rules.
+  - `CreateFacultyRequest(string Name, string Code)`: Name required (max 150), Code required (max 20, alphanumeric).
+  - `UpdateFacultyRequest(string Name, string Code)`: Same rules.
+  - Response DTOs: `UniversityDto`, `UniversityDetailDto`, `FacultyDto`.
+- **Files Touched:**
+  - `src/TeamUp.Application/Universities/UniversityDtos.cs`
+  - `src/TeamUp.Application/Universities/Validators/UniversityValidators.cs`
+
+#### Task B.2: University Service & Controller (Size: M)
+- **Description:** Implement `IUniversityService` and `UniversitiesController` (`api/v1/universities`).
+- **Acceptance Criteria:**
+  - `GET /api/v1/universities`: Paginated search with `PageRequest`, `.AsNoTracking()`, returns `PagedResult<UniversityDto>`.
+  - `GET /api/v1/universities/{id}`: Returns university details + constituent active faculties.
+  - `POST /api/v1/universities`: Restricted to `PlatformAdmin`. Validates unique university name `WHERE [DeletedAt] IS NULL`. Returns `201 Created`.
+  - `PUT /api/v1/universities/{id}`: Restricted to `PlatformAdmin`. Updates university. Returns `200 OK`.
+  - `DELETE /api/v1/universities/{id}`: Restricted to `PlatformAdmin`. Soft-deletes university + child faculties in a single transaction. Returns `204 NoContent`.
+- **Files Touched:**
+  - `src/TeamUp.Application/Universities/IUniversityService.cs`
+  - `src/TeamUp.Infrastructure/Services/UniversityService.cs`
+  - `src/TeamUp.Api/Controllers/UniversitiesController.cs`
+
+#### Task B.3: Faculty Service & Controller (Size: M)
+- **Description:** Implement `IFacultyService` and `FacultiesController` with nested and root endpoints.
+- **Acceptance Criteria:**
+  - `GET /api/v1/universities/{id}/faculties`: Lists faculties belonging to a specific university.
+  - `POST /api/v1/universities/{id}/faculties`: Restricted to `PlatformAdmin`. Validates unique Code within university. Returns `201 Created`.
+  - `PUT /api/v1/faculties/{id}`: Restricted to `PlatformAdmin`. Updates faculty name and code. Returns `200 OK`.
+  - `DELETE /api/v1/faculties/{id}`: Restricted to `PlatformAdmin`. Soft-deletes faculty (`DeletedAt = UtcNow`). Returns `204 NoContent`.
+- **Files Touched:**
+  - `src/TeamUp.Application/Universities/IFacultyService.cs`
+  - `src/TeamUp.Infrastructure/Services/FacultyService.cs`
+  - `src/TeamUp.Api/Controllers/FacultiesController.cs`
+
+#### Task B.4: Universities & Faculties Integration Tests (Size: S)
+- **Description:** Automated integration tests in `TeamUp.IntegrationTests/UniversityAndFacultyTests.cs`.
+- **Verification:**
+  - Paged list, detail lookup, duplicate name rejection (409), unauthorized caller rejection (403 for Student, 401 unauth), nested faculty creation, soft delete.
+
+---
+
+### Phase C: Student Directory, Public Discovery & Account Deletion
+
+#### Task C.1: Student Directory Query & DTOs (Size: S)
+- **Description:** Specification for student directory search with pagination, filtering by academic year, faculty, and search keywords.
+- **Acceptance Criteria:**
+  - `StudentDirectoryQuery(string? Search, int? FacultyId, int? AcademicYear, int Page, int PageSize)`
+  - `StudentCardDto(int StudentId, string FullName, string Email, int AcademicYear, string FacultyName, string UniversityName, IReadOnlyList<string> Interests)`
+- **Files Touched:**
+  - `src/TeamUp.Application/Students/StudentDirectoryDtos.cs`
+
+#### Task C.2: Directory & Discovery Endpoints in `StudentsController` (Size: M)
+- **Description:** Implement `GET /api/v1/students` and `GET /api/v1/students/{id}` with `.AsNoTracking()`.
+- **Acceptance Criteria:**
+  - `GET /api/v1/students`: Filtered directory search returning `PagedResult<StudentCardDto>`.
+  - `GET /api/v1/students/{id}`: Public profile card including active interests and badges earned.
+- **Files Touched:**
+  - `src/TeamUp.Infrastructure/Services/ProfileService.cs`
+  - `src/TeamUp.Api/Controllers/StudentsController.cs`
+
+#### Task C.3: Student Account Soft Deletion (Size: S)
+- **Description:** Implement `DELETE /api/v1/students/me` and `DELETE /api/v1/students/{id}` (`PlatformAdmin`).
+- **Acceptance Criteria:**
+  - Marks `student.DeletedAt = DateTime.UtcNow`.
+  - Clears `RefreshToken` and `RefreshTokenExpiresAt`.
+  - Unassigns student from active tasks (`ProjectTask.AssignedStudentId = null`).
+  - Returns `204 NoContent`.
+- **Files Touched:**
+  - `src/TeamUp.Infrastructure/Services/ProfileService.cs`
+  - `src/TeamUp.Api/Controllers/StudentsController.cs`
+
+#### Task C.4: Directory & Deletion Integration Tests (Size: S)
+- **Verification:** Integration tests verifying directory filtering, public card query, self account deletion, and confirming deleted student cannot authenticate.
+
+---
+
+### Phase D: Password Recovery & Reset Flow
+
+#### Task D.1: Password Reset Token Storage & Security (Size: S)
+- **Description:** Add `PasswordResetToken` and `PasswordResetTokenExpiresAt` to `Student`.
+- **Acceptance Criteria:**
+  - Crypto-random 64-byte token with 1-hour expiration.
+  - Migration `AddPasswordResetToken` applied to database.
+- **Files Touched:**
+  - `src/TeamUp.Domain/Entities/Entities.cs`
+  - `src/TeamUp.Infrastructure/Persistence/Configurations/IdentityConfigs.cs`
+
+#### Task D.2: Password Reset DTOs, Validators & Endpoints (Size: M)
+- **Description:** Implement `POST /api/v1/auth/forgot-password` and `POST /api/v1/auth/reset-password` in `AuthController`.
+- **Acceptance Criteria:**
+  - `POST /forgot-password`: Generates reset token. Returns `200 OK` with safe generic message (no user enumeration).
+  - `POST /reset-password`: Validates token and expiry. Enforces password complexity. Resets password, clears reset token, invalidates refresh token. Returns `200 OK`.
+- **Files Touched:**
+  - `src/TeamUp.Application/Auth/AuthDtos.cs`
+  - `src/TeamUp.Application/Auth/Validators/AuthValidators.cs`
+  - `src/TeamUp.Infrastructure/Services/AuthService.cs`
+  - `src/TeamUp.Api/Controllers/AuthController.cs`
+
+#### Task D.3: Password Reset Integration Tests (Size: S)
+- **Verification:** Tests cover requesting token, valid reset + new password login, invalid token rejection (401), expired token rejection (401).
+
+---
+
+### Phase E: Governance, Rate Limiting & Polish
+
+#### Task E.1: Platform Admin Authorization Policies (Size: XS)
+- **Description:** Register explicit authorization policies (`PlatformAdminOnly`, `SelfOrAdmin`) in `Program.cs`.
+- **Files Touched:** `src/TeamUp.Api/Program.cs`
+
+#### Task E.2: Rate Limiting on Auth Endpoints (Size: S)
+- **Description:** Configure `Microsoft.AspNetCore.RateLimiting` (10 requests/minute per client IP) on `/api/v1/auth/*`.
+- **Files Touched:** `src/TeamUp.Api/Program.cs`
+
+#### Task E.3: Master Test Run & Evidence Documentation (Size: S)
+- **Description:** Update live runner script to execute all 26 endpoints owned by Tyson. Regenerate `AUTH-PROFILE-TEST-REPORT.md` and HTML preview dashboard.
