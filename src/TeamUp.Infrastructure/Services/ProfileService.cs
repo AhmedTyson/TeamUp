@@ -11,6 +11,7 @@ public sealed class ProfileService(AppDbContext db) : IProfileService
     public async Task<StudentDetailDto> GetMyProfileAsync(int studentId, CancellationToken ct = default)
     {
         var student = await db.Students
+            .AsNoTracking()
             .Include(s => s.Faculty)
             .ThenInclude(f => f.University)
             .Include(s => s.Profile)
@@ -51,7 +52,7 @@ public sealed class ProfileService(AppDbContext db) : IProfileService
 
     public async Task<StudentProfileDto> GetExtendedProfileAsync(int studentId, CancellationToken ct = default)
     {
-        var profile = await db.StudentProfiles.FirstOrDefaultAsync(p => p.StudentId == studentId, ct);
+        var profile = await db.StudentProfiles.AsNoTracking().FirstOrDefaultAsync(p => p.StudentId == studentId, ct);
         if (profile is null)
             return new StudentProfileDto(null, null, null, null);
 
@@ -93,6 +94,7 @@ public sealed class ProfileService(AppDbContext db) : IProfileService
     public async Task<IReadOnlyList<string>> GetInterestsAsync(int studentId, CancellationToken ct = default)
     {
         return await db.StudentInterests
+            .AsNoTracking()
             .Where(i => i.StudentId == studentId)
             .Select(i => i.Interest)
             .ToListAsync(ct);

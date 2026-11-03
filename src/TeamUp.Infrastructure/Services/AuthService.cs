@@ -29,6 +29,7 @@ public sealed class AuthService(
             throw new ConflictException("A student with this email address already exists.");
 
         var faculty = await db.Faculties
+            .AsNoTracking()
             .Include(f => f.University)
             .FirstOrDefaultAsync(f => f.FacultyId == req.FacultyId, ct)
             ?? throw new NotFoundException($"Faculty with ID {req.FacultyId} was not found.");
