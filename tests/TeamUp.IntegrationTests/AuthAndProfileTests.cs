@@ -208,4 +208,57 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var refreshAfterLogout = await _client.PostAsJsonAsync("/api/v1/auth/refresh", new RefreshTokenRequest(auth.RefreshToken));
         Assert.Equal(HttpStatusCode.Unauthorized, refreshAfterLogout.StatusCode);
     }
+
+    [Fact]
+    public async Task StudentsDirectory_ReturnsFilteredStudents_AndPublicProfile()
+    {
+        var email = $"dir_{Guid.NewGuid():N}@test.com";
+        var reg = new RegisterRequest(email, "Password123!", "Nader", "Fahmy", 4, factory.SeededFacultyId);
+        var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
+        var auth = await GetDataAsync<AuthResponse>(regRes);
+
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        // Directory Search
+        var dirRes = await client.GetAsync($"/api/v1/students?search=Nader&academicYear=4");
+        Assert.Equal(HttpStatusCode.OK, dirRes.StatusCode);
+        var dir = await GetDataAsync<TeamUp.Application.Common.PagedResult<StudentCardDto>>(dirRes);
+        Assert.NotNull(dir);
+        Assert.NotEmpty(dir.Items);
+        Assert.Contains(dir.Items, s => s.Email == email);
+
+        // Public Profile Card
+        var pubRes = await client.GetAsync($"/api/v1/students/{auth.Student.StudentId}");
+        Assert.Equal(HttpStatusCode.OK, pubRes.StatusCode);
+        var pub = await GetDataAsync<StudentPublicProfileDto>(pubRes);
+        Assert.NotNull(pub);
+        Assert.Equal("Nader", pub.FirstName);
+        Assert.Equal(4, pub.AcademicYear);
+    }
+
+    [Fact]
+    public async Task Student_SelfSoftDelete_PreventsSubsequentLoginAndDirectoryInclusion()
+    {
+        var email = $"delete_me_{Guid.NewGuid():N}@test.com";
+        var reg = new RegisterRequest(email, "Password123!", "Tamer", "Hosny", 1, factory.SeededFacultyId);
+        var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
+        var auth = await GetDataAsync<AuthResponse>(regRes);
+
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        // Self soft-delete
+        var delRes = await client.DeleteAsync("/api/v1/students/me");
+        Assert.Equal(HttpStatusCode.NoContent, delRes.StatusCode);
+
+        // Subsequent login must fail
+        var loginRes = await _client.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest(email, "Password123!"));
+        Assert.Equal(HttpStatusCode.Unauthorized, loginRes.StatusCode);
+
+        // Subsquent search must not include deleted student
+        var dirRes = await client.GetAsync($"/api/v1/students?search=Tamer");
+        var dir = await GetDataAsync<TeamUp.Application.Common.PagedResult<StudentCardDto>>(dirRes);
+        Assert.DoesNotContain(dir.Items, s => s.Email == email);
+    }
 }

@@ -120,18 +120,18 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
   - Deps: T14.3.
 
 #### Tyson Phase C: Student Directory, Public Discovery & Account Deletion
-- [ ] **T15.2A (S, Tyson): Student Directory Query & DTOs**
+- [x] **T15.2A (S, Tyson): Student Directory Query & DTOs**
   - AC: `StudentDirectoryQuery(Search, FacultyId, AcademicYear, Page, PageSize)`, `StudentCardDto`.
   - Deps: T15. Files: `Application/Students/*`.
-- [ ] **T15.2B (M, Tyson): Student Discovery Endpoints**
+- [x] **T15.2B (M, Tyson): Student Discovery Endpoints**
   - AC: `GET /api/v1/students` (filtered directory search), `GET /api/v1/students/{id}` (public profile card).
   - Verify: integration tests assert filtering and public profile data.
   - Deps: T15.2A. Files: `Infrastructure/Services/ProfileService.cs`, `Api/Controllers/StudentsController.cs`.
-- [ ] **T15.2C (S, Tyson): Student Account Soft Deletion**
+- [x] **T15.2C (S, Tyson): Student Account Soft Deletion**
   - AC: `DELETE /api/v1/students/me` (self), `DELETE /api/v1/students/{id}` (`PlatformAdmin`). Sets `DeletedAt = UtcNow`, revokes refresh token, cleans task assignments.
   - Verify: test asserts soft-deleted student cannot login and omitted from directory.
   - Deps: T15.2B.
-- [ ] **T15.2D (S, Tyson): Integration Tests for Directory & Deletion**
+- [x] **T15.2D (S, Tyson): Integration Tests for Directory & Deletion**
   - Verify: `dotnet test` green.
 
 #### Tyson Phase D: Password Recovery & Reset Flow

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TeamUp.Application.Common;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Students;
 using TeamUp.Domain.Entities;
@@ -55,6 +56,92 @@ public sealed class ProfileService(AppDbContext db)
         await db.SaveChangesAsync(ct);
 
         return await GetMyProfileAsync(studentId, ct);
+    }
+
+    public async Task<PagedResult<StudentCardDto>> GetStudentsDirectoryAsync(StudentDirectoryQuery query, CancellationToken ct = default)
+    {
+        var page = query.ToPageRequest();
+        var dbQuery = db.Students.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var term = query.Search.Trim();
+            dbQuery = dbQuery.Where(s => s.FirstName.Contains(term) || s.LastName.Contains(term) || s.Email.Contains(term));
+        }
+
+        if (query.FacultyId.HasValue)
+            dbQuery = dbQuery.Where(s => s.FacultyId == query.FacultyId.Value);
+
+        if (query.AcademicYear.HasValue)
+            dbQuery = dbQuery.Where(s => s.AcademicYear == query.AcademicYear.Value);
+
+        var total = await dbQuery.CountAsync(ct);
+
+        var items = await dbQuery
+            .OrderBy(s => s.FirstName)
+            .ThenBy(s => s.LastName)
+            .Skip(page.Skip)
+            .Take(page.SafePageSize)
+            .Select(s => new StudentCardDto(
+                s.StudentId,
+                s.FirstName,
+                s.LastName,
+                s.Email,
+                s.AcademicYear,
+                s.Role.ToString(),
+                s.Faculty.FacultyId,
+                s.Faculty.Name,
+                s.Faculty.University.Name,
+                s.Interests.Select(i => i.Interest).ToList()))
+            .ToListAsync(ct);
+
+        return new PagedResult<StudentCardDto>(items, page.SafePage, page.SafePageSize, total);
+    }
+
+    public async Task<StudentPublicProfileDto> GetStudentPublicProfileByIdAsync(int studentId, CancellationToken ct = default)
+    {
+        var student = await db.Students
+            .AsNoTracking()
+            .Include(s => s.Faculty)
+            .ThenInclude(f => f.University)
+            .Include(s => s.Profile)
+            .Include(s => s.Interests)
+            .FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
+            ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
+
+        var profileDto = student.Profile is null ? null : new StudentProfileDto(
+            student.Profile.Bio, student.Profile.PhotoUrl, student.Profile.GitHubUrl, student.Profile.LinkedInUrl);
+
+        var interests = student.Interests.Select(i => i.Interest).ToList();
+
+        return new StudentPublicProfileDto(
+            student.StudentId,
+            student.FirstName,
+            student.LastName,
+            student.AcademicYear,
+            student.Faculty.Name,
+            student.Faculty.University.Name,
+            profileDto,
+            interests);
+    }
+
+    public async Task DeleteStudentAccountAsync(int studentId, CancellationToken ct = default)
+    {
+        var student = await db.Students.FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
+            ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
+
+        student.RefreshToken = null;
+        student.RefreshTokenExpiresAt = null;
+
+        // Clean task assignments for soft-deleted student
+        var assignedTasks = await db.ProjectTasks.Where(t => t.AssignedStudentId == studentId).ToListAsync(ct);
+        foreach (var task in assignedTasks)
+        {
+            task.AssignedStudentId = null;
+        }
+
+        db.Students.Remove(student);
+        await db.SaveChangesAsync(ct);
     }
 
     public async Task<StudentProfileDto> GetExtendedProfileAsync(int studentId, CancellationToken ct = default)

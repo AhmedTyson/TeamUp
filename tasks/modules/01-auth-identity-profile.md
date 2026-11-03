@@ -38,11 +38,11 @@ Tyson is responsible for the platform's core identity, authentication lifecycle,
 | 14 | `POST` | `/api/v1/universities/{id}/faculties` | Add faculty to university. | 👑 PlatformAdmin | Phase B | ✅ Done |
 | 15 | `PUT` | `/api/v1/faculties/{id}` | Update faculty details & academic code. | 👑 PlatformAdmin | Phase B | ✅ Done |
 | 16 | `DELETE` | `/api/v1/faculties/{id}` | Soft-delete faculty (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Phase B | ✅ Done |
-| 17 | `GET` | `/api/v1/students` | Search / filter student directory. | 🔒 Auth | Phase C | ⏳ Scheduled |
-| 18 | `GET` | `/api/v1/students/{id}` | Public student profile card & badges. | 🔒 Auth | Phase C | ⏳ Scheduled |
+| 17 | `GET` | `/api/v1/students` | Search / filter student directory. | 🔒 Auth | Phase C | ✅ Done |
+| 18 | `GET` | `/api/v1/students/{id}` | Public student profile card & badges. | 🔒 Auth | Phase C | ✅ Done |
 | 19 | `GET` | `/api/v1/students/me` | Fetch authenticated student profile. | 👤 Owner | Phase A | ✅ Done |
 | 20 | `PATCH` | `/api/v1/students/me` | Update personal names or academic year. | 👤 Owner | Phase A | ✅ Done |
-| 21 | `DELETE` | `/api/v1/students/me` | Soft-delete student account. | 👤 Owner / 👑 Admin | Phase C | ⏳ Scheduled |
+| 21 | `DELETE` | `/api/v1/students/me` | Soft-delete student account. | 👤 Owner / 👑 Admin | Phase C | ✅ Done |
 | 22 | `GET` | `/api/v1/students/{id}/profile` | Fetch public extended portfolio. | 🔒 Auth | Phase A | ✅ Done |
 | 23 | `PUT` | `/api/v1/students/me/profile` | Upsert bio, portfolio photo, GitHub, LinkedIn. | 👤 Owner | Phase A | ✅ Done |
 | 24 | `GET` | `/api/v1/students/{id}/interests` | List student interest tags. | 🔒 Auth | Phase A | ✅ Done |

@@ -90,11 +90,11 @@
 
 | # | Method | Route | Description | Authorize | Backend | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 17 | GET | `/api/v1/students` | Search / filter student directory by faculty or academic year. | 🔒 Auth | Tyson | ⏳ Pending (T15) |
-| 18 | GET | `/api/v1/students/{id}` | Public student portfolio card & badges. | 🔒 Auth | Tyson | ⏳ Pending (T15) |
+| 17 | GET | `/api/v1/students` | Search / filter student directory by faculty or academic year. | 🔒 Auth | Tyson | ✅ Done (T15) |
+| 18 | GET | `/api/v1/students/{id}` | Public student portfolio card & badges. | 🔒 Auth | Tyson | ✅ Done (T15) |
 | 19 | GET | `/api/v1/students/me` | Fetch authenticated student’s full profile and credentials. | 👤 Owner | Tyson | ✅ Done (T15) |
 | 20 | PATCH | `/api/v1/students/me` | Update student academic year or personal names. | 👤 Owner | Tyson | ✅ Done (T15) |
-| 21 | DELETE | `/api/v1/students/me` | Soft-delete student account. | 👤 Owner / 👑 Admin | Tyson | ⏳ Pending (T15) |
+| 21 | DELETE | `/api/v1/students/me` | Soft-delete student account. | 👤 Owner / 👑 Admin | Tyson | ✅ Done (T15) |
 | 22 | GET | `/api/v1/students/{id}/profile` | Get student extended portfolio (Bio, Photo, GitHub, LinkedIn). | 🔒 Auth | Tyson | ✅ Done (T15) |
 | 23 | PUT | `/api/v1/students/me/profile` | Upsert bio, portfolio photo, GitHub URL, LinkedIn URL. | 👤 Owner | Tyson | ✅ Done (T15) |
 | 24 | GET | `/api/v1/students/{id}/interests` | Get student list of academic/extracurricular interests. | 🔒 Auth | Tyson | ✅ Done (T15) |
