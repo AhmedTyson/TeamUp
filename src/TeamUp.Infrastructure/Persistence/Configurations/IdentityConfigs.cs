@@ -45,6 +45,7 @@ public class StudentConfig : IEntityTypeConfiguration<Student>
         b.Property(x => x.LastName).HasMaxLength(50).IsRequired();
         b.Property(x => x.Role).HasDefaultValue(Domain.Enums.UserRole.Student);
         b.Property(x => x.RefreshToken).HasMaxLength(256);
+        b.Property(x => x.PasswordResetToken).HasMaxLength(256);
         b.HasOne(x => x.Faculty).WithMany(f => f.Students).HasForeignKey(x => x.FacultyId);
         b.HasIndex(x => x.Email).IsUnique().HasFilter(Sql.NotDeleted);
         b.ToTable(t => t.HasCheckConstraint("CK_Student_AcademicYear", "[AcademicYear] BETWEEN 1 AND 7"));

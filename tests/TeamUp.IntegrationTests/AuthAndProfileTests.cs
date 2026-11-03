@@ -261,4 +261,45 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var dir = await GetDataAsync<TeamUp.Application.Common.PagedResult<StudentCardDto>>(dirRes);
         Assert.DoesNotContain(dir.Items, s => s.Email == email);
     }
+
+    [Fact]
+    public async Task PasswordRecovery_FullFlow_WorksAsExpected()
+    {
+        var email = $"recovery_{Guid.NewGuid():N}@test.com";
+        var reg = new RegisterRequest(email, "InitialPassword123!", "Kareem", "Reset", 2, factory.SeededFacultyId);
+        await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
+
+        // 1. Request forgot password
+        var forgotRes = await _client.PostAsJsonAsync("/api/v1/auth/forgot-password", new ForgotPasswordRequest(email));
+        Assert.Equal(HttpStatusCode.OK, forgotRes.StatusCode);
+        var forgot = await GetDataAsync<ForgotPasswordResponse>(forgotRes);
+        Assert.NotNull(forgot.ResetToken);
+
+        // 2. Reset password with valid token
+        var newPassword = "BrandNewPassword2026!";
+        var resetRes = await _client.PostAsJsonAsync("/api/v1/auth/reset-password", new ResetPasswordRequest(email, forgot.ResetToken, newPassword));
+        Assert.Equal(HttpStatusCode.OK, resetRes.StatusCode);
+
+        // 3. Login with old password fails
+        var oldLoginRes = await _client.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest(email, "InitialPassword123!"));
+        Assert.Equal(HttpStatusCode.Unauthorized, oldLoginRes.StatusCode);
+
+        // 4. Login with new password succeeds
+        var newLoginRes = await _client.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest(email, newPassword));
+        Assert.Equal(HttpStatusCode.OK, newLoginRes.StatusCode);
+    }
+
+    [Fact]
+    public async Task PasswordRecovery_InvalidOrExpiredToken_Fails()
+    {
+        var email = $"recovery_fail_{Guid.NewGuid():N}@test.com";
+        var reg = new RegisterRequest(email, "ValidPassword123!", "Sami", "Fail", 2, factory.SeededFacultyId);
+        await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
+
+        // Invalid token
+        var invalidReset = await _client.PostAsJsonAsync(
+            "/api/v1/auth/reset-password",
+            new ResetPasswordRequest(email, "completely_invalid_token", "BrandNewPassword2026!"));
+        Assert.Equal(HttpStatusCode.Unauthorized, invalidReset.StatusCode);
+    }
 }

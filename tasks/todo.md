@@ -135,15 +135,15 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
   - Verify: `dotnet test` green.
 
 #### Tyson Phase D: Password Recovery & Reset Flow
-- [ ] **T-AUTH4.1 (S, Tyson): Password Reset Token Column & Migration**
+- [x] **T-AUTH4.1 (S, Tyson): Password Reset Token Column & Migration**
   - AC: Add `PasswordResetToken` and `PasswordResetTokenExpiresAt` to `Student`. Generate migration and update DB.
   - Verify: `dotnet ef database update` succeeds.
   - Deps: T12. Files: `Domain/Entities/*`, `Infrastructure/Persistence/*`.
-- [ ] **T-AUTH4.2 (M, Tyson): Password Reset DTOs, Validators & Endpoints**
+- [x] **T-AUTH4.2 (M, Tyson): Password Reset DTOs, Validators & Endpoints**
   - AC: `POST /api/v1/auth/forgot-password` (safe response, no email enumeration), `POST /api/v1/auth/reset-password` (verifies token, complexity rules, resets hash).
   - Verify: integration test covers forgot-password -> reset-password -> login with new password.
   - Deps: T-AUTH4.1. Files: `Application/Auth/*`, `Api/Controllers/AuthController.cs`.
-- [ ] **T-AUTH4.3 (S, Tyson): Integration Tests for Password Reset Flow**
+- [x] **T-AUTH4.3 (S, Tyson): Integration Tests for Password Reset Flow**
   - Verify: tests assert expired token rejection (401), invalid token (401), successful reset.
 
 #### Tyson Phase E: Authorization Hardening & Governance

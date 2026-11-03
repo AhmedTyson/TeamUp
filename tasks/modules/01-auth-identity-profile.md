@@ -27,8 +27,8 @@ Tyson is responsible for the platform's core identity, authentication lifecycle,
 | 3 | `POST` | `/api/v1/auth/login` | Login credentials verification & JWT issuance. | 🌐 Public | Phase A | ✅ Done |
 | 4 | `POST` | `/api/v1/auth/refresh` | Cryptographic refresh token rotation. | 🌐 Public | Phase A | ✅ Done |
 | 5 | `POST` | `/api/v1/auth/logout` | Revoke active refresh token. | 🔒 Auth | Phase A | ✅ Done |
-| 6 | `POST` | `/api/v1/auth/forgot-password` | Request password reset token. | 🌐 Public | Phase D | ⏳ Scheduled |
-| 7 | `POST` | `/api/v1/auth/reset-password` | Set new password with reset token. | 🌐 Public | Phase D | ⏳ Scheduled |
+| 6 | `POST` | `/api/v1/auth/forgot-password` | Request password reset token. | 🌐 Public | Phase D | ✅ Done |
+| 7 | `POST` | `/api/v1/auth/reset-password` | Set new password with reset token. | 🌐 Public | Phase D | ✅ Done |
 | 8 | `GET` | `/api/v1/universities` | Paginated list of universities. | 🔒 Auth | Phase B | ✅ Done |
 | 9 | `POST` | `/api/v1/universities` | Create accredited university. | 👑 PlatformAdmin | Phase B | ✅ Done |
 | 10 | `GET` | `/api/v1/universities/{id}` | Get university details + constituent faculties. | 🔒 Auth | Phase B | ✅ Done |

@@ -38,6 +38,8 @@ public class Student : BaseEntity
     public StudentProfile? Profile { get; set; }
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiresAt { get; set; }
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpiresAt { get; set; }
     public ICollection<StudentInterest> Interests { get; set; } = [];
     public ICollection<StudentSkill> Skills { get; set; } = [];
 }

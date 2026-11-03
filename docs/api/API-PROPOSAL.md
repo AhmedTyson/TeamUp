@@ -65,8 +65,8 @@
 | 3 | POST | `/api/v1/auth/login` | Login with email/password; returns JWT access & refresh token. | 🌐 Public | Tyson | ✅ Done (T12) |
 | 4 | POST | `/api/v1/auth/refresh` | Rotate expired access token using valid refresh token. | 🌐 Public | Tyson | ✅ Done (T13) |
 | 5 | POST | `/api/v1/auth/logout` | Invalidate active session and revoke refresh token. | 🔒 Auth | Tyson | ✅ Done (T13) |
-| 6 | POST | `/api/v1/auth/forgot-password` | Request password reset token via university email. | 🌐 Public | Tyson | ⏳ Pending |
-| 7 | POST | `/api/v1/auth/reset-password` | Reset password using verified reset token. | 🌐 Public | Tyson | ⏳ Pending |
+| 6 | POST | `/api/v1/auth/forgot-password` | Request password reset token via university email. | 🌐 Public | Tyson | ✅ Done |
+| 7 | POST | `/api/v1/auth/reset-password` | Reset password using verified reset token. | 🌐 Public | Tyson | ✅ Done |
 
 ---
 

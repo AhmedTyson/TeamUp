@@ -131,4 +131,47 @@ public sealed class AuthService(
             await db.SaveChangesAsync(ct);
         }
     }
+
+    public async Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest req, CancellationToken ct = default)
+    {
+        var email = req.Email.Trim().ToLowerInvariant();
+        var student = await db.Students.FirstOrDefaultAsync(s => s.Email == email, ct);
+
+        if (student is null)
+        {
+            return new ForgotPasswordResponse("If your email is registered, a password reset link has been dispatched.");
+        }
+
+        var resetToken = jwt.GenerateRefreshToken();
+        student.PasswordResetToken = resetToken;
+        student.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddHours(1);
+        await db.SaveChangesAsync(ct);
+
+        return new ForgotPasswordResponse("If your email is registered, a password reset link has been dispatched.", resetToken);
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordRequest req, CancellationToken ct = default)
+    {
+        var email = req.Email.Trim().ToLowerInvariant();
+        var student = await db.Students.FirstOrDefaultAsync(s => s.Email == email, ct)
+            ?? throw new UnauthorizedException("Invalid email or reset token.");
+
+        if (string.IsNullOrWhiteSpace(student.PasswordResetToken) ||
+            !string.Equals(student.PasswordResetToken, req.Token) ||
+            student.PasswordResetTokenExpiresAt is null ||
+            student.PasswordResetTokenExpiresAt <= DateTime.UtcNow)
+        {
+            throw new UnauthorizedException("Invalid or expired password reset token.");
+        }
+
+        student.PasswordHash = hasher.HashPassword(student, req.NewPassword);
+        student.PasswordResetToken = null;
+        student.PasswordResetTokenExpiresAt = null;
+
+        // Invalidate active session tokens on password change
+        student.RefreshToken = null;
+        student.RefreshTokenExpiresAt = null;
+
+        await db.SaveChangesAsync(ct);
+    }
 }
