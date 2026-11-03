@@ -29,15 +29,15 @@ Tyson is responsible for the platform's core identity, authentication lifecycle,
 | 5 | `POST` | `/api/v1/auth/logout` | Revoke active refresh token. | 🔒 Auth | Phase A | ✅ Done |
 | 6 | `POST` | `/api/v1/auth/forgot-password` | Request password reset token. | 🌐 Public | Phase D | ⏳ Scheduled |
 | 7 | `POST` | `/api/v1/auth/reset-password` | Set new password with reset token. | 🌐 Public | Phase D | ⏳ Scheduled |
-| 8 | `GET` | `/api/v1/universities` | Paginated list of universities. | 🔒 Auth | Phase B | ⏳ Scheduled |
-| 9 | `POST` | `/api/v1/universities` | Create accredited university. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
-| 10 | `GET` | `/api/v1/universities/{id}` | Get university details + constituent faculties. | 🔒 Auth | Phase B | ⏳ Scheduled |
-| 11 | `PUT` | `/api/v1/universities/{id}` | Update university information. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
-| 12 | `DELETE` | `/api/v1/universities/{id}` | Soft-delete university & child faculties. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
-| 13 | `GET` | `/api/v1/universities/{id}/faculties` | List faculties in university. | 🔒 Auth | Phase B | ⏳ Scheduled |
-| 14 | `POST` | `/api/v1/universities/{id}/faculties` | Add faculty to university. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
-| 15 | `PUT` | `/api/v1/faculties/{id}` | Update faculty details & academic code. | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
-| 16 | `DELETE` | `/api/v1/faculties/{id}` | Soft-delete faculty (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Phase B | ⏳ Scheduled |
+| 8 | `GET` | `/api/v1/universities` | Paginated list of universities. | 🔒 Auth | Phase B | ✅ Done |
+| 9 | `POST` | `/api/v1/universities` | Create accredited university. | 👑 PlatformAdmin | Phase B | ✅ Done |
+| 10 | `GET` | `/api/v1/universities/{id}` | Get university details + constituent faculties. | 🔒 Auth | Phase B | ✅ Done |
+| 11 | `PUT` | `/api/v1/universities/{id}` | Update university information. | 👑 PlatformAdmin | Phase B | ✅ Done |
+| 12 | `DELETE` | `/api/v1/universities/{id}` | Soft-delete university & child faculties. | 👑 PlatformAdmin | Phase B | ✅ Done |
+| 13 | `GET` | `/api/v1/universities/{id}/faculties` | List faculties in university. | 🔒 Auth | Phase B | ✅ Done |
+| 14 | `POST` | `/api/v1/universities/{id}/faculties` | Add faculty to university. | 👑 PlatformAdmin | Phase B | ✅ Done |
+| 15 | `PUT` | `/api/v1/faculties/{id}` | Update faculty details & academic code. | 👑 PlatformAdmin | Phase B | ✅ Done |
+| 16 | `DELETE` | `/api/v1/faculties/{id}` | Soft-delete faculty (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Phase B | ✅ Done |
 | 17 | `GET` | `/api/v1/students` | Search / filter student directory. | 🔒 Auth | Phase C | ⏳ Scheduled |
 | 18 | `GET` | `/api/v1/students/{id}` | Public student profile card & badges. | 🔒 Auth | Phase C | ⏳ Scheduled |
 | 19 | `GET` | `/api/v1/students/me` | Fetch authenticated student profile. | 👤 Owner | Phase A | ✅ Done |

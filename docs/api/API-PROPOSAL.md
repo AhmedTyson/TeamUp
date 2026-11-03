@@ -74,15 +74,15 @@
 
 | # | Method | Route | Description | Authorize | Backend | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 8 | GET | `/api/v1/universities` | List all accredited universities (paginated). | 🔒 Auth | Tyson | ⏳ Pending (T14) |
-| 9 | POST | `/api/v1/universities` | Create new accredited university. | 👑 PlatformAdmin | Tyson | ⏳ Pending (T14) |
-| 10 | GET | `/api/v1/universities/{id}` | Get university details and list of constituent faculties. | 🔒 Auth | Tyson | ⏳ Pending (T14) |
-| 11 | PUT | `/api/v1/universities/{id}` | Update university name, city, website. | 👑 PlatformAdmin | Tyson | ⏳ Pending (T14) |
-| 12 | DELETE | `/api/v1/universities/{id}` | Soft-delete university (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Tyson | ⏳ Pending (T14) |
-| 13 | GET | `/api/v1/universities/{id}/faculties` | List faculties within a university. | 🔒 Auth | Tyson | ⏳ Pending (T14) |
-| 14 | POST | `/api/v1/universities/{id}/faculties` | Add new faculty/college to university. | 👑 PlatformAdmin | Tyson | ⏳ Pending (T14) |
-| 15 | PUT | `/api/v1/faculties/{id}` | Update faculty name or academic code. | 👑 PlatformAdmin | Tyson | ⏳ Pending (T14) |
-| 16 | DELETE | `/api/v1/faculties/{id}` | Soft-delete faculty (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Tyson | ⏳ Pending (T14) |
+| 8 | GET | `/api/v1/universities` | List all accredited universities (paginated). | 🔒 Auth | Tyson | ✅ Done (T14) |
+| 9 | POST | `/api/v1/universities` | Create new accredited university. | 👑 PlatformAdmin | Tyson | ✅ Done (T14) |
+| 10 | GET | `/api/v1/universities/{id}` | Get university details and list of constituent faculties. | 🔒 Auth | Tyson | ✅ Done (T14) |
+| 11 | PUT | `/api/v1/universities/{id}` | Update university name, city, website. | 👑 PlatformAdmin | Tyson | ✅ Done (T14) |
+| 12 | DELETE | `/api/v1/universities/{id}` | Soft-delete university (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Tyson | ✅ Done (T14) |
+| 13 | GET | `/api/v1/universities/{id}/faculties` | List faculties within a university. | 🔒 Auth | Tyson | ✅ Done (T14) |
+| 14 | POST | `/api/v1/universities/{id}/faculties` | Add new faculty/college to university. | 👑 PlatformAdmin | Tyson | ✅ Done (T14) |
+| 15 | PUT | `/api/v1/faculties/{id}` | Update faculty name or academic code. | 👑 PlatformAdmin | Tyson | ✅ Done (T14) |
+| 16 | DELETE | `/api/v1/faculties/{id}` | Soft-delete faculty (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Tyson | ✅ Done (T14) |
 
 ---
 

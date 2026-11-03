@@ -328,12 +328,111 @@ Send-HttpReq -Name "22. Re-Add Soft-Deleted Tag (Transparent In-Place Restoratio
 Send-HttpReq -Name "23. Verify Both Interest Tags Active" -Method "GET" -Path "/api/v1/students/$studentId/interests" `
     -Headers $authHeaders -ExpectedStatus 200
 
-# Test 24: Logout (Revoke Refresh Token)
-Send-HttpReq -Name "24. Invalidate Session & Logout (POST /auth/logout)" -Method "POST" -Path "/api/v1/auth/logout" `
+# ----------------- Module 2: Universities & Faculties Tests -----------------
+# Get Admin Token
+$adminPass = ([regex]::Match(((dotnet user-secrets list --project src/TeamUp.Api | Select-String "Seed:AdminPassword").ToString()),'Seed:AdminPassword = (.*)')).Groups[1].Value.Trim()
+$adminLoginRes = Send-HttpReq -Name "24. PlatformAdmin Authentication" -Method "POST" -Path "/api/v1/auth/login" `
+    -Body @{
+        email = "admin@teamup.local"
+        password = $adminPass
+    } -ExpectedStatus 200
+
+$adminToken = if ($adminLoginRes.Json.data) { $adminLoginRes.Json.data.accessToken } else { $adminLoginRes.Json.accessToken }
+$adminHeaders = @{ "Authorization" = "Bearer $adminToken" }
+
+# Test 25: List Universities as Student
+Send-HttpReq -Name "25. List Universities with Paging (GET /universities)" -Method "GET" -Path "/api/v1/universities?page=1&pageSize=10" `
+    -Headers $authHeaders -ExpectedStatus 200
+
+# Test 26: Get University Details with Faculties
+Send-HttpReq -Name "26. Get University Details with Faculties (GET /universities/{id})" -Method "GET" -Path "/api/v1/universities/1" `
+    -Headers $authHeaders -ExpectedStatus 200
+
+# Test 27: Student Attempt to Create University (Role Authorization Check)
+Send-HttpReq -Name "27. Create University as Student Forbidden (Role Guard Check)" -Method "POST" -Path "/api/v1/universities" `
+    -Headers $authHeaders `
+    -Body @{
+        name = "Student Unauthorized University"
+        city = "Cairo"
+        country = "Egypt"
+    } -ExpectedStatus 403
+
+# Test 28: Admin Create University
+$uniName = "Alexandria University $(Get-Random)"
+$createUniRes = Send-HttpReq -Name "28. Create Accredited University as Admin (POST /universities)" -Method "POST" -Path "/api/v1/universities" `
+    -Headers $adminHeaders `
+    -Body @{
+        name = $uniName
+        city = "Alexandria"
+        country = "Egypt"
+        website = "https://alexu.edu.eg"
+    } -ExpectedStatus 201
+
+$createdUniId = if ($createUniRes.Json.data) { $createUniRes.Json.data.universityId } else { $createUniRes.Json.universityId }
+
+# Test 29: Admin Duplicate University Name Conflict
+Send-HttpReq -Name "29. Create University Conflict (Duplicate Name)" -Method "POST" -Path "/api/v1/universities" `
+    -Headers $adminHeaders `
+    -Body @{
+        name = $uniName
+        city = "Alexandria"
+        country = "Egypt"
+    } -ExpectedStatus 409
+
+# Test 30: Admin Update University
+Send-HttpReq -Name "30. Update University Information (PUT /universities/{id})" -Method "PUT" -Path "/api/v1/universities/$createdUniId" `
+    -Headers $adminHeaders `
+    -Body @{
+        name = "$uniName Updated"
+        city = "Alexandria"
+        country = "Egypt"
+        website = "https://updated.alexu.edu.eg"
+    } -ExpectedStatus 200
+
+# Test 31: Get Faculties in University
+Send-HttpReq -Name "31. List Faculties in University (GET /universities/{id}/faculties)" -Method "GET" -Path "/api/v1/universities/$createdUniId/faculties" `
+    -Headers $authHeaders -ExpectedStatus 200
+
+# Test 32: Create Faculty in University
+$createFacRes = Send-HttpReq -Name "32. Add Faculty to University as Admin (POST /universities/{id}/faculties)" -Method "POST" -Path "/api/v1/universities/$createdUniId/faculties" `
+    -Headers $adminHeaders `
+    -Body @{
+        name = "Faculty of Medicine"
+        code = "MED_ALEX"
+    } -ExpectedStatus 201
+
+$createdFacId = if ($createFacRes.Json.data) { $createFacRes.Json.data.facultyId } else { $createFacRes.Json.facultyId }
+
+# Test 33: Duplicate Faculty Code Conflict
+Send-HttpReq -Name "33. Create Faculty Code Conflict (Duplicate Code)" -Method "POST" -Path "/api/v1/universities/$createdUniId/faculties" `
+    -Headers $adminHeaders `
+    -Body @{
+        name = "Faculty of Medicine Duplicate"
+        code = "MED_ALEX"
+    } -ExpectedStatus 409
+
+# Test 34: Update Faculty Details
+Send-HttpReq -Name "34. Update Faculty Information (PUT /faculties/{id})" -Method "PUT" -Path "/api/v1/faculties/$createdFacId" `
+    -Headers $adminHeaders `
+    -Body @{
+        name = "Faculty of Medicine & Health"
+        code = "MED_HEALTH"
+    } -ExpectedStatus 200
+
+# Test 35: Soft-Delete Faculty
+Send-HttpReq -Name "35. Soft-Delete Faculty as Admin (DELETE /faculties/{id})" -Method "DELETE" -Path "/api/v1/faculties/$createdFacId" `
+    -Headers $adminHeaders -ExpectedStatus 204
+
+# Test 36: Soft-Delete University
+Send-HttpReq -Name "36. Soft-Delete University as Admin (DELETE /universities/{id})" -Method "DELETE" -Path "/api/v1/universities/$createdUniId" `
+    -Headers $adminHeaders -ExpectedStatus 204
+
+# Test 37: Logout
+Send-HttpReq -Name "37. Invalidate Session & Logout (POST /auth/logout)" -Method "POST" -Path "/api/v1/auth/logout" `
     -Headers $authHeaders -ExpectedStatus 204
 
-# Test 25: Attempt Refresh After Logout
-Send-HttpReq -Name "25. Refresh Token Rejection After Logout (Token Revoked)" -Method "POST" -Path "/api/v1/auth/refresh" `
+# Test 38: Attempt Refresh After Logout
+Send-HttpReq -Name "38. Refresh Token Rejection After Logout (Token Revoked)" -Method "POST" -Path "/api/v1/auth/refresh" `
     -Body @{
         refreshToken = $refreshToken
     } -ExpectedStatus 401

@@ -102,19 +102,19 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
 *Detailed module specification: `tasks/modules/01-auth-identity-profile.md`*
 
 #### Tyson Phase B: Universities & Faculties Module (9 Endpoints — T14)
-- [ ] **T14.1 (S, Tyson): University & Faculty DTOs and Validators**
+- [x] **T14.1 (S, Tyson): University & Faculty DTOs and Validators**
   - AC: `CreateUniversityRequest`, `UpdateUniversityRequest`, `CreateFacultyRequest`, `UpdateFacultyRequest`; FluentValidators for names, codes, URLs.
   - Verify: unit tests pass in `ValidatorTests.cs`.
   - Deps: T1. Files: `Application/Universities/*`.
-- [ ] **T14.2 (M, Tyson): University Service & Controller**
+- [x] **T14.2 (M, Tyson): University Service & Controller**
   - AC: `IUniversityService`, `UniversitiesController` (`GET /universities` paged search, `GET /{id}`, `POST`, `PUT`, `DELETE` soft-delete cascade). `PlatformAdmin` writes.
   - Verify: integration tests for university CRUD & soft-delete.
   - Deps: T14.1. Files: `Infrastructure/Services/UniversityService.cs`, `Api/Controllers/UniversitiesController.cs`.
-- [ ] **T14.3 (M, Tyson): Faculty Service & Controller**
+- [x] **T14.3 (M, Tyson): Faculty Service & Controller**
   - AC: `IFacultyService`, `FacultiesController` (`GET /universities/{id}/faculties`, `POST .../faculties`, `PUT /faculties/{id}`, `DELETE /faculties/{id}`). Code uniqueness check.
   - Verify: integration tests for nested faculty operations.
   - Deps: T14.2. Files: `Infrastructure/Services/FacultyService.cs`, `Api/Controllers/FacultiesController.cs`.
-- [ ] **T14.4 (S, Tyson): Integration Tests for Universities & Faculties**
+- [x] **T14.4 (S, Tyson): Integration Tests for Universities & Faculties**
   - AC: Full CRUD test suite: list, create, duplicate conflict, nested faculty, soft-delete, role rejection.
   - Verify: `dotnet test tests/TeamUp.IntegrationTests` green.
   - Deps: T14.3.

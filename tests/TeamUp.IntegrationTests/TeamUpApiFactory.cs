@@ -15,6 +15,18 @@ public class TeamUpApiFactory : WebApplicationFactory<Program>
     private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
     public int SeededFacultyId { get; private set; }
+    public int SeededUniversityId { get; private set; }
+
+    public string CreateToken(int studentId, string email, string role)
+    {
+        using var scope = Services.CreateScope();
+        var jwt = scope.ServiceProvider.GetRequiredService<TeamUp.Application.Common.Security.IJwtTokenService>();
+        var (token, _) = jwt.GenerateAccessToken(studentId, email, role, "Test User");
+        return token;
+    }
+
+    public string CreateAdminToken() => CreateToken(9999, "admin@teamup.test", "PlatformAdmin");
+    public string CreateStudentToken(int studentId = 1) => CreateToken(studentId, "student@teamup.test", "Student");
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -66,10 +78,12 @@ public class TeamUpApiFactory : WebApplicationFactory<Program>
             db.Faculties.Add(faculty);
             db.SaveChanges();
 
+            SeededUniversityId = uni.UniversityId;
             SeededFacultyId = faculty.FacultyId;
         }
         else
         {
+            SeededUniversityId = db.Universities.First().UniversityId;
             SeededFacultyId = db.Faculties.First().FacultyId;
         }
 

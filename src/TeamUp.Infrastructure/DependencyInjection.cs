@@ -6,6 +6,7 @@ using TeamUp.Application.Auth;
 using TeamUp.Application.Common.Events;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Students;
+using TeamUp.Application.Universities;
 using TeamUp.Domain.Entities;
 using TeamUp.Infrastructure.EventDispatching;
 using TeamUp.Infrastructure.Persistence;
@@ -27,6 +28,8 @@ public static class DependencyInjection
         services.AddScoped<IStudentAccountService>(sp => sp.GetRequiredService<ProfileService>());
         services.AddScoped<IStudentProfileService>(sp => sp.GetRequiredService<ProfileService>());
         services.AddScoped<IStudentInterestService>(sp => sp.GetRequiredService<ProfileService>());
+        services.AddScoped<IUniversityService, UniversityService>();
+        services.AddScoped<IFacultyService, FacultyService>();
         services.AddSingleton<SoftDeleteInterceptor>();
 
         var cs = config.GetConnectionString("TeamUpDb");
