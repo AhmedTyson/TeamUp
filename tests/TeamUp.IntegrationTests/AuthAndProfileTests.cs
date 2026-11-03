@@ -60,7 +60,9 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
         var err = await res.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(err);
-        Assert.Equal(400, err.Status);
+        Assert.False(err.Success);
+        Assert.Equal(400, err.StatusCode);
+        Assert.NotNull(err.Errors);
         Assert.NotEmpty(err.Errors);
         Assert.Contains(err.Errors, e => e.Field == "email");
         Assert.Contains(err.Errors, e => e.Field == "password");

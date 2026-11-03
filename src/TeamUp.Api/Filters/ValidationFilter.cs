@@ -30,14 +30,10 @@ public sealed class ValidationFilter : IAsyncActionFilter
                     .Select(e => new ErrorDetail(ToCamelCase(e.PropertyName), e.ErrorMessage))
                     .ToList();
 
-                var errorResponse = new ErrorResponse
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred.",
-                    Instance = context.HttpContext.Request.Path,
-                    Errors = errors,
-                };
+                var errorResponse = BaseResponse.Fail(
+                    "Validation failed: Please correct the highlighted fields and try again.",
+                    StatusCodes.Status400BadRequest,
+                    errors);
 
                 context.Result = new BadRequestObjectResult(errorResponse);
                 return;

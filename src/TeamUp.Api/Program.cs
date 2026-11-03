@@ -45,6 +45,29 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ClockSkew = TimeSpan.Zero,
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json; charset=utf-8";
+                var payload = TeamUp.Application.Common.Models.BaseResponse.Fail(
+                    "Authentication is required. Please supply a valid Bearer token.",
+                    StatusCodes.Status401Unauthorized);
+                await context.Response.WriteAsJsonAsync(payload);
+            },
+            OnForbidden = async context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json; charset=utf-8";
+                var payload = TeamUp.Application.Common.Models.BaseResponse.Fail(
+                    "Access denied. You do not have permission to access this resource.",
+                    StatusCodes.Status403Forbidden);
+                await context.Response.WriteAsJsonAsync(payload);
+            }
+        };
     });
 
 builder.Services.AddAuthorization(options =>
@@ -67,7 +90,25 @@ builder.Services.AddRateLimiter(options =>
 var app = builder.Build();
 
 app.UseExceptionHandler();
-app.UseStatusCodePages();
+app.UseStatusCodePages(async context =>
+{
+    var response = context.HttpContext.Response;
+    if (response.ContentType is null || !response.ContentType.Contains("application/json"))
+    {
+        response.ContentType = "application/json; charset=utf-8";
+        var msg = response.StatusCode switch
+        {
+            401 => "Authentication is required. Please supply a valid Bearer token.",
+            403 => "Access denied. You do not have permission to access this resource.",
+            404 => $"The requested route '{context.HttpContext.Request.Path}' was not found.",
+            405 => "HTTP method not allowed on this endpoint.",
+            429 => "Rate limit exceeded. Please slow down and try again shortly.",
+            _ => $"HTTP error {response.StatusCode}."
+        };
+        var payload = TeamUp.Application.Common.Models.BaseResponse.Fail(msg, response.StatusCode);
+        await response.WriteAsJsonAsync(payload);
+    }
+});
 
 if (app.Environment.IsDevelopment())
 {

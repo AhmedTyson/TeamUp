@@ -1,28 +1,29 @@
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Models;
 
 namespace TeamUp.Api.Middleware;
 
-/// <summary>Maps unhandled exceptions and domain errors to RFC 7807 problem+json.</summary>
-public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IProblemDetailsService problems)
-    : IExceptionHandler
+/// <summary>
+/// Catches unhandled and domain exceptions, returning a clean, human-readable BaseResponse error payload.
+/// </summary>
+public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
     {
-        var (status, title, detail) = ex switch
+        var (status, message, errors) = ex switch
         {
-            ValidationException => (StatusCodes.Status400BadRequest, "Validation Failed", ex.Message),
-            NotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found", ex.Message),
-            ConflictException => (StatusCodes.Status409Conflict, "Conflict Detected", ex.Message),
-            UnauthorizedException => (StatusCodes.Status401Unauthorized, "Unauthorized Access", ex.Message),
-            ForbiddenException => (StatusCodes.Status403Forbidden, "Forbidden Access", ex.Message),
-            BadRequestException => (StatusCodes.Status400BadRequest, "Invalid Request", ex.Message),
-            ArgumentException => (StatusCodes.Status400BadRequest, "Invalid Argument", ex.Message),
+            ValidationException valEx => (StatusCodes.Status400BadRequest, valEx.Message, (IReadOnlyList<ErrorDetail>?)valEx.Errors),
+            NotFoundException notFound => (StatusCodes.Status404NotFound, notFound.Message, null),
+            ConflictException conflict => (StatusCodes.Status409Conflict, conflict.Message, null),
+            UnauthorizedException unauth => (StatusCodes.Status401Unauthorized, unauth.Message, null),
+            ForbiddenException forbidden => (StatusCodes.Status403Forbidden, forbidden.Message, null),
+            BadRequestException badReq => (StatusCodes.Status400BadRequest, badReq.Message, null),
+            ArgumentException argEx => (StatusCodes.Status400BadRequest, argEx.Message, null),
             DbUpdateException dbEx when IsUniqueConstraintViolation(dbEx) =>
-                (StatusCodes.Status409Conflict, "Conflict Detected", "A conflicting unique record already exists in the database."),
-            _ => (StatusCodes.Status500InternalServerError, "Internal Server Error", "An unexpected error occurred.")
+                (StatusCodes.Status409Conflict, "A conflicting unique record already exists in the database.", null),
+            _ => (StatusCodes.Status500InternalServerError, "An unexpected server error occurred. Please try again later.", null)
         };
 
         if (status == StatusCodes.Status500InternalServerError)
@@ -31,26 +32,11 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             logger.LogWarning("Handled exception ({Status}) for {Method} {Path}: {Message}", status, ctx.Request.Method, ctx.Request.Path, ex.Message);
 
         ctx.Response.StatusCode = status;
+        ctx.Response.ContentType = "application/json; charset=utf-8";
 
-        var problemDetails = new ProblemDetails
-        {
-            Status = status,
-            Title = title,
-            Detail = detail,
-            Instance = ctx.Request.Path,
-        };
-
-        if (ex is ValidationException valEx && valEx.Errors.Count > 0)
-        {
-            problemDetails.Extensions["errors"] = valEx.Errors;
-        }
-
-        return await problems.TryWriteAsync(new ProblemDetailsContext
-        {
-            HttpContext = ctx,
-            Exception = ex,
-            ProblemDetails = problemDetails,
-        });
+        var response = BaseResponse.Fail(message, status, errors);
+        await ctx.Response.WriteAsJsonAsync(response, ct);
+        return true;
     }
 
     private static bool IsUniqueConstraintViolation(DbUpdateException ex)

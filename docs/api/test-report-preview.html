@@ -203,11 +203,11 @@
 }</div>
       </div>
       <div>
-        <div class="label">RFC 7807 Structured Field Errors (ErrorResponse)</div>
+        <div class="label">Readable Validation Error Response (BaseResponse)</div>
         <div class="code-block">{
-  "type": "https://tools.ietf.org/html/rfc9110",
-  "title": "Validation Failed",
-  "status": 400,
+  "success": false,
+  "message": "Validation failed: Please correct the highlighted fields and try again.",
+  "statusCode": 400,
   "errors": [
     { "field": "password", "message": "Password is required." },
     { "field": "password", "message": "Password must be at least 8 characters long." },
@@ -268,12 +268,12 @@
 Body: { "name": "Unauthorized Uni", "city": "Cairo", "country": "Egypt" }</div>
       </div>
       <div>
-        <div class="label">Role Rejection (PlatformAdmin Only)</div>
+        <div class="label">Readable Role Rejection (BaseResponse)</div>
         <div class="code-block">{
-  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.4",
-  "title": "Forbidden",
-  "status": 403,
-  "detail": "User does not possess the required PlatformAdmin role."
+  "success": false,
+  "message": "Access denied. You do not have permission to access this resource.",
+  "statusCode": 403,
+  "timestamp": "2026-11-03T20:00:00Z"
 }</div>
       </div>
     </div>
@@ -395,7 +395,12 @@ Response: 204 No Content (DeletedAt set to UtcNow, tasks unassigned)</div>
         <div class="label">Subsequent Login Attempt (Lockout Verified)</div>
         <div class="code-block">POST /api/v1/auth/login
 Body: { "email": "live_student@teamup.edu", "password": "UpdatedSecurePassword2026!" }
-Response: 401 Unauthorized - "Unauthorized Access" (Account soft-deleted)</div>
+Response: 401 Unauthorized
+{
+  "success": false,
+  "message": "Invalid email or password.",
+  "statusCode": 401
+}</div>
       </div>
     </div>
 
