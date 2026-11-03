@@ -81,6 +81,21 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
   - AC: refresh token stored hashed/crypto-random, rotates on use, logout revokes; short access token lifetime.
   - Deps: T12.
 
+## Phase 2.5: N-Tier & SOLID Architecture Alignment (Architecture Blueprint)
+*Full design document: `docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md`*
+
+- [ ] **T-ARCH1 (S, M1): Domain Events & Aggregate Invariants**
+  - AC: `IDomainEvent` interface, `BaseEntity.AddDomainEvent()`, `DomainEventDispatcher` publishing events on `SaveChangesAsync()`.
+  - Deps: T3.
+
+- [ ] **T-ARCH2 (S, M1): Controller Single Responsibility Decomposition**
+  - AC: Decompose multi-purpose controllers into focused, single-responsibility controllers (`StudentsController`, `StudentProfilesController`, `StudentInterestsController`).
+  - Deps: T15.
+
+- [ ] **T-ARCH3 (M, M1-M4): Feature Slices & CQRS Structure**
+  - AC: Scaffold vertical slices (`Commands/`, `Queries/`, `Handlers/`) across module directories in `TeamUp.Application`.
+  - Deps: T-ARCH1.
+
 ## Phase 3: Vertical API slices (parallel by owner, each: service + controller + validators + tests)
 
 M1 (Tyson)
