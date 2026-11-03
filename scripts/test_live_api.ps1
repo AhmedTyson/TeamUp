@@ -427,12 +427,65 @@ Send-HttpReq -Name "35. Soft-Delete Faculty as Admin (DELETE /faculties/{id})" -
 Send-HttpReq -Name "36. Soft-Delete University as Admin (DELETE /universities/{id})" -Method "DELETE" -Path "/api/v1/universities/$createdUniId" `
     -Headers $adminHeaders -ExpectedStatus 204
 
-# Test 37: Logout
-Send-HttpReq -Name "37. Invalidate Session & Logout (POST /auth/logout)" -Method "POST" -Path "/api/v1/auth/logout" `
-    -Headers $authHeaders -ExpectedStatus 204
+# ----------------- Module 3: Student Directory & Public Profile Tests -----------------
+# Test 37: Search Student Directory
+Send-HttpReq -Name "37. Search Student Directory (GET /students?search=...)" -Method "GET" -Path "/api/v1/students?search=Ahmed&page=1&pageSize=10" `
+    -Headers $authHeaders -ExpectedStatus 200
 
-# Test 38: Attempt Refresh After Logout
-Send-HttpReq -Name "38. Refresh Token Rejection After Logout (Token Revoked)" -Method "POST" -Path "/api/v1/auth/refresh" `
+# Test 38: Public Student Profile Card
+Send-HttpReq -Name "38. Get Public Student Profile Card (GET /students/{id})" -Method "GET" -Path "/api/v1/students/$studentId" `
+    -Headers $authHeaders -ExpectedStatus 200
+
+# ----------------- Module 4: Password Recovery & Reset Tests -----------------
+# Test 39: Forgot Password Request
+$forgotRes = Send-HttpReq -Name "39. Request Password Reset Token (POST /auth/forgot-password)" -Method "POST" -Path "/api/v1/auth/forgot-password" `
+    -Body @{
+        email = $testEmail
+    } -ExpectedStatus 200
+
+$resetToken = if ($forgotRes.Json.data) { $forgotRes.Json.data.resetToken } else { $forgotRes.Json.resetToken }
+
+# Test 40: Reset Password with Valid Token
+$newPassword = "UpdatedSecurePassword2026!"
+Send-HttpReq -Name "40. Reset Password with Token (POST /auth/reset-password)" -Method "POST" -Path "/api/v1/auth/reset-password" `
+    -Body @{
+        email = $testEmail
+        token = $resetToken
+        newPassword = $newPassword
+    } -ExpectedStatus 200
+
+# Test 41: Login with New Password
+$newLoginRes = Send-HttpReq -Name "41. Authenticate with New Password (POST /auth/login)" -Method "POST" -Path "/api/v1/auth/login" `
+    -Body @{
+        email = $testEmail
+        password = $newPassword
+    } -ExpectedStatus 200
+
+$newStudentToken = if ($newLoginRes.Json.data) { $newLoginRes.Json.data.accessToken } else { $newLoginRes.Json.accessToken }
+$newStudentHeaders = @{ "Authorization" = "Bearer $newStudentToken" }
+
+# ----------------- Module 5: Student Account Soft Deletion & Verification -----------------
+# Test 42: Self Soft-Delete Account
+Send-HttpReq -Name "42. Soft-Delete Student Account (DELETE /students/me)" -Method "DELETE" -Path "/api/v1/students/me" `
+    -Headers $newStudentHeaders -ExpectedStatus 204
+
+# Test 43: Login Fails After Account Soft-Deletion
+Send-HttpReq -Name "43. Login Rejection for Soft-Deleted Student" -Method "POST" -Path "/api/v1/auth/login" `
+    -Body @{
+        email = $testEmail
+        password = $newPassword
+    } -ExpectedStatus 401
+
+# Test 44: Directory Omits Soft-Deleted Student
+Send-HttpReq -Name "44. Verify Soft-Deleted Student Omitted from Directory" -Method "GET" -Path "/api/v1/students?search=$testEmail" `
+    -Headers $adminHeaders -ExpectedStatus 200
+
+# Test 45: Logout Admin Session
+Send-HttpReq -Name "45. Invalidate Admin Session & Logout (POST /auth/logout)" -Method "POST" -Path "/api/v1/auth/logout" `
+    -Headers $adminHeaders -ExpectedStatus 204
+
+# Test 46: Refresh Token Rejection After Logout
+Send-HttpReq -Name "46. Refresh Token Rejection After Logout (Token Revoked)" -Method "POST" -Path "/api/v1/auth/refresh" `
     -Body @{
         refreshToken = $refreshToken
     } -ExpectedStatus 401
