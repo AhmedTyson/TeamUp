@@ -149,12 +149,12 @@
         <span class="status-badge status-201">201 Created</span>
       </div>
       <div>
-        <div class="label">Request Payload</div>
+        <div class="label">Request Payload (Organized)</div>
         <div class="code-block">{
-  "email": "live_student@teamup.edu",
-  "password": "StrongP@ssw0rd2026!",
   "firstName": "Ahmed",
   "lastName": "Tyson",
+  "email": "live_student@teamup.edu",
+  "password": "StrongP@ssw0rd2026!",
   "academicYear": 3,
   "facultyId": 1
 }</div>
@@ -169,8 +169,11 @@
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI...",
     "refreshToken": "ufbX/qZxeL/gpBMK18ts1w2+tvSmXCyh...",
     "student": {
-      "studentId": 8,
+      "studentId": 14,
+      "firstName": "Ahmed",
+      "lastName": "Tyson",
       "email": "live_student@teamup.edu",
+      "academicYear": 3,
       "role": "Student",
       "facultyName": "Faculty of Computers and AI"
     }
@@ -191,9 +194,10 @@
       <div>
         <div class="label">Invalid Request Payload (Empty Password)</div>
         <div class="code-block">{
+  "firstName": "Empty",
+  "lastName": "Password",
   "email": "invalid_user@teamup.edu",
   "password": "",
-  "firstName": "Empty",
   "academicYear": 1,
   "facultyId": 1
 }</div>
