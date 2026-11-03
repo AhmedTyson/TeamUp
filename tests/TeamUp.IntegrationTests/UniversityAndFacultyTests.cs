@@ -27,11 +27,28 @@ public class UniversityAndFacultyTests(TeamUpApiFactory factory) : IClassFixture
     }
 
     [Fact]
-    public async Task GetUniversities_Unauthenticated_Returns401()
+    public async Task GetUniversities_Unauthenticated_Returns200_ForRegistrationLookup()
     {
         using var client = factory.CreateClient();
         var res = await client.GetAsync("/api/v1/universities");
-        Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+
+        var paged = await GetDataAsync<PagedResult<UniversityDto>>(res);
+        Assert.NotNull(paged);
+        Assert.NotEmpty(paged.Items);
+    }
+
+    [Fact]
+    public async Task GetAcademicCatalog_Unauthenticated_ReturnsGroupedUniversitiesAndFaculties()
+    {
+        using var client = factory.CreateClient();
+        var res = await client.GetAsync("/api/v1/universities/catalog");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+
+        var catalog = await GetDataAsync<List<UniversityDetailDto>>(res);
+        Assert.NotNull(catalog);
+        Assert.NotEmpty(catalog);
+        Assert.Contains(catalog, u => u.Faculties.Count > 0);
     }
 
     [Fact]

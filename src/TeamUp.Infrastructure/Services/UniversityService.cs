@@ -37,6 +37,24 @@ public sealed class UniversityService(AppDbContext db) : IUniversityService
         return new PagedResult<UniversityDto>(items, page.SafePage, page.SafePageSize, total);
     }
 
+    public async Task<IReadOnlyList<UniversityDetailDto>> GetAcademicCatalogAsync(CancellationToken ct = default)
+    {
+        return await db.Universities
+            .AsNoTracking()
+            .OrderBy(u => u.Name)
+            .Select(u => new UniversityDetailDto(
+                u.UniversityId,
+                u.Name,
+                u.City,
+                u.Country,
+                u.Website,
+                u.Faculties
+                    .OrderBy(f => f.Name)
+                    .Select(f => new FacultySummaryDto(f.FacultyId, f.Name, f.Code))
+                    .ToList()))
+            .ToListAsync(ct);
+    }
+
     public async Task<UniversityDetailDto> GetUniversityByIdAsync(int id, CancellationToken ct = default)
     {
         var uni = await db.Universities

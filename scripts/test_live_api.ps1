@@ -340,6 +340,9 @@ $adminLoginRes = Send-HttpReq -Name "24. PlatformAdmin Authentication" -Method "
 $adminToken = if ($adminLoginRes.Json.data) { $adminLoginRes.Json.data.accessToken } else { $adminLoginRes.Json.accessToken }
 $adminHeaders = @{ "Authorization" = "Bearer $adminToken" }
 
+# Public Academic Catalog Lookup for Registration (Zero Auth Required!)
+Send-HttpReq -Name "24B. Public Academic Catalog Lookup for Registration (GET /universities/catalog)" -Method "GET" -Path "/api/v1/universities/catalog" -ExpectedStatus 200
+
 # Test 25: List Universities as Student
 Send-HttpReq -Name "25. List Universities with Paging (GET /universities)" -Method "GET" -Path "/api/v1/universities?page=1&pageSize=10" `
     -Headers $authHeaders -ExpectedStatus 200

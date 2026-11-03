@@ -8,10 +8,10 @@ using TeamUp.Application.Universities;
 namespace TeamUp.Api.Controllers;
 
 [Route("api/v1/universities")]
-[Authorize]
 public class UniversitiesController(IUniversityService universityService) : BaseApiController
 {
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(BaseResponse<PagedResult<UniversityDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUniversities(
         [FromQuery] string? search,
@@ -23,7 +23,17 @@ public class UniversitiesController(IUniversityService universityService) : Base
         return OkResponse(result);
     }
 
+    [HttpGet("catalog")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<UniversityDetailDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAcademicCatalog(CancellationToken ct = default)
+    {
+        var result = await universityService.GetAcademicCatalogAsync(ct);
+        return OkResponse(result, "Academic catalog retrieved successfully for registration lookups.");
+    }
+
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(BaseResponse<UniversityDetailDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUniversityById([FromRoute] int id, CancellationToken ct)

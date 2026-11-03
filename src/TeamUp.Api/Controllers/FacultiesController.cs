@@ -6,10 +6,10 @@ using TeamUp.Application.Universities;
 
 namespace TeamUp.Api.Controllers;
 
-[Authorize]
 public class FacultiesController(IFacultyService facultyService) : BaseApiController
 {
     [HttpGet("api/v1/universities/{universityId:int}/faculties")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<FacultyDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetFacultiesByUniversity([FromRoute] int universityId, CancellationToken ct)
@@ -36,6 +36,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
     }
 
     [HttpGet("api/v1/faculties/{id:int}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(BaseResponse<FacultyDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetFacultyById([FromRoute] int id, CancellationToken ct)
