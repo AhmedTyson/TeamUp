@@ -253,3 +253,14 @@
 | 93 | PATCH | `/api/v1/notifications/{id}` | Mark single notification as read (`IsRead = true`). | 👤 Owner | Youssef | ⏳ Pending (T27) |
 | 94 | PATCH | `/api/v1/notifications/mark-all-read` | Mark all unread notifications in inbox as read. | 👤 Owner | Youssef | ⏳ Pending (T27) |
 | 95 | DELETE | `/api/v1/notifications/{id}` | Soft-delete notification from inbox. | 👤 Owner | Youssef | ⏳ Pending (T27) |
+
+---
+
+### Module 16: Platform Administration & Governance (Owned by Tyson)
+
+| # | Method | Route | Description | Authorize | Backend | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| 96 | GET | `/api/v1/admin/dashboard` | Platform overview metrics, active counts, and role distribution. | 👑 PlatformAdmin | Tyson | ✅ Done |
+| 97 | PATCH | `/api/v1/admin/students/{id}/role` | Promote/demote student role (`Student`, `OrgAdmin`, `PlatformAdmin`). | 👑 PlatformAdmin | Tyson | ✅ Done |
+| 98 | GET | `/api/v1/admin/soft-deleted` | Browse soft-deleted records across entities using query filter bypass. | 👑 PlatformAdmin | Tyson | ✅ Done |
+| 99 | POST | `/api/v1/admin/restore/{entityType}/{id}` | Universal restoration of soft-deleted records (`DeletedAt = null`). | 👑 PlatformAdmin | Tyson | ✅ Done |

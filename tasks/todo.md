@@ -153,8 +153,12 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
 - [x] **T-AUTH5.2 (S, Tyson): Rate Limiting for Public Auth Endpoints**
   - AC: Rate limiting (60 req/min) on `/api/v1/auth/*` using ASP.NET Core RateLimiter.
   - Deps: T12.
-- [x] **T-AUTH5.3 (S, Tyson): Master Tyson Verification (All 26 Endpoints)**
-  - AC: Automated test suite covers all 26 endpoints owned by Tyson. All unit and integration tests passing.
+- [x] **T-AUTH5.3 (S, Tyson): Master Tyson Verification (All 30 Endpoints)**
+  - AC: Automated test suite covers all 30 endpoints owned by Tyson. All unit and integration tests passing.
+- [x] **T-AUTH5.4 (S, Tyson): Dedicated Admin Dashboard, Role Governance & Recovery Controller**
+  - AC: `GET /admin/dashboard` (system metrics), `PATCH /admin/students/{id}/role` (role promotion), `GET /admin/soft-deleted` (audit log), `POST /admin/restore/{entityType}/{id}` (universal restoration).
+  - Verify: integration tests pass in `AdminTests.cs`.
+  - Deps: T-AUTH5.1. Files: `Application/Admin/*`, `Infrastructure/Services/AdminService.cs`, `Api/Controllers/AdminController.cs`.
 
 ---
 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TeamUp.Application.Admin;
 using TeamUp.Application.Auth;
 using TeamUp.Application.Common.Events;
 using TeamUp.Application.Common.Security;
@@ -30,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IStudentInterestService>(sp => sp.GetRequiredService<ProfileService>());
         services.AddScoped<IUniversityService, UniversityService>();
         services.AddScoped<IFacultyService, FacultyService>();
+        services.AddScoped<IAdminService, AdminService>();
         services.AddSingleton<SoftDeleteInterceptor>();
 
         var cs = config.GetConnectionString("TeamUpDb");

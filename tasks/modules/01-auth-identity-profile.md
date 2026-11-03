@@ -2,8 +2,8 @@
 
 **Owner:** Tyson (M1 - Tech Lead)  
 **Entities Owned:** `Student`, `Faculty`, `University`, `StudentProfile`, `StudentInterest`  
-**Total Endpoints:** 26 (11 Completed, 15 Planned in Phases)  
-**Status:** 100% Completed (All 26 Endpoints Verified & Green)  
+**Total Endpoints:** 30 (All 30 Completed, Tested & Verified)  
+**Status:** 100% Completed (All 30 Endpoints Verified & Green)  
 
 ---
 
@@ -48,6 +48,10 @@ Tyson is responsible for the platform's core identity, authentication lifecycle,
 | 24 | `GET` | `/api/v1/students/{id}/interests` | List student interest tags. | 🔒 Auth | Phase A | ✅ Done |
 | 25 | `POST` | `/api/v1/students/me/interests` | Add interest tag to profile. | 👤 Owner | Phase A | ✅ Done |
 | 26 | `DELETE` | `/api/v1/students/me/interests/{tag}` | Soft-delete interest tag from profile. | 👤 Owner | Phase A | ✅ Done |
+| 27 | `GET` | `/api/v1/admin/dashboard` | Platform metrics & role distribution. | 👑 PlatformAdmin | Phase E | ✅ Done |
+| 28 | `PATCH` | `/api/v1/admin/students/{id}/role` | Promote/demote student role (`Student`, `OrgAdmin`, `PlatformAdmin`). | 👑 PlatformAdmin | Phase E | ✅ Done |
+| 29 | `GET` | `/api/v1/admin/soft-deleted` | Browse soft-deleted audit records across entities. | 👑 PlatformAdmin | Phase E | ✅ Done |
+| 30 | `POST` | `/api/v1/admin/restore/{entityType}/{id}` | Universal restoration of soft-deleted records (`DeletedAt = null`). | 👑 PlatformAdmin | Phase E | ✅ Done |
 
 ---
 
