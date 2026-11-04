@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TeamUp.Api/TeamUp.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TeamUp.Tests/TeamUp.Tests.csproj" />
+  </Folder>
+</Solution>
