@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TeamUp.Application.Auth;
+using TeamUp.Application.Common.Models;
 using TeamUp.Application.Projects;
 
 namespace TeamUp.IntegrationTests;
@@ -88,13 +89,15 @@ public class ProjectsTeamsTasksTests(TeamUpApiFactory factory) : IClassFixture<T
     private async Task<HttpClient> RegisterClientAsync(string prefix)
     {
         var email = $"{prefix}_{Guid.NewGuid():N}@teamup.test";
-        var request = new RegisterRequest(email, "P@ssword123!", prefix, "Tester", 2, factory.SeededFacultyId);
+        var request = new RegisterRequest(prefix, "Tester", email, "P@ssword123!", 2, factory.SeededFacultyId);
         var response = await _anonymous.PostAsJsonAsync("/api/v1/auth/register", request);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var auth = await response.Content.ReadFromJsonAsync<AuthResponse>();
-        Assert.NotNull(auth);
+        var envelope = await response.Content.ReadFromJsonAsync<BaseResponse<AuthResponse>>();
+        Assert.NotNull(envelope);
+        Assert.True(envelope.Success);
+        Assert.NotNull(envelope.Data);
         var client = factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", envelope.Data.AccessToken);
         return client;
     }
 }
