@@ -6,6 +6,7 @@ using TeamUp.Application.Admin;
 using TeamUp.Application.Auth;
 using TeamUp.Application.Common.Events;
 using TeamUp.Application.Common.Security;
+using TeamUp.Application.Projects;
 using TeamUp.Application.Students;
 using TeamUp.Application.Universities;
 using TeamUp.Domain.Entities;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IUniversityService, UniversityService>();
         services.AddScoped<IFacultyService, FacultyService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IProjectService, ProjectService>();
         services.AddSingleton<SoftDeleteInterceptor>();
 
         var cs = config.GetConnectionString("TeamUpDb");
