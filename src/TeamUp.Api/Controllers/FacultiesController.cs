@@ -6,9 +6,10 @@ using TeamUp.Application.Universities;
 
 namespace TeamUp.Api.Controllers;
 
+[Route("api/v1")]
 public class FacultiesController(IFacultyService facultyService) : BaseApiController
 {
-    [HttpGet("api/v1/universities/{universityId:int}/faculties")]
+    [HttpGet("universities/{universityId:int}/faculties")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<FacultyDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -18,7 +19,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
         return OkResponse(result);
     }
 
-    [HttpPost("api/v1/universities/{universityId:int}/faculties")]
+    [HttpPost("universities/{universityId:int}/faculties")]
     [Authorize(Roles = "PlatformAdmin")]
     [ProducesResponseType(typeof(BaseResponse<FacultyDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -35,7 +36,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
         return CreatedResponse(nameof(GetFacultyById), new { id = result.FacultyId }, result, "Faculty created successfully.");
     }
 
-    [HttpGet("api/v1/faculties/{id:int}")]
+    [HttpGet("faculties/{id:int}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(BaseResponse<FacultyDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -45,7 +46,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
         return OkResponse(result);
     }
 
-    [HttpPut("api/v1/faculties/{id:int}")]
+    [HttpPut("faculties/{id:int}")]
     [Authorize(Roles = "PlatformAdmin")]
     [ProducesResponseType(typeof(BaseResponse<FacultyDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -62,7 +63,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
         return OkResponse(result, "Faculty updated successfully.");
     }
 
-    [HttpDelete("api/v1/faculties/{id:int}")]
+    [HttpDelete("faculties/{id:int}")]
     [Authorize(Roles = "PlatformAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

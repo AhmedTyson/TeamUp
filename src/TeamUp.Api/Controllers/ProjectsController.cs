@@ -209,6 +209,6 @@ public class ProjectsController(
         CancellationToken ct)
     {
         var result = await taskService.CreateTaskAsync(CurrentStudentId, id, request, ct);
-        return CreatedResponse(result, "Task created successfully.");
+        return CreatedResponse(nameof(TasksController.GetTask), "Tasks", new { id = result.TaskId }, result, "Task created successfully.");
     }
 }

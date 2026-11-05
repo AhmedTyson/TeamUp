@@ -8,15 +8,9 @@ using TeamUp.Domain.Entities;
 namespace TeamUp.Application.Services;
 
 public sealed class ProfileService(IAppDbContext db)
-    : IProfileService, IStudentAccountService, IStudentProfileService, IStudentInterestService
+    : IStudentAccountService, IStudentProfileService, IStudentInterestService
 {
-    public Task<StudentDetailDto> GetMyAccountAsync(int studentId, CancellationToken ct = default) =>
-        GetMyProfileAsync(studentId, ct);
-
-    public Task<StudentDetailDto> UpdateMyAccountAsync(int studentId, UpdateStudentRequest req, CancellationToken ct = default) =>
-        UpdateMyProfileAsync(studentId, req, ct);
-
-    public async Task<StudentDetailDto> GetMyProfileAsync(int studentId, CancellationToken ct = default)
+    public async Task<StudentDetailDto> GetMyAccountAsync(int studentId, CancellationToken ct = default)
     {
         var student = await db.Students
             .AsNoTracking()
@@ -39,7 +33,7 @@ public sealed class ProfileService(IAppDbContext db)
             profileDto, interests);
     }
 
-    public async Task<StudentDetailDto> UpdateMyProfileAsync(int studentId, UpdateStudentRequest req, CancellationToken ct = default)
+    public async Task<StudentDetailDto> UpdateMyAccountAsync(int studentId, UpdateStudentRequest req, CancellationToken ct = default)
     {
         var student = await db.Students.FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
             ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
@@ -55,7 +49,7 @@ public sealed class ProfileService(IAppDbContext db)
 
         await db.SaveChangesAsync(ct);
 
-        return await GetMyProfileAsync(studentId, ct);
+        return await GetMyAccountAsync(studentId, ct);
     }
 
     public async Task<PagedResult<StudentCardDto>> GetStudentsDirectoryAsync(StudentDirectoryQuery query, CancellationToken ct = default)

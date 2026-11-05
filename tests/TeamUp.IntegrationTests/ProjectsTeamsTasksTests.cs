@@ -63,6 +63,7 @@ public class ProjectsTeamsTasksTests(TeamUpApiFactory factory) : IClassFixture<T
         var createTask = await applicant.PostAsJsonAsync($"/api/v1/projects/{project.ProjectId}/tasks",
             new CreateProjectTaskRequest("Implement API", "Build the endpoint", DateTime.UtcNow.AddDays(2)));
         Assert.Equal(HttpStatusCode.Created, createTask.StatusCode);
+        Assert.NotNull(createTask.Headers.Location);
         var task = await GetDataAsync<ProjectTaskDto>(createTask);
         Assert.NotNull(task);
 

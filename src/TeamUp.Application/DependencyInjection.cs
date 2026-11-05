@@ -18,7 +18,6 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ProfileService>();
-        services.AddScoped<IProfileService>(sp => sp.GetRequiredService<ProfileService>());
         services.AddScoped<IStudentAccountService>(sp => sp.GetRequiredService<ProfileService>());
         services.AddScoped<IStudentProfileService>(sp => sp.GetRequiredService<ProfileService>());
         services.AddScoped<IStudentInterestService>(sp => sp.GetRequiredService<ProfileService>());

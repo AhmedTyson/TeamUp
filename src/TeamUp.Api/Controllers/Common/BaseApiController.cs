@@ -23,5 +23,9 @@ public abstract class BaseApiController : ControllerBase
         string actionName, object? routeValues, T data, string message = "Resource created successfully.") =>
         CreatedAtAction(actionName, routeValues, BaseResponse<T>.Ok(data, message, StatusCodes.Status201Created));
 
+    protected IActionResult CreatedResponse<T>(
+        string actionName, string? controllerName, object? routeValues, T data, string message = "Resource created successfully.") =>
+        CreatedAtAction(actionName, controllerName, routeValues, BaseResponse<T>.Ok(data, message, StatusCodes.Status201Created));
+
     protected IActionResult NoContentResponse() => NoContent();
 }

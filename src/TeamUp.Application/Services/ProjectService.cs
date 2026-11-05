@@ -13,7 +13,7 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
 {
     public async Task<PagedResult<ProjectListItemDto>> GetProjectsAsync(string? keyword, string? status, int? skillId, PageRequest page, CancellationToken ct)
     {
-        var query = db.Projects.AsNoTracking().Include(p => p.Creator).Include(p => p.Members).AsQueryable();
+        var query = db.Projects.AsNoTracking().AsQueryable();
         if (!string.IsNullOrWhiteSpace(keyword))
         {
             var term = keyword.Trim();
@@ -38,9 +38,6 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
 
     public async Task<ProjectDetailDto> CreateProjectAsync(int studentId, CreateProjectRequest request, CancellationToken ct)
     {
-        ValidateText(request.Title, 150, "Title");
-        if (string.IsNullOrWhiteSpace(request.Description)) throw new BadRequestException("Description is required.");
-        if (request.MaxTeamSize < 1) throw new BadRequestException("MaxTeamSize must be at least 1.");
         await EnsureStudentAsync(studentId, ct);
         var project = new Project { Title = request.Title.Trim(), Description = request.Description.Trim(), MaxTeamSize = request.MaxTeamSize, CreatorId = studentId, Status = ProjectStatus.Recruiting };
         project.Members.Add(new ProjectMember { StudentId = studentId, Role = "Team Lead" });
@@ -63,11 +60,10 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
     {
         var project = await GetProjectEntityAsync(projectId, ct);
         EnsureCreator(project, studentId);
-        if (request.Title is not null) { ValidateText(request.Title, 150, "Title"); project.Title = request.Title.Trim(); }
-        if (request.Description is not null) { if (string.IsNullOrWhiteSpace(request.Description)) throw new BadRequestException("Description cannot be empty."); project.Description = request.Description.Trim(); }
+        if (request.Title is not null) project.Title = request.Title.Trim();
+        if (request.Description is not null) project.Description = request.Description.Trim();
         if (request.MaxTeamSize.HasValue)
         {
-            if (request.MaxTeamSize.Value < 1) throw new BadRequestException("MaxTeamSize must be at least 1.");
             var currentSize = await db.ProjectMembers.CountAsync(m => m.ProjectId == projectId, ct);
             if (request.MaxTeamSize.Value < currentSize) throw new ConflictException("MaxTeamSize cannot be lower than the current team size.");
             project.MaxTeamSize = request.MaxTeamSize.Value;
@@ -130,7 +126,6 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
     public async Task UpdateMemberRoleAsync(int studentId, int projectId, int memberStudentId, UpdateProjectMemberRequest request, CancellationToken ct)
     {
         var project = await GetProjectEntityAsync(projectId, ct); EnsureCreator(project, studentId);
-        ValidateText(request.Role, 60, "Role");
         var member = await db.ProjectMembers.FirstOrDefaultAsync(m => m.ProjectId == projectId && m.StudentId == memberStudentId, ct)
             ?? throw new NotFoundException("Project member not found.");
         member.Role = request.Role.Trim(); await db.SaveChangesAsync(ct);
@@ -226,9 +221,8 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
 
     public async Task<ProjectTaskDto> CreateTaskAsync(int studentId, int projectId, CreateProjectTaskRequest request, CancellationToken ct)
     {
-        await EnsureMemberAsync(studentId, projectId, ct); ValidateText(request.Title, 150, "Title");
+        await EnsureMemberAsync(studentId, projectId, ct);
         if (!Enum.IsDefined(request.Priority)) throw new BadRequestException("Invalid task priority.");
-        if (request.Description?.Length > 1000) throw new BadRequestException("Description cannot exceed 1000 characters.");
         var task = new ProjectTask { ProjectId = projectId, Title = request.Title.Trim(), Description = request.Description, DueDate = request.DueDate, Priority = request.Priority };
         db.ProjectTasks.Add(task); await db.SaveChangesAsync(ct); return ToTaskDto(task);
     }
@@ -245,8 +239,8 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         var task = await db.ProjectTasks.Include(t => t.AssignedStudent).FirstOrDefaultAsync(t => t.TaskId == taskId, ct)
             ?? throw new NotFoundException("Task not found.");
         await EnsureMemberAsync(studentId, task.ProjectId, ct);
-        if (request.Title is not null) { ValidateText(request.Title, 150, "Title"); task.Title = request.Title.Trim(); }
-        if (request.Description is not null) { if (request.Description.Length > 1000) throw new BadRequestException("Description cannot exceed 1000 characters."); task.Description = request.Description; }
+        if (request.Title is not null) task.Title = request.Title.Trim();
+        if (request.Description is not null) task.Description = request.Description;
         if (request.Status.HasValue)
         {
             if (!Enum.IsDefined(request.Status.Value)) throw new BadRequestException("Invalid task status.");
@@ -293,7 +287,6 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         if (!await db.ProjectMembers.AnyAsync(m => m.ProjectId == projectId && m.StudentId == studentId, ct)) throw new UnauthorizedException("You must be a confirmed project member to access its tasks.");
     }
     private static void EnsureCreator(Project project, int studentId) { if (project.CreatorId != studentId) throw new UnauthorizedException("Only the project creator can perform this action."); }
-    private static void ValidateText(string value, int max, string field) { if (string.IsNullOrWhiteSpace(value)) throw new BadRequestException($"{field} is required."); if (value.Trim().Length > max) throw new BadRequestException($"{field} cannot exceed {max} characters."); }
     private static ProjectApplicationDto ToApplicationDto(ProjectApplication a) => new(a.ApplicationId, a.ProjectId, a.StudentId, a.Student.FirstName + " " + a.Student.LastName, a.Message, a.Status, a.AppliedAt);
     private static ProjectTaskDto ToTaskDto(ProjectTask t) => new(t.TaskId, t.Title, t.Description, t.Status, t.Priority, t.DueDate, t.ProjectId, t.AssignedStudentId, t.AssignedStudent is null ? null : t.AssignedStudent.FirstName + " " + t.AssignedStudent.LastName);
 }
