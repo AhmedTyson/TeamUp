@@ -166,9 +166,9 @@ Size: XS/S/M/L. Owner: M1-M4. Every task = one PR. Verify = `dotnet build` and `
 
 M2 (Ossama)
 - [ ] **T16 (S): Skills CRUD + `StudentSkill`** - `PUT/DELETE /students/{id}/skills/{skillId}`.
-- [ ] **T17 (M): Projects CRUD + required skills** - creator-only update/delete; `TeamSize` computed, not stored.
-- [ ] **T18 (M): Project applications and members** - apply, accept/reject (creator), accept creates `ProjectMember` in one transaction, respect `MaxTeamSize`, re-apply allowed after rejection.
-- [ ] **T19 (S): Project tasks** - CRUD, assign/unassign only to current members, soft-removing a member unassigns their tasks.
+- [x] **T17 (M): Projects CRUD + required skills** - creator-only update/delete; `TeamSize` computed, not stored.
+- [x] **T18 (M): Project applications and members** - apply, accept/reject (creator), accept creates `ProjectMember` in one transaction, respect `MaxTeamSize`, re-apply allowed after rejection.
+- [x] **T19 (S): Project tasks** - CRUD, assign/unassign only to current members, soft-removing a member unassigns their tasks.
 
 M3 (Ibrahim)
 - [ ] **T20 (S): Organizations CRUD + members** - `OrgAdmin` manages members.
