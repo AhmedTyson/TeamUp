@@ -107,13 +107,13 @@
 
 | # | Method | Route | Description | Authorize | Backend | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 27 | GET | `/api/v1/skills` | List standard skills catalog grouped by category. | 🔒 Auth | Ossama | ⏳ Pending (T16) |
-| 28 | POST | `/api/v1/skills` | Add new technical or soft skill to master catalog. | 👑 PlatformAdmin | Ossama | ⏳ Pending (T16) |
-| 29 | PUT | `/api/v1/skills/{id}` | Update skill name, category, or description. | 👑 PlatformAdmin | Ossama | ⏳ Pending (T16) |
-| 30 | DELETE | `/api/v1/skills/{id}` | Soft-delete skill (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Ossama | ⏳ Pending (T16) |
-| 31 | GET | `/api/v1/students/{id}/skills` | List skills claimed by student with proficiency ratings. | 🔒 Auth | Ossama | ⏳ Pending (T16) |
-| 32 | PUT | `/api/v1/students/me/skills/{skillId}` | Claim skill / update proficiency and years of experience. | 👤 Owner | Ossama | ⏳ Pending (T16) |
-| 33 | DELETE | `/api/v1/students/me/skills/{skillId}` | Remove claimed skill from student profile. | 👤 Owner | Ossama | ⏳ Pending (T16) |
+| 27 | GET | `/api/v1/skills` | List standard skills catalog grouped by category. | 🔒 Auth | Ossama | ✅ Done (T16) |
+| 28 | POST | `/api/v1/skills` | Add new technical or soft skill to master catalog. | 👑 PlatformAdmin | Ossama | ✅ Done (T16) |
+| 29 | PUT | `/api/v1/skills/{id}` | Update skill name, category, or description. | 👑 PlatformAdmin | Ossama | ✅ Done (T16) |
+| 30 | DELETE | `/api/v1/skills/{id}` | Soft-delete skill (`DeletedAt = UtcNow`). | 👑 PlatformAdmin | Ossama | ✅ Done (T16) |
+| 31 | GET | `/api/v1/students/{id}/skills` | List skills claimed by student with proficiency ratings. | 🔒 Auth | Ossama | ✅ Done (T16) |
+| 32 | PUT | `/api/v1/students/me/skills/{skillId}` | Claim skill / update proficiency and years of experience. | 👤 Owner | Ossama | ✅ Done (T16) |
+| 33 | DELETE | `/api/v1/students/me/skills/{skillId}` | Remove claimed skill from student profile. | 👤 Owner | Ossama | ✅ Done (T16) |
 
 ---
 

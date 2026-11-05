@@ -159,37 +159,37 @@
 ## Phase 08: Security Remediation & Cryptographic Hardening
 *Immediate critical vulnerability patch and defensive token hardening.*
 
-- [ ] **P08.1 (S, M1): Redact Password Reset Token from API Response**
+- [x] **P08.1 (S, M1): Redact Password Reset Token from API Response**
   - Description: Remove `ResetToken` from `ForgotPasswordResponse` to eliminate critical Account Takeover and user enumeration vulnerability.
   - AC:
-    - [ ] `ForgotPasswordResponse` contains only `string Message`.
-    - [ ] `POST /api/v1/auth/forgot-password` returns opaque generic message regardless of email existence.
-    - [ ] Token is saved to DB but NEVER serialized to HTTP JSON response.
+    - [x] `ForgotPasswordResponse` contains only `string Message`.
+    - [x] `POST /api/v1/auth/forgot-password` returns opaque generic message regardless of email existence.
+    - [x] Token is saved to DB but NEVER serialized to HTTP JSON response.
   - Verification: Integration test verifies `ResetToken` is not present in response payload.
   - Deps: P06.1. Files: `src/TeamUp.Application/Auth/AuthDtos.cs`, `src/TeamUp.Infrastructure/Services/AuthService.cs`.
   - Scope: S (2 files).
-- [ ] **P08.2 (S, M1): Refactor Integration Tests for Reset Token Flow**
+- [x] **P08.2 (S, M1): Refactor Integration Tests for Reset Token Flow**
   - Description: Update test harness to extract reset token directly from database context instead of relying on leaked HTTP response.
   - AC:
-    - [ ] Test queries test DbContext inside factory scope to obtain `student.PasswordResetToken`.
-    - [ ] End-to-end password reset flow verifies successfully without API token leakage.
+    - [x] Test queries test DbContext inside factory scope to obtain `student.PasswordResetToken`.
+    - [x] End-to-end password reset flow verifies successfully without API token leakage.
   - Verification: `dotnet test --filter FullyQualifiedName~PasswordReset` passes green.
   - Deps: P08.1. Files: `tests/TeamUp.IntegrationTests/AuthAndProfileTests.cs`.
   - Scope: S (1 file).
-- [ ] **P08.3 (M, M1): Hash Refresh and Reset Tokens at Rest (SHA-256)**
+- [x] **P08.3 (M, M1): Hash Refresh and Reset Tokens at Rest (SHA-256)**
   - Description: Prevent token hijacking on database dumps by storing cryptographic hashes of refresh and reset tokens.
   - AC:
-    - [ ] Generate 64-byte crypto random token, return raw token to client.
-    - [ ] Store `SHA256(token)` in `Student.RefreshToken` and `Student.PasswordResetToken`.
-    - [ ] Verify incoming tokens by computing hash before querying database.
+    - [x] Generate 64-byte crypto random token, return raw token to client.
+    - [x] Store `SHA256(token)` in `Student.RefreshToken` and `Student.PasswordResetToken`.
+    - [x] Verify incoming tokens by computing hash before querying database.
   - Verification: Database inspection shows hashed strings; refresh and reset flows pass.
   - Deps: P08.2. Files: `src/TeamUp.Application/Common/Security/IJwtTokenService.cs`, `src/TeamUp.Infrastructure/Services/JwtTokenService.cs`, `AuthService.cs`.
   - Scope: M (3 files).
-- [ ] **P08.4 (S, M1): Partitioned Rate Limiter by Client IP**
+- [x] **P08.4 (S, M1): Partitioned Rate Limiter by Client IP**
   - Description: Protect public auth endpoints against distributed brute-force attacks with IP-partitioned rate limiting.
   - AC:
-    - [ ] Configure `PartitionedRateLimiter` partitioned on client IP.
-    - [ ] Exceeding 30 requests/minute per IP returns 429 Too Many Requests.
+    - [x] Configure `PartitionedRateLimiter` partitioned on client IP.
+    - [x] Exceeding 30 requests/minute per IP returns 429 Too Many Requests.
   - Verification: Test sends rapid requests from single client and receives 429.
   - Deps: P08.1. Files: `src/TeamUp.Api/Program.cs`.
   - Scope: S (1 file).
@@ -199,33 +199,33 @@
 ## Phase 09: Domain Model Factorization & Bounded Contexts
 *Eliminate monolithic `Entities.cs` file and organize domain by bounded contexts.*
 
-- [ ] **P09.1 (S, M1): Deconstruct Identity Bounded Context**
+- [x] **P09.1 (S, M1): Deconstruct Identity Bounded Context**
   - Description: Split `University`, `Faculty`, `Student`, `StudentProfile`, and `StudentInterest` into dedicated files.
   - AC:
-    - [ ] Separate files in `src/TeamUp.Domain/Entities/Identity/`.
-    - [ ] Namespaces and imports aligned cleanly.
+    - [x] Separate files in `src/TeamUp.Domain/Entities/Identity/`.
+    - [x] Namespaces and imports aligned cleanly.
   - Verification: Solution builds with zero warnings.
   - Deps: P02.2. Files: `src/TeamUp.Domain/Entities/Identity/*`.
   - Scope: S (5 files).
-- [ ] **P09.2 (S, M2): Deconstruct Projects & Skills Bounded Context**
+- [x] **P09.2 (S, M2): Deconstruct Projects & Skills Bounded Context**
   - Description: Split `Project`, `ProjectMember`, `ProjectApplication`, `ProjectRequiredSkill`, `ProjectTask`, `Skill`, and `StudentSkill` into dedicated files.
   - AC:
-    - [ ] Separate files in `src/TeamUp.Domain/Entities/Projects/`.
+    - [x] Separate files in `src/TeamUp.Domain/Entities/Projects/`.
   - Verification: Solution builds with zero warnings.
   - Deps: P09.1. Files: `src/TeamUp.Domain/Entities/Projects/*`.
   - Scope: S (7 files).
-- [ ] **P09.3 (S, M3): Deconstruct Organizations & Events Bounded Context**
+- [x] **P09.3 (S, M3): Deconstruct Organizations & Events Bounded Context**
   - Description: Split `Organization`, `OrganizationMember`, `MembershipApplication`, `Event`, `EventSession`, `EventRegistration`, and `SessionAttendance` into dedicated files.
   - AC:
-    - [ ] Separate files in `src/TeamUp.Domain/Entities/Organizations/`.
+    - [x] Separate files in `src/TeamUp.Domain/Entities/Organizations/`.
   - Verification: Solution builds with zero warnings.
   - Deps: P09.2. Files: `src/TeamUp.Domain/Entities/Organizations/*`.
   - Scope: S (7 files).
-- [ ] **P09.4 (XS, M4): Deconstruct Gamification & Notifications Bounded Context**
+- [x] **P09.4 (XS, M4): Deconstruct Gamification & Notifications Bounded Context**
   - Description: Split `ScoreTransaction`, `Badge`, `StudentBadge`, and `Notification` into dedicated files and delete monolithic `Entities.cs`.
   - AC:
-    - [ ] Separate files in `src/TeamUp.Domain/Entities/Gamification/`.
-    - [ ] Remove obsolete monolithic `src/TeamUp.Domain/Entities/Entities.cs`.
+    - [x] Separate files in `src/TeamUp.Domain/Entities/Gamification/`.
+    - [x] Remove obsolete monolithic `src/TeamUp.Domain/Entities/Entities.cs`.
   - Verification: `dotnet test TeamUp.sln` passes 100%.
   - Deps: P09.3. Files: `src/TeamUp.Domain/Entities/Gamification/*`.
   - Scope: S (5 files).
@@ -235,27 +235,27 @@
 ## Phase 10: Clean Architecture Layer Realignment
 *Fix architecture inversion: define `IAppDbContext` in Application and migrate business services.*
 
-- [ ] **P10.1 (M, M1): Define `IAppDbContext` Interface in Application Layer**
+- [x] **P10.1 (M, M1): Define `IAppDbContext` Interface in Application Layer**
   - Description: Create `IAppDbContext` in `TeamUp.Application` exposing `DbSet<T>` and `SaveChangesAsync`.
   - AC:
-    - [ ] Interface defined in `TeamUp.Application.Common.Interfaces.IAppDbContext`.
-    - [ ] `AppDbContext` in `TeamUp.Infrastructure` implements `IAppDbContext`.
+    - [x] Interface defined in `TeamUp.Application.Common.Interfaces.IAppDbContext`.
+    - [x] `AppDbContext` in `TeamUp.Infrastructure` implements `IAppDbContext`.
   - Verification: `TeamUp.Application` compiles without referencing `TeamUp.Infrastructure`.
   - Deps: P09.4. Files: `src/TeamUp.Application/Common/Interfaces/IAppDbContext.cs`, `src/TeamUp.Infrastructure/Persistence/AppDbContext.cs`.
   - Scope: M (2 files).
-- [ ] **P10.2 (M, M1): Migrate Identity & Academic Services to Application**
+- [x] **P10.2 (M, M1): Migrate Identity & Academic Services to Application**
   - Description: Move `AuthService`, `ProfileService`, `UniversityService`, and `FacultyService` from `Infrastructure/Services` to `Application/Services`.
   - AC:
-    - [ ] Business logic services live in `TeamUp.Application.Services`.
-    - [ ] Services inject `IAppDbContext` rather than concrete `AppDbContext`.
+    - [x] Business logic services live in `TeamUp.Application.Services`.
+    - [x] Services inject `IAppDbContext` rather than concrete `AppDbContext`.
   - Verification: All identity, university, and profile integration tests pass.
   - Deps: P10.1. Files: `src/TeamUp.Application/Services/*`, `src/TeamUp.Infrastructure/DependencyInjection.cs`.
   - Scope: M (5 files).
-- [ ] **P10.3 (M, M2): Migrate Project Services to Application**
+- [x] **P10.3 (M, M2): Migrate Project Services to Application**
   - Description: Move `ProjectService` from `Infrastructure/Services` to `Application/Services`.
   - AC:
-    - [ ] `ProjectService` depends on `IAppDbContext`.
-    - [ ] Infrastructure retains only persistence, interceptors, and external adapters.
+    - [x] `ProjectService` depends on `IAppDbContext`.
+    - [x] Infrastructure retains only persistence, interceptors, and external adapters.
   - Verification: Project and task integration tests pass.
   - Deps: P10.2. Files: `src/TeamUp.Application/Services/ProjectService.cs`.
   - Scope: M (2 files).
@@ -265,29 +265,29 @@
 ## Phase 11: Interface Segregation (ISP) for Project Services
 *Decompose God interface `IProjectService` (22 methods) into focused, single-responsibility services.*
 
-- [ ] **P11.1 (S, M2): Define Segregated Project Domain Interfaces**
+- [x] **P11.1 (S, M2): Define Segregated Project Domain Interfaces**
   - Description: Replace monolithic `IProjectService` with 4 focused interfaces.
   - AC:
-    - [ ] `IProjectService`: Core CRUD, status, and directory search.
-    - [ ] `IProjectSkillService`: Required skills management.
-    - [ ] `IProjectMemberService`: Membership roles, member removal, application review.
-    - [ ] `IProjectTaskService`: Sprint task board CRUD, assignments, and status updates.
+    - [x] `IProjectService`: Core CRUD, status, and directory search.
+    - [x] `IProjectSkillService`: Required skills management.
+    - [x] `IProjectMemberService`: Membership roles, member removal, application review.
+    - [x] `IProjectTaskService`: Sprint task board CRUD, assignments, and status updates.
   - Verification: Interfaces compile with clear, decoupled method contracts.
   - Deps: P10.3. Files: `src/TeamUp.Application/Projects/Interfaces/*`.
   - Scope: S (4 files).
-- [ ] **P11.2 (M, M2): Implement Segregated Project Services**
+- [x] **P11.2 (M, M2): Implement Segregated Project Services**
   - Description: Implement the 4 segregated services to replace monolithic `ProjectService`.
   - AC:
-    - [ ] `ProjectService`, `ProjectSkillService`, `ProjectMemberService`, `ProjectTaskService`.
-    - [ ] Each class contains < 100 lines and adheres to SRP.
+    - [x] `ProjectService`, `ProjectSkillService`, `ProjectMemberService`, `ProjectTaskService`.
+    - [x] Each class contains < 100 lines and adheres to SRP.
   - Verification: Unit tests verify independent service operations.
   - Deps: P11.1. Files: `src/TeamUp.Application/Projects/Services/*`.
   - Scope: M (4 files).
-- [ ] **P11.3 (S, M2): Refactor Controllers to Inject Segregated Interfaces**
+- [x] **P11.3 (S, M2): Refactor Controllers to Inject Segregated Interfaces**
   - Description: Update `ProjectsController` and `TasksController` to inject only the specific services they require.
   - AC:
-    - [ ] `TasksController` injects only `IProjectTaskService`.
-    - [ ] `ProjectsController` injects `IProjectService`, `IProjectMemberService`, and `IProjectSkillService`.
+    - [x] `TasksController` injects only `IProjectTaskService`.
+    - [x] `ProjectsController` injects `IProjectService`, `IProjectMemberService`, and `IProjectSkillService`.
   - Verification: All 71 tests in `TeamUp.IntegrationTests` pass.
   - Deps: P11.2. Files: `src/TeamUp.Api/Controllers/ProjectsController.cs`, `TasksController.cs`.
   - Scope: S (2 files).
@@ -295,40 +295,40 @@
 ---
 
 ### Checkpoint 2 (Phases 08–11 Completed)
-- [ ] Security vulnerability resolved: Reset token redacted from API response.
-- [ ] Tokens stored hashed with SHA-256.
-- [ ] Domain entities factorized into bounded context folders.
-- [ ] Clean Architecture layer alignment complete (`IAppDbContext`).
-- [ ] God interface `IProjectService` factorized into 4 focused services.
+- [x] Security vulnerability resolved: Reset token redacted from API response.
+- [x] Tokens stored hashed with SHA-256.
+- [x] Domain entities factorized into bounded context folders.
+- [x] Clean Architecture layer alignment complete (`IAppDbContext`).
+- [x] God interface `IProjectService` factorized into 4 focused services.
 
 ---
 
 ## Phase 12: Module 04 — Skills Master Catalog & Student Claims (`T16`)
 *Master skills catalog, categorization, and student proficiency endorsements.*
 
-- [ ] **P12.1 (S, M2): Skills Catalog DTOs & FluentValidators**
+- [x] **P12.1 (S, M2): Skills Catalog DTOs & FluentValidators**
   - Description: Define request/response DTOs and validation rules for master skills and student skill claims.
   - AC:
-    - [ ] `CreateSkillRequest(Name, Category, Description)`, `UpdateSkillRequest`.
-    - [ ] `UpsertStudentSkillRequest(ProficiencyLevel, YearsOfExperience)`.
-    - [ ] Validates non-empty names, recognized categories, and valid enum values.
+    - [x] `CreateSkillRequest(Name, Category, Description)`, `UpdateSkillRequest`.
+    - [x] `UpsertStudentSkillRequest(ProficiencyLevel, YearsOfExperience)`.
+    - [x] Validates non-empty names, recognized categories, and valid enum values.
   - Verification: Validator unit tests assert required fields and length rules.
   - Deps: P10.1. Files: `src/TeamUp.Application/Skills/*`.
   - Scope: S (3 files).
-- [ ] **P12.2 (M, M2): Skills Service & Student Skill Claims Implementation**
+- [x] **P12.2 (M, M2): Skills Service & Student Skill Claims Implementation**
   - Description: Implement `ISkillService` for master catalog CRUD and student claimed skills.
   - AC:
-    - [ ] Filtered search by category and keyword.
-    - [ ] Soft-delete on skills preserves historical records.
-    - [ ] `PUT /students/{id}/skills/{skillId}` upserts student proficiency; `DELETE` removes claim.
+    - [x] Filtered search by category and keyword.
+    - [x] Soft-delete on skills preserves historical records.
+    - [x] `PUT /students/{id}/skills/{skillId}` upserts student proficiency; `DELETE` removes claim.
   - Verification: Unit tests verify skill claims and uniqueness constraints.
   - Deps: P12.1. Files: `src/TeamUp.Application/Services/SkillService.cs`.
   - Scope: M (2 files).
-- [ ] **P12.3 (S, M2): Skills Controller & Student Skills Endpoints**
+- [x] **P12.3 (S, M2): Skills Controller & Student Skills Endpoints**
   - AC:
-    - [ ] `GET /api/v1/skills`, `POST /api/v1/skills` (`PlatformAdmin`), `GET/PUT/DELETE /skills/{id}`.
-    - [ ] `GET /api/v1/students/{id}/skills`, `PUT /students/{id}/skills/{skillId}`, `DELETE`.
-    - [ ] Endpoints return standardized `BaseResponse<T>`.
+    - [x] `GET /api/v1/skills`, `POST /api/v1/skills` (`PlatformAdmin`), `GET/PUT/DELETE /skills/{id}`.
+    - [x] `GET /api/v1/students/{id}/skills`, `PUT /students/{id}/skills/{skillId}`, `DELETE`.
+    - [x] Endpoints return standardized `BaseResponse<T>`.
   - Verification: Integration tests cover skills CRUD and student proficiency claims.
   - Deps: P12.2. Files: `src/TeamUp.Api/Controllers/SkillsController.cs`.
   - Scope: S (2 files).

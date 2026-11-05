@@ -23,8 +23,7 @@ public sealed record ForgotPasswordRequest(
 );
 
 public sealed record ForgotPasswordResponse(
-    string Message,
-    string? ResetToken = null
+    string Message
 );
 
 public sealed record ResetPasswordRequest(

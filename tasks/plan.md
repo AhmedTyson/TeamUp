@@ -18,12 +18,12 @@
 | **Phase 05** | Student Discovery & Account Management | Search directory, Portfolio biography, Account soft-delete | ✅ Completed |
 | **Phase 06** | Password Recovery & Platform Governance | Reset tokens, Admin dashboard, Role governance, Universal restore | ✅ Completed |
 | **Phase 07** | Projects, Teams & Sprint Task Management | Project creation, Member roles, Applications, Task lifecycle (PR #1) | ✅ Completed |
-| **Phase 08** | Security Remediation & Crypto Hardening | Redact reset token from API, SHA-256 token hashing, Partitioned rate limiting | 🚀 Next |
-| **Phase 09** | Domain Model Factorization | Decompose monolithic `Entities.cs` into modular bounded subdirectories | ⏳ Ready |
-| **Phase 10** | Clean Architecture Layer Realignment | Introduce `IAppDbContext` in Application, migrate services from Infrastructure | ⏳ Ready |
-| **Phase 11** | Interface Segregation (ISP) for Projects | Split God `IProjectService` into 4 focused SRP services | ⏳ Ready |
-| **Phase 12** | Module 04: Skills Catalog & Student Claims | Master skills catalog, categories, proficiency ratings (`T16`) | ⏳ Ready |
-| **Phase 13** | Module 08 & 09: Organizations & Applications | Student activities, OrgAdmin management, Membership applications (`T20, T21`) | ⏳ Ready |
+| **Phase 08** | Security Remediation & Crypto Hardening | Redact reset token from API, SHA-256 token hashing, Partitioned rate limiting | ✅ Completed |
+| **Phase 09** | Domain Model Factorization | Decompose monolithic `Entities.cs` into modular bounded subdirectories | ✅ Completed |
+| **Phase 10** | Clean Architecture Layer Realignment | Introduce `IAppDbContext` in Application, migrate services from Infrastructure | ✅ Completed |
+| **Phase 11** | Interface Segregation (ISP) for Projects | Split God `IProjectService` into 4 focused SRP services | ✅ Completed |
+| **Phase 12** | Module 04: Skills Catalog & Student Claims | Master skills catalog, categories, proficiency ratings (`T16`) | ✅ Completed |
+| **Phase 13** | Module 08 & 09: Organizations & Applications | Student activities, OrgAdmin management, Membership applications (`T20, T21`) | ⏳ Queued (Ibrahim) |
 | **Phase 14** | Module 10: Events & Multi-Session Schedules | Event lifecycle, capacity, sessions, cascade soft-delete (`T22`) | ⏳ Ready |
 | **Phase 15** | Module 11 & 12: Registrations & Attendance | Registration waitlist, QR/pin attendance check-in, duplicate prevention (`T23, T24`) | ⏳ Ready |
 | **Phase 16** | Module 13: Gamification Scoring Ledger | Append-only `ScoreTransaction`, level formula, activity award hooks (`T25`) | ⏳ Ready |

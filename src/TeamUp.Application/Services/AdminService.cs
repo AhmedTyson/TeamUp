@@ -2,12 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Admin;
 using TeamUp.Application.Auth;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Interfaces;
 using TeamUp.Domain.Enums;
-using TeamUp.Infrastructure.Persistence;
 
-namespace TeamUp.Infrastructure.Services;
+namespace TeamUp.Application.Services;
 
-public sealed class AdminService(AppDbContext db) : IAdminService
+public sealed class AdminService(IAppDbContext db) : IAdminService
 {
     public async Task<AdminDashboardDto> GetDashboardStatsAsync(CancellationToken ct = default)
     {

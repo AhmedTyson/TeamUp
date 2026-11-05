@@ -1,9 +1,13 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using TeamUp.Application.Auth;
 using TeamUp.Application.Common.Models;
 using TeamUp.Application.Students;
+using TeamUp.Infrastructure.Persistence;
+using TeamUp.Infrastructure.Services;
 
 namespace TeamUp.IntegrationTests;
 
@@ -271,22 +275,35 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var reg = new RegisterRequest("Kareem", "Reset", email, "InitialPassword123!", 2, factory.SeededFacultyId);
         await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
 
-        // 1. Request forgot password
+        // 1. Request forgot password - must not leak reset token in HTTP response
         var forgotRes = await _client.PostAsJsonAsync("/api/v1/auth/forgot-password", new ForgotPasswordRequest(email));
         Assert.Equal(HttpStatusCode.OK, forgotRes.StatusCode);
         var forgot = await GetDataAsync<ForgotPasswordResponse>(forgotRes);
-        Assert.NotNull(forgot.ResetToken);
+        Assert.Equal("If your email is registered, a password reset link has been dispatched.", forgot.Message);
 
-        // 2. Reset password with valid token
+        // 2. Retrieve dispatched token from out-of-band email sink and verify DB stores hash
+        var emailSender = factory.Services.GetRequiredService<InMemoryEmailSender>();
+        var resetToken = emailSender.GetLastResetToken(email);
+        Assert.NotNull(resetToken);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var student = await db.Students.FirstAsync(s => s.Email == email);
+            Assert.NotNull(student.PasswordResetToken);
+            Assert.NotEqual(resetToken, student.PasswordResetToken); // Token in DB must be hashed (SHA-256)
+        }
+
+        // 3. Reset password with valid token
         var newPassword = "BrandNewPassword2026!";
-        var resetRes = await _client.PostAsJsonAsync("/api/v1/auth/reset-password", new ResetPasswordRequest(email, forgot.ResetToken, newPassword));
+        var resetRes = await _client.PostAsJsonAsync("/api/v1/auth/reset-password", new ResetPasswordRequest(email, resetToken, newPassword));
         Assert.Equal(HttpStatusCode.OK, resetRes.StatusCode);
 
-        // 3. Login with old password fails
+        // 4. Login with old password fails
         var oldLoginRes = await _client.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest(email, "InitialPassword123!"));
         Assert.Equal(HttpStatusCode.Unauthorized, oldLoginRes.StatusCode);
 
-        // 4. Login with new password succeeds
+        // 5. Login with new password succeeds
         var newLoginRes = await _client.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest(email, newPassword));
         Assert.Equal(HttpStatusCode.OK, newLoginRes.StatusCode);
     }

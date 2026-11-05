@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common.Events;
+using TeamUp.Application.Common.Interfaces;
 using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
 
@@ -8,7 +9,7 @@ namespace TeamUp.Infrastructure.Persistence;
 
 public class AppDbContext(
     DbContextOptions<AppDbContext> options,
-    IDomainEventDispatcher? dispatcher = null) : DbContext(options)
+    IDomainEventDispatcher? dispatcher = null) : DbContext(options), IAppDbContext
 {
     public DbSet<University> Universities => Set<University>();
     public DbSet<Faculty> Faculties => Set<Faculty>();

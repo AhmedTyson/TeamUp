@@ -2,14 +2,14 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Projects;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
-using TeamUp.Infrastructure.Persistence;
 
-namespace TeamUp.Infrastructure.Services;
+namespace TeamUp.Application.Services;
 
-public sealed class ProjectService(AppDbContext db) : IProjectService
+public sealed class ProjectService(IAppDbContext db) : IProjectService, IProjectSkillService, IProjectMemberService, IProjectTaskService
 {
     public async Task<PagedResult<ProjectListItemDto>> GetProjectsAsync(string? keyword, string? status, int? skillId, PageRequest page, CancellationToken ct)
     {

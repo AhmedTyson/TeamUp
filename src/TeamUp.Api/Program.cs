@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
@@ -79,11 +80,18 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter("auth-policy", opt =>
+    options.AddPolicy("auth-policy", httpContext =>
     {
-        opt.PermitLimit = 60; // 60 requests per minute per window
-        opt.Window = TimeSpan.FromMinutes(1);
-        opt.QueueLimit = 0;
+        var clientIp = httpContext.Connection.RemoteIpAddress?.ToString()
+            ?? httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+            ?? "anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 60,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        });
     });
 });
 

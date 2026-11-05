@@ -1,19 +1,22 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using TeamUp.Application.Auth;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
-using TeamUp.Infrastructure.Persistence;
 
-namespace TeamUp.Infrastructure.Services;
+namespace TeamUp.Application.Services;
 
 public sealed class AuthService(
-    AppDbContext db,
+    IAppDbContext db,
     IJwtTokenService jwt,
     IPasswordHasher<Student> hasher,
+    IEmailSender emailSender,
     IOptions<JwtOptions> jwtOptions) : IAuthService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
@@ -34,6 +37,7 @@ public sealed class AuthService(
             .FirstOrDefaultAsync(f => f.FacultyId == req.FacultyId, ct)
             ?? throw new NotFoundException($"Faculty with ID {req.FacultyId} was not found.");
 
+        var rawRefreshToken = jwt.GenerateRefreshToken();
         var student = new Student
         {
             Email = email,
@@ -43,7 +47,7 @@ public sealed class AuthService(
             AcademicYear = req.AcademicYear,
             FacultyId = req.FacultyId,
             Role = UserRole.Student,
-            RefreshToken = jwt.GenerateRefreshToken(),
+            RefreshToken = jwt.HashToken(rawRefreshToken),
             RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays),
         };
 
@@ -58,7 +62,7 @@ public sealed class AuthService(
             student.AcademicYear, student.Role.ToString(),
             faculty.FacultyId, faculty.Name, faculty.University.Name);
 
-        return new AuthResponse(accessToken, student.RefreshToken, expiresAt, summary);
+        return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest req, CancellationToken ct = default)
@@ -81,7 +85,8 @@ public sealed class AuthService(
         var (accessToken, expiresAt) = jwt.GenerateAccessToken(
             student.StudentId, student.Email, student.Role.ToString(), $"{student.FirstName} {student.LastName}");
 
-        student.RefreshToken = jwt.GenerateRefreshToken();
+        var rawRefreshToken = jwt.GenerateRefreshToken();
+        student.RefreshToken = jwt.HashToken(rawRefreshToken);
         student.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays);
         await db.SaveChangesAsync(ct);
 
@@ -90,7 +95,7 @@ public sealed class AuthService(
             student.AcademicYear, student.Role.ToString(),
             student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name);
 
-        return new AuthResponse(accessToken, student.RefreshToken, expiresAt, summary);
+        return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
 
     public async Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest req, CancellationToken ct = default)
@@ -98,10 +103,12 @@ public sealed class AuthService(
         if (string.IsNullOrWhiteSpace(req.RefreshToken))
             throw new BadRequestException("Refresh token is required.");
 
+        var hashedToken = jwt.HashToken(req.RefreshToken.Trim());
+
         var student = await db.Students
             .Include(s => s.Faculty)
             .ThenInclude(f => f.University)
-            .FirstOrDefaultAsync(s => s.RefreshToken == req.RefreshToken, ct);
+            .FirstOrDefaultAsync(s => s.RefreshToken == hashedToken, ct);
 
         if (student is null || student.RefreshTokenExpiresAt is null || student.RefreshTokenExpiresAt <= DateTime.UtcNow)
             throw new UnauthorizedException("Invalid or expired refresh token.");
@@ -109,7 +116,8 @@ public sealed class AuthService(
         var (accessToken, expiresAt) = jwt.GenerateAccessToken(
             student.StudentId, student.Email, student.Role.ToString(), $"{student.FirstName} {student.LastName}");
 
-        student.RefreshToken = jwt.GenerateRefreshToken();
+        var rawRefreshToken = jwt.GenerateRefreshToken();
+        student.RefreshToken = jwt.HashToken(rawRefreshToken);
         student.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays);
         await db.SaveChangesAsync(ct);
 
@@ -118,7 +126,7 @@ public sealed class AuthService(
             student.AcademicYear, student.Role.ToString(),
             student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name);
 
-        return new AuthResponse(accessToken, student.RefreshToken, expiresAt, summary);
+        return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
 
     public async Task LogoutAsync(int studentId, CancellationToken ct = default)
@@ -137,17 +145,17 @@ public sealed class AuthService(
         var email = req.Email.Trim().ToLowerInvariant();
         var student = await db.Students.FirstOrDefaultAsync(s => s.Email == email, ct);
 
-        if (student is null)
+        if (student is not null)
         {
-            return new ForgotPasswordResponse("If your email is registered, a password reset link has been dispatched.");
+            var rawResetToken = jwt.GenerateRefreshToken();
+            student.PasswordResetToken = jwt.HashToken(rawResetToken);
+            student.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddHours(1);
+            await db.SaveChangesAsync(ct);
+
+            await emailSender.SendPasswordResetEmailAsync(student.Email, rawResetToken, ct);
         }
 
-        var resetToken = jwt.GenerateRefreshToken();
-        student.PasswordResetToken = resetToken;
-        student.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddHours(1);
-        await db.SaveChangesAsync(ct);
-
-        return new ForgotPasswordResponse("If your email is registered, a password reset link has been dispatched.", resetToken);
+        return new ForgotPasswordResponse("If your email is registered, a password reset link has been dispatched.");
     }
 
     public async Task ResetPasswordAsync(ResetPasswordRequest req, CancellationToken ct = default)
@@ -156,8 +164,12 @@ public sealed class AuthService(
         var student = await db.Students.FirstOrDefaultAsync(s => s.Email == email, ct)
             ?? throw new UnauthorizedException("Invalid email or reset token.");
 
+        var incomingHash = jwt.HashToken(req.Token.Trim());
+
         if (string.IsNullOrWhiteSpace(student.PasswordResetToken) ||
-            !string.Equals(student.PasswordResetToken, req.Token) ||
+            !CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(student.PasswordResetToken),
+                Encoding.UTF8.GetBytes(incomingHash)) ||
             student.PasswordResetTokenExpiresAt is null ||
             student.PasswordResetTokenExpiresAt <= DateTime.UtcNow)
         {

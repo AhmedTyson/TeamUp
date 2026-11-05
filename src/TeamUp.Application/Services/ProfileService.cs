@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Students;
 using TeamUp.Domain.Entities;
-using TeamUp.Infrastructure.Persistence;
 
-namespace TeamUp.Infrastructure.Services;
+namespace TeamUp.Application.Services;
 
-public sealed class ProfileService(AppDbContext db)
+public sealed class ProfileService(IAppDbContext db)
     : IProfileService, IStudentAccountService, IStudentProfileService, IStudentInterestService
 {
     public Task<StudentDetailDto> GetMyAccountAsync(int studentId, CancellationToken ct = default) =>

@@ -9,7 +9,11 @@ namespace TeamUp.Api.Controllers;
 
 [Route("api/v1/projects")]
 [Authorize]
-public class ProjectsController(IProjectService service) : BaseApiController
+public class ProjectsController(
+    IProjectService projectService,
+    IProjectSkillService skillService,
+    IProjectMemberService memberService,
+    IProjectTaskService taskService) : BaseApiController
 {
     [HttpGet]
     [ProducesResponseType(typeof(BaseResponse<PagedResult<ProjectListItemDto>>), StatusCodes.Status200OK)]
@@ -21,7 +25,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
-        var result = await service.GetProjectsAsync(keyword, status, skillId, new PageRequest(page, pageSize), ct);
+        var result = await projectService.GetProjectsAsync(keyword, status, skillId, new PageRequest(page, pageSize), ct);
         return OkResponse(result);
     }
 
@@ -31,7 +35,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CreateProject([FromBody] CreateProjectRequest request, CancellationToken ct)
     {
-        var result = await service.CreateProjectAsync(CurrentStudentId, request, ct);
+        var result = await projectService.CreateProjectAsync(CurrentStudentId, request, ct);
         return CreatedResponse(nameof(GetProject), new { id = result.ProjectId }, result, "Project created successfully.");
     }
 
@@ -40,7 +44,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetProject([FromRoute] int id, CancellationToken ct)
     {
-        var result = await service.GetProjectAsync(id, ct);
+        var result = await projectService.GetProjectAsync(id, ct);
         return OkResponse(result);
     }
 
@@ -51,7 +55,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateProject([FromRoute] int id, [FromBody] UpdateProjectRequest request, CancellationToken ct)
     {
-        var result = await service.UpdateProjectAsync(CurrentStudentId, id, request, ct);
+        var result = await projectService.UpdateProjectAsync(CurrentStudentId, id, request, ct);
         return OkResponse(result, "Project updated successfully.");
     }
 
@@ -61,7 +65,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteProject([FromRoute] int id, CancellationToken ct)
     {
-        await service.DeleteProjectAsync(CurrentStudentId, id, ct);
+        await projectService.DeleteProjectAsync(CurrentStudentId, id, ct);
         return NoContentResponse();
     }
 
@@ -70,7 +74,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetRequiredSkills([FromRoute] int id, CancellationToken ct)
     {
-        var result = await service.GetRequiredSkillsAsync(id, ct);
+        var result = await skillService.GetRequiredSkillsAsync(id, ct);
         return OkResponse(result);
     }
 
@@ -85,7 +89,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
         [FromBody] UpsertRequiredSkillRequest request,
         CancellationToken ct)
     {
-        await service.UpsertRequiredSkillAsync(CurrentStudentId, id, skillId, request, ct);
+        await skillService.UpsertRequiredSkillAsync(CurrentStudentId, id, skillId, request, ct);
         return NoContentResponse();
     }
 
@@ -95,7 +99,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RemoveRequiredSkill([FromRoute] int id, [FromRoute] int skillId, CancellationToken ct)
     {
-        await service.RemoveRequiredSkillAsync(CurrentStudentId, id, skillId, ct);
+        await skillService.RemoveRequiredSkillAsync(CurrentStudentId, id, skillId, ct);
         return NoContentResponse();
     }
 
@@ -104,7 +108,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetMembers([FromRoute] int id, CancellationToken ct)
     {
-        var result = await service.GetMembersAsync(id, ct);
+        var result = await memberService.GetMembersAsync(id, ct);
         return OkResponse(result);
     }
 
@@ -119,7 +123,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
         [FromBody] UpdateProjectMemberRequest request,
         CancellationToken ct)
     {
-        await service.UpdateMemberRoleAsync(CurrentStudentId, id, studentId, request, ct);
+        await memberService.UpdateMemberRoleAsync(CurrentStudentId, id, studentId, request, ct);
         return NoContentResponse();
     }
 
@@ -129,7 +133,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RemoveMember([FromRoute] int id, [FromRoute] int studentId, CancellationToken ct)
     {
-        await service.RemoveMemberAsync(CurrentStudentId, id, studentId, ct);
+        await memberService.RemoveMemberAsync(CurrentStudentId, id, studentId, ct);
         return NoContentResponse();
     }
 
@@ -139,7 +143,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetApplications([FromRoute] int id, CancellationToken ct)
     {
-        var result = await service.GetApplicationsAsync(CurrentStudentId, id, ct);
+        var result = await memberService.GetApplicationsAsync(CurrentStudentId, id, ct);
         return OkResponse(result);
     }
 
@@ -154,7 +158,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
         [FromBody] CreateProjectApplicationRequest request,
         CancellationToken ct)
     {
-        var result = await service.ApplyAsync(CurrentStudentId, id, request, ct);
+        var result = await memberService.ApplyAsync(CurrentStudentId, id, request, ct);
         return CreatedResponse(nameof(GetApplications), new { id }, result, "Application submitted successfully.");
     }
 
@@ -170,7 +174,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
         [FromBody] ReviewProjectApplicationRequest request,
         CancellationToken ct)
     {
-        var result = await service.ReviewApplicationAsync(CurrentStudentId, id, appId, request, ct);
+        var result = await memberService.ReviewApplicationAsync(CurrentStudentId, id, appId, request, ct);
         return OkResponse(result, "Application reviewed successfully.");
     }
 
@@ -180,7 +184,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> WithdrawApplication([FromRoute] int id, [FromRoute] int appId, CancellationToken ct)
     {
-        await service.WithdrawApplicationAsync(CurrentStudentId, id, appId, ct);
+        await memberService.WithdrawApplicationAsync(CurrentStudentId, id, appId, ct);
         return NoContentResponse();
     }
 
@@ -190,7 +194,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTasks([FromRoute] int id, CancellationToken ct)
     {
-        var result = await service.GetProjectTasksAsync(CurrentStudentId, id, ct);
+        var result = await taskService.GetProjectTasksAsync(CurrentStudentId, id, ct);
         return OkResponse(result);
     }
 
@@ -204,7 +208,7 @@ public class ProjectsController(IProjectService service) : BaseApiController
         [FromBody] CreateProjectTaskRequest request,
         CancellationToken ct)
     {
-        var result = await service.CreateTaskAsync(CurrentStudentId, id, request, ct);
+        var result = await taskService.CreateTaskAsync(CurrentStudentId, id, request, ct);
         return CreatedResponse(result, "Task created successfully.");
     }
 }

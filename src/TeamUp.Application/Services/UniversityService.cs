@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Universities;
 using TeamUp.Domain.Entities;
-using TeamUp.Infrastructure.Persistence;
 
-namespace TeamUp.Infrastructure.Services;
+namespace TeamUp.Application.Services;
 
-public sealed class UniversityService(AppDbContext db) : IUniversityService
+public sealed class UniversityService(IAppDbContext db) : IUniversityService
 {
     public async Task<PagedResult<UniversityDto>> GetUniversitiesAsync(string? search, PageRequest page, CancellationToken ct = default)
     {

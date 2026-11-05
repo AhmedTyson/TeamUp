@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Universities;
 using TeamUp.Domain.Entities;
-using TeamUp.Infrastructure.Persistence;
 
-namespace TeamUp.Infrastructure.Services;
+namespace TeamUp.Application.Services;
 
-public sealed class FacultyService(AppDbContext db) : IFacultyService
+public sealed class FacultyService(IAppDbContext db) : IFacultyService
 {
     public async Task<IReadOnlyList<FacultyDto>> GetFacultiesByUniversityIdAsync(int universityId, CancellationToken ct = default)
     {
