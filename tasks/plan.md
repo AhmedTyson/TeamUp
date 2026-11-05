@@ -1,83 +1,145 @@
-# TeamUp Backend: Implementation Plan
+# TeamUp Backend: 20-Phase Implementation & Architecture Plan
 
-Source of truth: `ERD/description.md`, `Mapping/description.md`.
-Stack: .NET 10 (SDK 10.0.403 installed), ASP.NET Core Web API, EF Core + SQL Server, JWT auth.
-Team: 4 members (M1 to M4) plus shared foundation done first by M1.
+**Stack:** .NET 10, ASP.NET Core Web API, EF Core 10, Microsoft SQL Server, JWT Bearer Auth, FluentValidation.  
+**Architecture:** Clean Architecture, Domain-Driven Design (DDD) Bounded Contexts, CQRS/Service Segregation.  
+**Team Allocation:** Tyson (M1 - Auth/Identity/Admin), Ossama (M2 - Skills/Projects/Tasks), Ibrahim (M3 - Orgs/Events), Youssef (M4 - Gamification/Notifications).  
+**Source Specifications:** `ERD/description.md`, `Mapping/description.md`, `docs/api/API-PROPOSAL.md`.
 
-## Mapping defects to fix first (found while reviewing `Mapping/description.md`)
+---
 
-| # | Defect | Fix |
-|---|---|---|
-| D1 | Every FK uses `ON DELETE CASCADE`/`SET NULL`. Conflicts with the soft-delete rule (rows are never physically removed, so cascades never fire or, worse, wipe history if someone hard-deletes). | All FKs: `ON DELETE NO ACTION`. Soft-delete cascade done in the application (service layer) where needed. |
-| D2 | `ON UPDATE` never specified anywhere. | All FKs: `ON UPDATE NO ACTION`. SQL Server only supports `NO ACTION` for update on identity keys, and PKs are immutable (IDENTITY). Document it. |
-| D3 | `ProjectTask.AssignedStudentID` uses `ON DELETE SET NULL`. Soft delete never nulls it. | `NO ACTION`. Unassign in the service when a member is soft-removed. |
-| D4 | No soft-delete column. | Add single column `DeletedAt DATETIME2 NULL` to every table except `ScoreTransaction` (NULL = active, timestamp = deleted). Eliminates bit/timestamp desync and captures audit time natively. |
-| D5 | UNIQUE on `Student.Email`, `Skill.Name`, `Organization.Name`, `StudentProfile.StudentID` blocks reuse after soft delete. | Filtered unique indexes `WHERE DeletedAt IS NULL`. |
-| D6 | Junction PKs `(ProjectID, StudentID)` on `ProjectApplication` and `MembershipApplication` contradict the ERD text ("student may re-apply after rejection"). | Add surrogate `ApplicationID` PK + filtered unique index on (ProjectID, StudentID) `WHERE Status = 'Pending' AND DeletedAt IS NULL`. Same for MembershipApplication. |
-| D7 | `EventSession` composite PK `(EventID, SessionID)` with a non-identity `SessionID` means manual numbering. | Surrogate `SessionID` IDENTITY PK, unique `(EventID, SessionNo)`. `SessionAttendance` then references `SessionID` only, so the PK becomes `(SessionID, StudentID)`. |
-| D8 | Names differ between ERD (`Task`, `EventAttendance`) and mapping (`ProjectTask`, `SessionAttendance`). | Keep mapping names, add a rename note in docs. |
-| D9 | No CHECK on enums-as-strings (`Status`, `Role`, `Priority`...). | CHECK constraints or EF `HasConversion<string>()` with enums plus CHECK. |
-| D10 | Mapping diagram needs redraw for D6, D7 and the soft-delete columns. | Regenerate with `Mapping/source/gen_schema.py`. |
+## 20-Phase Master Plan Overview
 
-## Soft delete policy (to be documented)
+| Phase | Phase Name | Focus Area | Status |
+|---|---|---|---|
+| **Phase 01** | Solution Scaffold & Baseline Infrastructure | .NET 10 setup, CI, BaseEntity, SoftDeleteInterceptor, BaseResponse | ✅ Completed |
+| **Phase 02** | Relational Schema & 22 Domain Entities | Cascade-free schema, Check constraints, Migrations, DbSeeder | ✅ Completed |
+| **Phase 03** | Core Identity & JWT Authentication | Register, Login, Refresh tokens rotation, Claims, Passwords | ✅ Completed |
+| **Phase 04** | Academic Catalog: Universities & Faculties | Public catalog lookups, Admin CRUD, Nested faculty endpoints | ✅ Completed |
+| **Phase 05** | Student Discovery & Account Management | Search directory, Portfolio biography, Account soft-delete | ✅ Completed |
+| **Phase 06** | Password Recovery & Platform Governance | Reset tokens, Admin dashboard, Role governance, Universal restore | ✅ Completed |
+| **Phase 07** | Projects, Teams & Sprint Task Management | Project creation, Member roles, Applications, Task lifecycle (PR #1) | ✅ Completed |
+| **Phase 08** | Security Remediation & Crypto Hardening | Redact reset token from API, SHA-256 token hashing, Partitioned rate limiting | 🚀 Next |
+| **Phase 09** | Domain Model Factorization | Decompose monolithic `Entities.cs` into modular bounded subdirectories | ⏳ Ready |
+| **Phase 10** | Clean Architecture Layer Realignment | Introduce `IAppDbContext` in Application, migrate services from Infrastructure | ⏳ Ready |
+| **Phase 11** | Interface Segregation (ISP) for Projects | Split God `IProjectService` into 4 focused SRP services | ⏳ Ready |
+| **Phase 12** | Module 04: Skills Catalog & Student Claims | Master skills catalog, categories, proficiency ratings (`T16`) | ⏳ Ready |
+| **Phase 13** | Module 08 & 09: Organizations & Applications | Student activities, OrgAdmin management, Membership applications (`T20, T21`) | ⏳ Ready |
+| **Phase 14** | Module 10: Events & Multi-Session Schedules | Event lifecycle, capacity, sessions, cascade soft-delete (`T22`) | ⏳ Ready |
+| **Phase 15** | Module 11 & 12: Registrations & Attendance | Registration waitlist, QR/pin attendance check-in, duplicate prevention (`T23, T24`) | ⏳ Ready |
+| **Phase 16** | Module 13: Gamification Scoring Ledger | Append-only `ScoreTransaction`, level formula, activity award hooks (`T25`) | ⏳ Ready |
+| **Phase 17** | Module 14 & 15: Badges & Notifications | Badge rule evaluator, notifications inbox, mark as read, event dispatch (`T26, T27`) | ⏳ Ready |
+| **Phase 18** | Performance, Caching & Concurrency | In-memory cache for catalogs, `RowVersion` optimistic concurrency | ⏳ Ready |
+| **Phase 19** | OpenAPI v3 Contracts & Postman Collection | OpenAPI generation, XML docs, Scalar/Swagger UI, Postman collection (`T28-T31`) | ⏳ Ready |
+| **Phase 20** | Live Verification & Release Package | PowerShell live runner, zero cascade verification, ZIP archive refresh (`T32-T34`) | ⏳ Ready |
 
-- `DELETE /resource/{id}` sets `DeletedAt = UTC now`, returns `204`.
-- A global EF query filter `HasQueryFilter(e => e.DeletedAt == null)` hides deleted rows.
-- `SaveChanges` interceptor converts `EntityState.Deleted` into the soft-delete update.
-- Admin-only `POST /resource/{id}/restore` and `?includeDeleted=true` for admins.
-- Re-creating a unique value (email, skill name) is allowed once the old row is soft-deleted.
-- Append-only ledgers (`ScoreTransaction`) are never deleted, corrected with a compensating row.
+---
 
-## REST API proposal (v1, base `/api/v1`)
+## Detailed Phase Roadmaps & Bounded Contexts
 
-Conventions: plural nouns, JSON, `201` + `Location` on create, `204` on delete/no body, `PATCH` for partial update, `PUT` for full replace, pagination `?page=&pageSize=`, sorting `?sort=`, errors as RFC 7807 `application/problem+json`. JWT Bearer, roles `Student`, `OrgAdmin`, `PlatformAdmin`.
+### Phase 01: Solution Scaffold & Baseline Infrastructure (Completed)
+- **T1:** Initialize .NET 10 solution, enforce `Nullable=enable`, `TreatWarningsAsErrors=true`.
+- **T2:** Automated GitHub Actions CI workflow, PR verification.
+- **T3:** Single-column `DeletedAt` soft-delete base and EF Core `SaveChangesInterceptor`.
+- **T4:** Global exception middleware with clean `BaseResponse<T>` JSON envelope.
 
-| Module | Endpoints |
-|---|---|
-| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout` |
-| Universities | `GET/POST /universities`, `GET/PUT/PATCH/DELETE /universities/{id}`, `GET/POST /universities/{id}/faculties`, `GET/PUT/DELETE /faculties/{id}` |
-| Students | `GET /students`, `GET/PATCH/DELETE /students/{id}`, `GET /students/me`, `GET/PUT /students/{id}/profile`, `GET/POST /students/{id}/interests`, `DELETE /students/{id}/interests/{interest}` |
-| Skills | `GET/POST /skills`, `GET/PUT/DELETE /skills/{id}`, `GET /students/{id}/skills`, `PUT /students/{id}/skills/{skillId}`, `DELETE /students/{id}/skills/{skillId}` |
-| Projects | `GET/POST /projects`, `GET/PUT/PATCH/DELETE /projects/{id}`, `GET/PUT/DELETE /projects/{id}/required-skills[/{skillId}]`, `GET /projects/{id}/members`, `PATCH/DELETE /projects/{id}/members/{studentId}` |
-| Applications | `GET/POST /projects/{id}/applications`, `PATCH /projects/{id}/applications/{appId}` (accept/reject), `DELETE .../{appId}` (withdraw) |
-| Tasks | `GET/POST /projects/{id}/tasks`, `GET/PUT/PATCH/DELETE /tasks/{id}`, `PUT/DELETE /tasks/{id}/assignee` |
-| Organizations | `GET/POST /organizations`, `GET/PUT/PATCH/DELETE /organizations/{id}`, `GET /organizations/{id}/members`, `PATCH/DELETE /organizations/{id}/members/{studentId}` |
-| Membership apps | `GET/POST /organizations/{id}/applications`, `PATCH /organizations/{id}/applications/{appId}`, `DELETE .../{appId}` |
-| Events | `GET/POST /events`, `GET/PUT/PATCH/DELETE /events/{id}`, `GET/POST /events/{id}/sessions`, `GET/PUT/DELETE /sessions/{id}` |
-| Registrations | `GET/POST /events/{id}/registrations`, `PATCH/DELETE /events/{id}/registrations/{studentId}` |
-| Attendance | `GET /sessions/{id}/attendance`, `POST /sessions/{id}/attendance` (check-in), `DELETE /sessions/{id}/attendance/{studentId}` |
-| Scoring | `GET /students/{id}/score` (total + level), `GET /students/{id}/score-transactions`, `POST /score-transactions` (admin/system) |
-| Badges | `GET/POST /badges`, `GET/PUT/DELETE /badges/{id}`, `GET /students/{id}/badges`, `POST /students/{id}/badges` (admin) |
-| Notifications | `GET /students/{id}/notifications`, `PATCH /notifications/{id}` (mark read), `PATCH /students/{id}/notifications` (mark all), `DELETE /notifications/{id}` |
+### Phase 02: Relational Schema & 22 Domain Entities (Completed)
+- **T5:** Relational mapping diagram fixes (eliminate all physical cascades).
+- **T6-T9:** 22 domain entity configurations with `OnDelete(Restrict)`.
+- **T10:** Initial EF Core migration with zero cascade actions verified against SQL Server.
+- **T11:** Idempotent database seeder with administrative credentials.
 
-## Team split (4 members)
+### Phase 03: Core Identity & JWT Authentication (Completed)
+- **T12:** Argon2/PBKDF2 password hashing, registration, login, role claims.
+- **T13:** Refresh token rotation, revocation on logout, short-lived access tokens.
 
-| Member | Owns | Tables |
-|---|---|---|
-| M1 (tech lead) | Solution scaffold, EF base, soft delete, JWT auth, Universities/Faculties, Students/Profile, CI | University, Faculty, Student, StudentInterest, StudentProfile |
-| M2 | Skills, Projects and Teams | Skill, StudentSkill, Project, ProjectRequiredSkill, ProjectMember, ProjectApplication, ProjectTask |
-| M3 | Student Activities and Events | Organization, OrganizationMember, MembershipApplication, Event, EventRegistration, EventSession, SessionAttendance |
-| M4 | Gamification, Notifications, API docs, tests infra | ScoreTransaction, Badge, StudentBadge, Notification, OpenAPI/Scalar, Postman |
+### Phase 04: Academic Catalog: Universities & Faculties (Completed)
+- **T14:** Search universities, faculties, anonymous catalog lookups for registration UX.
 
-Rules: one feature branch per member per task (`feat/<member>-<slug>`), PR into `main`, 1 reviewer from another member, no direct pushes. Shared files (`AppDbContext`, `Program.cs`) change only through per-module `IEntityTypeConfiguration` and `IServiceCollection` extension methods to avoid merge conflicts.
+### Phase 05: Student Discovery & Account Management (Completed)
+- **T15:** Student directory search, public portfolio cards, self/admin account deletion.
 
-## Solution layout
+### Phase 06: Password Recovery & Platform Governance (Completed)
+- **T-AUTH4:** Crypto tokens for password reset flow, expiry validation.
+- **T-AUTH5:** Dedicated `AdminController`, dashboard statistics, universal restore.
 
-```
-src/
-  TeamUp.Api/            controllers, middleware, Program.cs
-  TeamUp.Application/    services, DTOs, validators
-  TeamUp.Domain/         entities, enums, ISoftDelete
-  TeamUp.Infrastructure/ DbContext, configurations, migrations, interceptors
-tests/
-  TeamUp.UnitTests/
-  TeamUp.IntegrationTests/
-docs/api/                API proposal, soft-delete policy, OpenAPI export
-```
+### Phase 07: Projects, Teams & Sprint Task Management (Completed)
+- **T17-T19:** PR #1 merged. Projects CRUD, team formation, project tasks, and envelope alignment.
 
-## Risks
+---
 
-- R1: SQL Server multiple cascade paths. Removed by D1 (all NO ACTION).
-- R2: Filtered unique indexes ignored by some providers. Use SQL Server only, add integration test on real SQL Server (Testcontainers or LocalDB).
-- R3: Merge conflicts on `DbContext`. Mitigated by per-module configuration classes and a single migration owner (M1).
-- R4: Secrets. JWT key and connection string via user-secrets or env vars, never committed.
+### Phase 08: Security Remediation & Cryptographic Hardening (Immediate Next)
+- **P08.1:** Remove `ResetToken` from `ForgotPasswordResponse` to eliminate account takeover vulnerability.
+- **P08.2:** Update `AuthAndProfileTests` to retrieve reset tokens directly via test DbContext scope.
+- **P08.3:** Hash refresh tokens and password reset tokens (`SHA-256`) at rest in database.
+- **P08.4:** Implement IP-partitioned rate limiter (`PartitionedRateLimiter`) on auth endpoints.
+
+### Phase 09: Domain Model Factorization & Bounded Contexts
+- **P09.1:** Deconstruct monolithic `Entities.cs` into `Domain/Entities/Identity/`.
+- **P09.2:** Deconstruct into `Domain/Entities/Projects/`.
+- **P09.3:** Deconstruct into `Domain/Entities/Organizations/`.
+- **P09.4:** Deconstruct into `Domain/Entities/Gamification/`.
+
+### Phase 10: Clean Architecture Layer Realignment
+- **P10.1:** Define `IAppDbContext` interface in `TeamUp.Application.Common.Interfaces`.
+- **P10.2:** Implement `IAppDbContext` in `TeamUp.Infrastructure.Persistence.AppDbContext`.
+- **P10.3:** Migrate service implementations from `Infrastructure/Services` to `Application/Services`.
+- **P10.4:** Reorganize dependency injection extensions across Application and Infrastructure.
+
+### Phase 11: Interface Segregation (ISP) for Projects & Tasks
+- **P11.1:** Segregate `IProjectService` into `IProjectService` (Core CRUD & Discovery).
+- **P11.2:** Create `IProjectMemberService` & `IProjectApplicationService`.
+- **P11.3:** Create `IProjectTaskService` for sprint board operations.
+- **P11.4:** Refactor `ProjectsController` and `TasksController` to consume segregated services.
+
+### Phase 12: Module 04 — Skills Master Catalog & Student Claims (`T16`)
+- **P12.1:** Skills catalog DTOs, FluentValidators, and master CRUD service.
+- **P12.2:** `SkillsController` (`GET /api/v1/skills`, `POST`, `PUT`, `DELETE`).
+- **P12.3:** Student claimed skills (`PUT/DELETE /api/v1/students/{id}/skills/{skillId}`) with proficiency levels.
+- **P12.4:** Comprehensive unit and integration test suite for Module 04.
+
+### Phase 13: Module 08 & 09 — Organizations & Applications (`T20, T21`)
+- **P13.1:** Organization DTOs, validators, and `IOrganizationService`.
+- **P13.2:** `OrganizationsController` (`GET/POST /api/v1/organizations`, `PATCH`, `DELETE`).
+- **P13.3:** Membership applications lifecycle (`POST apply`, `PATCH review`, `DELETE withdraw`).
+- **P13.4:** Integration tests for club creation, role promotion, and membership approval.
+
+### Phase 14: Module 10 — Campus Events & Multi-Session Schedules (`T22`)
+- **P14.1:** Event and Session DTOs, validators, and date/capacity validation.
+- **P14.2:** `EventsController` (`GET/POST /api/v1/events`, `PATCH`, `DELETE`).
+- **P14.3:** Nested session schedule management (`POST /events/{id}/sessions`, `PUT`, `DELETE`).
+- **P14.4:** Service-level transactional cascade soft-deletion of sessions when event is deleted.
+
+### Phase 15: Module 11 & 12 — Registrations & Attendance (`T23, T24`)
+- **P15.1:** Event registration with capacity check and waitlist status calculation.
+- **P15.2:** `EventRegistrationsController` (`POST /events/{id}/registrations`, `DELETE`).
+- **P15.3:** Session check-in endpoint with verification methods (`QRCode`, `ManualPin`, `NFC`).
+- **P15.4:** Uniqueness enforcement: one check-in per student per session.
+
+### Phase 16: Module 13 — Gamification Scoring Ledger (`T25`)
+- **P16.1:** Append-only ledger service for `ScoreTransaction`.
+- **P16.2:** Level calculation engine: `Level = FLOOR(SQRT(TotalPoints / 100)) + 1`.
+- **P16.3:** Wire automatic score awarding hooks into task completion and session attendance.
+- **P16.4:** Student score profile endpoints (`GET /students/{id}/score`, `GET /score-transactions`).
+
+### Phase 17: Module 14 & 15 — Badges Engine & Notifications Inbox (`T26, T27`)
+- **P17.1:** Badge criteria evaluation engine (idempotent badge awards).
+- **P17.2:** `BadgesController` (`GET/POST /api/v1/badges`, `GET /students/{id}/badges`).
+- **P17.3:** Notifications inbox service (`IHasDomainEvents` dispatcher integration).
+- **P17.4:** `NotificationsController` (`GET inbox`, `PATCH mark-read`, `PATCH mark-all-read`, `DELETE`).
+
+### Phase 18: Performance, Caching & Concurrency Hardening
+- **P18.1:** In-memory caching (`IMemoryCache`) for static catalogs (Universities, Faculties, Skills).
+- **P18.2:** Optimistic concurrency tokens (`[Timestamp] byte[] RowVersion`) for capacity entities.
+- **P18.3:** Database index review: covered composite indexes on foreign keys and active soft-delete filters.
+
+### Phase 19: OpenAPI v3 Contracts & Postman Collection (`T28-T31`)
+- **P19.1:** Enable XML documentation generation across Api and Application.
+- **P19.2:** Configure OpenAPI v3 with Bearer JWT security scheme and Swagger/Scalar UI.
+- **P19.3:** Export verified `docs/api/openapi.json`.
+- **P19.4:** Generate and export postman environment and collection in `docs/api/postman/`.
+
+### Phase 20: Comprehensive Live Verification & Release Package (`T32-T34`)
+- **P20.1:** Extend PowerShell automated test runner `scripts/test_live_api.ps1` to cover all 99 endpoints.
+- **P20.2:** Run live verification against SQL Server Docker instance and refresh `AUTH-PROFILE-TEST-REPORT.md`.
+- **P20.3:** Execute security audit checklist (`security-audit` skill) with zero high/critical issues.
+- **P20.4:** Package clean staging release archive to `C:\Users\ahmed\Downloads\TeamUp.zip`.
