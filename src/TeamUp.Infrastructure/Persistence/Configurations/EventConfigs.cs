@@ -15,6 +15,7 @@ public class OrganizationConfig : IEntityTypeConfiguration<Organization>
         b.Property(x => x.Category).HasMaxLength(50).IsRequired();
         b.Property(x => x.LogoUrl).HasMaxLength(300);
         b.HasIndex(x => x.Name).IsUnique().HasFilter(Sql.NotDeleted);
+        b.HasIndex(x => new { x.Category, x.Name }).HasFilter(Sql.NotDeleted);
     }
 }
 
@@ -28,6 +29,7 @@ public class OrganizationMemberConfig : IEntityTypeConfiguration<OrganizationMem
         b.HasOne(x => x.Organization).WithMany().HasForeignKey(x => x.OrganizationId);
         b.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
         b.HasIndex(x => x.StudentId);
+        b.HasIndex(x => new { x.OrganizationId, x.Role, x.JoinedAt }).HasFilter(Sql.NotDeleted);
     }
 }
 
@@ -44,6 +46,7 @@ public class MembershipApplicationConfig : IEntityTypeConfiguration<MembershipAp
         b.HasIndex(x => new { x.OrganizationId, x.StudentId }).IsUnique()
             .HasFilter("[DeletedAt] IS NULL AND [Status] = 'Pending'");
         b.HasIndex(x => x.StudentId);
+        b.HasIndex(x => new { x.OrganizationId, x.AppliedAt }).HasFilter(Sql.NotDeleted);
     }
 }
 
@@ -55,9 +58,12 @@ public class EventConfig : IEntityTypeConfiguration<Event>
         b.Property(x => x.Title).HasMaxLength(150).IsRequired();
         b.Property(x => x.Description).IsRequired();
         b.Property(x => x.Location).HasMaxLength(200).IsRequired();
+        b.Property(x => x.RowVersion).IsRowVersion();
         b.HasOne(x => x.Organization).WithMany().HasForeignKey(x => x.OrganizationId);
         b.HasIndex(x => x.OrganizationId);
         b.HasIndex(x => x.StartDate);
+        b.HasIndex(x => new { x.StartDate, x.Title }).HasFilter(Sql.NotDeleted);
+        b.HasIndex(x => new { x.OrganizationId, x.StartDate }).HasFilter(Sql.NotDeleted);
         b.ToTable(t =>
         {
             t.HasCheckConstraint("CK_Event_Dates", "[EndDate] >= [StartDate]");
@@ -76,6 +82,7 @@ public class EventRegistrationConfig : IEntityTypeConfiguration<EventRegistratio
         b.HasOne(x => x.Event).WithMany().HasForeignKey(x => x.EventId);
         b.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
         b.HasIndex(x => x.StudentId);
+        b.HasIndex(x => new { x.EventId, x.Status, x.RegisteredAt });
     }
 }
 
@@ -101,5 +108,6 @@ public class SessionAttendanceConfig : IEntityTypeConfiguration<SessionAttendanc
         b.HasOne(x => x.Session).WithMany().HasForeignKey(x => x.SessionId);
         b.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
         b.HasIndex(x => x.StudentId);
+        b.HasIndex(x => new { x.SessionId, x.CheckInTime }).HasFilter(Sql.NotDeleted);
     }
 }
