@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
-using TeamUp.Application.Common.Models;
 using TeamUp.Application.Students;
 
 namespace TeamUp.Api.Controllers;
@@ -14,8 +13,7 @@ namespace TeamUp.Api.Controllers;
 public class StudentProfilesController(IStudentProfileService profileService) : BaseApiController
 {
     [HttpGet("{id:int}/profile")]
-    [ProducesResponseType(typeof(BaseResponse<StudentProfileDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesOk<StudentProfileDto>]
     public async Task<IActionResult> GetProfile([FromRoute] int id, CancellationToken ct)
     {
         var result = await profileService.GetExtendedProfileAsync(id, ct);
@@ -23,8 +21,7 @@ public class StudentProfilesController(IStudentProfileService profileService) : 
     }
 
     [HttpPut("me/profile")]
-    [ProducesResponseType(typeof(BaseResponse<StudentProfileDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesOk<StudentProfileDto>]
     public async Task<IActionResult> UpsertMyProfile([FromBody] UpsertProfileRequest request, CancellationToken ct)
     {
         var result = await profileService.UpsertExtendedProfileAsync(CurrentStudentId, request, ct);

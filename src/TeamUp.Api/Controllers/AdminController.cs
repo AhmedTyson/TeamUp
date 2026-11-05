@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Admin;
 using TeamUp.Application.Auth;
-using TeamUp.Application.Common.Models;
 
 namespace TeamUp.Api.Controllers;
 
@@ -12,12 +11,11 @@ namespace TeamUp.Api.Controllers;
 /// </summary>
 [Route("api/v1/admin")]
 [Authorize(Roles = "PlatformAdmin")]
+[ProducesForbidden]
 public class AdminController(IAdminService adminService) : BaseApiController
 {
     [HttpGet("dashboard")]
-    [ProducesResponseType(typeof(BaseResponse<AdminDashboardDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesOk<AdminDashboardDto>]
     public async Task<IActionResult> GetDashboard(CancellationToken ct)
     {
         var result = await adminService.GetDashboardStatsAsync(ct);
@@ -25,11 +23,7 @@ public class AdminController(IAdminService adminService) : BaseApiController
     }
 
     [HttpPatch("students/{id:int}/role")]
-    [ProducesResponseType(typeof(BaseResponse<StudentSummaryDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<StudentSummaryDto>, ProducesNotFound]
     public async Task<IActionResult> UpdateStudentRole(
         [FromRoute] int id,
         [FromBody] UpdateUserRoleRequest request,
@@ -40,9 +34,7 @@ public class AdminController(IAdminService adminService) : BaseApiController
     }
 
     [HttpGet("soft-deleted")]
-    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<SoftDeletedItemDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesOk<IReadOnlyList<SoftDeletedItemDto>>]
     public async Task<IActionResult> GetSoftDeleted([FromQuery] string? entityType, CancellationToken ct)
     {
         var result = await adminService.GetSoftDeletedRecordsAsync(entityType, ct);
@@ -50,12 +42,7 @@ public class AdminController(IAdminService adminService) : BaseApiController
     }
 
     [HttpPost("restore/{entityType}/{id:int}")]
-    [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesOk, ProducesNotFound, ProducesConflict]
     public async Task<IActionResult> RestoreEntity(
         [FromRoute] string entityType,
         [FromRoute] int id,

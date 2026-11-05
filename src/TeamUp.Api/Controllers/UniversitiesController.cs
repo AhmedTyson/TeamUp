@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Common;
-using TeamUp.Application.Common.Models;
 using TeamUp.Application.Universities;
 
 namespace TeamUp.Api.Controllers;
@@ -12,7 +11,7 @@ public class UniversitiesController(IUniversityService universityService) : Base
 {
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(BaseResponse<PagedResult<UniversityDto>>), StatusCodes.Status200OK)]
+    [ProducesOk<PagedResult<UniversityDto>>]
     public async Task<IActionResult> GetUniversities(
         [FromQuery] string? search,
         [FromQuery] int page = 1,
@@ -25,7 +24,7 @@ public class UniversitiesController(IUniversityService universityService) : Base
 
     [HttpGet("catalog")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<UniversityDetailDto>>), StatusCodes.Status200OK)]
+    [ProducesOk<IReadOnlyList<UniversityDetailDto>>]
     public async Task<IActionResult> GetAcademicCatalog(CancellationToken ct = default)
     {
         var result = await universityService.GetAcademicCatalogAsync(ct);
@@ -34,8 +33,7 @@ public class UniversitiesController(IUniversityService universityService) : Base
 
     [HttpGet("{id:int}")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(BaseResponse<UniversityDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<UniversityDetailDto>, ProducesNotFound]
     public async Task<IActionResult> GetUniversityById([FromRoute] int id, CancellationToken ct)
     {
         var result = await universityService.GetUniversityByIdAsync(id, ct);
@@ -44,11 +42,8 @@ public class UniversitiesController(IUniversityService universityService) : Base
 
     [HttpPost]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(typeof(BaseResponse<UniversityDetailDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesCreated<UniversityDetailDto>]
+    [ProducesForbidden, ProducesConflict]
     public async Task<IActionResult> CreateUniversity([FromBody] CreateUniversityRequest request, CancellationToken ct)
     {
         var result = await universityService.CreateUniversityAsync(request, ct);
@@ -57,12 +52,8 @@ public class UniversitiesController(IUniversityService universityService) : Base
 
     [HttpPut("{id:int}")]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(typeof(BaseResponse<UniversityDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesOk<UniversityDetailDto>]
+    [ProducesForbidden, ProducesNotFound, ProducesConflict]
     public async Task<IActionResult> UpdateUniversity(
         [FromRoute] int id,
         [FromBody] UpdateUniversityRequest request,
@@ -74,10 +65,7 @@ public class UniversitiesController(IUniversityService universityService) : Base
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesForbidden, ProducesNotFound]
     public async Task<IActionResult> DeleteUniversity([FromRoute] int id, CancellationToken ct)
     {
         await universityService.DeleteUniversityAsync(id, ct);

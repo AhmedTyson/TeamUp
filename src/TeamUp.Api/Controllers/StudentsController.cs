@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Common;
-using TeamUp.Application.Common.Models;
 using TeamUp.Application.Students;
 
 namespace TeamUp.Api.Controllers;
@@ -15,7 +14,7 @@ namespace TeamUp.Api.Controllers;
 public class StudentsController(IStudentAccountService accountService) : BaseApiController
 {
     [HttpGet]
-    [ProducesResponseType(typeof(BaseResponse<PagedResult<StudentCardDto>>), StatusCodes.Status200OK)]
+    [ProducesOk<PagedResult<StudentCardDto>>]
     public async Task<IActionResult> GetStudentsDirectory([FromQuery] StudentDirectoryQuery query, CancellationToken ct)
     {
         var result = await accountService.GetStudentsDirectoryAsync(query, ct);
@@ -23,8 +22,7 @@ public class StudentsController(IStudentAccountService accountService) : BaseApi
     }
 
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(BaseResponse<StudentPublicProfileDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<StudentPublicProfileDto>, ProducesNotFound]
     public async Task<IActionResult> GetStudentById([FromRoute] int id, CancellationToken ct)
     {
         var result = await accountService.GetStudentPublicProfileByIdAsync(id, ct);
@@ -32,9 +30,7 @@ public class StudentsController(IStudentAccountService accountService) : BaseApi
     }
 
     [HttpGet("me")]
-    [ProducesResponseType(typeof(BaseResponse<StudentDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<StudentDetailDto>, ProducesNotFound]
     public async Task<IActionResult> GetMe(CancellationToken ct)
     {
         var result = await accountService.GetMyAccountAsync(CurrentStudentId, ct);
@@ -42,9 +38,7 @@ public class StudentsController(IStudentAccountService accountService) : BaseApi
     }
 
     [HttpPatch("me")]
-    [ProducesResponseType(typeof(BaseResponse<StudentDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesOk<StudentDetailDto>]
     public async Task<IActionResult> UpdateMe([FromBody] UpdateStudentRequest request, CancellationToken ct)
     {
         var result = await accountService.UpdateMyAccountAsync(CurrentStudentId, request, ct);
@@ -52,8 +46,7 @@ public class StudentsController(IStudentAccountService accountService) : BaseApi
     }
 
     [HttpDelete("me")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesNoContent]
     public async Task<IActionResult> DeleteMe(CancellationToken ct)
     {
         await accountService.DeleteStudentAccountAsync(CurrentStudentId, ct);
@@ -62,10 +55,7 @@ public class StudentsController(IStudentAccountService accountService) : BaseApi
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesForbidden, ProducesNotFound]
     public async Task<IActionResult> DeleteStudent([FromRoute] int id, CancellationToken ct)
     {
         await accountService.DeleteStudentAccountAsync(id, ct);

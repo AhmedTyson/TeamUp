@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
-using TeamUp.Application.Common.Models;
 using TeamUp.Application.Universities;
 
 namespace TeamUp.Api.Controllers;
@@ -11,8 +10,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
 {
     [HttpGet("universities/{universityId:int}/faculties")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<FacultyDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<IReadOnlyList<FacultyDto>>, ProducesNotFound]
     public async Task<IActionResult> GetFacultiesByUniversity([FromRoute] int universityId, CancellationToken ct)
     {
         var result = await facultyService.GetFacultiesByUniversityIdAsync(universityId, ct);
@@ -21,12 +19,8 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
 
     [HttpPost("universities/{universityId:int}/faculties")]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(typeof(BaseResponse<FacultyDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesCreated<FacultyDto>]
+    [ProducesForbidden, ProducesNotFound, ProducesConflict]
     public async Task<IActionResult> CreateFaculty(
         [FromRoute] int universityId,
         [FromBody] CreateFacultyRequest request,
@@ -38,8 +32,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
 
     [HttpGet("faculties/{id:int}")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(BaseResponse<FacultyDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<FacultyDto>, ProducesNotFound]
     public async Task<IActionResult> GetFacultyById([FromRoute] int id, CancellationToken ct)
     {
         var result = await facultyService.GetFacultyByIdAsync(id, ct);
@@ -48,12 +41,8 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
 
     [HttpPut("faculties/{id:int}")]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(typeof(BaseResponse<FacultyDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesOk<FacultyDto>]
+    [ProducesForbidden, ProducesNotFound, ProducesConflict]
     public async Task<IActionResult> UpdateFaculty(
         [FromRoute] int id,
         [FromBody] UpdateFacultyRequest request,
@@ -65,10 +54,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
 
     [HttpDelete("faculties/{id:int}")]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesForbidden, ProducesNotFound]
     public async Task<IActionResult> DeleteFaculty([FromRoute] int id, CancellationToken ct)
     {
         await facultyService.DeleteFacultyAsync(id, ct);

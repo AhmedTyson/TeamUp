@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Common;
-using TeamUp.Application.Common.Models;
 using TeamUp.Application.Projects;
 
 namespace TeamUp.Api.Controllers;
@@ -16,7 +15,7 @@ public class ProjectsController(
     IProjectTaskService taskService) : BaseApiController
 {
     [HttpGet]
-    [ProducesResponseType(typeof(BaseResponse<PagedResult<ProjectListItemDto>>), StatusCodes.Status200OK)]
+    [ProducesOk<PagedResult<ProjectListItemDto>>]
     public async Task<IActionResult> GetProjects(
         [FromQuery] string? keyword,
         [FromQuery] string? status,
@@ -30,9 +29,7 @@ public class ProjectsController(
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(BaseResponse<ProjectDetailDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesCreated<ProjectDetailDto>]
     public async Task<IActionResult> CreateProject([FromBody] CreateProjectRequest request, CancellationToken ct)
     {
         var result = await projectService.CreateProjectAsync(CurrentStudentId, request, ct);
@@ -40,8 +37,7 @@ public class ProjectsController(
     }
 
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(BaseResponse<ProjectDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<ProjectDetailDto>, ProducesNotFound]
     public async Task<IActionResult> GetProject([FromRoute] int id, CancellationToken ct)
     {
         var result = await projectService.GetProjectAsync(id, ct);
@@ -49,10 +45,7 @@ public class ProjectsController(
     }
 
     [HttpPatch("{id:int}")]
-    [ProducesResponseType(typeof(BaseResponse<ProjectDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<ProjectDetailDto>, ProducesNotFound]
     public async Task<IActionResult> UpdateProject([FromRoute] int id, [FromBody] UpdateProjectRequest request, CancellationToken ct)
     {
         var result = await projectService.UpdateProjectAsync(CurrentStudentId, id, request, ct);
@@ -60,9 +53,7 @@ public class ProjectsController(
     }
 
     [HttpDelete("{id:int}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesNotFound]
     public async Task<IActionResult> DeleteProject([FromRoute] int id, CancellationToken ct)
     {
         await projectService.DeleteProjectAsync(CurrentStudentId, id, ct);
@@ -70,8 +61,7 @@ public class ProjectsController(
     }
 
     [HttpGet("{id:int}/required-skills")]
-    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<ProjectSkillDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<IReadOnlyList<ProjectSkillDto>>, ProducesNotFound]
     public async Task<IActionResult> GetRequiredSkills([FromRoute] int id, CancellationToken ct)
     {
         var result = await skillService.GetRequiredSkillsAsync(id, ct);
@@ -79,10 +69,7 @@ public class ProjectsController(
     }
 
     [HttpPut("{id:int}/required-skills/{skillId:int}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesNotFound]
     public async Task<IActionResult> UpsertRequiredSkill(
         [FromRoute] int id,
         [FromRoute] int skillId,
@@ -94,9 +81,7 @@ public class ProjectsController(
     }
 
     [HttpDelete("{id:int}/required-skills/{skillId:int}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesNotFound]
     public async Task<IActionResult> RemoveRequiredSkill([FromRoute] int id, [FromRoute] int skillId, CancellationToken ct)
     {
         await skillService.RemoveRequiredSkillAsync(CurrentStudentId, id, skillId, ct);
@@ -104,8 +89,7 @@ public class ProjectsController(
     }
 
     [HttpGet("{id:int}/members")]
-    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<ProjectMemberDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<IReadOnlyList<ProjectMemberDto>>, ProducesNotFound]
     public async Task<IActionResult> GetMembers([FromRoute] int id, CancellationToken ct)
     {
         var result = await memberService.GetMembersAsync(id, ct);
@@ -113,10 +97,7 @@ public class ProjectsController(
     }
 
     [HttpPatch("{id:int}/members/{studentId:int}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesNotFound]
     public async Task<IActionResult> UpdateMemberRole(
         [FromRoute] int id,
         [FromRoute] int studentId,
@@ -128,9 +109,7 @@ public class ProjectsController(
     }
 
     [HttpDelete("{id:int}/members/{studentId:int}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesNotFound]
     public async Task<IActionResult> RemoveMember([FromRoute] int id, [FromRoute] int studentId, CancellationToken ct)
     {
         await memberService.RemoveMemberAsync(CurrentStudentId, id, studentId, ct);
@@ -138,9 +117,7 @@ public class ProjectsController(
     }
 
     [HttpGet("{id:int}/applications")]
-    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<ProjectApplicationDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<IReadOnlyList<ProjectApplicationDto>>, ProducesNotFound]
     public async Task<IActionResult> GetApplications([FromRoute] int id, CancellationToken ct)
     {
         var result = await memberService.GetApplicationsAsync(CurrentStudentId, id, ct);
@@ -148,11 +125,8 @@ public class ProjectsController(
     }
 
     [HttpPost("{id:int}/applications")]
-    [ProducesResponseType(typeof(BaseResponse<ProjectApplicationDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesCreated<ProjectApplicationDto>]
+    [ProducesNotFound, ProducesConflict]
     public async Task<IActionResult> Apply(
         [FromRoute] int id,
         [FromBody] CreateProjectApplicationRequest request,
@@ -163,11 +137,8 @@ public class ProjectsController(
     }
 
     [HttpPatch("{id:int}/applications/{appId:int}")]
-    [ProducesResponseType(typeof(BaseResponse<ProjectApplicationDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesOk<ProjectApplicationDto>]
+    [ProducesNotFound, ProducesConflict]
     public async Task<IActionResult> ReviewApplication(
         [FromRoute] int id,
         [FromRoute] int appId,
@@ -179,9 +150,7 @@ public class ProjectsController(
     }
 
     [HttpDelete("{id:int}/applications/{appId:int}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesNotFound]
     public async Task<IActionResult> WithdrawApplication([FromRoute] int id, [FromRoute] int appId, CancellationToken ct)
     {
         await memberService.WithdrawApplicationAsync(CurrentStudentId, id, appId, ct);
@@ -189,9 +158,7 @@ public class ProjectsController(
     }
 
     [HttpGet("{id:int}/tasks")]
-    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<ProjectTaskDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<IReadOnlyList<ProjectTaskDto>>, ProducesNotFound]
     public async Task<IActionResult> GetTasks([FromRoute] int id, CancellationToken ct)
     {
         var result = await taskService.GetProjectTasksAsync(CurrentStudentId, id, ct);
@@ -199,10 +166,7 @@ public class ProjectsController(
     }
 
     [HttpPost("{id:int}/tasks")]
-    [ProducesResponseType(typeof(BaseResponse<ProjectTaskDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesCreated<ProjectTaskDto>, ProducesNotFound]
     public async Task<IActionResult> CreateTask(
         [FromRoute] int id,
         [FromBody] CreateProjectTaskRequest request,

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
-using TeamUp.Application.Common.Models;
 using TeamUp.Application.Skills;
 
 namespace TeamUp.Api.Controllers;
@@ -11,7 +10,7 @@ namespace TeamUp.Api.Controllers;
 public class SkillsController(ISkillService skillService) : BaseApiController
 {
     [HttpGet]
-    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<SkillDto>>), StatusCodes.Status200OK)]
+    [ProducesOk<IReadOnlyList<SkillDto>>]
     public async Task<IActionResult> GetSkills(
         [FromQuery] string? category,
         [FromQuery] string? search,
@@ -22,8 +21,7 @@ public class SkillsController(ISkillService skillService) : BaseApiController
     }
 
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(BaseResponse<SkillDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<SkillDto>, ProducesNotFound]
     public async Task<IActionResult> GetSkillById([FromRoute] int id, CancellationToken ct)
     {
         var result = await skillService.GetSkillByIdAsync(id, ct);
@@ -32,11 +30,8 @@ public class SkillsController(ISkillService skillService) : BaseApiController
 
     [HttpPost]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(typeof(BaseResponse<SkillDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesCreated<SkillDto>]
+    [ProducesForbidden, ProducesConflict]
     public async Task<IActionResult> CreateSkill([FromBody] CreateSkillRequest request, CancellationToken ct)
     {
         var result = await skillService.CreateSkillAsync(request, ct);
@@ -45,12 +40,8 @@ public class SkillsController(ISkillService skillService) : BaseApiController
 
     [HttpPut("{id:int}")]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(typeof(BaseResponse<SkillDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesOk<SkillDto>]
+    [ProducesForbidden, ProducesNotFound, ProducesConflict]
     public async Task<IActionResult> UpdateSkill([FromRoute] int id, [FromBody] UpdateSkillRequest request, CancellationToken ct)
     {
         var result = await skillService.UpdateSkillAsync(id, request, ct);
@@ -59,10 +50,7 @@ public class SkillsController(ISkillService skillService) : BaseApiController
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "PlatformAdmin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesForbidden, ProducesNotFound]
     public async Task<IActionResult> DeleteSkill([FromRoute] int id, CancellationToken ct)
     {
         await skillService.DeleteSkillAsync(id, ct);

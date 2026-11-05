@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
-using TeamUp.Application.Common.Models;
 using TeamUp.Application.Students;
 
 namespace TeamUp.Api.Controllers;
@@ -14,7 +13,7 @@ namespace TeamUp.Api.Controllers;
 public class StudentInterestsController(IStudentInterestService interestService) : BaseApiController
 {
     [HttpGet("{id:int}/interests")]
-    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<string>>), StatusCodes.Status200OK)]
+    [ProducesOk<IReadOnlyList<string>>]
     public async Task<IActionResult> GetInterests([FromRoute] int id, CancellationToken ct)
     {
         var result = await interestService.GetInterestsAsync(id, ct);
@@ -22,8 +21,7 @@ public class StudentInterestsController(IStudentInterestService interestService)
     }
 
     [HttpPost("me/interests")]
-    [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesOk]
     public async Task<IActionResult> AddInterest([FromBody] AddInterestRequest request, CancellationToken ct)
     {
         await interestService.AddInterestAsync(CurrentStudentId, request.Interest, ct);
@@ -31,7 +29,7 @@ public class StudentInterestsController(IStudentInterestService interestService)
     }
 
     [HttpDelete("me/interests/{interest}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesNoContent]
     public async Task<IActionResult> RemoveInterest([FromRoute] string interest, CancellationToken ct)
     {
         await interestService.RemoveInterestAsync(CurrentStudentId, interest, ct);

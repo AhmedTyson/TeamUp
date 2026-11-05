@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
-using TeamUp.Application.Common.Models;
 using TeamUp.Application.Projects;
 
 namespace TeamUp.Api.Controllers;
@@ -11,9 +10,7 @@ namespace TeamUp.Api.Controllers;
 public class TasksController(IProjectTaskService taskService) : BaseApiController
 {
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(BaseResponse<ProjectTaskDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<ProjectTaskDto>, ProducesNotFound]
     public async Task<IActionResult> GetTask([FromRoute] int id, CancellationToken ct)
     {
         var result = await taskService.GetTaskAsync(CurrentStudentId, id, ct);
@@ -21,10 +18,7 @@ public class TasksController(IProjectTaskService taskService) : BaseApiControlle
     }
 
     [HttpPatch("{id:int}")]
-    [ProducesResponseType(typeof(BaseResponse<ProjectTaskDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesOk<ProjectTaskDto>, ProducesNotFound]
     public async Task<IActionResult> UpdateTask(
         [FromRoute] int id,
         [FromBody] UpdateProjectTaskRequest request,
@@ -35,10 +29,7 @@ public class TasksController(IProjectTaskService taskService) : BaseApiControlle
     }
 
     [HttpPut("{id:int}/assignee")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesNotFound]
     public async Task<IActionResult> AssignTask(
         [FromRoute] int id,
         [FromBody] AssignTaskRequest request,
@@ -49,9 +40,7 @@ public class TasksController(IProjectTaskService taskService) : BaseApiControlle
     }
 
     [HttpDelete("{id:int}/assignee")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesNotFound]
     public async Task<IActionResult> UnassignTask([FromRoute] int id, CancellationToken ct)
     {
         await taskService.UnassignTaskAsync(CurrentStudentId, id, ct);
@@ -59,9 +48,7 @@ public class TasksController(IProjectTaskService taskService) : BaseApiControlle
     }
 
     [HttpDelete("{id:int}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesNoContent, ProducesNotFound]
     public async Task<IActionResult> DeleteTask([FromRoute] int id, CancellationToken ct)
     {
         await taskService.DeleteTaskAsync(CurrentStudentId, id, ct);
