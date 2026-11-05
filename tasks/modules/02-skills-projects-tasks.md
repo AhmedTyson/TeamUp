@@ -3,15 +3,15 @@
 **Owner:** Ossama (M2)  
 **Entities:** `Skill`, `StudentSkill`, `Project`, `ProjectRequiredSkill`, `ProjectMember`, `ProjectApplication`, `ProjectTask`  
 **Dependencies:** Module 01 (`Student` identity & JWT auth)  
-**Status:** Scheduled  
+**Status:** In Progress (Projects, Applications & Tasks Verified & Done; Skills Pending)  
 
 ---
 
 ## 1. Module Overview & Scope
-- **Skills Catalog:** Master technical and soft skills repository, student claimed skills with proficiency ratings (`Beginner`, `Intermediate`, `Advanced`).
-- **Projects & Team Formation:** Project creation (creator is Lead), recruiting status, required skills matching.
-- **Applications:** Candidate application submission, acceptance (creates `ProjectMember`), rejection, and re-application via surrogate key with filtered index.
-- **Task Management:** Sprint task board within projects (`Todo`, `InProgress`, `InReview`, `Done`), assignment to confirmed members, member removal unassigns tasks.
+- **Skills Catalog:** Master technical and soft skills repository, student claimed skills with proficiency ratings (`Beginner`, `Intermediate`, `Advanced`). *(Pending: T16)*
+- **Projects & Team Formation:** Project creation (creator is Lead), recruiting status, required skills matching. *(Verified & Done: T17)*
+- **Applications:** Candidate application submission, acceptance (creates `ProjectMember`), rejection, and re-application via surrogate key with filtered index. *(Verified & Done: T18)*
+- **Task Management:** Sprint task board within projects (`Todo`, `InProgress`, `InReview`, `Done`), assignment to confirmed members, member removal unassigns tasks. *(Verified & Done: T19)*
 
 ---
 

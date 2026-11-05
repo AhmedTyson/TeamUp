@@ -1,37 +1,70 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TeamUp.Application.Common.Security;
+using TeamUp.Api.Controllers.Common;
+using TeamUp.Application.Common.Models;
 using TeamUp.Application.Projects;
 
 namespace TeamUp.Api.Controllers;
 
-[ApiController]
 [Route("api/v1/tasks")]
 [Authorize]
-public class TasksController(IProjectService service) : ControllerBase
+public class TasksController(IProjectService service) : BaseApiController
 {
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(ProjectTaskDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BaseResponse<ProjectTaskDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTask([FromRoute] int id, CancellationToken ct)
-        => Ok(await service.GetTaskAsync(User.GetStudentId(), id, ct));
+    {
+        var result = await service.GetTaskAsync(CurrentStudentId, id, ct);
+        return OkResponse(result);
+    }
 
     [HttpPatch("{id:int}")]
-    [ProducesResponseType(typeof(ProjectTaskDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateTask([FromRoute] int id, [FromBody] UpdateProjectTaskRequest request, CancellationToken ct)
-        => Ok(await service.UpdateTaskAsync(User.GetStudentId(), id, request, ct));
+    [ProducesResponseType(typeof(BaseResponse<ProjectTaskDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateTask(
+        [FromRoute] int id,
+        [FromBody] UpdateProjectTaskRequest request,
+        CancellationToken ct)
+    {
+        var result = await service.UpdateTaskAsync(CurrentStudentId, id, request, ct);
+        return OkResponse(result, "Task updated successfully.");
+    }
 
     [HttpPut("{id:int}/assignee")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> AssignTask([FromRoute] int id, [FromBody] AssignTaskRequest request, CancellationToken ct)
-    { await service.AssignTaskAsync(User.GetStudentId(), id, request, ct); return NoContent(); }
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AssignTask(
+        [FromRoute] int id,
+        [FromBody] AssignTaskRequest request,
+        CancellationToken ct)
+    {
+        await service.AssignTaskAsync(CurrentStudentId, id, request, ct);
+        return NoContentResponse();
+    }
 
     [HttpDelete("{id:int}/assignee")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UnassignTask([FromRoute] int id, CancellationToken ct)
-    { await service.UnassignTaskAsync(User.GetStudentId(), id, ct); return NoContent(); }
+    {
+        await service.UnassignTaskAsync(CurrentStudentId, id, ct);
+        return NoContentResponse();
+    }
 
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteTask([FromRoute] int id, CancellationToken ct)
-    { await service.DeleteTaskAsync(User.GetStudentId(), id, ct); return NoContent(); }
+    {
+        await service.DeleteTaskAsync(CurrentStudentId, id, ct);
+        return NoContentResponse();
+    }
 }

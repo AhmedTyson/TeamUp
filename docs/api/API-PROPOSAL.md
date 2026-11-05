@@ -121,17 +121,17 @@
 
 | # | Method | Route | Description | Authorize | Backend | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 34 | GET | `/api/v1/projects` | Search projects (filter by skill, status, keyword). | 🔒 Auth | Ossama | ⏳ Pending (T17) |
-| 35 | POST | `/api/v1/projects` | Create project (creator automatically assigned Team Lead). | 🔒 Auth | Ossama | ⏳ Pending (T17) |
-| 36 | GET | `/api/v1/projects/{id}` | Project details, members, and required skills. | 🔒 Auth | Ossama | ⏳ Pending (T17) |
-| 37 | PATCH | `/api/v1/projects/{id}` | Update project title, description, or recruiting status. | 👤 Creator | Ossama | ⏳ Pending (T17) |
-| 38 | DELETE | `/api/v1/projects/{id}` | Soft-delete project & cascade soft-delete to tasks. | 👤 Creator | Ossama | ⏳ Pending (T17) |
-| 39 | GET | `/api/v1/projects/{id}/required-skills` | Get required skills list for candidate teammate matching. | 🔒 Auth | Ossama | ⏳ Pending (T17) |
-| 40 | PUT | `/api/v1/projects/{id}/required-skills/{skillId}` | Upsert required skill, minimum level, and mandatory flag. | 👤 Creator | Ossama | ⏳ Pending (T17) |
-| 41 | DELETE | `/api/v1/projects/{id}/required-skills/{skillId}` | Remove required skill from project. | 👤 Creator | Ossama | ⏳ Pending (T17) |
-| 42 | GET | `/api/v1/projects/{id}/members` | List confirmed project team members and assigned roles. | 🔒 Auth | Ossama | ⏳ Pending (T18) |
-| 43 | PATCH | `/api/v1/projects/{id}/members/{studentId}` | Update member role (e.g., `Scrum Master`, `UI Designer`). | 👤 Creator | Ossama | ⏳ Pending (T18) |
-| 44 | DELETE | `/api/v1/projects/{id}/members/{studentId}` | Remove member from project (unassigns their active tasks). | 👤 Creator / Self | Ossama | ⏳ Pending (T18) |
+| 34 | GET | `/api/v1/projects` | Search projects (filter by skill, status, keyword). | 🔒 Auth | Ossama | ✅ Done (T17) |
+| 35 | POST | `/api/v1/projects` | Create project (creator automatically assigned Team Lead). | 🔒 Auth | Ossama | ✅ Done (T17) |
+| 36 | GET | `/api/v1/projects/{id}` | Project details, members, and required skills. | 🔒 Auth | Ossama | ✅ Done (T17) |
+| 37 | PATCH | `/api/v1/projects/{id}` | Update project title, description, or recruiting status. | 👤 Creator | Ossama | ✅ Done (T17) |
+| 38 | DELETE | `/api/v1/projects/{id}` | Soft-delete project & cascade soft-delete to tasks. | 👤 Creator | Ossama | ✅ Done (T17) |
+| 39 | GET | `/api/v1/projects/{id}/required-skills` | Get required skills list for candidate teammate matching. | 🔒 Auth | Ossama | ✅ Done (T17) |
+| 40 | PUT | `/api/v1/projects/{id}/required-skills/{skillId}` | Upsert required skill, minimum level, and mandatory flag. | 👤 Creator | Ossama | ✅ Done (T17) |
+| 41 | DELETE | `/api/v1/projects/{id}/required-skills/{skillId}` | Remove required skill from project. | 👤 Creator | Ossama | ✅ Done (T17) |
+| 42 | GET | `/api/v1/projects/{id}/members` | List confirmed project team members and assigned roles. | 🔒 Auth | Ossama | ✅ Done (T18) |
+| 43 | PATCH | `/api/v1/projects/{id}/members/{studentId}` | Update member role (e.g., `Scrum Master`, `UI Designer`). | 👤 Creator | Ossama | ✅ Done (T18) |
+| 44 | DELETE | `/api/v1/projects/{id}/members/{studentId}` | Remove member from project (unassigns their active tasks). | 👤 Creator / Self | Ossama | ✅ Done (T18) |
 
 ---
 
@@ -139,10 +139,10 @@
 
 | # | Method | Route | Description | Authorize | Backend | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 45 | GET | `/api/v1/projects/{id}/applications` | List applications to join project team. | 👤 Creator | Ossama | ⏳ Pending (T18) |
-| 46 | POST | `/api/v1/projects/{id}/applications` | Submit application to join project team with pitch message. | 🔒 Auth | Ossama | ⏳ Pending (T18) |
-| 47 | PATCH | `/api/v1/projects/{id}/applications/{appId}` | Accept or Reject application (Accept adds to `ProjectMember`). | 👤 Creator | Ossama | ⏳ Pending (T18) |
-| 48 | DELETE | `/api/v1/projects/{id}/applications/{appId}` | Withdraw pending application. | 👤 Applicant | Ossama | ⏳ Pending (T18) |
+| 45 | GET | `/api/v1/projects/{id}/applications` | List applications to join project team. | 👤 Creator | Ossama | ✅ Done (T18) |
+| 46 | POST | `/api/v1/projects/{id}/applications` | Submit application to join project team with pitch message. | 🔒 Auth | Ossama | ✅ Done (T18) |
+| 47 | PATCH | `/api/v1/projects/{id}/applications/{appId}` | Accept or Reject application (Accept adds to `ProjectMember`). | 👤 Creator | Ossama | ✅ Done (T18) |
+| 48 | DELETE | `/api/v1/projects/{id}/applications/{appId}` | Withdraw pending application. | 👤 Applicant | Ossama | ✅ Done (T18) |
 
 ---
 
@@ -150,13 +150,13 @@
 
 | # | Method | Route | Description | Authorize | Backend | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 49 | GET | `/api/v1/projects/{id}/tasks` | List sprint tasks in project board. | 👥 Member | Ossama | ⏳ Pending (T19) |
-| 50 | POST | `/api/v1/projects/{id}/tasks` | Create deliverable task in project board. | 👥 Member | Ossama | ⏳ Pending (T19) |
-| 51 | GET | `/api/v1/tasks/{id}` | Get task details, assignee, status, due date. | 👥 Member | Ossama | ⏳ Pending (T19) |
-| 52 | PATCH | `/api/v1/tasks/{id}` | Update task status (`Todo`, `InProgress`, `Done`) or priority. | 👥 Member | Ossama | ⏳ Pending (T19) |
-| 53 | PUT | `/api/v1/tasks/{id}/assignee` | Assign task to a confirmed project team member. | 👤 Creator | Ossama | ⏳ Pending (T19) |
-| 54 | DELETE | `/api/v1/tasks/{id}/assignee` | Unassign student from task. | 👤 Creator | Ossama | ⏳ Pending (T19) |
-| 55 | DELETE | `/api/v1/tasks/{id}` | Soft-delete task. | 👤 Creator | Ossama | ⏳ Pending (T19) |
+| 49 | GET | `/api/v1/projects/{id}/tasks` | List sprint tasks in project board. | 👥 Member | Ossama | ✅ Done (T19) |
+| 50 | POST | `/api/v1/projects/{id}/tasks` | Create deliverable task in project board. | 👥 Member | Ossama | ✅ Done (T19) |
+| 51 | GET | `/api/v1/tasks/{id}` | Get task details, assignee, status, due date. | 👥 Member | Ossama | ✅ Done (T19) |
+| 52 | PATCH | `/api/v1/tasks/{id}` | Update task status (`Todo`, `InProgress`, `Done`) or priority. | 👥 Member | Ossama | ✅ Done (T19) |
+| 53 | PUT | `/api/v1/tasks/{id}/assignee` | Assign task to a confirmed project team member. | 👤 Creator | Ossama | ✅ Done (T19) |
+| 54 | DELETE | `/api/v1/tasks/{id}/assignee` | Unassign student from task. | 👤 Creator | Ossama | ✅ Done (T19) |
+| 55 | DELETE | `/api/v1/tasks/{id}` | Soft-delete task. | 👤 Creator | Ossama | ✅ Done (T19) |
 
 ---
 
