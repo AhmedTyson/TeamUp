@@ -2,6 +2,9 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using TeamUp.Application.Admin;
 using TeamUp.Application.Auth;
+using TeamUp.Application.Events;
+using TeamUp.Application.Gamification;
+using TeamUp.Application.Organizations;
 using TeamUp.Application.Projects;
 using TeamUp.Application.Services;
 using TeamUp.Application.Skills;
@@ -30,6 +33,15 @@ public static class DependencyInjection
         services.AddScoped<IProjectMemberService>(sp => sp.GetRequiredService<ProjectService>());
         services.AddScoped<IProjectTaskService>(sp => sp.GetRequiredService<ProjectService>());
         services.AddScoped<ISkillService, SkillService>();
+
+        // Module 03: Organizations & Events (Ibrahim - T20-T24)
+        services.AddScoped<IOrganizationService, OrganizationService>();
+        services.AddScoped<IEventService, EventService>();
+
+        // Module 04: Gamification, Badges & Notifications (Youssef - T25-T27)
+        services.AddScoped<IGamificationService, GamificationService>();
+        services.AddScoped<IBadgeService, BadgeService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }

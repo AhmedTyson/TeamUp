@@ -100,6 +100,12 @@ public class AppDbContext(
         // ON DELETE NO ACTION (Restrict). ON UPDATE is NO ACTION because PKs are immutable.
         foreach (var fk in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             fk.DeleteBehavior = DeleteBehavior.Restrict;
+
+        if (Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            modelBuilder.Entity<Project>().Property(p => p.RowVersion).ValueGeneratedNever();
+            modelBuilder.Entity<Event>().Property(e => e.RowVersion).ValueGeneratedNever();
+        }
     }
 
     private static LambdaExpression SoftDeleteFilter(Type type)

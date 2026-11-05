@@ -1,0 +1,513 @@
+{
+  "info": {
+    "_postman_id": "271a3d13-a492-4449-b43b-ccfcc25fff4a",
+    "name": "TeamUp API Collection",
+    "description": "Comprehensive API collection for TeamUp Student Collaboration \u0026 Gamification Platform (.NET 10).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "01. Auth \u0026 Identity",
+      "item": [
+        {
+          "name": "Register Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022firstName\u0022:\u0022Ahmed\u0022,\u0022lastName\u0022:\u0022Tyson\u0022,\u0022email\u0022:\u0022tyson@teamup.edu\u0022,\u0022password\u0022:\u0022P@ssword123!\u0022,\u0022academicYear\u0022:3,\u0022facultyId\u0022:1}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022email\u0022:\u0022tyson@teamup.edu\u0022,\u0022password\u0022:\u0022P@ssword123!\u0022}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022refreshToken\u0022:\u0022sample_token\u0022}"
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/forgot-password"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022email\u0022:\u0022tyson@teamup.edu\u0022}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Academic Catalog",
+      "item": [
+        {
+          "name": "Public Catalog Lookup",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/universities/catalog"
+            }
+          }
+        },
+        {
+          "name": "Search Universities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/universities?search=Cairo"
+            }
+          }
+        },
+        {
+          "name": "Get Faculties by University",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/universities/1/faculties"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Student Profiles \u0026 Directory",
+      "item": [
+        {
+          "name": "Directory Search",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students?search=Ahmed"
+            }
+          }
+        },
+        {
+          "name": "Get Current Student",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/me"
+            }
+          }
+        },
+        {
+          "name": "Upsert Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/me/profile"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022bio\u0022:\u0022Full-stack AI developer\u0022,\u0022githubUrl\u0022:\u0022https://github.com/AhmedTyson\u0022}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Skills Catalog \u0026 Claims",
+      "item": [
+        {
+          "name": "List Master Skills",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/skills"
+            }
+          }
+        },
+        {
+          "name": "Claim Skill",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/me/skills/1"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022proficiencyLevel\u0022:\u0022Advanced\u0022,\u0022yearsOfExperience\u0022:3.5}"
+            }
+          }
+        },
+        {
+          "name": "Get My Skills",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/{{studentId}}/skills"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Projects \u0026 Tasks",
+      "item": [
+        {
+          "name": "List Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects"
+            }
+          }
+        },
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022title\u0022:\u0022AI Drone Vision\u0022,\u0022description\u0022:\u0022Computer vision pipeline for drones\u0022,\u0022maxTeamSize\u0022:4}"
+            }
+          }
+        },
+        {
+          "name": "Apply for Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/1/applications"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022message\u0022:\u0022Excited to contribute to drone vision.\u0022}"
+            }
+          }
+        },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/1/tasks"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022title\u0022:\u0022Train YOLOv11 Model\u0022,\u0022priority\u0022:\u0022High\u0022}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Organizations \u0026 Activities",
+      "item": [
+        {
+          "name": "List Organizations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations"
+            }
+          }
+        },
+        {
+          "name": "Create Organization",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022name\u0022:\u0022IEEE Student Chapter\u0022,\u0022description\u0022:\u0022Technical society\u0022,\u0022category\u0022:\u0022Engineering\u0022}"
+            }
+          }
+        },
+        {
+          "name": "Apply for Membership",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations/1/applications"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022message\u0022:\u0022Ready to participate in IEEE.\u0022}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Events \u0026 Attendance",
+      "item": [
+        {
+          "name": "List Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/events"
+            }
+          }
+        },
+        {
+          "name": "Register for Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/events/1/registrations"
+            }
+          }
+        },
+        {
+          "name": "Verify Session Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/1/attendance"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022studentId\u0022:1,\u0022verificationMethod\u0022:\u0022QRCode\u0022}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Gamification \u0026 Badges",
+      "item": [
+        {
+          "name": "Get Student Score",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/{{studentId}}/score"
+            }
+          }
+        },
+        {
+          "name": "Get Score Ledger",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/{{studentId}}/score-transactions"
+            }
+          }
+        },
+        {
+          "name": "Get Badge Catalog",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/badges"
+            }
+          }
+        },
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "2589fd98-8380-4ab1-aa18-26373f38876b",
+  "name": "TeamUp Local Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "enabled": true
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "studentId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "facultyId",
+      "value": "1",
+      "enabled": true
+    }
+  ]
+}

@@ -13,6 +13,7 @@ public class Project : BaseEntity
     public int MaxTeamSize { get; set; }
     public int CreatorId { get; set; }
     public Student Creator { get; set; } = null!;
+    public byte[] RowVersion { get; set; } = [];
     public ICollection<ProjectMember> Members { get; set; } = [];
     public ICollection<ProjectTask> Tasks { get; set; } = [];
 }
