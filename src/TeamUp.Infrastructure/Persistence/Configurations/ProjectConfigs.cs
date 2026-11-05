@@ -38,6 +38,7 @@ public class ProjectConfig : IEntityTypeConfiguration<Project>
         b.Property(x => x.Description).IsRequired(); // nvarchar(max)
         b.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         b.Property(x => x.Status).HasDefaultValue(ProjectStatus.Recruiting);
+        b.Property(x => x.RowVersion).IsRowVersion();
         b.HasOne(x => x.Creator).WithMany().HasForeignKey(x => x.CreatorId);
         b.HasIndex(x => x.CreatorId);
         b.ToTable(t => t.HasCheckConstraint("CK_Project_MaxTeamSize", "[MaxTeamSize] >= 1"));

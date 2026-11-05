@@ -40,6 +40,15 @@ public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
                 soft.DeletedAt = now;
                 MarkOnly(entry, nameof(ISoftDelete.DeletedAt));
             }
+
+            if (entry.State is EntityState.Added or EntityState.Modified)
+            {
+                var rowVersionProp = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "RowVersion");
+                if (rowVersionProp is not null && context.Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    rowVersionProp.CurrentValue = Guid.NewGuid().ToByteArray();
+                }
+            }
         }
     }
 
