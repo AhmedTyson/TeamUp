@@ -591,37 +591,37 @@
 ## Phase 20: Comprehensive Live Verification & Release Package (`T32-T34`)
 *Automated PowerShell live test suite, security re-audit, and clean distribution zip.*
 
-- [ ] **P20.1 (M, M1): Extend PowerShell Live API Test Runner**
+- [x] **P20.1 (M, M1): Extend PowerShell Live API Test Runner**
   - Description: Update `scripts/test_live_api.ps1` to execute end-to-end tests across all 15 modules against SQL Server.
   - AC:
-    - [ ] Test covers: Register -> Join Project -> Complete Task -> Join Org -> Attend Event -> Earn Score -> Award Badge.
-    - [ ] Assert status codes and `BaseResponse<T>` envelope consistency on every request.
+    - [x] Test covers: Register -> Join Project -> Complete Task -> Join Org -> Attend Event -> Earn Score -> Award Badge.
+    - [x] Assert status codes and `BaseResponse<T>` envelope consistency on every request.
   - Verification: `pwsh scripts/test_live_api.ps1` runs with 100% success against local Docker container.
   - Deps: P18.1-P19.4. Files: `scripts/test_live_api.ps1`.
   - Scope: M (1 file).
-- [ ] **P20.2 (S, M1): Generate Master Live Test Evidence Report**
+- [x] **P20.2 (S, M1): Generate Master Live Test Evidence Report**
   - Description: Format live execution HTTP request/response evidence into comprehensive documentation.
   - AC:
-    - [ ] Write report to `docs/api/MASTER-LIVE-TEST-REPORT.md`.
-    - [ ] Document request payloads, response bodies, and execution timings.
+    - [x] Write report to `docs/api/MASTER-LIVE-TEST-REPORT.md`.
+    - [x] Document request payloads, response bodies, and execution timings.
   - Verification: Report viewed and confirmed complete.
   - Deps: P20.1. Files: `docs/api/MASTER-LIVE-TEST-REPORT.md`.
   - Scope: S (1 file).
-- [ ] **P20.3 (S, M1): Security Audit & Zero-Cascade Verification**
+- [x] **P20.3 (S, M1): Security Audit & Zero-Cascade Verification**
   - Description: Re-run `security-audit` skill workflow and verify zero physical cascade actions in SQL Server.
   - AC:
-    - [ ] Zero high/critical vulnerabilities found.
-    - [ ] SQL Server query confirms `delete_referential_action = 0` on all 22 entity foreign keys.
-    - [ ] All unit and integration tests green (`dotnet test TeamUp.sln`).
+    - [x] Zero high/critical vulnerabilities found.
+    - [x] SQL Server query confirms `delete_referential_action = 0` on all 22 entity foreign keys.
+    - [x] All unit and integration tests green (`dotnet test TeamUp.sln`).
   - Verification: Automated check passes with 0 failures.
   - Deps: P20.2. Files: None (Audit check).
   - Scope: S (1 report).
-- [ ] **P20.4 (S, M1): Package Clean Distribution Archive**
+- [x] **P20.4 (S, M1): Package Clean Distribution Archive**
   - Description: Synchronize clean repository state to `C:\Users\ahmed\Downloads\TeamUp.zip`.
   - AC:
-    - [ ] Exclude `bin/`, `obj/`, `.vs/`, and temp files.
-    - [ ] Package archive updated at `C:\Users\ahmed\Downloads\TeamUp.zip`.
-    - [ ] Git working tree clean and committed to `main`.
+    - [x] Exclude `bin/`, `obj/`, `.vs/`, and temp files.
+    - [x] Package archive updated at `C:\Users\ahmed\Downloads\TeamUp.zip`.
+    - [x] Git working tree clean and committed to `main`.
   - Verification: Zip file exists with updated timestamp and valid archive contents.
   - Deps: P20.3. Files: `C:\Users\ahmed\Downloads\TeamUp.zip`.
   - Scope: S (1 archive).
@@ -629,8 +629,8 @@
 ---
 
 ### Checkpoint 4 (Final Project Completion)
-- [ ] 20 phases completed.
-- [ ] All 99 endpoints tested live against SQL Server.
-- [ ] Clean Architecture layers fully decoupled.
-- [ ] Zero critical/high security vulnerabilities.
-- [ ] Distribution package refreshed at `C:\Users\ahmed\Downloads\TeamUp.zip`.
+- [x] 20 phases completed.
+- [x] All 99 endpoints tested live against SQL Server.
+- [x] Clean Architecture layers fully decoupled.
+- [x] Zero critical/high security vulnerabilities.
+- [x] Distribution package refreshed at `C:\Users\ahmed\Downloads\TeamUp.zip`.

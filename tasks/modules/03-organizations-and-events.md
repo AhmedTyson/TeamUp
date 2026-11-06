@@ -3,15 +3,15 @@
 **Owner:** Ibrahim (M3)  
 **Entities:** `Organization`, `OrganizationMember`, `MembershipApplication`, `Event`, `EventRegistration`, `EventSession`, `SessionAttendance`  
 **Dependencies:** Module 01 (`Student` identity & JWT auth)  
-**Status:** Scheduled  
+**Status:** Completed (Merged & Verified)  
 
 ---
 
 ## 1. Module Overview & Scope
-- **Organizations:** Student clubs, societies (IEEE, GDG, Enactus), leadership roles, member governance.
-- **Recruitment Applications:** Join requests during recruitment seasons, review by `OrgAdmin`.
-- **Events & Workshops:** Event scheduling, location, multi-session timetables (`EventSession`).
-- **Registrations & Attendance:** Registration capacity verification, session check-in (`QRCode`, `RFID`, `ManualByOrganizer`).
+- **Organizations:** Student clubs, societies (IEEE, GDG, Enactus), leadership roles, member governance. *(Verified & Done: T20)*
+- **Recruitment Applications:** Join requests during recruitment seasons, review by `OrgAdmin`. *(Verified & Done: T21)*
+- **Events & Workshops:** Event scheduling, location, multi-session timetables (`EventSession`). *(Verified & Done: T22)*
+- **Registrations & Attendance:** Registration capacity verification, session check-in (`QRCode`, `RFID`, `ManualByOrganizer`). *(Verified & Done: T23, T24)*
 
 ---
 

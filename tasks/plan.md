@@ -23,14 +23,14 @@
 | **Phase 10** | Clean Architecture Layer Realignment | Introduce `IAppDbContext` in Application, migrate services from Infrastructure | ✅ Completed |
 | **Phase 11** | Interface Segregation (ISP) for Projects | Split God `IProjectService` into 4 focused SRP services | ✅ Completed |
 | **Phase 12** | Module 04: Skills Catalog & Student Claims | Master skills catalog, categories, proficiency ratings (`T16`) | ✅ Completed |
-| **Phase 13** | Module 08 & 09: Organizations & Applications | Student activities, OrgAdmin management, Membership applications (`T20, T21`) | ⏳ Queued (Ibrahim) |
-| **Phase 14** | Module 10: Events & Multi-Session Schedules | Event lifecycle, capacity, sessions, cascade soft-delete (`T22`) | ⏳ Ready |
-| **Phase 15** | Module 11 & 12: Registrations & Attendance | Registration waitlist, QR/pin attendance check-in, duplicate prevention (`T23, T24`) | ⏳ Ready |
-| **Phase 16** | Module 13: Gamification Scoring Ledger | Append-only `ScoreTransaction`, level formula, activity award hooks (`T25`) | ⏳ Ready |
-| **Phase 17** | Module 14 & 15: Badges & Notifications | Badge rule evaluator, notifications inbox, mark as read, event dispatch (`T26, T27`) | ⏳ Ready |
-| **Phase 18** | Performance, Caching & Concurrency | In-memory cache for catalogs, `RowVersion` optimistic concurrency | ⏳ Ready |
-| **Phase 19** | OpenAPI v3 Contracts & Postman Collection | OpenAPI generation, XML docs, Scalar/Swagger UI, Postman collection (`T28-T31`) | ⏳ Ready |
-| **Phase 20** | Live Verification & Release Package | PowerShell live runner, zero cascade verification, ZIP archive refresh (`T32-T34`) | ⏳ Ready |
+| **Phase 13** | Module 08 & 09: Organizations & Applications | Student activities, OrgAdmin management, Membership applications (`T20, T21`) | ✅ Completed |
+| **Phase 14** | Module 10: Events & Multi-Session Schedules | Event lifecycle, capacity, sessions, cascade soft-delete (`T22`) | ✅ Completed |
+| **Phase 15** | Module 11 & 12: Registrations & Attendance | Registration waitlist, QR/pin attendance check-in, duplicate prevention (`T23, T24`) | ✅ Completed |
+| **Phase 16** | Module 13: Gamification Scoring Ledger | Append-only `ScoreTransaction`, level formula, activity award hooks (`T25`) | ✅ Completed |
+| **Phase 17** | Module 14 & 15: Badges & Notifications | Badge rule evaluator, notifications inbox, mark as read, event dispatch (`T26, T27`) | ✅ Completed |
+| **Phase 18** | Performance, Caching & Concurrency | In-memory cache for catalogs, `RowVersion` optimistic concurrency | ✅ Completed |
+| **Phase 19** | OpenAPI v3 Contracts & Postman Collection | OpenAPI generation, XML docs, Scalar/Swagger UI, Postman collection (`T28-T31`) | ✅ Completed |
+| **Phase 20** | Live Verification & Release Package | PowerShell live runner, zero cascade verification, ZIP archive refresh (`T32-T34`) | ✅ Completed |
 
 ---
 
