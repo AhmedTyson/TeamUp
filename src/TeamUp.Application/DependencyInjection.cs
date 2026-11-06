@@ -38,6 +38,10 @@ public static class DependencyInjection
         services.AddScoped<IOrganizationService, OrganizationService>();
         services.AddScoped<IEventService, EventService>();
 
+        // Module 03: Organizations & Events (Ibrahim - T20-T24)
+        services.AddScoped<IOrganizationService, OrganizationService>();
+        services.AddScoped<IEventService, EventService>();
+
         // Module 04: Gamification, Badges & Notifications (Youssef - T25-T27)
         services.AddScoped<IGamificationService, GamificationService>();
         services.AddScoped<IBadgeService, BadgeService>();
