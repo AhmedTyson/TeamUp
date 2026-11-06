@@ -15,5 +15,6 @@ public class Event : BaseEntity
     public int Capacity { get; set; }
     public int OrganizationId { get; set; }
     public Organization Organization { get; set; } = null!;
+    public byte[] RowVersion { get; set; } = [];
     public ICollection<EventSession> Sessions { get; set; } = [];
 }
