@@ -1,6 +1,6 @@
 <div align="center">
   <br />
-  <img src="assets/teamup-logo.svg?v=5" width="380" alt="TeamUp — Student Collaboration &amp; Skills Platform" />
+  <img src="assets/teamup-logo.svg?v=6" width="560" alt="TeamUp — Student Collaboration &amp; Skills Platform" />
   <br />
 
   # TeamUp — Student Collaboration &amp; Gamification Platform
