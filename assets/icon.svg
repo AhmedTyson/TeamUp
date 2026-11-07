@@ -1,11 +1,69 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="none">
   <defs>
-    <filter id="shadow-icon" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#d3fb52" flood-opacity="0.35" />
+    <!-- Intense Electric Lime Neon Aura -->
+    <filter id="emblem-glow-icon" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feColorMatrix type="matrix" values="
+        0 0 0 0 0.827
+        0 0 0 0 0.984
+        0 0 0 0 0.322
+        0 0 0 0.9 0" in="blur" result="glow" />
+      <feMerge>
+        <feMergeNode in="glow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
     </filter>
+
+    <linearGradient id="icon-wing-left" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="35%" stop-color="#e2ff70" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+
+    <linearGradient id="icon-wing-right" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d3fb52" />
+      <stop offset="65%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+
+    <linearGradient id="icon-arrow" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#d3fb52" />
+      <stop offset="100%" stop-color="#ffffff" />
+    </linearGradient>
+
+    <radialGradient id="icon-radial" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#d3fb52" stop-opacity="0.25" />
+      <stop offset="50%" stop-color="#15733f" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#14151c" stop-opacity="0" />
+    </radialGradient>
   </defs>
-  <g filter="url(#shadow-icon)">
-    <rect x="10" y="10" width="100" height="100" rx="26" fill="#d3fb52" />
-    <path d="M46 36h34v13h-10.5v39h-13V49H46V36z" fill="#14151c" transform="skewX(-8) translate(7, -1)" />
+
+  <!-- Dark Onyx Rounded App Icon Container with Neon Border -->
+  <rect x="6" y="6" width="108" height="108" rx="28" fill="#14151c" stroke="#d3fb52" stroke-opacity="0.4" stroke-width="1.6" />
+  <rect x="8" y="8" width="104" height="104" rx="26" fill="url(#icon-radial)" />
+
+  <!-- Real Emblem: Interlocking 'T' + 'U' + Ascending Momentum Arrow -->
+  <g filter="url(#emblem-glow-icon)" transform="translate(12, 12) scale(0.8)">
+    <!-- Left Wing of 'T' curving down into 'U' -->
+    <path
+      d="M24 33 C24 25 30 20 38 20 L58 20 L58 36 L39 36 C36 36 34 38 34 41 L34 60 C34 74 45 85 59 85 C61 85 64 84.7 66 84.2 L63 95 C62 95.2 60 95.3 59 95.3 C39 95.3 24 80 24 60 Z"
+      fill="url(#icon-wing-left)"
+    />
+
+    <!-- Right Wing of 'T' curving down into 'U' -->
+    <path
+      d="M96 33 C96 25 90 20 82 20 L62 20 L62 36 L81 36 C84 36 86 38 86 41 L86 60 C86 74 75 85 61 85 C59 85 56 84.7 54 84.2 L57 95 C58 95.2 60 95.3 61 95.3 C81 95.3 96 80 96 60 Z"
+      fill="url(#icon-wing-right)"
+    />
+
+    <!-- Central Upward Team Arrow (The 'UP' energy) -->
+    <path
+      d="M60 26 L74 45 L65 45 L65 71 L55 71 L55 45 L46 45 Z"
+      fill="url(#icon-arrow)"
+    />
+
+    <!-- Beacon Sparkle -->
+    <circle cx="60" cy="17" r="3.2" fill="#ffffff" />
   </g>
 </svg>
