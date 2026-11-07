@@ -97,7 +97,7 @@ TeamUp Documentation Home (wiki/Home.md)
 | Documentation Guide | Corresponding Repository Source |
 |---|---|
 | Frontend Web App | [`frontend/index.html`](../frontend/index.html) |
-| Brand Assets & Logo | [`assets/logo.svg`](../assets/logo.svg) · [`assets/icon.svg`](../assets/icon.svg) |
+| Brand Assets & Logo | [`assets/teamup-logo.svg`](../assets/teamup-logo.svg) · [`assets/logo.svg`](../assets/logo.svg) |
 | Database ERD | [`ERD/description.md`](../ERD/description.md) · [`ERD/TeamUp-Chen-ERD.png`](../ERD/TeamUp-Chen-ERD.png) |
 | Relational Schema | [`Mapping/description.md`](../Mapping/description.md) · [`Mapping/TeamUp-Relational-Mapping.png`](../Mapping/TeamUp-Relational-Mapping.png) |
 | Architecture & SOLID | [`docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md`](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md) |

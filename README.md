@@ -1,6 +1,6 @@
 <div align="center">
   <br />
-  <img src="assets/logo.svg" width="380" alt="TeamUp — Student Collaboration &amp; Skills Platform" />
+  <img src="assets/teamup-logo.svg" width="380" alt="TeamUp — Student Collaboration &amp; Skills Platform" />
   <br />
 
   # TeamUp — Student Collaboration &amp; Gamification Platform
@@ -46,8 +46,9 @@ TeamUp/
 ├── frontend/                      # 🎨 Standalone student web app & landing page (Tailwind CSS, GSAP/vanilla)
 │   └── index.html                 # Interactive landing page: liquid green nav, search, 4 showcase rows
 ├── assets/                        # 🖼️ Vector brand assets & official logo marks (SVG)
-│   ├── logo.svg                   # Master TeamUp horizontal vector brand mark
-│   └── icon.svg                   # Electric-lime rounded square application icon
+│   ├── teamup-logo.svg            # Master TeamUp vector brand mark (glow wordmark)
+│   ├── logo.svg                   # Brand mark asset
+│   └── icon.svg                   # Electric-lime application icon
 ├── tests/
 │   ├── TeamUp.UnitTests/          # Unit tests (Gamification formulas, FluentValidators, Interceptors)
 │   └── TeamUp.IntegrationTests/   # End-to-end integration tests (WebApplicationFactory & DB context)
