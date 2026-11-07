@@ -1,36 +1,136 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="520" height="120" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 130" width="540" height="130" fill="none">
   <defs>
-    <linearGradient id="grad-badge" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#d7ff54" />
-      <stop offset="100%" stop-color="#b8f2be" />
-    </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#d3fb52" flood-opacity="0.25" />
+    <!-- Multi-stage Intense Neon Electric Lime Glow Filter -->
+    <filter id="teamup-neon-glow" x="-30%" y="-40%" width="160%" height="180%">
+      <!-- Layer 1: Ambient wide green aura -->
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blurWide" />
+      <feColorMatrix type="matrix" values="
+        0 0 0 0 0.827
+        0 0 0 0 0.984
+        0 0 0 0 0.322
+        0 0 0 0.7 0" in="blurWide" result="glowWide" />
+
+      <!-- Layer 2: Medium intense core neon glow -->
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blurCore" />
+      <feColorMatrix type="matrix" values="
+        0 0 0 0 0.827
+        0 0 0 0 0.984
+        0 0 0 0 0.322
+        0 0 0 1 0" in="blurCore" result="glowCore" />
+
+      <!-- Layer 3: Contrast drop-shadow behind to pop on light backgrounds -->
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.85" result="dropShadow" />
+
+      <feMerge>
+        <feMergeNode in="dropShadow" />
+        <feMergeNode in="glowWide" />
+        <feMergeNode in="glowCore" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
     </filter>
+
+    <!-- Ray sparkle pulse glow -->
+    <filter id="ray-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blurRay" />
+      <feColorMatrix type="matrix" values="
+        0 0 0 0 0.827
+        0 0 0 0 0.984
+        0 0 0 0 0.322
+        0 0 0 0.95 0" in="blurRay" result="glowRay" />
+      <feMerge>
+        <feMergeNode in="glowRay" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Text fill gradient -->
+    <linearGradient id="team-text-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="60%" stop-color="#f4ffe0" />
+      <stop offset="100%" stop-color="#d3fb52" />
+    </linearGradient>
+
+    <linearGradient id="up-text-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#d3fb52" />
+      <stop offset="75%" stop-color="#c6f831" />
+      <stop offset="100%" stop-color="#8ce019" />
+    </linearGradient>
+
+    <!-- Subtitle pill border glow -->
+    <linearGradient id="pill-line" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d3fb52" stop-opacity="0.1" />
+      <stop offset="50%" stop-color="#d3fb52" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#d3fb52" stop-opacity="0.1" />
+    </linearGradient>
+
+    <!-- Ambient Radial Neon Flare in center behind text -->
+    <radialGradient id="neon-flare" cx="50%" cy="45%" r="48%">
+      <stop offset="0%" stop-color="#d3fb52" stop-opacity="0.25" />
+      <stop offset="45%" stop-color="#15733f" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#14151c" stop-opacity="0" />
+    </radialGradient>
   </defs>
 
-  <!-- Rounded Lime Square Icon Badge with Glow -->
-  <g filter="url(#shadow)">
-    <rect x="10" y="15" width="90" height="90" rx="22" fill="#d3fb52" />
-    <!-- Italic Bold T -->
-    <path d="M43 38h30v11.5h-9v34.5h-12V49.5H43V38z" fill="#14151c" transform="skewX(-8) translate(7, -1)" />
+  <g transform="translate(10, 8)">
+    <!-- Sleek Dark Backplate for Maximum Neon Pop on GitHub Light & Dark Modes -->
+    <rect x="0" y="0" width="520" height="114" rx="24" fill="#14151c" fill-opacity="0.95" stroke="#d3fb52" stroke-opacity="0.35" stroke-width="1.4" />
+    <rect x="2" y="2" width="516" height="110" rx="22" fill="url(#neon-flare)" />
+
+    <!-- Main Wordmark Group with Glowing Neon Filter -->
+    <g filter="url(#teamup-neon-glow)">
+      <!-- TEAM text -->
+      <text
+        x="90"
+        y="68"
+        font-family="'Barlow Condensed', 'Antonio', 'Impact', 'Arial Black', sans-serif"
+        font-weight="900"
+        font-style="italic"
+        font-size="68"
+        letter-spacing="1"
+        fill="url(#team-text-grad)"
+      >
+        TEAM
+      </text>
+
+      <!-- UP text in Electric Lime -->
+      <text
+        x="268"
+        y="68"
+        font-family="'Barlow Condensed', 'Antonio', 'Impact', 'Arial Black', sans-serif"
+        font-weight="900"
+        font-style="italic"
+        font-size="68"
+        letter-spacing="1.5"
+        fill="url(#up-text-grad)"
+      >
+        UP
+      </text>
+
+      <!-- Signature Tri-Ray Burst over the UP mark (from index (2).html) -->
+      <g transform="translate(382, 14)" filter="url(#ray-glow)">
+        <rect x="0" y="6" width="3.5" height="13" rx="1.75" fill="#d3fb52" transform="rotate(-34)" />
+        <rect x="11" y="0" width="4" height="16" rx="2" fill="#d3fb52" />
+        <rect x="23" y="6" width="3.5" height="13" rx="1.75" fill="#d3fb52" transform="rotate(34)" />
+      </g>
+    </g>
+
+    <!-- Glowing Divider Line -->
+    <line x1="60" y1="84" x2="460" y2="84" stroke="url(#pill-line)" stroke-width="1.5" />
+
+    <!-- Tagline underneath matching the platform subtitle -->
+    <text
+      x="260"
+      y="101"
+      text-anchor="middle"
+      font-family="'DM Sans', 'Plus Jakarta Sans', sans-serif"
+      font-weight="700"
+      font-size="12"
+      fill="#d3fb52"
+      letter-spacing="2.8"
+      opacity="0.95"
+    >
+      STUDENT COLLABORATION &amp; SKILLS PLATFORM
+    </text>
   </g>
-
-  <!-- Wordmark -->
-  <text x="120" y="78" font-family="'Barlow Condensed', 'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="900" font-style="italic" font-size="62" letter-spacing="-1">
-    <tspan fill="#ffffff">Team</tspan>
-    <tspan fill="#d3fb52">Up</tspan>
-  </text>
-
-  <!-- Sparkle Accent Rays above the 'p' -->
-  <g transform="translate(348, 28)">
-    <rect x="0" y="4" width="3" height="9" rx="1.5" fill="#d3fb52" transform="rotate(-35)" />
-    <rect x="8" y="0" width="3" height="12" rx="1.5" fill="#d3fb52" />
-    <rect x="16" y="4" width="3" height="9" rx="1.5" fill="#d3fb52" transform="rotate(35)" />
-  </g>
-
-  <!-- Subtitle Tagline -->
-  <text x="122" y="102" font-family="'DM Sans', 'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="13.5" fill="#9ca3af" letter-spacing="1.8">
-    STUDENT COLLABORATION &amp; SKILLS PLATFORM
-  </text>
 </svg>
