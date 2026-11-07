@@ -1,131 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 110" width="420" height="110" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 410 105" width="410" height="105" fill="none">
   <defs>
-    <!-- Multi-stage Electric Lime Glow Filter -->
-    <filter id="neon-glow" x="-25%" y="-35%" width="150%" height="170%">
-      <feGaussianBlur stdDeviation="5.5" result="blur" />
+    <!-- Intense Electric Lime Neon Glow -->
+    <filter id="lime-glow" x="-20%" y="-30%" width="140%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
       <feColorMatrix type="matrix" values="
         0 0 0 0 0.827
         0 0 0 0 0.984
         0 0 0 0 0.322
-        0 0 0 0.85 0" in="blur" result="glow" />
+        0 0 0 0.75 0" in="blur" result="glow" />
       <feMerge>
         <feMergeNode in="glow" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
 
-    <!-- Refined Sparkle Glow for the 3 Dots -->
-    <filter id="dots-glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="3.2" result="dotBlur" />
+    <!-- Sparkle Rays Glow -->
+    <filter id="ray-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.5" result="blurRay" />
       <feColorMatrix type="matrix" values="
         0 0 0 0 0.827
         0 0 0 0 0.984
         0 0 0 0 0.322
-        0 0 0 1 0" in="dotBlur" result="dotGlow" />
+        0 0 0 0.95 0" in="blurRay" result="glowRay" />
       <feMerge>
-        <feMergeNode in="dotGlow" />
+        <feMergeNode in="glowRay" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
 
-    <!-- Contrast Drop Shadow for Light & Dark GitHub Backgrounds -->
-    <filter id="dark-contrast" x="-15%" y="-20%" width="130%" height="140%">
-      <feDropShadow dx="0" dy="2.5" stdDeviation="3.5" flood-color="#000000" flood-opacity="0.8" />
+    <!-- Contrast Drop Shadow so white text is legible on light & dark GitHub backgrounds -->
+    <filter id="text-shadow" x="-10%" y="-20%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.8" />
     </filter>
-
-    <!-- Radial Gradients for the 3 Styled Dots (White hot center into electric lime) -->
-    <radialGradient id="center-dot-grad" cx="40%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="45%" stop-color="#f4ffe0" />
-      <stop offset="80%" stop-color="#d3fb52" />
-      <stop offset="100%" stop-color="#a6f536" />
-    </radialGradient>
-
-    <radialGradient id="side-dot-grad" cx="40%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="50%" stop-color="#d3fb52" />
-      <stop offset="100%" stop-color="#8ce019" />
-    </radialGradient>
   </defs>
 
-  <!-- ========================================================
-       TEAM WORD (Silver-White with Dark Drop Shadow)
-       ======================================================== -->
-  <g filter="url(#dark-contrast)">
-    <text
-      x="18"
-      y="66"
-      font-family="'Barlow Condensed', 'Plus Jakarta Sans', -apple-system, sans-serif"
-      font-weight="900"
-      font-style="italic"
-      font-size="62"
-      letter-spacing="-1"
-      fill="#ffffff"
-    >
-      Team
+  <!-- Wordmark: Clean original TeamUp lockup without T badge box -->
+  <g filter="url(#text-shadow)">
+    <text x="14" y="64" font-family="'Barlow Condensed', 'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="900" font-style="italic" font-size="62" letter-spacing="-1">
+      <tspan fill="#ffffff">Team</tspan>
+      <tspan fill="#d3fb52" filter="url(#lime-glow)">Up</tspan>
     </text>
   </g>
 
-  <!-- ========================================================
-       UP WORDMARK + 3 STYLED ENERGY DOTS (Locked Together)
-       ======================================================== -->
-  <g id="brand-up-group" transform="translate(150, 0)">
-    <!-- 'Up' Letters in Glowing Electric Lime -->
-    <g filter="url(#dark-contrast)">
-      <text
-        x="0"
-        y="66"
-        font-family="'Barlow Condensed', 'Plus Jakarta Sans', -apple-system, sans-serif"
-        font-weight="900"
-        font-style="italic"
-        font-size="62"
-        letter-spacing="-1"
-        fill="#d3fb52"
-        filter="url(#neon-glow)"
-      >
-        Up
-      </text>
-    </g>
-
-    <!-- ======================================================
-         THE 3 STYLED DOTS / SPARKS (Centered Above the 'p')
-         Positioned at x=54, y=18 (Well above the ascender of 'p',
-         completely clear of 'U' and 'p')
-         ====================================================== -->
-    <g id="styled-three-dots" transform="translate(54, 18)" filter="url(#dots-glow)">
-      <!-- Left Radiant Dot: Slanted energy dot with flare -->
-      <g transform="translate(-10, 4) rotate(-25)">
-        <ellipse cx="0" cy="0" rx="2.5" ry="4" fill="url(#side-dot-grad)" />
-      </g>
-
-      <!-- Center Spark Dot: Elevated star-point core with bright center -->
-      <g transform="translate(0, -2)">
-        <!-- Micro 4-point Diamond Star Flare behind -->
-        <path d="M0 -6 L1.8 -1.2 L6 0 L1.8 1.2 L0 6 L-1.8 1.2 L-6 0 L-1.8 -1.2 Z" fill="#d3fb52" opacity="0.8" />
-        <!-- Glowing Center Pearl Dot -->
-        <circle cx="0" cy="0" r="3.4" fill="url(#center-dot-grad)" />
-        <circle cx="0" cy="0" r="1.5" fill="#ffffff" />
-      </g>
-
-      <!-- Right Radiant Dot: Slanted energy dot with flare -->
-      <g transform="translate(10, 4) rotate(25)">
-        <ellipse cx="0" cy="0" rx="2.5" ry="4" fill="url(#side-dot-grad)" />
-      </g>
-    </g>
+  <!-- Signature Sparkle Accent Rays above the 'p' -->
+  <g transform="translate(242, 14)" filter="url(#ray-glow)">
+    <rect x="0" y="4" width="3" height="9" rx="1.5" fill="#d3fb52" transform="rotate(-35)" />
+    <rect x="8" y="0" width="3" height="12" rx="1.5" fill="#d3fb52" />
+    <rect x="16" y="4" width="3" height="9" rx="1.5" fill="#d3fb52" transform="rotate(35)" />
   </g>
 
-  <!-- ========================================================
-       SUBTITLE TAGLINE (Crisp, Clean, Well-Spaced)
-       ======================================================== -->
-  <text
-    x="20"
-    y="92"
-    font-family="'DM Sans', 'Plus Jakarta Sans', sans-serif"
-    font-weight="600"
-    font-size="13"
-    fill="#9ca3af"
-    letter-spacing="1.8"
-  >
+  <!-- Subtitle Tagline -->
+  <text x="16" y="90" font-family="'DM Sans', 'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="13.5" fill="#9ca3af" letter-spacing="1.8">
     STUDENT COLLABORATION &amp; SKILLS PLATFORM
   </text>
 </svg>
