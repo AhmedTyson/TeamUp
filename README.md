@@ -1,6 +1,6 @@
 <div align="center">
   <br />
-  <img src="https://api.iconify.design/lucide:users-round.svg?color=%233B82F6" width="140" alt="TeamUp Logo" />
+  <img src="https://api.iconify.design/lucide/users-round.svg?color=%233B82F6" width="140" alt="TeamUp Logo" />
   <br />
 
   # TeamUp — Student Collaboration & Gamification Platform
@@ -31,7 +31,7 @@ Welcome to the **TeamUp** repository! **TeamUp** is an enterprise-grade academic
 
 ---
 
-## <img src="https://api.iconify.design/lucide:folder-tree.svg?color=%233B82F6" width="22" align="top" /> Repository Structure
+## <img src="https://api.iconify.design/lucide/folder-tree.svg?color=%233B82F6" width="22" align="top" /> Repository Structure
 
 ```text
 TeamUp/
@@ -56,7 +56,7 @@ The repository follows a clean separation of concerns: `src/` contains the appli
 
 ---
 
-## <img src="https://api.iconify.design/lucide:sparkles.svg?color=%233B82F6" width="22" align="top" /> Key Features & Highlights
+## <img src="https://api.iconify.design/lucide/sparkles.svg?color=%233B82F6" width="22" align="top" /> Key Features & Highlights
 
 | Domain / Layer | Technology | Key Capabilities & Highlights |
 |---|---|---|
@@ -69,7 +69,7 @@ The repository follows a clean separation of concerns: `src/` contains the appli
 
 ---
 
-## <img src="https://api.iconify.design/lucide:rocket.svg?color=%233B82F6" width="22" align="top" /> Quick Start Guide
+## <img src="https://api.iconify.design/lucide/rocket.svg?color=%233B82F6" width="22" align="top" /> Quick Start Guide
 
 ### 1. Database Provisioning (Docker SQL Server 2022)
 
@@ -128,7 +128,7 @@ When `Seed:Enabled = true`, `DbSeeder.cs` provisions initial seed accounts:
 
 ---
 
-## <img src="https://api.iconify.design/lucide:flask-conical.svg?color=%233B82F6" width="22" align="top" /> Testing & Verification
+## <img src="https://api.iconify.design/lucide/flask-conical.svg?color=%233B82F6" width="22" align="top" /> Testing & Verification
 
 Execute the complete automated test suite (57 Unit Tests + 43 Integration Tests):
 
@@ -154,7 +154,7 @@ Total: 100 / 100 Passing Tests (100% Pass Rate)
 
 ---
 
-## <img src="https://api.iconify.design/lucide:book-open.svg?color=%233B82F6" width="22" align="top" /> Documentation Home
+## <img src="https://api.iconify.design/lucide/book-open.svg?color=%233B82F6" width="22" align="top" /> Documentation Home
 
 All technical documentation, architectural decision records, and operational guides live in **[`wiki/`](wiki/Home.md)**:
 
@@ -170,7 +170,7 @@ All technical documentation, architectural decision records, and operational gui
 
 ---
 
-## <img src="https://api.iconify.design/lucide:database.svg?color=%233B82F6" width="22" align="top" /> Database Design & Relational Mapping
+## <img src="https://api.iconify.design/lucide/database.svg?color=%233B82F6" width="22" align="top" /> Database Design & Relational Mapping
 
 | Visual Deliverable | Specification | Path |
 |---|---|---|
@@ -197,7 +197,7 @@ graph LR
 
 ---
 
-## <img src="https://api.iconify.design/lucide:users.svg?color=%233B82F6" width="22" align="top" /> Engineering Team
+## <img src="https://api.iconify.design/lucide/users.svg?color=%233B82F6" width="22" align="top" /> Engineering Team
 
 - **Ahmed Elsayed (@AhmedTyson)** — *Tech Lead & M1 Lead (Auth, Core Identity, Catalog, Platform Governance)* · [github.com/AhmedTyson](https://github.com/AhmedTyson)
 - **Ossama** — *Module 2 Lead (Skills Master Catalog, Projects, Member Roles, Sprint Tasks)*
@@ -206,6 +206,6 @@ graph LR
 
 ---
 
-## <img src="https://api.iconify.design/lucide:scale.svg?color=%233B82F6" width="22" align="top" /> License
+## <img src="https://api.iconify.design/lucide/scale.svg?color=%233B82F6" width="22" align="top" /> License
 
 Licensed under the [MIT License](LICENSE) — TeamUp Academic Collaboration Platform Deliverable.
