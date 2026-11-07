@@ -40,7 +40,7 @@ flowchart LR
     PROMPT[Student Conversational Input / Flyer Image] --> AI[Probabilistic LLM / Vision Parser]
     AI --> GRAMMAR[Grammar-Constrained JSON Schema]
     GRAMMAR --> SHIELD[Deterministic C# Validation Shield]
-    SHIELD -->|Valid| DB[(TeamUpDB Relational Storage)]
+    SHIELD -->|Valid| DB[("TeamUpDB Relational Storage")]
     SHIELD -->|Invalid| REFLECT[Reflection & Self-Correction Loop]
     REFLECT --> AI
 ```

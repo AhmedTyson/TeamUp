@@ -46,6 +46,11 @@ TeamUp/
 │   ├── TeamUp.Application/        # Use Cases, DTOs, FluentValidators, Services, Domain Event Handlers
 │   ├── TeamUp.Infrastructure/     # EF Core AppDbContext, SQL Server Migrations, Interceptors, Seeders
 │   └── TeamUp.Api/                # ASP.NET Core 10 Web API Controllers, Filters, Middleware, OpenAPI
+├── frontend/                      # 🎨 Standalone student web app & landing page (Tailwind CSS, GSAP/vanilla)
+│   └── index.html                 # Interactive landing page: liquid green nav, search, 4 showcase rows
+├── assets/                        # 🖼️ Vector brand assets & official logo marks (SVG)
+│   ├── logo.svg                   # Master TeamUp horizontal vector brand mark
+│   └── icon.svg                   # Electric-lime rounded square application icon
 ├── tests/
 │   ├── TeamUp.UnitTests/          # Pure unit tests (Domain math, validators, interceptors, soft-delete)
 │   └── TeamUp.IntegrationTests/   # End-to-end integration tests via WebApplicationFactory & in-memory/SQL
@@ -112,7 +117,7 @@ graph TB
         INTERCEPTOR["SoftDelete & AppendOnly SaveChangesInterceptor"]
         CACHE["In-Memory IMemoryCache (Catalog Caching)"]
         CRYPTO["JwtTokenService & SHA-256 Crypto Provider"]
-        DB[(Microsoft SQL Server 2022<br/>23 Tables · 29 Foreign Keys)]
+        DB[("Microsoft SQL Server 2022<br/>23 Tables · 29 Foreign Keys")]
     end
 
     SPA -->|HTTPS /api/v1| RATELIMIT

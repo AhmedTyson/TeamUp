@@ -93,8 +93,8 @@ flowchart TD
     end
 
     subgraph PersistenceLayer["Relational Storage (SQL Server 2022)"]
-        CACHE -->|No: Miss| DBCTX[AppDbContext (IAppDbContext)]
-        DBCTX -->|2. AsNoTracking Query| SQL[(SQL Server 2022 DB)]
+        CACHE -->|No: Miss| DBCTX["AppDbContext (IAppDbContext)"]
+        DBCTX -->|2. AsNoTracking Query| SQL[("SQL Server 2022 DB")]
         SQL -->|3. Query Result| DBCTX
         DBCTX -->|4. Populate Cache| CACHE
     end

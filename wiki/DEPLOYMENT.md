@@ -28,7 +28,7 @@ In production, TeamUp is deployed as a containerized service behind an Nginx rev
 flowchart LR
     INTERNET[Client Traffic] -->|HTTPS 443| NGINX[Nginx Reverse Proxy]
     NGINX -->|HTTP 5186| KESTREL[TeamUp.Api Kestrel Process]
-    KESTREL -->|TCP 1433| SQL_PROD[(Production SQL Server 2022)]
+    KESTREL -->|TCP 1433| SQL_PROD[("Production SQL Server 2022")]
 ```
 
 ---

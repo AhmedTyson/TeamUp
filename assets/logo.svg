@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="520" height="120" fill="none">
+  <defs>
+    <linearGradient id="grad-badge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d7ff54" />
+      <stop offset="100%" stop-color="#b8f2be" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#d3fb52" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Rounded Lime Square Icon Badge with Glow -->
+  <g filter="url(#shadow)">
+    <rect x="10" y="15" width="90" height="90" rx="22" fill="#d3fb52" />
+    <!-- Italic Bold T -->
+    <path d="M43 38h30v11.5h-9v34.5h-12V49.5H43V38z" fill="#14151c" transform="skewX(-8) translate(7, -1)" />
+  </g>
+
+  <!-- Wordmark -->
+  <text x="120" y="78" font-family="'Barlow Condensed', 'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="900" font-style="italic" font-size="62" letter-spacing="-1">
+    <tspan fill="#ffffff">Team</tspan>
+    <tspan fill="#d3fb52">Up</tspan>
+  </text>
+
+  <!-- Sparkle Accent Rays above the 'p' -->
+  <g transform="translate(348, 28)">
+    <rect x="0" y="4" width="3" height="9" rx="1.5" fill="#d3fb52" transform="rotate(-35)" />
+    <rect x="8" y="0" width="3" height="12" rx="1.5" fill="#d3fb52" />
+    <rect x="16" y="4" width="3" height="9" rx="1.5" fill="#d3fb52" transform="rotate(35)" />
+  </g>
+
+  <!-- Subtitle Tagline -->
+  <text x="122" y="102" font-family="'DM Sans', 'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="13.5" fill="#9ca3af" letter-spacing="1.8">
+    STUDENT COLLABORATION &amp; SKILLS PLATFORM
+  </text>
+</svg>

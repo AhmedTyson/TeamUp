@@ -1,23 +1,23 @@
 <div align="center">
   <br />
-  <img src="https://api.iconify.design/lucide/users-round.svg?color=%233B82F6" width="140" alt="TeamUp Logo" />
+  <img src="assets/logo.svg" width="380" alt="TeamUp — Student Collaboration &amp; Skills Platform" />
   <br />
 
-  # TeamUp — Student Collaboration & Gamification Platform
-  **Clean Architecture .NET 10 Web API · Cross-Faculty Team Formation, Student Organizations & Gamification Engine**
+  # TeamUp — Student Collaboration &amp; Gamification Platform
+  **Clean Architecture .NET 10 Web API · Cross-Faculty Team Formation, Student Organizations &amp; Gamification Engine**
 
   <br />
 
-  [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+  [![.NET 10](https://img.shields.io/badge/.NET-10.0-15733f?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
   [![C# 13](https://img.shields.io/badge/C%23-13.0-239120?style=for-the-badge&logo=c-sharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
-  [![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-Web_API-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://asp.net/)
-  [![EF Core 10](https://img.shields.io/badge/EF_Core-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://learn.microsoft.com/en-us/ef/core/)
-  [![SQL Server 2022](https://img.shields.io/badge/Database-SQL_Server_2022-CC292B?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)](https://www.microsoft.com/en-us/sql-server/)
-  [![JWT Auth](https://img.shields.io/badge/Auth-JWT_Bearer-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io/)
-  [![Docker](https://img.shields.io/badge/Container-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+  [![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-Web_API-15733f?style=for-the-badge&logo=dotnet&logoColor=white)](https://asp.net/)
+  [![EF Core 10](https://img.shields.io/badge/EF_Core-10.0-15733f?style=for-the-badge&logo=dotnet&logoColor=white)](https://learn.microsoft.com/en-us/ef/core/)
+  [![SQL Server 2022](https://img.shields.io/badge/Database-SQL_Server_2022-22c55e?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)](https://www.microsoft.com/en-us/sql-server/)
+  [![JWT Auth](https://img.shields.io/badge/Auth-JWT_Bearer-10b981?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io/)
+  [![Docker](https://img.shields.io/badge/Container-Docker-15733f?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
   [![Tests 100/100](https://img.shields.io/badge/Tests-100%2F100_Passing-10b981?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/AhmedTyson/TeamUp)
   ![Status](https://img.shields.io/badge/status-active_|_v1.0.0-10b981?style=flat-square)
-  ![Architecture](https://img.shields.io/badge/architecture-Clean_Architecture_Grade_A-blue?style=flat-square)
+  ![Architecture](https://img.shields.io/badge/architecture-Clean_Architecture_Grade_A-10b981?style=flat-square)
 
 </div>
 
@@ -27,11 +27,14 @@
 
 <br />
 
-Welcome to the **TeamUp** repository! **TeamUp** is an enterprise-grade academic collaboration and gamification platform engineered in **.NET 10 / C# 13**. It bridges higher-education academic programs and real-world project execution by connecting students across universities and faculties into cross-functional teams, facilitating student organization recruitment, scheduling campus workshops, verifying attendance via QR/PIN check-ins, and rewarding active student engagement through an immutable scoring ledger, progressive levels, and verifiable achievement badges.
+> ### *"LET'S FIND YOUR NEXT TEAM"*
+> **Build your skills, find your team, join student activities, and grow together from your first year at university.**
+
+Welcome to the **TeamUp** repository! **TeamUp** is an enterprise-grade academic collaboration and gamification platform engineered with **.NET 10 / C# 13** and **Tailwind CSS**. It bridges higher-education academic programs and real-world project execution by connecting students across universities and faculties into cross-functional teams, facilitating student organization recruitment, scheduling campus workshops, verifying attendance via QR/PIN check-ins, and rewarding active student engagement through an immutable scoring ledger, progressive levels, and verifiable achievement badges.
 
 ---
 
-## <img src="https://api.iconify.design/lucide/folder-tree.svg?color=%233B82F6" width="22" align="top" /> Repository Structure
+## <img src="https://api.iconify.design/lucide/folder-tree.svg?color=%2310B981" width="22" align="top" /> Repository Structure
 
 ```text
 TeamUp/
@@ -40,6 +43,11 @@ TeamUp/
 │   ├── TeamUp.Application/        # CQRS Services, DTOs, FluentValidators, Domain Event Handlers
 │   ├── TeamUp.Infrastructure/     # EF Core 10 AppDbContext, Migrations, Interceptors, Seeders
 │   └── TeamUp.Api/                # ASP.NET Core 10 Web API, Thin Controllers, Filters, Middleware
+├── frontend/                      # 🎨 Standalone student web app & landing page (Tailwind CSS, GSAP/vanilla)
+│   └── index.html                 # Interactive landing page: liquid green nav, search, 4 showcase rows
+├── assets/                        # 🖼️ Vector brand assets & official logo marks (SVG)
+│   ├── logo.svg                   # Master TeamUp horizontal vector brand mark
+│   └── icon.svg                   # Electric-lime rounded square application icon
 ├── tests/
 │   ├── TeamUp.UnitTests/          # Unit tests (Gamification formulas, FluentValidators, Interceptors)
 │   └── TeamUp.IntegrationTests/   # End-to-end integration tests (WebApplicationFactory & DB context)
@@ -52,24 +60,23 @@ TeamUp/
 └── TeamUp.sln                     # Visual Studio / Rider .NET 10 solution file
 ```
 
-The repository follows a clean separation of concerns: `src/` contains the application projects, `tests/` houses the 100 automated test suites, `wiki/` is the documentation headquarters, and `ERD/` + `Mapping/` provide the relational database blueprints.
-
 ---
 
-## <img src="https://api.iconify.design/lucide/sparkles.svg?color=%233B82F6" width="22" align="top" /> Key Features & Highlights
+## <img src="https://api.iconify.design/lucide/sparkles.svg?color=%2310B981" width="22" align="top" /> Key Features & Platform Highlights
 
 | Domain / Layer | Technology | Key Capabilities & Highlights |
 |---|---|---|
+| **Frontend Web App** | HTML5, Tailwind CSS, Vanilla JS | Interactive showcase (`frontend/index.html`): liquid lime-green morphing nav (`#d3fb52`), typewriter search bar, 4 interactive feature rows (Team Formation, Activities, Workshops, Gamification), and seamless marquee ticker. |
 | **Identity & Governance** | .NET 10, PBKDF2, JWT Bearer | Student registration with faculty affiliation, HMAC-SHA256 JWT, SHA-256 hashed refresh token rotation, 15-minute crypto password resets (redacted from HTTP payloads), public student directory, portfolio cards, and admin governance. |
 | **Academic Catalog** | In-Memory Caching (`IMemoryCache`) | Multi-tenant university & faculty hierarchy, cached anonymous lookup (`/api/v1/universities/catalog`) for sub-5ms registration UX, administrative CRUD with cache invalidation. |
-| **Projects & Sprint Tasks** | Clean DDD, CQRS | Cross-functional project creation, required skills matrix, vacancy recruitment, applicant vetting workflow, and Kanban task boards (`Todo` ➔ `InProgress` ➔ `Completed`). |
-| **Organizations & Events** | Relational Schemas, Concurrency Tokens | Student clubs directory, executive committee assignments, multi-session event timetables, seat capacity limits with waitlists, and QR/PIN attendance check-ins. |
-| **Gamification Engine** | Event Pub-Sub, Append-Only Ledger | Immutable `ScoreTransaction` financial ledger (`IAppendOnly`), automated level progression formula $\lfloor 1 + \sqrt{\text{pts}/100} \rfloor$, rule-driven badge evaluator, and in-app notifications inbox. |
+| **Projects & Sprint Tasks** | Clean DDD, CQRS | Cross-functional project creation (`+250 pts / project`), required skills matrix, vacancy recruitment, applicant vetting workflow, and Kanban task boards (`Todo` ➔ `InProgress` ➔ `Completed`). |
+| **Organizations & Events** | Relational Schemas, Concurrency Tokens | 50+ student clubs directory (IEEE, GDG, Enactus), executive committee assignments, multi-session event timetables, seat capacity limits with waitlists, and QR/PIN attendance check-ins. |
+| **Gamification Engine** | Event Pub-Sub, Append-Only Ledger | Immutable `ScoreTransaction` financial ledger (`IAppendOnly`), automated level progression formula $\lfloor 1 + \sqrt{\text{pts}/100} \rfloor$, rule-driven badge evaluator (*Team Pioneer*, *Verified Attendee*, *Skill Master*), and in-app notifications inbox. |
 | **Database Integrity** | SQL Server 2022, EF Core 10 | 23 tables, 29 foreign keys with **100% Zero Cascades** (`ON DELETE NO ACTION`), single-column soft-delete (`DeletedAt`), and 10 filtered unique indexes (`WHERE [DeletedAt] IS NULL`). |
 
 ---
 
-## <img src="https://api.iconify.design/lucide/rocket.svg?color=%233B82F6" width="22" align="top" /> Quick Start Guide
+## <img src="https://api.iconify.design/lucide/rocket.svg?color=%2310B981" width="22" align="top" /> Quick Start Guide
 
 ### 1. Database Provisioning (Docker SQL Server 2022)
 
@@ -116,7 +123,17 @@ dotnet run
 - **Health Check Endpoint:** `GET http://localhost:5186/health` (Returns `{"status": "Healthy"}`)
 - **OpenAPI Document:** `http://localhost:5186/openapi/v1.json`
 
-### 4. Default Seed Credentials
+### 4. Serve the Frontend Landing Page
+
+```bash
+# Open frontend directly in your browser, or serve via Python / HTTP server:
+cd frontend
+python -m http.server 8080
+```
+
+- **Landing Page:** `http://localhost:8080/index.html`
+
+### 5. Default Seed Credentials
 
 When `Seed:Enabled = true`, `DbSeeder.cs` provisions initial seed accounts:
 
@@ -128,7 +145,7 @@ When `Seed:Enabled = true`, `DbSeeder.cs` provisions initial seed accounts:
 
 ---
 
-## <img src="https://api.iconify.design/lucide/flask-conical.svg?color=%233B82F6" width="22" align="top" /> Testing & Verification
+## <img src="https://api.iconify.design/lucide/flask-conical.svg?color=%2310B981" width="22" align="top" /> Testing & Verification
 
 Execute the complete automated test suite (57 Unit Tests + 43 Integration Tests):
 
@@ -154,7 +171,7 @@ Total: 100 / 100 Passing Tests (100% Pass Rate)
 
 ---
 
-## <img src="https://api.iconify.design/lucide/book-open.svg?color=%233B82F6" width="22" align="top" /> Documentation Home
+## <img src="https://api.iconify.design/lucide/book-open.svg?color=%2310B981" width="22" align="top" /> Documentation Home
 
 All technical documentation, architectural decision records, and operational guides live in **[`wiki/`](wiki/Home.md)**:
 
@@ -170,7 +187,7 @@ All technical documentation, architectural decision records, and operational gui
 
 ---
 
-## <img src="https://api.iconify.design/lucide/database.svg?color=%233B82F6" width="22" align="top" /> Database Design & Relational Mapping
+## <img src="https://api.iconify.design/lucide/database.svg?color=%2310B981" width="22" align="top" /> Database Design & Relational Mapping
 
 | Visual Deliverable | Specification | Path |
 |---|---|---|
@@ -178,26 +195,40 @@ All technical documentation, architectural decision records, and operational gui
 | **Relational Schema** | 23 Tables across 5 Tiers, Row-of-Cells Style, 29 Foreign Keys, 10 Filtered UQ Indexes | [Mapping/TeamUp-Relational-Mapping.png](Mapping/TeamUp-Relational-Mapping.png) · [Mapping/description.md](Mapping/description.md) |
 
 ```mermaid
-graph LR
+flowchart LR
+    classDef greenCluster fill:#14221c,stroke:#22c55e,stroke-width:1.5px,color:#d3fb52;
+    classDef greenPrimary fill:#1b4d3e,stroke:#d3fb52,stroke-width:2px,color:#ffffff;
+    classDef greenAccent fill:#16382c,stroke:#22c55e,stroke-width:1.5px,color:#d7ff54;
+    classDef greenLeaf fill:#12281e,stroke:#10b981,stroke-width:1px,color:#e2e8f0;
+
     subgraph Conceptual["Chen ERD Model"]
-        ERD[13 Entities / 19 Relationships]
+        ERD["13 Entities · 19 Relationships"]:::greenPrimary
     end
-    subgraph Relational["Relational Mapping (3NF)"]
-        MAP[23 Tables across 5 Tiers]
+
+    subgraph Relational["Relational Mapping · 3NF"]
+        MAP["23 Relational Tables · 5 Tiers"]:::greenAccent
     end
+
     subgraph Hardening["Production Schema Hardening"]
-        D1[Zero Physical Cascades (NO ACTION)]
-        D4[Single-Column Soft-Delete (DeletedAt)]
-        D5[Filtered Unique Indexes (WHERE DeletedAt IS NULL)]
-        D10[Append-Only Score Ledger (IAppendOnly)]
+        D1["Zero Physical Cascades (NO ACTION)"]:::greenLeaf
+        D4["Single-Column Soft-Delete (DeletedAt)"]:::greenLeaf
+        D5["Filtered Unique Indexes (WHERE DeletedAt IS NULL)"]:::greenLeaf
+        D10["Append-Only Score Ledger (IAppendOnly)"]:::greenLeaf
     end
+
     ERD --> MAP
-    MAP --> D1 & D4 & D5 & D10
+    MAP --> D1
+    MAP --> D4
+    MAP --> D5
+    MAP --> D10
+
+    class Conceptual,Relational,Hardening greenCluster;
+    linkStyle default stroke:#22c55e,stroke-width:2px;
 ```
 
 ---
 
-## <img src="https://api.iconify.design/lucide/users.svg?color=%233B82F6" width="22" align="top" /> Engineering Team
+## <img src="https://api.iconify.design/lucide/users.svg?color=%2310B981" width="22" align="top" /> Engineering Team
 
 - **Ahmed Elsayed (@AhmedTyson)** — *Tech Lead & M1 Lead (Auth, Core Identity, Catalog, Platform Governance)* · [github.com/AhmedTyson](https://github.com/AhmedTyson)
 - **Ossama** — *Module 2 Lead (Skills Master Catalog, Projects, Member Roles, Sprint Tasks)*
@@ -206,6 +237,6 @@ graph LR
 
 ---
 
-## <img src="https://api.iconify.design/lucide/scale.svg?color=%233B82F6" width="22" align="top" /> License
+## <img src="https://api.iconify.design/lucide/scale.svg?color=%2310B981" width="22" align="top" /> License
 
 Licensed under the [MIT License](LICENSE) — TeamUp Academic Collaboration Platform Deliverable.

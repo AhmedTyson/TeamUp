@@ -1,0 +1,2010 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TeamUp — Student Collaboration &amp; Skills Platform</title>
+    <meta
+      name="description"
+      content="Build your skills, find your team, and grow together from your first year at university."
+    />
+    <meta property="og:title" content="TeamUp — Student Collaboration &amp; Skills Platform" />
+    <meta
+      property="og:description"
+      content="Build your skills, find your team, and grow together from your first year at university."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=Barlow+Condensed:ital,wght@0,700;0,800;1,800;1,900&family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Plus+Jakarta+Sans:ital,wght@0,500..800;1,700..800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS CDN (Ensures instant styling on GitHub Pages with zero build step required) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      html,
+      body {
+        scroll-behavior: smooth;
+        background-color: #14151c;
+        overflow-x: hidden;
+        max-width: 100vw;
+        -webkit-tap-highlight-color: transparent;
+        font-family: 'DM Sans', sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Multi-Layer Radial Mesh Gradient reconstructed from reference, blending into #14151c */
+      .teamup-hero-bg {
+        background-color: #14151c;
+        background-image:
+          linear-gradient(180deg, transparent 0%, transparent 74%, rgba(20, 21, 28, 0.65) 90%, #14151c 100%),
+          radial-gradient(ellipse 46% 38% at 54% 40%, rgba(109, 164, 95, 0.96) 0%, rgba(98, 165, 120, 0.65) 42%, rgba(78, 133, 106, 0.22) 72%, transparent 100%),
+          radial-gradient(ellipse 42% 32% at 74% 12%, rgba(83, 152, 134, 0.88) 0%, rgba(62, 131, 138, 0.62) 45%, rgba(39, 82, 87, 0.25) 78%, transparent 100%),
+          radial-gradient(ellipse 40% 30% at 32% 10%, rgba(68, 127, 120, 0.82) 0%, rgba(56, 108, 111, 0.55) 48%, rgba(40, 75, 82, 0.20) 80%, transparent 100%),
+          radial-gradient(ellipse 48% 34% at 50% 68%, rgba(94, 120, 48, 0.85) 0%, rgba(81, 118, 72, 0.58) 46%, rgba(52, 66, 42, 0.25) 78%, transparent 100%),
+          radial-gradient(ellipse 38% 30% at 86% 74%, rgba(69, 98, 61, 0.65) 0%, rgba(55, 74, 49, 0.38) 55%, transparent 100%),
+          radial-gradient(ellipse 45% 45% at 0% 0%, #192228 0%, transparent 70%),
+          radial-gradient(ellipse 45% 45% at 100% 0%, #1a2f34 0%, transparent 65%),
+          radial-gradient(ellipse 50% 45% at 0% 90%, #1a1d20 0%, transparent 75%),
+          linear-gradient(180deg, #1e3338 0%, #2b4d50 22%, #344d3e 52%, #2b3525 78%, #14151c 100%);
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+
+      @keyframes navFadeDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes dropdownPop {
+        from {
+          opacity: 0;
+          transform: translateY(-6px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .animate-nav-item {
+        opacity: 0;
+        animation: navFadeDown 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .animate-dropdown {
+        animation: dropdownPop 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        transform-origin: top left;
+      }
+
+      @keyframes heroRevealUp {
+        0% {
+          opacity: 0;
+          transform: translateY(34px) scale(0.985);
+          filter: blur(4px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+          filter: blur(0);
+        }
+      }
+
+      @keyframes softFadeUp {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes cursorBlink {
+        0%,
+        49% {
+          opacity: 1;
+        }
+        50%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      @keyframes simulatedClickPress {
+        0% {
+          transform: scale(1);
+        }
+        35% {
+          transform: scale(0.84);
+        }
+        70% {
+          transform: scale(1.08);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes clickRippleRing {
+        0% {
+          transform: scale(0.85);
+          opacity: 0.75;
+        }
+        100% {
+          transform: scale(1.75);
+          opacity: 0;
+        }
+      }
+
+      .animate-hero-line-1 {
+        opacity: 0;
+        animation: heroRevealUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.08s forwards;
+      }
+
+      .animate-hero-line-2 {
+        opacity: 0;
+        animation: heroRevealUp 0.78s cubic-bezier(0.16, 1, 0.3, 1) 0.18s forwards;
+      }
+
+      .animate-hero-sub {
+        opacity: 0;
+        animation: softFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      }
+
+      .animate-search-bar {
+        opacity: 0;
+        animation: softFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+      }
+
+      .animate-chip-item {
+        opacity: 0;
+        animation: softFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .typewriter-cursor {
+        display: inline-block;
+        width: 2px;
+        height: 1.25em;
+        background-color: #192228;
+        vertical-align: middle;
+        margin-left: 2px;
+        animation: cursorBlink 0.9s infinite;
+      }
+
+      .is-simulating-click {
+        animation: simulatedClickPress 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      }
+
+      .click-ripple-effect::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: inherit;
+        border: 2px solid #539886;
+        animation: clickRippleRing 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        pointer-events: none;
+      }
+
+      /* Service Card Modern Hover & Glow Effect */
+      .service-card {
+        position: relative;
+        background-color: #14151c;
+        border: 1px solid rgba(255, 255, 255, 0.085);
+        border-radius: 24px;
+        overflow: hidden;
+        transition:
+          transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+          border-color 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+          box-shadow 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+          background-color 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+          opacity 0.7s ease-out;
+      }
+
+      .service-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          420px circle at var(--mouse-x, 85%) var(--mouse-y, 15%),
+          rgba(211, 251, 82, 0.085),
+          rgba(83, 152, 134, 0.05) 45%,
+          transparent 80%
+        );
+        opacity: 0;
+        transition: opacity 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+      }
+
+      .service-card:hover {
+        transform: translateY(-7px);
+        background-color: #181a23;
+        border-color: rgba(211, 251, 82, 0.38);
+        box-shadow:
+          0 24px 48px -12px rgba(0, 0, 0, 0.65),
+          0 0 28px -8px rgba(211, 251, 82, 0.14);
+      }
+
+      .service-card:hover::before {
+        opacity: 1;
+      }
+
+      /* Seamless Right-to-Left Single-Row Infinite Marquee */
+      @keyframes marqueeRightToLeft {
+        0% {
+          transform: translate3d(0%, 0, 0);
+        }
+        100% {
+          transform: translate3d(-50%, 0, 0);
+        }
+      }
+
+      .marquee-track-rtl {
+        display: flex;
+        width: max-content;
+        will-change: transform;
+        animation: marqueeRightToLeft 34s linear infinite;
+      }
+
+      .marquee-tile {
+        position: relative;
+        width: 226px;
+        height: 228px;
+        background-color: #1c1e26;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        flex-shrink: 0;
+        margin-right: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        cursor: pointer;
+        transition:
+          transform 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+          border-color 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+          box-shadow 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+          background-color 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .marquee-tile::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          260px circle at var(--mouse-x, 80%) var(--mouse-y, 20%),
+          rgba(211, 251, 82, 0.12),
+          rgba(83, 152, 134, 0.06) 48%,
+          transparent 80%
+        );
+        opacity: 0;
+        transition: opacity 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+      }
+
+      .marquee-tile:hover {
+        transform: translateY(-7px);
+        background-color: #20232d;
+        border-color: rgba(211, 251, 82, 0.42);
+        box-shadow:
+          0 22px 44px -12px rgba(0, 0, 0, 0.65),
+          0 0 26px -6px rgba(211, 251, 82, 0.16);
+      }
+
+      .marquee-tile:hover::before {
+        opacity: 1;
+      }
+
+      @media (max-width: 640px) {
+        .marquee-tile {
+          width: 172px;
+          height: 174px;
+          border-radius: 20px;
+          margin-right: 14px;
+        }
+      }
+
+      /* Smooth Gliding Nav Pill */
+      .nav-gliding-pill {
+        transition:
+          transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+          width 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+          height 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 0.22s ease,
+          background-color 0.25s ease;
+        will-change: transform, width, height, opacity;
+      }
+
+      @keyframes subItemFadeSlide {
+        from {
+          opacity: 0;
+          transform: translateX(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .animate-sub-item {
+        animation: subItemFadeSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      /* Section 3: Showcase Visuals (Bottom-to-Top) & Text (Right-to-Left) Transitions */
+      .showcase-visual-reveal {
+        opacity: 0;
+        transform: translate3d(0, 64px, 0) scale(0.98);
+        transition:
+          opacity 1.35s cubic-bezier(0.16, 1, 0.3, 1),
+          transform 1.35s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, transform;
+      }
+
+      .showcase-visual-reveal.is-visible {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      .showcase-text-reveal-rtl {
+        opacity: 0;
+        transform: translate3d(76px, 0, 0);
+        transition:
+          opacity 1.35s cubic-bezier(0.16, 1, 0.3, 1) 0.22s,
+          transform 1.35s cubic-bezier(0.16, 1, 0.3, 1) 0.22s;
+        will-change: opacity, transform;
+      }
+
+      .showcase-text-reveal-rtl.is-visible {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+
+      /* Section 4 (Footer): Left Column (Left-to-Right Smooth Reveal) */
+      .footer-left-reveal-ltr {
+        opacity: 0;
+        transform: translate3d(-72px, 0, 0);
+        transition:
+          opacity 1.35s cubic-bezier(0.16, 1, 0.3, 1),
+          transform 1.35s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, transform;
+      }
+
+      .footer-left-reveal-ltr.is-visible {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+
+      .footer-right-reveal {
+        opacity: 0;
+        transform: translate3d(0, 28px, 0);
+        transition:
+          opacity 1.25s cubic-bezier(0.16, 1, 0.3, 1) 0.18s,
+          transform 1.25s cubic-bezier(0.16, 1, 0.3, 1) 0.18s;
+        will-change: opacity, transform;
+      }
+
+      .footer-right-reveal.is-visible {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+
+      @media (max-width: 640px) {
+        .showcase-text-reveal-rtl {
+          transform: translate3d(28px, 0, 0);
+        }
+        .footer-left-reveal-ltr {
+          transform: translate3d(-28px, 0, 0);
+        }
+      }
+
+      /* Burst Text Animation (Fast One-Shot Sequence, No Blinking) */
+      @keyframes letterBurstPop {
+        0% {
+          opacity: 0;
+          transform: scale(0.18) translateY(32px);
+        }
+        65% {
+          opacity: 1;
+          transform: scale(1.1) translateY(-4px);
+        }
+        84% {
+          opacity: 1;
+          transform: scale(0.98) translateY(1px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0px);
+        }
+      }
+
+      @keyframes burstRaysPop {
+        0% {
+          opacity: 0;
+          transform: scale(0.35);
+        }
+        45% {
+          opacity: 1;
+          transform: scale(1.06);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(1.4);
+        }
+      }
+
+      .burst-letter {
+        display: inline-block;
+        opacity: 0;
+        transform: scale(0.18) translateY(32px);
+        transform-origin: center bottom;
+        will-change: transform, opacity;
+      }
+
+      .is-burst-visible .burst-letter {
+        animation: letterBurstPop 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+
+      .burst-rays {
+        opacity: 0;
+        pointer-events: none;
+        will-change: transform, opacity;
+      }
+
+      .is-burst-visible .burst-rays {
+        animation: burstRaysPop 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      /* Showcase Visual Card Gradients */
+      .showcase-gradient-1 {
+        background:
+          radial-gradient(circle at 14% 18%, #d7ff54 0%, rgba(211, 251, 82, 0.88) 28%, transparent 65%),
+          radial-gradient(circle at 88% 22%, #a9f0d1 0%, rgba(152, 230, 198, 0.75) 38%, transparent 72%),
+          radial-gradient(circle at 80% 85%, #d3fb52 0%, rgba(163, 230, 92, 0.7) 40%, transparent 75%),
+          linear-gradient(135deg, #c8fa4b 0%, #8be084 48%, #b8f2be 100%);
+      }
+
+      .showcase-gradient-2 {
+        background:
+          radial-gradient(circle at 18% 25%, #19874b 0%, rgba(25, 135, 75, 0.85) 38%, transparent 72%),
+          radial-gradient(circle at 75% 12%, #a2f5b5 0%, rgba(162, 245, 181, 0.75) 35%, transparent 68%),
+          radial-gradient(circle at 12% 88%, #5dc294 0%, transparent 65%),
+          linear-gradient(135deg, #15733f 0%, #3ca365 45%, #8de8b0 100%);
+      }
+
+      .showcase-gradient-3 {
+        background:
+          radial-gradient(circle at 85% 18%, #d3fb52 0%, rgba(211, 251, 82, 0.85) 32%, transparent 68%),
+          radial-gradient(circle at 16% 80%, #2f7a6a 0%, rgba(47, 122, 106, 0.82) 40%, transparent 72%),
+          linear-gradient(135deg, #b8f553 0%, #52b788 52%, #245c52 100%);
+      }
+
+      .showcase-gradient-4 {
+        background:
+          radial-gradient(circle at 20% 20%, #d3fb52 0%, rgba(211, 251, 82, 0.82) 34%, transparent 66%),
+          radial-gradient(circle at 84% 78%, #1e6b4b 0%, rgba(30, 107, 75, 0.85) 40%, transparent 74%),
+          linear-gradient(135deg, #216e4e 0%, #68c978 50%, #cdfa57 100%);
+      }
+    </style>
+  </head>
+
+  <body class="bg-[#14151c] text-white select-none">
+    <div id="top" class="min-h-screen w-full bg-[#14151c] overflow-x-hidden select-none">
+      <!-- =====================================================================
+           STICKY / MORPHING TOP HEADER WITH LIQUID GREEN GLIDING PILL & DROPDOWNS
+           ===================================================================== -->
+      <header
+        id="main-header"
+        class="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 md:px-10 pt-2.5 sm:pt-4 transition-all duration-300 ease-out pointer-events-none"
+      >
+        <div
+          id="header-inner"
+          class="mx-auto transition-all duration-300 ease-out pointer-events-auto max-w-[1440px] pt-1 sm:pt-2 px-1 sm:px-2 flex flex-col lg:grid lg:grid-cols-[1fr_auto_1fr] items-center gap-2 lg:gap-0"
+        >
+          <!-- Left Zone: Brand Wordmark at top, or Lime Square Icon ('T') when scrolled -->
+          <div class="flex items-center shrink-0">
+            <a
+              id="brand-wordmark"
+              href="#top"
+              class="inline-block text-[#d3fb52] text-[32px] sm:text-[38px] md:text-[42px] font-black italic leading-none tracking-[-0.03em] transition-transform duration-200 hover:scale-[1.03] cursor-pointer"
+              style="font-family: 'Barlow Condensed', sans-serif"
+            >
+              TeamUp
+            </a>
+            <a
+              id="brand-icon-scrolled"
+              href="#top"
+              title="TeamUp"
+              style="font-family: 'Barlow Condensed', sans-serif"
+              class="hidden w-9 h-9 sm:w-11 sm:h-11 rounded-[10px] sm:rounded-[12px] bg-[#d3fb52] items-center justify-center text-[#14151c] text-[22px] sm:text-[27px] font-black italic leading-none tracking-tighter transition-transform duration-200 hover:scale-105 cursor-pointer shrink-0"
+            >
+              T
+            </a>
+          </div>
+
+          <!-- Center Zone: Primary Core Module Options with Liquid Lime-Green Gliding Pill -->
+          <nav
+            id="primary-nav"
+            aria-label="Primary Navigation"
+            class="relative flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 w-full lg:w-auto"
+          >
+            <!-- Shared Liquid Gliding Lime-Green Highlight Pill -->
+            <div
+              id="nav-gliding-pill"
+              aria-hidden="true"
+              style="transform: translate3d(0px, 0px, 0); width: 0px; height: 0px; opacity: 0"
+              class="nav-gliding-pill absolute left-0 top-0 rounded-[10px] sm:rounded-[11px] pointer-events-none bg-[#d3fb52]/20 border border-[#d3fb52]/60 shadow-[0_8px_24px_rgba(211,251,82,0.22)] backdrop-blur-[4px]"
+            ></div>
+            <!-- Nav items injected dynamically via JS below -->
+          </nav>
+
+          <!-- Right Zone Spacer (Desktop only) -->
+          <div id="header-right-spacer" class="hidden lg:block w-11"></div>
+        </div>
+      </header>
+
+      <!-- =====================================================================
+           SECTION 1: HERO VIEWPORT
+           ===================================================================== -->
+      <section
+        class="teamup-hero-bg relative z-10 min-h-screen w-full flex flex-col justify-between pt-36 sm:pt-32 lg:pt-28 pb-10 px-4 sm:px-6"
+      >
+        <div class="w-full max-w-[1060px] mx-auto flex flex-col items-center text-center my-auto">
+          <!-- Giant Condensed Display Headline -->
+          <h1
+            class="uppercase text-white font-bold select-none flex flex-col items-center"
+            style="
+              font-family: 'Antonio', 'Barlow Condensed', sans-serif;
+              font-size: clamp(2.9rem, 11.2vw, 9.5rem);
+              line-height: 0.9;
+              letter-spacing: -0.025em;
+            "
+          >
+            <span class="animate-hero-line-1 block">LET'S FIND</span>
+            <span class="animate-hero-line-2 block mt-1">YOUR NEXT TEAM</span>
+          </h1>
+
+          <!-- Subtitle grounded in the Business Document -->
+          <p
+            class="animate-hero-sub mt-5 sm:mt-7 text-white text-[15.5px] sm:text-[17px] md:text-[20px] font-normal tracking-[-0.01em] max-w-[760px] px-1"
+          >
+            Build your skills, find your team, join student activities, and grow together from your first year at university.
+          </p>
+
+          <!-- Large White Search Bar with Typewriter & Simulated Click Effect -->
+          <div class="animate-search-bar w-full max-w-[970px] mt-7 sm:mt-10">
+            <div
+              id="search-bar-container"
+              class="w-full h-[64px] sm:h-[76px] md:h-[86px] bg-white rounded-[20px] sm:rounded-[26px] pl-3 sm:pl-6 pr-2.5 sm:pr-4 flex items-center justify-between transition-all duration-200 shadow-[0_20px_50px_rgba(12,24,22,0.24)] hover:shadow-[0_24px_56px_rgba(12,24,22,0.3)] cursor-text"
+            >
+              <!-- Left Magnifying Glass Search Logo -->
+              <button
+                id="search-icon-btn"
+                type="button"
+                aria-label="Search"
+                class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer text-[#12181c] hover:bg-black/[0.04]"
+              >
+                <svg
+                  class="w-[21px] h-[21px] sm:w-[26px] sm:h-[26px]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.3-4.3"></path>
+                </svg>
+              </button>
+
+              <!-- Center Typewriter Display / Editable Input -->
+              <div class="flex-1 px-2 sm:px-3 text-left overflow-hidden">
+                <div
+                  id="typewriter-display"
+                  class="w-full truncate text-[#5f666e] text-[15px] sm:text-[18px] md:text-[21px] font-normal tracking-[-0.01em] flex items-center"
+                >
+                  <span id="typewriter-text" class="truncate"></span>
+                  <span class="typewriter-cursor shrink-0" aria-hidden="true"></span>
+                </div>
+                <input
+                  id="manual-search-input"
+                  type="text"
+                  placeholder="Search projects, teammates, activities..."
+                  class="hidden w-full bg-transparent text-[#141a1f] text-[15px] sm:text-[18px] md:text-[21px] font-normal outline-none placeholder:text-[#6c737a]"
+                />
+              </div>
+
+              <!-- Right Rounded-Square Submit Arrow Button -->
+              <button
+                id="search-submit-btn"
+                type="button"
+                aria-label="Submit search"
+                class="relative w-[42px] h-[42px] sm:w-[52px] sm:h-[52px] rounded-[13px] sm:rounded-[15px] flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer bg-[#e7e8eb] text-[#686f77] hover:bg-[#dadce0] hover:text-[#141a1f]"
+              >
+                <svg
+                  class="w-5 h-5 sm:w-6 sm:h-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m5 12 7-7 7 7"></path>
+                  <path d="M12 19V5"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom Quick Filter Options Row -->
+          <div
+            id="quick-filters-container"
+            class="mt-7 sm:mt-10 flex flex-wrap items-center justify-center gap-2 sm:gap-2.5"
+          ></div>
+        </div>
+
+        <!-- Smooth Scroll Down Cue -->
+        <div class="w-full flex justify-center pt-6">
+          <a
+            href="#services"
+            aria-label="Scroll to services"
+            class="group flex flex-col items-center gap-1.5 text-white/60 hover:text-white transition-colors duration-200 cursor-pointer"
+          >
+            <span class="text-[13px] font-medium tracking-wide">Explore platform modules</span>
+            <svg
+              class="w-5 h-5 transition-transform duration-300 group-hover:translate-y-1"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
+          </a>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 2: CORE PLATFORM SERVICES GRID & INFINITE MARQUEE
+           ===================================================================== -->
+      <section
+        id="services"
+        class="relative z-10 w-full bg-[#14151c] pt-14 sm:pt-20 pb-14 sm:pb-20 px-4 sm:px-6 md:px-12"
+      >
+        <div class="max-w-[1280px] mx-auto">
+          <!-- Section Heading & Subtitle -->
+          <div
+            id="services-heading"
+            class="text-center max-w-[820px] mx-auto transition-all duration-700 ease-out opacity-0 translate-y-8"
+          >
+            <h2
+              class="text-white text-[26px] sm:text-[34px] md:text-[46px] font-medium leading-[1.15] tracking-[-0.025em]"
+              style="font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif"
+            >
+              Build skills, join teams, and level up your campus journey
+            </h2>
+            <p
+              class="mt-4 sm:mt-5 text-white/90 text-[15.5px] sm:text-[17px] md:text-[20px] font-normal leading-relaxed tracking-[-0.01em]"
+            >
+              Starting from your first year, collaborate on real-world projects with students, clubs, and faculties across your university.
+            </p>
+          </div>
+
+          <!-- 3x2 Services Cards Grid -->
+          <div
+            id="services-grid"
+            class="mt-10 sm:mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+          ></div>
+        </div>
+
+        <!-- Single-Row Seamless Right-to-Left Infinite Marquee -->
+        <div class="w-screen relative left-1/2 -translate-x-1/2 mt-16 overflow-hidden py-4">
+          <div id="marquee-track" class="marquee-track-rtl"></div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 3: 4 ALTERNATING FEATURE SHOWCASE ROWS
+           ===================================================================== -->
+      <section class="relative z-10 w-full bg-[#14151c] pt-8 sm:pt-12 pb-20 sm:pb-32 px-4 sm:px-6 md:px-12 overflow-hidden">
+        <div class="max-w-[1220px] mx-auto flex flex-col gap-16 sm:gap-24 md:gap-36">
+          <!-- ROW 1: Visual Left · Text Right (Team Formation & Project Matching) -->
+          <div
+            data-showcase-row="0"
+            class="showcase-row grid grid-cols-1 lg:grid-cols-12 items-center gap-8 sm:gap-10 lg:gap-16"
+          >
+            <div class="lg:col-span-7 showcase-visual-reveal">
+              <div
+                class="showcase-gradient-1 relative rounded-[22px] sm:rounded-[28px] min-h-[310px] sm:h-[360px] md:h-[400px] p-4 sm:p-6 md:p-8 overflow-hidden shadow-[0_28px_60px_-15px_rgba(0,0,0,0.6)] group"
+              >
+                <div
+                  class="absolute right-[-8%] bottom-[-10%] w-[90%] sm:w-[86%] h-[88%] sm:h-[86%] bg-white/55 backdrop-blur-md rounded-tl-[20px] sm:rounded-tl-[24px] p-4 sm:p-6 border border-white/60 shadow-inner flex flex-col justify-between"
+                >
+                  <div class="flex items-center gap-3 opacity-85">
+                    <div
+                      class="w-10 h-10 sm:w-11 sm:h-11 rounded-[10px] bg-[#2e7d32] text-white flex items-center justify-center font-bold italic text-[15px] sm:text-[17px] shrink-0"
+                    >
+                      IoT
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-[12px] sm:text-[13px] font-medium text-[#1e3a28] truncate">Smart Campus Lab</p>
+                      <p class="text-[14px] sm:text-[16px] font-semibold text-[#112419] truncate">
+                        Embedded Systems Engineer
+                      </p>
+                      <p class="text-[11.5px] sm:text-[13px] text-[#284b36] truncate">
+                        3 / 5 Team Members · Mandatory: C++ · Arduino
+                      </p>
+                      <p class="text-[11px] sm:text-[12px] text-[#3b6149] mt-0.5 truncate">
+                        Faculty of Engineering (Year 2–4)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3 opacity-80">
+                    <div
+                      class="w-10 h-10 sm:w-11 sm:h-11 rounded-[10px] bg-[#8ab882] text-[#14261a] flex items-center justify-center font-bold text-[14px] sm:text-[15px] shrink-0"
+                    >
+                      UX
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-[12px] sm:text-[13px] font-medium text-[#1e3a28] truncate">
+                        FinTech Student Startup
+                      </p>
+                      <p class="text-[14px] sm:text-[16px] font-semibold text-[#112419] truncate">
+                        Product &amp; UI Designer
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Elevated Foreground White Match Card -->
+                <div
+                  class="relative z-10 mt-10 sm:mt-14 md:mt-16 ml-0 sm:ml-1 md:ml-3 max-w-[420px] bg-white rounded-[18px] sm:rounded-[20px] p-4 sm:p-5 md:p-6 shadow-[0_24px_48px_rgba(12,28,18,0.22)] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.015]"
+                >
+                  <div class="flex items-start gap-3 sm:gap-4">
+                    <div
+                      class="w-10 h-10 sm:w-12 sm:h-12 rounded-[10px] sm:rounded-[12px] bg-[#9bb8ff] text-[#101828] flex items-center justify-center font-black italic text-[18px] sm:text-[22px] shrink-0"
+                    >
+                      AI
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-[12px] sm:text-[13px] font-medium text-[#4b5563]">
+                        Graduation &amp; Hackathon Team
+                      </p>
+                      <h4 class="text-[16.5px] sm:text-[19px] font-bold text-[#111827] tracking-[-0.015em] mt-0.5">
+                        Full-Stack &amp; AI Teammate
+                      </h4>
+                      <p class="text-[13.5px] sm:text-[14.5px] font-medium text-[#1f2937] mt-1">
+                        +250 pts · 4 / 6 Members Joined
+                      </p>
+                      <p class="text-[12px] sm:text-[13px] text-[#6b7280] mt-1.5 sm:mt-2">
+                        Required: React · Python · FastAPI (Computer Science)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5 showcase-text-reveal-rtl">
+              <div class="max-w-[430px] lg:ml-auto text-left">
+                <h3
+                  class="text-white text-[26px] sm:text-[32px] md:text-[38px] font-medium tracking-[-0.02em] leading-[1.15]"
+                  style="font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif"
+                >
+                  Find your dream team
+                </h3>
+                <p class="mt-3 sm:mt-4 text-white/85 text-[15.5px] sm:text-[16.5px] md:text-[17.5px] font-normal leading-relaxed">
+                  Publish your project idea, define required skills and proficiency levels, and connect with collaborators across every faculty.
+                </p>
+                <a
+                  href="#services"
+                  class="inline-block mt-5 sm:mt-7 px-6 py-3 rounded-[10px] bg-[#d3fb52] text-[#14151c] text-[15px] font-semibold tracking-[-0.01em] hover:bg-[#deff6e] hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer"
+                >
+                  Get started
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ROW 2: Text Left · Visual Right (Open Projects & Student Activities Directory) -->
+          <div
+            data-showcase-row="1"
+            class="showcase-row grid grid-cols-1 lg:grid-cols-12 items-center gap-8 sm:gap-10 lg:gap-16"
+          >
+            <div class="lg:col-span-5 order-2 lg:order-1 showcase-text-reveal-rtl">
+              <div class="max-w-[430px] text-left">
+                <h3
+                  class="text-white text-[26px] sm:text-[32px] md:text-[38px] font-medium tracking-[-0.02em] leading-[1.15]"
+                  style="font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif"
+                >
+                  Join student activities
+                </h3>
+                <p class="mt-3 sm:mt-4 text-white/85 text-[15.5px] sm:text-[16.5px] md:text-[17.5px] font-normal leading-relaxed">
+                  Explore university organizations, apply during recruitment, and build real-world experience—from your very first semester.
+                </p>
+                <a
+                  href="#services"
+                  class="inline-block mt-5 sm:mt-7 px-6 py-3 rounded-[10px] bg-[#d3fb52] text-[#14151c] text-[15px] font-semibold tracking-[-0.01em] hover:bg-[#deff6e] hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer"
+                >
+                  Learn more
+                </a>
+              </div>
+            </div>
+
+            <div class="lg:col-span-7 order-1 lg:order-2 showcase-visual-reveal">
+              <div
+                class="showcase-gradient-2 relative rounded-[22px] sm:rounded-[28px] min-h-[340px] sm:h-[380px] md:h-[410px] pt-5 pl-4 sm:pt-8 sm:pl-8 md:pt-10 md:pl-12 overflow-hidden shadow-[0_28px_60px_-15px_rgba(0,0,0,0.6)] group"
+              >
+                <div
+                  class="w-full h-full bg-white rounded-tl-[20px] sm:rounded-tl-[24px] p-4 sm:p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.28)] flex flex-col justify-between transition-transform duration-500 group-hover:translate-x-[-4px] group-hover:translate-y-[-4px]"
+                >
+                  <div class="flex flex-wrap items-end justify-between gap-3 sm:gap-4">
+                    <div>
+                      <h4 class="text-[#111827] text-[18px] sm:text-[22px] md:text-[26px] font-medium leading-[1.15] tracking-[-0.02em]">
+                        Open activities &amp; projects
+                        <br />
+                        to advance your skills
+                      </h4>
+                    </div>
+                    <div class="flex items-center gap-4 sm:gap-6">
+                      <div>
+                        <p class="text-[#111827] text-[17px] sm:text-[20px] font-semibold tracking-tight">50+</p>
+                        <p class="text-[#6b7280] text-[11px] sm:text-[11.5px]">Active clubs</p>
+                      </div>
+                      <div>
+                        <p class="text-[#111827] text-[17px] sm:text-[20px] font-semibold tracking-tight">10K+</p>
+                        <p class="text-[#6b7280] text-[11px] sm:text-[11.5px]">Students</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-3 sm:mt-4 flex items-center gap-2">
+                    <div
+                      class="flex-1 h-8 sm:h-9 rounded-lg border border-gray-200 px-2.5 sm:px-3 flex items-center justify-between text-[11.5px] sm:text-[12px] text-gray-400"
+                    >
+                      <span class="truncate">Search organizations &amp; roles</span>
+                      <span
+                        class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-[#111827] text-white flex items-center justify-center shrink-0"
+                      >
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="11" cy="11" r="8"></circle>
+                          <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                      </span>
+                    </div>
+                    <div
+                      class="hidden sm:flex px-3 h-9 rounded-lg border border-gray-200 items-center gap-1.5 text-[12px] text-gray-700"
+                    >
+                      <span>Faculty</span>
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m6 9 6 6 6-6"></path>
+                      </svg>
+                    </div>
+                    <div
+                      class="px-2.5 sm:px-3 h-8 sm:h-9 rounded-lg border border-gray-200 flex items-center gap-1 text-[11.5px] sm:text-[12px] text-gray-700 shrink-0"
+                    >
+                      <span>Category</span>
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m6 9 6 6 6-6"></path>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div class="mt-3 sm:mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
+                    <div class="rounded-xl border border-gray-200 p-2.5 sm:p-3 text-left">
+                      <p class="text-[#111827] text-[12px] sm:text-[12.5px] font-semibold leading-snug">
+                        IEEE Student Branch
+                      </p>
+                      <p class="text-[#6b7280] text-[10.5px] sm:text-[11px] mt-0.5">Recruiting · Tech</p>
+                      <p class="text-[#111827] text-[10px] sm:text-[10.5px] font-medium mt-2 sm:mt-3">
+                        Year 1 · Year 2 · Year 3
+                      </p>
+                    </div>
+                    <div class="rounded-xl border border-gray-200 p-2.5 sm:p-3 text-left">
+                      <p class="text-[#111827] text-[12px] sm:text-[12.5px] font-semibold leading-snug">
+                        GDG Campus Lead
+                      </p>
+                      <p class="text-[#6b7280] text-[10.5px] sm:text-[11px] mt-0.5">Up to +150 pts</p>
+                      <p class="text-[#111827] text-[10px] sm:text-[10.5px] font-medium mt-2 sm:mt-3">
+                        CS · Engineering · AI
+                      </p>
+                    </div>
+                    <div class="hidden sm:block rounded-xl border border-gray-200 p-3 text-left">
+                      <p class="text-[#111827] text-[12.5px] font-semibold leading-snug">
+                        Enactus Entrepreneurs
+                      </p>
+                      <p class="text-[#6b7280] text-[11px] mt-0.5">Open Join Request</p>
+                      <p class="text-[#111827] text-[10.5px] font-medium mt-3">
+                        Business · All Faculties
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ROW 3: Visual Left · Text Right (Events, Workshops & Verified Attendance Check-In) -->
+          <div
+            data-showcase-row="2"
+            class="showcase-row grid grid-cols-1 lg:grid-cols-12 items-center gap-8 sm:gap-10 lg:gap-16"
+          >
+            <div class="lg:col-span-7 showcase-visual-reveal">
+              <div
+                class="showcase-gradient-3 relative rounded-[22px] sm:rounded-[28px] min-h-[320px] sm:h-[360px] md:h-[400px] p-4 sm:p-6 md:p-8 overflow-hidden shadow-[0_28px_60px_-15px_rgba(0,0,0,0.6)] group"
+              >
+                <div
+                  class="absolute right-[-6%] top-[8%] sm:top-[10%] w-[90%] sm:w-[82%] h-[86%] sm:h-[84%] bg-white/55 backdrop-blur-md rounded-tl-[20px] sm:rounded-tl-[24px] p-4 sm:p-6 border border-white/60 flex flex-col justify-between"
+                >
+                  <div class="flex items-start sm:items-center justify-between gap-2">
+                    <div class="min-w-0">
+                      <p class="text-[11.5px] sm:text-[12.5px] font-semibold text-[#16382c]">
+                        EventSession · Hall B-204
+                      </p>
+                      <p class="text-[14.5px] sm:text-[17px] font-bold text-[#0f241d] truncate">
+                        AI &amp; Cloud Architecture Workshop
+                      </p>
+                      <p class="text-[11.5px] sm:text-[13px] text-[#254d3e] mt-0.5">
+                        Capacity: 142 / 150 Registered · 2 Sessions
+                      </p>
+                    </div>
+                    <span
+                      class="px-2.5 py-1 rounded-md bg-[#14221e]/10 text-[#14221e] text-[11px] sm:text-[12px] font-semibold shrink-0"
+                    >
+                      Session #104
+                    </span>
+                  </div>
+
+                  <div class="w-full bg-white/60 h-2.5 rounded-full overflow-hidden">
+                    <div class="bg-[#1b4d3e] h-full w-[88%] rounded-full"></div>
+                  </div>
+                </div>
+
+                <!-- Elevated Foreground White Attendance Check-In Card -->
+                <div
+                  class="relative z-10 mt-16 sm:mt-20 md:mt-24 ml-0 sm:ml-1 md:ml-4 max-w-[430px] bg-white rounded-[18px] sm:rounded-[20px] p-4 sm:p-5 md:p-6 shadow-[0_24px_48px_rgba(12,28,18,0.25)] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.015]"
+                >
+                  <div class="flex items-start gap-3 sm:gap-4">
+                    <div
+                      class="w-10 h-10 sm:w-12 sm:h-12 rounded-[10px] sm:rounded-[12px] bg-[#d3fb52] text-[#14151c] flex items-center justify-center shrink-0"
+                    >
+                      <svg
+                        class="w-5 h-5 sm:w-6 sm:h-6"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <rect width="5" height="5" x="3" y="3" rx="1"></rect>
+                        <rect width="5" height="5" x="16" y="3" rx="1"></rect>
+                        <rect width="5" height="5" x="3" y="16" rx="1"></rect>
+                        <path d="M21 16h-3a2 2 0 0 0-2 2v3"></path>
+                        <path d="M21 21v.01"></path>
+                        <path d="M12 7v3a2 2 0 0 1-2 2H7"></path>
+                        <path d="M3 12h.01"></path>
+                        <path d="M12 3h.01"></path>
+                        <path d="M12 16v.01"></path>
+                        <path d="M16 12h1"></path>
+                        <path d="M21 12v.01"></path>
+                        <path d="M12 21v-1"></path>
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between gap-2">
+                        <p class="text-[11.5px] sm:text-[12.5px] font-semibold text-[#16a34a] flex items-center gap-1">
+                          <svg
+                            class="w-3.5 h-3.5 shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.2"
+                          >
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="m9 12 2 2 4-4"></path>
+                          </svg>
+                          <span class="truncate">Attendance Verified</span>
+                        </p>
+                        <span class="text-[11px] sm:text-[12px] font-mono text-[#6b7280] shrink-0">QRCode · RFID</span>
+                      </div>
+                      <h4 class="text-[16px] sm:text-[18.5px] font-bold text-[#111827] tracking-[-0.015em] mt-1">
+                        System Design Bootcamp — Session 1
+                      </h4>
+                      <p class="text-[12.5px] sm:text-[13.5px] text-[#4b5563] mt-1">
+                        CheckInTime: 10:02 AM · Automatic +100 pts awarded
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5 showcase-text-reveal-rtl">
+              <div class="max-w-[430px] lg:ml-auto text-left">
+                <h3
+                  class="text-white text-[26px] sm:text-[32px] md:text-[38px] font-medium tracking-[-0.02em] leading-[1.15]"
+                  style="font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif"
+                >
+                  Register for workshops &amp; verify attendance
+                </h3>
+                <p class="mt-3 sm:mt-4 text-white/85 text-[15.5px] sm:text-[16.5px] md:text-[17.5px] font-normal leading-relaxed">
+                  Discover campus events and multi-session workshops with real-time seat capacity and instant QR, RFID, or manual check-in verification.
+                </p>
+                <a
+                  href="#services"
+                  class="inline-block mt-5 sm:mt-7 px-6 py-3 rounded-[10px] bg-[#d3fb52] text-[#14151c] text-[15px] font-semibold tracking-[-0.01em] hover:bg-[#deff6e] hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer"
+                >
+                  Explore events
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ROW 4: Text Left · Visual Right (Gamification, Immutable Score Ledger & Badges) -->
+          <div
+            data-showcase-row="3"
+            class="showcase-row grid grid-cols-1 lg:grid-cols-12 items-center gap-8 sm:gap-10 lg:gap-16"
+          >
+            <div class="lg:col-span-5 order-2 lg:order-1 showcase-text-reveal-rtl">
+              <div class="max-w-[430px] text-left">
+                <h3
+                  class="text-white text-[26px] sm:text-[32px] md:text-[38px] font-medium tracking-[-0.02em] leading-[1.15]"
+                  style="font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif"
+                >
+                  Level up with verified points &amp; badges
+                </h3>
+                <p class="mt-3 sm:mt-4 text-white/85 text-[15.5px] sm:text-[16.5px] md:text-[17.5px] font-normal leading-relaxed">
+                  Track every contribution in your immutable score ledger, unlock achievement badges, and climb your university leaderboard.
+                </p>
+                <a
+                  href="#services"
+                  class="inline-block mt-5 sm:mt-7 px-6 py-3 rounded-[10px] bg-[#d3fb52] text-[#14151c] text-[15px] font-semibold tracking-[-0.01em] hover:bg-[#deff6e] hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer"
+                >
+                  View leaderboard
+                </a>
+              </div>
+            </div>
+
+            <div class="lg:col-span-7 order-1 lg:order-2 showcase-visual-reveal">
+              <div
+                class="showcase-gradient-4 relative rounded-[22px] sm:rounded-[28px] min-h-[340px] sm:h-[380px] md:h-[410px] pt-5 pl-4 sm:pt-8 sm:pl-8 md:pt-10 md:pl-12 overflow-hidden shadow-[0_28px_60px_-15px_rgba(0,0,0,0.6)] group"
+              >
+                <div
+                  class="w-full h-full bg-white rounded-tl-[20px] sm:rounded-tl-[24px] p-4 sm:p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.28)] flex flex-col justify-between gap-3 transition-transform duration-500 group-hover:translate-x-[-4px] group-hover:translate-y-[-4px]"
+                >
+                  <div class="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+                    <div>
+                      <p class="text-[11px] sm:text-[12px] font-semibold text-[#4b5563] uppercase tracking-wider">
+                        Student Scoring &amp; Achievements
+                      </p>
+                      <h4 class="text-[#111827] text-[19px] sm:text-[23px] md:text-[26px] font-bold tracking-[-0.02em] mt-0.5">
+                        Level 6 · 2,540 Total Points
+                      </h4>
+                    </div>
+                    <div
+                      class="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#f3f6f4] border border-black/[0.06] text-left sm:text-right"
+                    >
+                      <p class="text-[10px] sm:text-[11px] font-mono text-[#4b5563]">FLOOR(SQRT(pts/100))+1</p>
+                      <p class="text-[12px] sm:text-[13px] font-bold text-[#15733f]">Top 3% in Faculty</p>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 my-1 sm:my-2">
+                    <div class="rounded-xl bg-[#f8faf9] border border-gray-200/80 p-2.5 sm:p-3 flex items-center gap-2 sm:gap-2.5">
+                      <div
+                        class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#d3fb52] text-[#14151c] flex items-center justify-center shrink-0"
+                      >
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                          <path d="M4 22h16"></path>
+                          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                        </svg>
+                      </div>
+                      <div class="overflow-hidden">
+                        <p class="text-[11.5px] sm:text-[12px] font-bold text-[#111827] truncate">Team Pioneer</p>
+                        <p class="text-[10px] sm:text-[10.5px] text-[#6b7280] truncate">3+ Projects</p>
+                      </div>
+                    </div>
+
+                    <div class="rounded-xl bg-[#f8faf9] border border-gray-200/80 p-2.5 sm:p-3 flex items-center gap-2 sm:gap-2.5">
+                      <div
+                        class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#15733f] text-white flex items-center justify-center shrink-0"
+                      >
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+                          <path d="m9 12 2 2 4-4"></path>
+                        </svg>
+                      </div>
+                      <div class="overflow-hidden">
+                        <p class="text-[11.5px] sm:text-[12px] font-bold text-[#111827] truncate">Verified Attendee</p>
+                        <p class="text-[10px] sm:text-[10.5px] text-[#6b7280] truncate">10+ Sessions</p>
+                      </div>
+                    </div>
+
+                    <div class="hidden sm:flex rounded-xl bg-[#f8faf9] border border-gray-200/80 p-3 items-center gap-2.5">
+                      <div class="w-9 h-9 rounded-lg bg-[#111827] text-[#d3fb52] flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                        </svg>
+                      </div>
+                      <div class="overflow-hidden">
+                        <p class="text-[12px] font-bold text-[#111827] truncate">Skill Master</p>
+                        <p class="text-[10.5px] text-[#6b7280] truncate">5+ Verified Skills</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="border-t border-gray-100 pt-2.5 sm:pt-3 flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between gap-2 text-[11.5px] sm:text-[12.5px]">
+                      <span class="font-medium text-[#111827] flex items-center gap-1.5 truncate">
+                        <svg
+                          class="w-3.5 h-3.5 text-[#15733f] shrink-0"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="9" cy="7" r="4"></circle>
+                          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span class="truncate">Completed Task: API Architecture &amp; ERD</span>
+                      </span>
+                      <span class="font-mono font-semibold text-[#16a34a] shrink-0">+250 pts</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 text-[11.5px] sm:text-[12.5px]">
+                      <span class="font-medium text-[#111827] flex items-center gap-1.5 truncate">
+                        <svg
+                          class="w-3.5 h-3.5 text-[#15733f] shrink-0"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="m9 12 2 2 4-4"></path>
+                        </svg>
+                        <span class="truncate">Attended Workshop: Cloud &amp; AI Session</span>
+                      </span>
+                      <span class="font-mono font-semibold text-[#16a34a] shrink-0">+100 pts</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SECTION 4: FOOTER SECTION
+           ===================================================================== -->
+      <footer
+        id="footer-section"
+        class="relative z-20 bg-[#14151c] pt-12 sm:pt-16 md:pt-24 pb-12 sm:pb-16 md:pb-24 px-4 sm:px-6 md:px-12 overflow-x-hidden select-none"
+      >
+        <div class="max-w-[1220px] mx-auto">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 sm:gap-12 lg:gap-8 pb-10 sm:pb-14 md:pb-20">
+            <!-- Left Column: Tagline (Smooth Left -> Right Reveal) -->
+            <div id="footer-left-col" class="lg:col-span-5 footer-left-reveal-ltr">
+              <h2
+                class="text-white text-[28px] sm:text-[38px] md:text-[44px] font-normal tracking-[-0.025em] leading-[1.14]"
+                style="font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif"
+              >
+                The collaboration network
+                <br />
+                for university students
+              </h2>
+            </div>
+
+            <!-- Right Column: Static Plain Text Columns -->
+            <div id="footer-right-col" class="lg:col-span-7 footer-right-reveal">
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 sm:gap-x-10 gap-y-8 sm:gap-y-12 text-left">
+                <!-- Column 1 -->
+                <div class="flex flex-col gap-8 sm:gap-12">
+                  <div>
+                    <div class="text-[#8e929b] text-[13.5px] sm:text-[14.5px] font-normal mb-3 sm:mb-4">Students</div>
+                    <ul class="space-y-2.5 sm:space-y-3.5 text-white text-[14px] sm:text-[15px] font-normal">
+                      <li>Find teammates</li>
+                      <li>Explore projects</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <div class="text-[#8e929b] text-[13.5px] sm:text-[14.5px] font-normal mb-3 sm:mb-4">
+                      TeamUp Scoring
+                    </div>
+                    <ul class="space-y-2.5 sm:space-y-3.5 text-white text-[14px] sm:text-[15px] font-normal">
+                      <li>Immutable score ledger</li>
+                      <li>Proficiency levels</li>
+                      <li>Achievement badges</li>
+                      <li>Campus leaderboards</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Column 2 -->
+                <div class="flex flex-col gap-8 sm:gap-12">
+                  <div>
+                    <div class="text-[#8e929b] text-[13.5px] sm:text-[14.5px] font-normal mb-3 sm:mb-4">
+                      Student Activities
+                    </div>
+                    <ul class="space-y-2.5 sm:space-y-3.5 text-white text-[14px] sm:text-[15px] font-normal">
+                      <li>Clubs &amp; societies</li>
+                      <li>Recruitment tracks</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <div class="text-[#8e929b] text-[13.5px] sm:text-[14.5px] font-normal mb-3 sm:mb-4">
+                      Events &amp; Workshops
+                    </div>
+                    <ul class="space-y-2.5 sm:space-y-3.5 text-white text-[14px] sm:text-[15px] font-normal">
+                      <li>Multi-session bootcamps</li>
+                      <li>QR &amp; RFID verification</li>
+                      <li>Host an event</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Column 3 -->
+                <div class="grid grid-cols-2 sm:flex sm:flex-col gap-6 sm:gap-12 col-span-2 sm:col-span-1">
+                  <div>
+                    <div class="text-[#8e929b] text-[13.5px] sm:text-[14.5px] font-normal mb-3 sm:mb-4">Platform</div>
+                    <ul class="space-y-2.5 sm:space-y-3.5 text-white text-[14px] sm:text-[15px] font-normal">
+                      <li>About TeamUp</li>
+                      <li>University network</li>
+                      <li>Project task boards</li>
+                      <li>Skill profiles</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <div class="text-[#8e929b] text-[13.5px] sm:text-[14.5px] font-normal mb-3 sm:mb-4">Support</div>
+                    <ul class="space-y-2.5 sm:space-y-3.5 text-white text-[14px] sm:text-[15px] font-normal">
+                      <li>Student help center</li>
+                      <li>Contact</li>
+                      <li>Academic integrity</li>
+                      <li>Privacy choices</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Giant Full-Width Brand Wordmark (One-Shot Burst Animation) -->
+        <div class="w-full flex justify-center items-center py-4 sm:py-6 md:py-10 px-4 sm:px-8 md:px-14">
+          <div
+            id="footer-brand-burst"
+            class="relative inline-flex items-baseline justify-center text-[#d3fb52] font-black italic tracking-[0.02em] sm:tracking-[0.03em] leading-[1.15] text-center whitespace-nowrap scale-x-[1.14] sm:scale-x-[1.24] origin-center pr-[0.08em]"
+            style="
+              font-family: 'Barlow Condensed', sans-serif;
+              font-size: clamp(3.1rem, 18.2vw, 18.2rem);
+            "
+          >
+            <span class="relative inline-block burst-letter" style="animation-delay: 0ms">T</span>
+            <span class="relative inline-block burst-letter" style="animation-delay: 70ms">e</span>
+            <span class="relative inline-block burst-letter" style="animation-delay: 140ms">a</span>
+            <span class="relative inline-block burst-letter" style="animation-delay: 210ms">m</span>
+            <span class="relative inline-block burst-letter" style="animation-delay: 280ms">U</span>
+            <span class="relative inline-block burst-letter" style="animation-delay: 350ms">
+              p
+              <span
+                class="burst-rays absolute -top-[10%] left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-3"
+                style="animation-delay: 480ms"
+                aria-hidden="true"
+              >
+                <span class="w-1 sm:w-1.5 md:w-2 h-3.5 sm:h-5 md:h-7 bg-[#d3fb52] rounded-full -rotate-35 origin-bottom"></span>
+                <span class="w-1 sm:w-1.5 md:w-2 h-4 sm:h-6 md:h-8 bg-[#d3fb52] rounded-full -translate-y-1"></span>
+                <span class="w-1 sm:w-1.5 md:w-2 h-3.5 sm:h-5 md:h-7 bg-[#d3fb52] rounded-full rotate-35 origin-bottom"></span>
+              </span>
+            </span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- =====================================================================
+         SELF-CONTAINED VANILLA JAVASCRIPT (No external build required)
+         ===================================================================== -->
+    <script>
+      (function () {
+        const NAV_OPTIONS = [
+          {
+            id: 'team-formation',
+            label: 'Team Formation',
+            subOptions: [
+              'Create a Project',
+              'Publish Required Skills',
+              'Search for Teammates',
+              'Build Collaborative Teams',
+              'Project Applications',
+              'Project Tasks Board',
+            ],
+          },
+          {
+            id: 'profiles-scoring',
+            label: 'Profiles & Scoring',
+            subOptions: [
+              'Student Profile & Bio',
+              'Skills & Proficiency',
+              'Achievements & Contributions',
+              'Verified Participation',
+              'Score Transactions Ledger',
+            ],
+          },
+          {
+            id: 'student-activities',
+            label: 'Student Activities',
+            subOptions: [
+              'Organizations Directory',
+              'Showcase Activities',
+              'Recruitment Opportunities',
+              'Membership Applications',
+              'Organization Members',
+            ],
+          },
+          {
+            id: 'events-workshops',
+            label: 'Events & Workshops',
+            subOptions: [
+              'Discover University Events',
+              'Register for Workshops',
+              'Participate in Competitions',
+              'Event Sessions Schedule',
+              'Verify Attendance Check-In',
+            ],
+          },
+          {
+            id: 'gamification',
+            label: 'Gamification',
+            subOptions: [
+              'Points & Level System',
+              'Badges & Achievements',
+              'Campus Leaderboards',
+              'Badge Unlock Criteria',
+              'Notifications Inbox',
+            ],
+          },
+        ];
+
+        const SEARCH_SUGGESTIONS = [
+          'Find teammates with Frontend, AI, or UI/UX skills for your project',
+          'Discover student organizations and apply for recruitment opportunities',
+          'Register for university workshops, competitions, and event sessions',
+          'Build your student profile, verify participation, and unlock badges',
+        ];
+
+        const QUICK_FILTER_TAGS = [
+          {
+            id: 'team-formation',
+            label: 'Team Formation',
+            sampleQuery: 'Find teammates with Frontend, AI, or UI/UX skills for your project',
+          },
+          {
+            id: 'student-activities',
+            label: 'Student Activities',
+            sampleQuery: 'Discover student organizations and apply for recruitment opportunities',
+          },
+          {
+            id: 'events-workshops',
+            label: 'Events & Workshops',
+            sampleQuery: 'Register for university workshops, competitions, and event sessions',
+          },
+          {
+            id: 'profiles-gamification',
+            label: 'Skills & Leaderboards',
+            sampleQuery: 'Build your student profile, verify participation, and unlock badges',
+          },
+        ];
+
+        const PLATFORM_SERVICES = [
+          {
+            id: 'team-formation',
+            title: 'Team Formation & Projects',
+            subtitleMetric: 'Up to +250 pts / project',
+            tagsLine: 'Create Projects · Publish Skills · Find Teammates · Task Board',
+          },
+          {
+            id: 'student-profiles',
+            title: 'Student Profiles & Scoring',
+            subtitleMetric: 'Verified Skill Portfolio',
+            tagsLine: 'First Year · Sophomores · Juniors · Seniors · Graduates',
+          },
+          {
+            id: 'student-activities',
+            title: 'Student Activities Hub',
+            subtitleMetric: '50+ Campus Organizations',
+            tagsLine: 'Clubs Directory · Recruitment · Join Requests · Active Roles',
+          },
+          {
+            id: 'events-workshops',
+            title: 'Events & Workshops',
+            subtitleMetric: 'Up to +100 pts / workshop',
+            tagsLine: 'University Events · Workshops · Competitions · Multi-Session',
+          },
+          {
+            id: 'attendance-verification',
+            title: 'Attendance Verification',
+            subtitleMetric: 'Instant Session Check-In',
+            tagsLine: 'QR Code Scan · RFID Verification · Manual Check-In · Capacity',
+          },
+          {
+            id: 'gamification-engine',
+            title: 'Gamification & Leaderboards',
+            subtitleMetric: 'Points, Levels & Badges',
+            tagsLine: 'Score Ledger · Level Formula · Unlock Badges · Smart Inbox',
+          },
+        ];
+
+        const ARROW_UP_RIGHT_SVG =
+          '<svg class="w-4 h-4 stroke-[2.2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>';
+
+        // State
+        let activeMenuId = null;
+        let pinnedMenuId = null;
+        let selectedSubOption = null;
+        let isScrolled = false;
+        let closeMenuTimer = null;
+
+        const primaryNav = document.getElementById('primary-nav');
+        const glidingPillEl = document.getElementById('nav-gliding-pill');
+        const headerInner = document.getElementById('header-inner');
+        const brandWordmark = document.getElementById('brand-wordmark');
+        const brandIconScrolled = document.getElementById('brand-icon-scrolled');
+        const headerRightSpacer = document.getElementById('header-right-spacer');
+        const navItemMap = {};
+
+        function getCurrentOpenId() {
+          return pinnedMenuId || activeMenuId;
+        }
+
+        function clearCloseTimer() {
+          if (closeMenuTimer) {
+            clearTimeout(closeMenuTimer);
+            closeMenuTimer = null;
+          }
+        }
+
+        // Build Navigation Items
+        NAV_OPTIONS.forEach((option, index) => {
+          const isRightSideOption = index >= 3;
+          const wrapper = document.createElement('div');
+          wrapper.className = 'relative z-10 animate-nav-item';
+          wrapper.style.animationDelay = index * 45 + 'ms';
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = option.label;
+          btn.className =
+            'nav-option-btn px-2.5 py-1.5 sm:px-3.5 sm:py-2 lg:px-4 lg:py-2.5 rounded-[10px] sm:rounded-[11px] text-[13px] sm:text-[14px] lg:text-[15px] font-medium tracking-[-0.01em] whitespace-nowrap transition-colors duration-200 ease-out cursor-pointer text-white hover:text-[#d3fb52]';
+
+          const bridge = document.createElement('div');
+          bridge.className = 'hidden absolute -left-3 -right-3 h-4 top-full';
+
+          const dropdown = document.createElement('div');
+          dropdown.setAttribute('role', 'menu');
+          dropdown.className =
+            'hidden animate-dropdown fixed left-4 right-4 top-[128px] sm:absolute sm:top-[calc(100%+10px)] ' +
+            (isRightSideOption
+              ? 'sm:right-0 sm:left-auto lg:left-0 lg:right-auto'
+              : 'sm:left-0 sm:right-auto') +
+            ' sm:min-w-[265px] bg-white rounded-[16px] py-3 px-2.5 shadow-[0_24px_54px_-10px_rgba(8,18,20,0.48)] border border-[#d3fb52]/40 z-[100]';
+
+          const ul = document.createElement('ul');
+          ul.className = 'flex flex-col gap-1';
+
+          option.subOptions.forEach((subItem, subIdx) => {
+            const li = document.createElement('li');
+            li.className = 'animate-sub-item';
+            li.style.animationDelay = subIdx * 20 + 'ms';
+
+            const subBtn = document.createElement('button');
+            subBtn.type = 'button';
+            subBtn.dataset.subKey = option.id + ':' + subItem;
+            subBtn.className =
+              'sub-option-btn group/sub w-full text-left px-4 py-2.5 rounded-[10px] text-[14.5px] sm:text-[15px] leading-snug tracking-[-0.01em] transition-all duration-200 ease-out cursor-pointer flex items-center justify-between text-[#141a1f] font-normal hover:bg-[#d3fb52] hover:text-[#14151c] hover:font-medium hover:translate-x-1.5 hover:shadow-[0_6px_16px_rgba(211,251,82,0.35)]';
+            subBtn.innerHTML =
+              '<span>' +
+              subItem +
+              '</span><span class="opacity-0 -translate-x-1 group-hover/sub:opacity-100 group-hover/sub:translate-x-0 transition-all duration-200 text-[#14151c] shrink-0">' +
+              ARROW_UP_RIGHT_SVG +
+              '</span>';
+
+            subBtn.addEventListener('click', function () {
+              selectedSubOption = option.id + ':' + subItem;
+              const servicesEl = document.getElementById('services');
+              if (servicesEl) servicesEl.scrollIntoView({ behavior: 'smooth' });
+              pinnedMenuId = null;
+              activeMenuId = null;
+              syncNavUI();
+            });
+
+            li.appendChild(subBtn);
+            ul.appendChild(li);
+          });
+
+          dropdown.appendChild(ul);
+          wrapper.appendChild(btn);
+          wrapper.appendChild(bridge);
+          wrapper.appendChild(dropdown);
+
+          wrapper.addEventListener('mouseenter', function () {
+            clearCloseTimer();
+            if (!pinnedMenuId) {
+              activeMenuId = option.id;
+            } else {
+              pinnedMenuId = option.id;
+              activeMenuId = option.id;
+            }
+            syncNavUI();
+          });
+
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            clearCloseTimer();
+            if (pinnedMenuId === option.id) {
+              pinnedMenuId = null;
+              activeMenuId = null;
+            } else {
+              pinnedMenuId = option.id;
+              activeMenuId = option.id;
+            }
+            syncNavUI();
+          });
+
+          dropdown.addEventListener('mouseenter', function () {
+            clearCloseTimer();
+          });
+
+          dropdown.addEventListener('mouseleave', function () {
+            if (pinnedMenuId) return;
+            clearCloseTimer();
+            closeMenuTimer = setTimeout(function () {
+              activeMenuId = null;
+              syncNavUI();
+            }, 380);
+          });
+
+          primaryNav.appendChild(wrapper);
+          navItemMap[option.id] = { wrapper, btn, bridge, dropdown };
+        });
+
+        primaryNav.addEventListener('mouseleave', function () {
+          if (pinnedMenuId) return;
+          clearCloseTimer();
+          closeMenuTimer = setTimeout(function () {
+            activeMenuId = null;
+            syncNavUI();
+          }, 380);
+        });
+
+        document.addEventListener('click', function () {
+          clearCloseTimer();
+          if (pinnedMenuId || activeMenuId) {
+            pinnedMenuId = null;
+            activeMenuId = null;
+            syncNavUI();
+          }
+        });
+
+        function syncNavUI() {
+          const openId = getCurrentOpenId();
+
+          // Update Gliding Pill
+          if (!openId || !navItemMap[openId]) {
+            glidingPillEl.style.opacity = '0';
+          } else {
+            const el = navItemMap[openId].wrapper;
+            glidingPillEl.style.transform =
+              'translate3d(' + el.offsetLeft + 'px, ' + el.offsetTop + 'px, 0)';
+            glidingPillEl.style.width = el.offsetWidth + 'px';
+            glidingPillEl.style.height = el.offsetHeight + 'px';
+            glidingPillEl.style.opacity = '1';
+          }
+
+          if (isScrolled) {
+            glidingPillEl.className =
+              'nav-gliding-pill absolute left-0 top-0 rounded-[10px] sm:rounded-[11px] pointer-events-none bg-[#d3fb52] shadow-[0_6px_18px_rgba(211,251,82,0.45)]';
+          } else {
+            glidingPillEl.className =
+              'nav-gliding-pill absolute left-0 top-0 rounded-[10px] sm:rounded-[11px] pointer-events-none bg-[#d3fb52]/20 border border-[#d3fb52]/60 shadow-[0_8px_24px_rgba(211,251,82,0.22)] backdrop-blur-[4px]';
+          }
+
+          NAV_OPTIONS.forEach((opt, index) => {
+            const item = navItemMap[opt.id];
+            const isOpen = openId === opt.id;
+            const isRightSideOption = index >= 3;
+
+            if (isScrolled) {
+              item.btn.className =
+                'nav-option-btn px-2.5 py-1.5 sm:px-3.5 sm:py-2 lg:px-4 lg:py-2.5 rounded-[10px] sm:rounded-[11px] text-[13px] sm:text-[14px] lg:text-[15px] font-medium tracking-[-0.01em] whitespace-nowrap transition-colors duration-200 ease-out cursor-pointer ' +
+                (isOpen ? 'text-[#14151c] font-semibold' : 'text-[#181e24]');
+            } else {
+              item.btn.className =
+                'nav-option-btn px-2.5 py-1.5 sm:px-3.5 sm:py-2 lg:px-4 lg:py-2.5 rounded-[10px] sm:rounded-[11px] text-[13px] sm:text-[14px] lg:text-[15px] font-medium tracking-[-0.01em] whitespace-nowrap transition-colors duration-200 ease-out cursor-pointer ' +
+                (isOpen ? 'text-[#d3fb52] font-semibold' : 'text-white hover:text-[#d3fb52]');
+            }
+
+            if (isOpen) {
+              item.bridge.className = 'hidden sm:block absolute -left-3 -right-3 h-4 top-full';
+              item.dropdown.className =
+                'block animate-dropdown fixed left-4 right-4 ' +
+                (isScrolled ? 'top-[96px]' : 'top-[128px]') +
+                ' sm:absolute sm:top-[calc(100%+10px)] ' +
+                (isRightSideOption
+                  ? 'sm:right-0 sm:left-auto lg:left-0 lg:right-auto'
+                  : 'sm:left-0 sm:right-auto') +
+                ' sm:min-w-[265px] bg-white rounded-[16px] py-3 px-2.5 shadow-[0_24px_54px_-10px_rgba(8,18,20,0.48)] border border-[#d3fb52]/40 z-[100]';
+            } else {
+              item.bridge.className = 'hidden';
+              item.dropdown.className = 'hidden';
+            }
+          });
+        }
+
+        // Scroll Morphing Header
+        function handleWindowScroll() {
+          const nextScrolled = window.scrollY > 90;
+          if (nextScrolled !== isScrolled) {
+            isScrolled = nextScrolled;
+            if (isScrolled) {
+              headerInner.className =
+                'mx-auto transition-all duration-300 ease-out pointer-events-auto max-w-[1120px] bg-white rounded-[18px] sm:rounded-[20px] px-2.5 sm:px-3.5 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.45)] border border-black/[0.06] flex items-center justify-between gap-2';
+              brandWordmark.classList.add('hidden');
+              brandIconScrolled.classList.remove('hidden');
+              brandIconScrolled.classList.add('flex');
+              headerRightSpacer.className = 'hidden lg:block w-11';
+            } else {
+              headerInner.className =
+                'mx-auto transition-all duration-300 ease-out pointer-events-auto max-w-[1440px] pt-1 sm:pt-2 px-1 sm:px-2 flex flex-col lg:grid lg:grid-cols-[1fr_auto_1fr] items-center gap-2 lg:gap-0';
+              brandWordmark.classList.remove('hidden');
+              brandIconScrolled.classList.add('hidden');
+              brandIconScrolled.classList.remove('flex');
+            }
+            syncNavUI();
+          }
+        }
+        window.addEventListener('scroll', handleWindowScroll, { passive: true });
+        window.addEventListener('resize', syncNavUI);
+
+        // Typewriter & Search Bar Logic
+        const searchBarContainer = document.getElementById('search-bar-container');
+        const searchIconBtn = document.getElementById('search-icon-btn');
+        const searchSubmitBtn = document.getElementById('search-submit-btn');
+        const typewriterDisplay = document.getElementById('typewriter-display');
+        const typewriterTextEl = document.getElementById('typewriter-text');
+        const manualSearchInput = document.getElementById('manual-search-input');
+        const quickFiltersContainer = document.getElementById('quick-filters-container');
+
+        let typedText = '';
+        let phraseIndex = 0;
+        let phase = 'typing';
+        let isUserEditing = false;
+        let activeQuickTag = null;
+        let typewriterTimer = null;
+
+        function setSimulatingClick(active) {
+          if (active) {
+            searchBarContainer.classList.add('ring-4', 'ring-[#d3fb52]/55', 'scale-[0.996]');
+            searchIconBtn.className =
+              'relative w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer is-simulating-click click-ripple-effect bg-[#eef5ea] text-[#1c3b35]';
+            searchSubmitBtn.className =
+              'relative w-[42px] h-[42px] sm:w-[52px] sm:h-[52px] rounded-[13px] sm:rounded-[15px] flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer is-simulating-click click-ripple-effect bg-[#d3fb52] text-[#14221e] shadow-md';
+          } else {
+            searchBarContainer.classList.remove('ring-4', 'ring-[#d3fb52]/55', 'scale-[0.996]');
+            searchIconBtn.className =
+              'relative w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer text-[#12181c] hover:bg-black/[0.04]';
+            searchSubmitBtn.className =
+              'relative w-[42px] h-[42px] sm:w-[52px] sm:h-[52px] rounded-[13px] sm:rounded-[15px] flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer bg-[#e7e8eb] text-[#686f77] hover:bg-[#dadce0] hover:text-[#141a1f]';
+          }
+        }
+
+        function triggerManualSearchPulse() {
+          setSimulatingClick(false);
+          setTimeout(function () {
+            setSimulatingClick(true);
+            setTimeout(function () {
+              setSimulatingClick(false);
+            }, 450);
+          }, 10);
+        }
+
+        function stepTypewriter() {
+          if (isUserEditing) return;
+          const currentPhrase = SEARCH_SUGGESTIONS[phraseIndex];
+
+          if (phase === 'typing') {
+            if (typedText.length < currentPhrase.length) {
+              typedText = currentPhrase.slice(0, typedText.length + 1);
+              typewriterTextEl.textContent = typedText;
+              typewriterTimer = setTimeout(stepTypewriter, 58);
+            } else {
+              typewriterTimer = setTimeout(function () {
+                phase = 'clicking';
+                setSimulatingClick(true);
+                stepTypewriter();
+              }, 650);
+            }
+          } else if (phase === 'clicking') {
+            typewriterTimer = setTimeout(function () {
+              setSimulatingClick(false);
+              phase = 'holding';
+              stepTypewriter();
+            }, 480);
+          } else if (phase === 'holding') {
+            typewriterTimer = setTimeout(function () {
+              phase = 'deleting';
+              stepTypewriter();
+            }, 2200);
+          } else if (phase === 'deleting') {
+            if (typedText.length > 0) {
+              typedText = typedText.slice(0, typedText.length - 1);
+              typewriterTextEl.textContent = typedText;
+              typewriterTimer = setTimeout(stepTypewriter, 28);
+            } else {
+              typewriterTimer = setTimeout(function () {
+                phraseIndex = (phraseIndex + 1) % SEARCH_SUGGESTIONS.length;
+                phase = 'typing';
+                stepTypewriter();
+              }, 400);
+            }
+          }
+        }
+        stepTypewriter();
+
+        searchBarContainer.addEventListener('click', function () {
+          if (!isUserEditing) {
+            isUserEditing = true;
+            clearTimeout(typewriterTimer);
+            typewriterDisplay.classList.add('hidden');
+            manualSearchInput.classList.remove('hidden');
+            manualSearchInput.value = '';
+            manualSearchInput.focus();
+          }
+        });
+
+        manualSearchInput.addEventListener('blur', function () {
+          if (!manualSearchInput.value.trim()) {
+            isUserEditing = false;
+            manualSearchInput.classList.add('hidden');
+            typewriterDisplay.classList.remove('hidden');
+            stepTypewriter();
+          }
+        });
+
+        manualSearchInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            triggerManualSearchPulse();
+          }
+        });
+
+        searchIconBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          triggerManualSearchPulse();
+        });
+
+        searchSubmitBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          triggerManualSearchPulse();
+        });
+
+        // Build Quick Filter Chips
+        const quickFilterBtns = {};
+        QUICK_FILTER_TAGS.forEach((tag, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = tag.label;
+          btn.style.animationDelay = 480 + idx * 55 + 'ms';
+          btn.className =
+            'animate-chip-item px-3.5 py-2.5 sm:px-5 sm:py-3 rounded-[11px] sm:rounded-[12px] text-[13.5px] sm:text-[15px] font-medium tracking-[-0.01em] text-white border transition-all duration-200 ease-out cursor-pointer bg-black/[0.12] border-white/20 hover:bg-white/[0.15] hover:border-white/40 hover:-translate-y-0.5 active:scale-95';
+
+          btn.addEventListener('click', function () {
+            activeQuickTag = tag.id;
+            Object.keys(quickFilterBtns).forEach((k) => {
+              quickFilterBtns[k].className =
+                'animate-chip-item px-3.5 py-2.5 sm:px-5 sm:py-3 rounded-[11px] sm:rounded-[12px] text-[13.5px] sm:text-[15px] font-medium tracking-[-0.01em] text-white border transition-all duration-200 ease-out cursor-pointer ' +
+                (k === activeQuickTag
+                  ? 'bg-white/[0.2] border-[#d3fb52]/80 shadow-[0_6px_20px_rgba(0,0,0,0.18)] -translate-y-0.5'
+                  : 'bg-black/[0.12] border-white/20 hover:bg-white/[0.15] hover:border-white/40 hover:-translate-y-0.5 active:scale-95');
+            });
+
+            isUserEditing = false;
+            manualSearchInput.classList.add('hidden');
+            typewriterDisplay.classList.remove('hidden');
+            clearTimeout(typewriterTimer);
+            typedText = tag.sampleQuery;
+            typewriterTextEl.textContent = typedText;
+            phase = 'clicking';
+            setSimulatingClick(true);
+            stepTypewriter();
+          });
+
+          quickFiltersContainer.appendChild(btn);
+          quickFilterBtns[tag.id] = btn;
+        });
+
+        // Spotlight Mouse Move Helper
+        function attachSpotlight(el) {
+          el.addEventListener('mousemove', function (e) {
+            const rect = el.getBoundingClientRect();
+            el.style.setProperty('--mouse-x', e.clientX - rect.left + 'px');
+            el.style.setProperty('--mouse-y', e.clientY - rect.top + 'px');
+          });
+        }
+
+        // Build Section 2: 6 Service Cards
+        const servicesGrid = document.getElementById('services-grid');
+        const serviceCardEls = [];
+        PLATFORM_SERVICES.forEach((service, index) => {
+          const card = document.createElement('div');
+          card.style.transitionDelay = 120 + index * 75 + 'ms';
+          card.className =
+            'service-card group p-6 sm:p-8 md:p-9 min-h-[200px] sm:min-h-[235px] flex flex-col justify-between cursor-pointer opacity-0 translate-y-10';
+          card.innerHTML =
+            '<div class="relative z-10 flex items-start justify-between gap-4">' +
+            '<div>' +
+            '<h3 class="text-white text-[20px] sm:text-[22px] md:text-[24px] font-medium tracking-[-0.015em] leading-snug group-hover:text-[#d3fb52] transition-colors duration-300">' +
+            service.title +
+            '</h3>' +
+            '<p class="mt-1.5 text-[#9ca3af] text-[16px] sm:text-[18px] font-normal tracking-[-0.01em]">' +
+            service.subtitleMetric +
+            '</p>' +
+            '</div>' +
+            '<span class="w-9 h-9 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/40 group-hover:text-[#14151c] group-hover:bg-[#d3fb52] group-hover:border-[#d3fb52] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 shrink-0">' +
+            ARROW_UP_RIGHT_SVG +
+            '</span>' +
+            '</div>' +
+            '<div class="relative z-10 pt-8 sm:pt-10">' +
+            '<p class="text-white text-[13.5px] sm:text-[14.5px] font-medium tracking-[-0.01em] leading-relaxed group-hover:text-white/95">' +
+            service.tagsLine +
+            '</p>' +
+            '</div>';
+          attachSpotlight(card);
+          servicesGrid.appendChild(card);
+          serviceCardEls.push(card);
+        });
+
+        // Build Infinite Marquee Tiles (2 copies for seamless loop)
+        const marqueeTrack = document.getElementById('marquee-track');
+        let acmRects = '';
+        for (let i = 0; i < 16; i++) {
+          acmRects +=
+            '<rect x="30.2" y="4" width="3.6" height="19" rx="1.8" transform="rotate(' +
+            i * 22.5 +
+            ' 32 32)" />';
+        }
+
+        const MARQUEE_TILES_HTML = [
+          // Tile 1: Campus Guilds
+          '<div class="relative z-10 flex items-center gap-2 text-[#9d9fa7] group-hover:text-[#d3fb52] transition-colors duration-300">' +
+            '<svg class="w-12 h-14 shrink-0" viewBox="0 0 64 72" fill="currentColor"><path d="M36 6c3.5-4.2 9.5-3.2 11 1.5 1.2 3.8-2.8 8.2-11 12.5-8.2-4.3-12.2-8.7-11-12.5 1.5-4.7 7.5-5.7 11-1.5z"/><path d="M28 22c-11 0-19 7.5-19 17.5 0 7.2 4.6 13.1 11.4 15.2-5.8 1.8-9.4 5.6-9.4 10.3 0 6.8 7.6 11.5 18.5 11.5s18.5-4.7 18.5-11.5c0-6.2-5.4-10.2-14.5-11.2v-6.3h8.5v-8h-16v12.8c-4.2-1.2-7-4.8-7-9.8 0-5.8 4.4-10 10.5-10 4.5 0 8.2 2.4 9.6 6.2l8.2-3.4C44.8 27 37.4 22 28 22zm1.5 34.5c5.2 0 8.8 2 8.8 5s-3.6 5-8.8 5-8.8-2-8.8-5 3.6-5 8.8-5z"/></svg>' +
+            '<div class="flex flex-col text-left leading-[1.08] font-bold text-[15px] tracking-[-0.02em]"><span>Campus</span><span>Guilds</span></div></div>',
+          // Tile 2: IEEE · CS
+          '<div class="relative z-10 text-[#9d9fa7] group-hover:text-[#d3fb52] transition-colors duration-300 flex items-center justify-center">' +
+            '<svg class="w-36 sm:w-40 h-16" viewBox="0 0 220 84" fill="currentColor"><path d="M110 10L210 42L110 74L10 42L110 10Z"/><text x="110" y="51" text-anchor="middle" fill="#1c1e26" font-family="\'Plus Jakarta Sans\', sans-serif" font-weight="900" font-size="27" letter-spacing="-1">IEEE · CS</text></svg></div>',
+          // Tile 3: Robotics & AI Lab
+          '<div class="relative z-10 text-[#9d9fa7] group-hover:text-[#d3fb52] transition-colors duration-300 flex items-center justify-center">' +
+            '<svg class="w-32 sm:w-36 h-20" viewBox="0 0 200 100" fill="currentColor"><polygon points="16,12 184,12 146,88 16,88"/><text x="32" y="39" fill="#1c1e26" font-family="\'Plus Jakarta Sans\', sans-serif" font-weight="800" font-style="italic" font-size="19">Robotics</text><text x="32" y="59" fill="#1c1e26" font-family="\'Plus Jakarta Sans\', sans-serif" font-weight="800" font-style="italic" font-size="19">&amp; AI Lab</text><text x="32" y="79" fill="#1c1e26" font-family="\'Plus Jakarta Sans\', sans-serif" font-weight="800" font-style="italic" font-size="19">Chapter</text></svg></div>',
+          // Tile 4: Eng & CS
+          '<div class="relative z-10 flex items-center gap-2.5 text-[#9d9fa7] group-hover:text-[#d3fb52] transition-colors duration-300 px-4">' +
+            '<svg class="w-8 h-10 shrink-0" viewBox="0 0 44 52" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 6h36v20c0 13-18 22-18 22S4 39 4 26V6z"/><path d="M4 16h36M14 6v10M30 6v10"/><path d="M12 24l10 10 10-10" stroke-width="3"/></svg>' +
+            '<span class="text-[20px] font-normal tracking-[-0.02em] whitespace-nowrap" style="font-family: Georgia, serif">Eng &amp; CS</span></div>',
+          // Tile 5: ENACTUS campus
+          '<div class="relative z-10 flex flex-col items-center justify-center text-[#9d9fa7] group-hover:text-[#d3fb52] transition-colors duration-300 leading-none">' +
+            '<span class="text-[22px] font-extrabold tracking-[0.06em] uppercase">ENACTUS</span>' +
+            '<span class="text-[24px] font-light tracking-[0.04em] lowercase -mt-0.5">campus</span></div>',
+          // Tile 6: ACM Student Chapter
+          '<div class="relative z-10 flex flex-col items-center justify-center text-[#9d9fa7] group-hover:text-[#d3fb52] transition-colors duration-300">' +
+            '<svg class="w-12 h-12 mb-2" viewBox="0 0 64 64" fill="currentColor">' +
+            acmRects +
+            '</svg>' +
+            '<span class="text-[14px] font-bold tracking-[-0.01em] leading-tight">ACM Student</span>' +
+            '<span class="text-[14px] font-bold tracking-[-0.01em] leading-tight">Chapter</span></div>',
+          // Tile 7: GDG Cloud University
+          '<div class="relative z-10 flex flex-col items-center justify-center text-[#9d9fa7] group-hover:text-[#d3fb52] transition-colors duration-300 leading-none">' +
+            '<span class="text-[21px] font-black tracking-[0.05em] uppercase">GDG CLOUD</span>' +
+            '<span class="text-[18px] font-normal tracking-[0.08em] uppercase mt-1 opacity-80">UNIVERSITY</span></div>',
+        ];
+
+        for (let copy = 0; copy < 2; copy++) {
+          const group = document.createElement('div');
+          group.className = 'flex items-center shrink-0';
+          if (copy === 1) group.setAttribute('aria-hidden', 'true');
+
+          MARQUEE_TILES_HTML.forEach((innerHtml) => {
+            const tile = document.createElement('div');
+            tile.className = 'marquee-tile group';
+            tile.innerHTML =
+              '<span class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/35 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 group-hover:text-[#14151c] group-hover:bg-[#d3fb52] group-hover:border-[#d3fb52] transition-all duration-300">' +
+              ARROW_UP_RIGHT_SVG +
+              '</span>' +
+              innerHtml;
+            attachSpotlight(tile);
+            group.appendChild(tile);
+          });
+
+          marqueeTrack.appendChild(group);
+        }
+
+        // IntersectionObserver for Section 2, Section 3 Rows, and Section 4 Footer (One-Time Reveal)
+        const servicesSection = document.getElementById('services');
+        const servicesHeading = document.getElementById('services-heading');
+        const footerSection = document.getElementById('footer-section');
+        const footerLeftCol = document.getElementById('footer-left-col');
+        const footerRightCol = document.getElementById('footer-right-col');
+        const footerBrandBurst = document.getElementById('footer-brand-burst');
+        const showcaseRows = document.querySelectorAll('.showcase-row');
+
+        const observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting) return;
+
+              if (entry.target === servicesSection) {
+                servicesHeading.classList.remove('opacity-0', 'translate-y-8');
+                servicesHeading.classList.add('opacity-100', 'translate-y-0');
+                serviceCardEls.forEach(function (c) {
+                  c.classList.remove('opacity-0', 'translate-y-10');
+                  c.classList.add('opacity-100', 'translate-y-0');
+                });
+                observer.unobserve(entry.target);
+              } else if (entry.target === footerSection) {
+                footerLeftCol.classList.add('is-visible');
+                footerRightCol.classList.add('is-visible');
+                footerBrandBurst.classList.add('is-burst-visible');
+                observer.unobserve(entry.target);
+              } else if (entry.target.classList.contains('showcase-row')) {
+                const visual = entry.target.querySelector('.showcase-visual-reveal');
+                const text = entry.target.querySelector('.showcase-text-reveal-rtl');
+                if (visual) visual.classList.add('is-visible');
+                if (text) text.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.15 }
+        );
+
+        if (servicesSection) observer.observe(servicesSection);
+        if (footerSection) observer.observe(footerSection);
+        showcaseRows.forEach(function (row) {
+          observer.observe(row);
+        });
+      })();
+    </script>
+  </body>
+</html>

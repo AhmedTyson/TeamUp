@@ -11,6 +11,7 @@
 | Dimension | Specification |
 |---|---|
 | **Backend Framework** | .NET 10 / ASP.NET Core Web API / C# 13 (`Nullable=enable`, `TreatWarningsAsErrors=true`) |
+| **Frontend Web App** | Standalone HTML5 / Tailwind CSS / Vanilla JS (`frontend/index.html`) with liquid lime nav |
 | **Architecture** | Clean Architecture / DDD Bounded Contexts / CQRS / N-Tier Modular Monolith |
 | **Database & ORM** | Microsoft SQL Server 2022 · Entity Framework Core 10 · 23 Tables · 29 Foreign Keys |
 | **Integrity Rules** | **Zero Cascades** (`ON DELETE NO ACTION`) · Single-Column Soft Delete (`DeletedAt`) · Filtered Unique Indexes |
@@ -95,6 +96,8 @@ TeamUp Documentation Home (wiki/Home.md)
 
 | Documentation Guide | Corresponding Repository Source |
 |---|---|
+| Frontend Web App | [`frontend/index.html`](../frontend/index.html) |
+| Brand Assets & Logo | [`assets/logo.svg`](../assets/logo.svg) · [`assets/icon.svg`](../assets/icon.svg) |
 | Database ERD | [`ERD/description.md`](../ERD/description.md) · [`ERD/TeamUp-Chen-ERD.png`](../ERD/TeamUp-Chen-ERD.png) |
 | Relational Schema | [`Mapping/description.md`](../Mapping/description.md) · [`Mapping/TeamUp-Relational-Mapping.png`](../Mapping/TeamUp-Relational-Mapping.png) |
 | Architecture & SOLID | [`docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md`](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md) |
