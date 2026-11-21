@@ -5,7 +5,7 @@
 > **Sources:**
 > - [docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md)
 > - [docs/architecture/CLEAN-CODE-AUDIT.md](../docs/architecture/CLEAN-CODE-AUDIT.md)
-> - [Directory.Build.props](../Directory.Build.props)
+> - [backend/Directory.Build.props](../backend/Directory.Build.props)
 > - [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 ---

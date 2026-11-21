@@ -3,7 +3,7 @@
 > **Technology Stack Reference & Architecture Decision Records** · Framework specifications, package selections, data persistence topology, caching architecture, and performance optimizations.
 
 > **Sources:**
-> - [Directory.Build.props](../Directory.Build.props)
+> - [backend/Directory.Build.props](../backend/Directory.Build.props)
 > - [backend/src/TeamUp.Api/TeamUp.Api.csproj](../backend/src/TeamUp.Api/TeamUp.Api.csproj)
 > - [backend/src/TeamUp.Application/TeamUp.Application.csproj](../backend/src/TeamUp.Application/TeamUp.Application.csproj)
 > - [backend/src/TeamUp.Infrastructure/TeamUp.Infrastructure.csproj](../backend/src/TeamUp.Infrastructure/TeamUp.Infrastructure.csproj)

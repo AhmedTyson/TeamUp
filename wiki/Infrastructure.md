@@ -4,7 +4,7 @@
 
 > **Sources:**
 > - [backend/src/TeamUp.Api/Program.cs](../backend/src/TeamUp.Api/Program.cs)
-> - [Directory.Build.props](../Directory.Build.props)
+> - [backend/Directory.Build.props](../backend/Directory.Build.props)
 > - [.github/workflows](../.github/workflows)
 > - [scripts/test_live_api.ps1](../scripts/test_live_api.ps1)
 
