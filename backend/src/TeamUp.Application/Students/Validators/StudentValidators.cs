@@ -1,4 +1,8 @@
+// Date: 2026-11-21
+// Purpose: FluentValidation rules for student account, portfolio URLs (SSRF/XSS hardened), and interests.
+
 using FluentValidation;
+using TeamUp.Application.Common.Validation;
 
 namespace TeamUp.Application.Students.Validators;
 
@@ -28,21 +32,20 @@ public class UpsertProfileRequestValidator : AbstractValidator<UpsertProfileRequ
             .MaximumLength(1000).WithMessage("Bio must not exceed 1000 characters.");
 
         RuleFor(x => x.PhotoUrl)
-            .Must(BeValidUrl).WithMessage("Photo URL must be a valid HTTP or HTTPS URL.")
+            .MaximumLength(300)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl).WithMessage("Photo URL must be a valid public HTTP or HTTPS URL.")
             .When(x => !string.IsNullOrWhiteSpace(x.PhotoUrl));
 
         RuleFor(x => x.GitHubUrl)
-            .Must(BeValidUrl).WithMessage("GitHub URL must be a valid HTTP or HTTPS URL.")
+            .MaximumLength(200)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl).WithMessage("GitHub URL must be a valid public HTTP or HTTPS URL.")
             .When(x => !string.IsNullOrWhiteSpace(x.GitHubUrl));
 
         RuleFor(x => x.LinkedInUrl)
-            .Must(BeValidUrl).WithMessage("LinkedIn URL must be a valid HTTP or HTTPS URL.")
+            .MaximumLength(200)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl).WithMessage("LinkedIn URL must be a valid public HTTP or HTTPS URL.")
             .When(x => !string.IsNullOrWhiteSpace(x.LinkedInUrl));
     }
-
-    private static bool BeValidUrl(string? url) =>
-        Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
-        (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 }
 
 public class AddInterestRequestValidator : AbstractValidator<AddInterestRequest>

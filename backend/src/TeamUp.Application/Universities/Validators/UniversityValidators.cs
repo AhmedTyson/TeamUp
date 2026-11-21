@@ -1,4 +1,8 @@
+// Date: 2026-11-21
+// Purpose: FluentValidation rules for universities using SSRF/XSS-hardened URL validation (STRIDE THR-T-03).
+
 using FluentValidation;
+using TeamUp.Application.Common.Validation;
 
 namespace TeamUp.Application.Universities.Validators;
 
@@ -19,13 +23,10 @@ public class CreateUniversityRequestValidator : AbstractValidator<CreateUniversi
             .MaximumLength(100).WithMessage("Country must not exceed 100 characters.");
 
         RuleFor(x => x.Website)
-            .Must(BeValidUrl).WithMessage("Website must be a valid HTTP or HTTPS URL.")
+            .MaximumLength(200)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl).WithMessage("Website must be a valid public HTTP or HTTPS URL.")
             .When(x => !string.IsNullOrWhiteSpace(x.Website));
     }
-
-    private static bool BeValidUrl(string? url) =>
-        Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
-        (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 }
 
 public class UpdateUniversityRequestValidator : AbstractValidator<UpdateUniversityRequest>
@@ -45,11 +46,8 @@ public class UpdateUniversityRequestValidator : AbstractValidator<UpdateUniversi
             .MaximumLength(100).WithMessage("Country must not exceed 100 characters.");
 
         RuleFor(x => x.Website)
-            .Must(BeValidUrl).WithMessage("Website must be a valid HTTP or HTTPS URL.")
+            .MaximumLength(200)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl).WithMessage("Website must be a valid public HTTP or HTTPS URL.")
             .When(x => !string.IsNullOrWhiteSpace(x.Website));
     }
-
-    private static bool BeValidUrl(string? url) =>
-        Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
-        (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 }

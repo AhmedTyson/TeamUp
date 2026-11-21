@@ -1,3 +1,6 @@
+// Date: 2026-11-21
+// Purpose: JWT signing service issuing short-lived HMAC-SHA256 access tokens with SecurityStamp and scoped org_admin claims (STRIDE THR-E-01, THR-E-02).
+
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -12,22 +15,42 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options) : IJwtTokenSer
 {
     private readonly JwtOptions _options = options.Value;
 
-    public (string Token, DateTime ExpiresAt) GenerateAccessToken(int studentId, string email, string role, string fullName)
+    public (string Token, DateTime ExpiresAt) GenerateAccessToken(
+        int studentId,
+        string email,
+        string role,
+        string fullName,
+        Guid securityStamp = default,
+        IEnumerable<int>? adminOrganizationIds = null)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expiresAt = DateTime.UtcNow.AddMinutes(_options.AccessTokenMinutes);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, studentId.ToString()),
-            new Claim(ClaimTypes.NameIdentifier, studentId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, email),
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Name, fullName),
-            new Claim(ClaimTypes.Role, role),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Sub, studentId.ToString()),
+            new(ClaimTypes.NameIdentifier, studentId.ToString()),
+            new(JwtRegisteredClaimNames.Email, email),
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.Name, fullName),
+            new(ClaimTypes.Role, role),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
+
+        if (securityStamp != Guid.Empty)
+        {
+            claims.Add(new Claim(TeamUpClaimTypes.SecurityStamp, securityStamp.ToString("D")));
+        }
+
+        if (adminOrganizationIds is not null)
+        {
+            foreach (var orgId in adminOrganizationIds.Distinct())
+            {
+                if (orgId > 0)
+                    claims.Add(new Claim(TeamUpClaimTypes.OrgAdmin, orgId.ToString()));
+            }
+        }
 
         var token = new JwtSecurityToken(
             issuer: _options.Issuer,

@@ -1,4 +1,8 @@
+// Date: 2026-11-21
+// Purpose: FluentValidation rules for organizations and membership applications using SSRF-safe URL validation (STRIDE THR-T-03).
+
 using FluentValidation;
+using TeamUp.Application.Common.Validation;
 
 namespace TeamUp.Application.Organizations.Validators;
 
@@ -9,12 +13,12 @@ public sealed class CreateOrganizationRequestValidator : AbstractValidator<Creat
         RuleFor(x => x.Name).NotEmpty().MaximumLength(120);
         RuleFor(x => x.Description).NotEmpty().MaximumLength(4000);
         RuleFor(x => x.Category).NotEmpty().MaximumLength(50);
-        RuleFor(x => x.LogoUrl).Must(BeValidUrl).When(x => !string.IsNullOrWhiteSpace(x.LogoUrl))
-            .WithMessage("LogoUrl must be a valid HTTP or HTTPS URL.");
+        RuleFor(x => x.LogoUrl)
+            .MaximumLength(300)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl)
+            .When(x => !string.IsNullOrWhiteSpace(x.LogoUrl))
+            .WithMessage("LogoUrl must be a valid public HTTP or HTTPS URL.");
     }
-
-    private static bool BeValidUrl(string? value) => Uri.TryCreate(value, UriKind.Absolute, out var uri)
-        && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 }
 
 public sealed class UpdateOrganizationRequestValidator : AbstractValidator<UpdateOrganizationRequest>
@@ -24,10 +28,11 @@ public sealed class UpdateOrganizationRequestValidator : AbstractValidator<Updat
         RuleFor(x => x.Name).NotEmpty().MaximumLength(120);
         RuleFor(x => x.Description).NotEmpty().MaximumLength(4000);
         RuleFor(x => x.Category).NotEmpty().MaximumLength(50);
-        RuleFor(x => x.LogoUrl).Must(value => Uri.TryCreate(value, UriKind.Absolute, out var uri)
-            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        RuleFor(x => x.LogoUrl)
+            .MaximumLength(300)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl)
             .When(x => !string.IsNullOrWhiteSpace(x.LogoUrl))
-            .WithMessage("LogoUrl must be a valid HTTP or HTTPS URL.");
+            .WithMessage("LogoUrl must be a valid public HTTP or HTTPS URL.");
     }
 }
 
