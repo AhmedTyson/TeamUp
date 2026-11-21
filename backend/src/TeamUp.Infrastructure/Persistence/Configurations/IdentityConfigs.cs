@@ -44,6 +44,8 @@ public class StudentConfig : IEntityTypeConfiguration<Student>
         b.Property(x => x.FirstName).HasMaxLength(50).IsRequired();
         b.Property(x => x.LastName).HasMaxLength(50).IsRequired();
         b.Property(x => x.Role).HasDefaultValue(Domain.Enums.UserRole.Student);
+        b.Property(x => x.SecurityStamp).IsRequired();
+        b.Property(x => x.ShowEmailInDirectory).HasDefaultValue(false);
         b.Property(x => x.RefreshToken).HasMaxLength(256);
         b.Property(x => x.PasswordResetToken).HasMaxLength(256);
         b.HasOne(x => x.Faculty).WithMany(f => f.Students).HasForeignKey(x => x.FacultyId);
@@ -73,5 +75,23 @@ public class StudentProfileConfig : IEntityTypeConfiguration<StudentProfile>
         b.Property(x => x.LinkedInUrl).HasMaxLength(200);
         b.HasOne(x => x.Student).WithOne(s => s.Profile).HasForeignKey<StudentProfile>(x => x.StudentId);
         b.HasIndex(x => x.StudentId).IsUnique().HasFilter(Sql.NotDeleted);
+    }
+}
+
+public class AuditLogConfig : IEntityTypeConfiguration<AuditLog>
+{
+    public void Configure(EntityTypeBuilder<AuditLog> b)
+    {
+        b.HasKey(x => x.AuditLogId);
+        b.Property(x => x.ActorEmail).HasMaxLength(150);
+        b.Property(x => x.Action).HasMaxLength(80).IsRequired();
+        b.Property(x => x.EntityType).HasMaxLength(60).IsRequired();
+        b.Property(x => x.EntityId).HasMaxLength(64).IsRequired();
+        b.Property(x => x.ClientIp).HasMaxLength(64);
+        b.Property(x => x.OccurredAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        b.HasOne(x => x.ActorStudent).WithMany().HasForeignKey(x => x.ActorStudentId).IsRequired(false);
+        b.HasIndex(x => x.OccurredAt);
+        b.HasIndex(x => new { x.EntityType, x.EntityId });
+        b.HasIndex(x => x.ActorStudentId);
     }
 }

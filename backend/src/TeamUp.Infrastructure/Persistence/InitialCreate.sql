@@ -662,3 +662,244 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102223340_AddStudentRefreshToken'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [RefreshToken] nvarchar(256) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102223340_AddStudentRefreshToken'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [RefreshTokenExpiresAt] datetime2 NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261102223340_AddStudentRefreshToken'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261102223340_AddStudentRefreshToken', N'10.0.14');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261103165211_AddPasswordResetToken'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [PasswordResetToken] nvarchar(256) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261103165211_AddPasswordResetToken'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [PasswordResetTokenExpiresAt] datetime2 NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261103165211_AddPasswordResetToken'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261103165211_AddPasswordResetToken', N'10.0.14');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261104180000_AddActivityQueryIndexes'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_Organization_Category_Name] ON [Organization] ([Category], [Name]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261104180000_AddActivityQueryIndexes'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_OrganizationMember_OrganizationId_Role_JoinedAt] ON [OrganizationMember] ([OrganizationId], [Role], [JoinedAt]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261104180000_AddActivityQueryIndexes'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_MembershipApplication_OrganizationId_AppliedAt] ON [MembershipApplication] ([OrganizationId], [AppliedAt]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261104180000_AddActivityQueryIndexes'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_Event_StartDate_Title] ON [Event] ([StartDate], [Title]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261104180000_AddActivityQueryIndexes'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_Event_OrganizationId_StartDate] ON [Event] ([OrganizationId], [StartDate]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261104180000_AddActivityQueryIndexes'
+)
+BEGIN
+    CREATE INDEX [IX_EventRegistration_EventId_Status_RegisteredAt] ON [EventRegistration] ([EventId], [Status], [RegisteredAt]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261104180000_AddActivityQueryIndexes'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_SessionAttendance_SessionId_CheckInTime] ON [SessionAttendance] ([SessionId], [CheckInTime]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261104180000_AddActivityQueryIndexes'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261104180000_AddActivityQueryIndexes', N'10.0.14');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [SecurityStamp] uniqueidentifier NOT NULL DEFAULT (NEWID());
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [ShowEmailInDirectory] bit NOT NULL DEFAULT CAST(0 AS bit);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    ALTER TABLE [SessionAttendance] ADD [RecordedByStudentId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    ALTER TABLE [Project] ADD [RowVersion] rowversion NOT NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    ALTER TABLE [Event] ADD [RowVersion] rowversion NOT NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    CREATE TABLE [AuditLog] (
+        [AuditLogId] int NOT NULL IDENTITY,
+        [ActorStudentId] int NULL,
+        [ActorEmail] nvarchar(150) NULL,
+        [Action] nvarchar(80) NOT NULL,
+        [EntityType] nvarchar(60) NOT NULL,
+        [EntityId] nvarchar(64) NOT NULL,
+        [OldValues] nvarchar(max) NULL,
+        [NewValues] nvarchar(max) NULL,
+        [ClientIp] nvarchar(64) NULL,
+        [OccurredAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
+        CONSTRAINT [PK_AuditLog] PRIMARY KEY ([AuditLogId]),
+        CONSTRAINT [FK_AuditLog_Student_ActorStudentId] FOREIGN KEY ([ActorStudentId]) REFERENCES [Student] ([StudentId]) ON DELETE NO ACTION
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    CREATE INDEX [IX_SessionAttendance_RecordedByStudentId] ON [SessionAttendance] ([RecordedByStudentId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    CREATE INDEX [IX_AuditLog_ActorStudentId] ON [AuditLog] ([ActorStudentId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    CREATE INDEX [IX_AuditLog_EntityType_EntityId] ON [AuditLog] ([EntityType], [EntityId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    CREATE INDEX [IX_AuditLog_OccurredAt] ON [AuditLog] ([OccurredAt]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    ALTER TABLE [SessionAttendance] ADD CONSTRAINT [FK_SessionAttendance_Student_RecordedByStudentId] FOREIGN KEY ([RecordedByStudentId]) REFERENCES [Student] ([StudentId]) ON DELETE NO ACTION;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261121203306_AddStrideSecurityHardening'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261121203306_AddStrideSecurityHardening', N'10.0.14');
+END;
+
+COMMIT;
+GO
+

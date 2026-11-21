@@ -107,7 +107,9 @@ public class SessionAttendanceConfig : IEntityTypeConfiguration<SessionAttendanc
         b.Property(x => x.CheckInTime).HasDefaultValueSql("SYSUTCDATETIME()");
         b.HasOne(x => x.Session).WithMany().HasForeignKey(x => x.SessionId);
         b.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);
+        b.HasOne(x => x.RecordedByStudent).WithMany().HasForeignKey(x => x.RecordedByStudentId).IsRequired(false);
         b.HasIndex(x => x.StudentId);
+        b.HasIndex(x => x.RecordedByStudentId);
         b.HasIndex(x => new { x.SessionId, x.CheckInTime }).HasFilter(Sql.NotDeleted);
     }
 }

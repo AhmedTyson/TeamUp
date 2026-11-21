@@ -12,6 +12,8 @@ public class Student : BaseEntity
     public string LastName { get; set; } = null!;
     public int AcademicYear { get; set; }
     public UserRole Role { get; set; } = UserRole.Student;
+    public Guid SecurityStamp { get; set; } = Guid.NewGuid();
+    public bool ShowEmailInDirectory { get; set; }
     public int FacultyId { get; set; }
     public Faculty Faculty { get; set; } = null!;
     public StudentProfile? Profile { get; set; }

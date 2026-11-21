@@ -37,6 +37,7 @@ public class AppDbContext(
     public DbSet<Badge> Badges => Set<Badge>();
     public DbSet<StudentBadge> StudentBadges => Set<StudentBadge>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

@@ -22,6 +22,62 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("TeamUp.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<int>("AuditLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AuditLogId"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("ActorEmail")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int?>("ActorStudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClientIp")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AuditLogId");
+
+                    b.HasIndex("ActorStudentId");
+
+                    b.HasIndex("OccurredAt");
+
+                    b.HasIndex("EntityType", "EntityId");
+
+                    b.ToTable("AuditLog");
+                });
+
             modelBuilder.Entity("TeamUp.Domain.Entities.Badge", b =>
                 {
                     b.Property<int>("BadgeId")
@@ -98,6 +154,12 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -117,6 +179,12 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("StartDate");
+
+                    b.HasIndex("OrganizationId", "StartDate")
+                        .HasFilter("[DeletedAt] IS NULL");
+
+                    b.HasIndex("StartDate", "Title")
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("Event", t =>
                         {
@@ -155,6 +223,8 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.HasKey("EventId", "StudentId");
 
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("EventId", "Status", "RegisteredAt");
 
                     b.ToTable("EventRegistration", t =>
                         {
@@ -280,6 +350,9 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("StudentId");
 
+                    b.HasIndex("OrganizationId", "AppliedAt")
+                        .HasFilter("[DeletedAt] IS NULL");
+
                     b.HasIndex("OrganizationId", "StudentId")
                         .IsUnique()
                         .HasFilter("[DeletedAt] IS NULL AND [Status] = 'Pending'");
@@ -375,6 +448,9 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[DeletedAt] IS NULL");
 
+                    b.HasIndex("Category", "Name")
+                        .HasFilter("[DeletedAt] IS NULL");
+
                     b.ToTable("Organization");
                 });
 
@@ -402,6 +478,9 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.HasKey("OrganizationId", "StudentId");
 
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("OrganizationId", "Role", "JoinedAt")
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("OrganizationMember");
                 });
@@ -431,6 +510,12 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("MaxTeamSize")
                         .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -676,6 +761,9 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("RecordedByStudentId")
+                        .HasColumnType("int");
+
                     b.Property<string>("VerificationMethod")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -684,7 +772,12 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasKey("SessionId", "StudentId");
 
+                    b.HasIndex("RecordedByStudentId");
+
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("SessionId", "CheckInTime")
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("SessionAttendance", t =>
                         {
@@ -784,6 +877,14 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(30)")
                         .HasDefaultValue("Student");
+
+                    b.Property<Guid>("SecurityStamp")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("ShowEmailInDirectory")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.HasKey("StudentId");
 
@@ -951,6 +1052,16 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("University");
+                });
+
+            modelBuilder.Entity("TeamUp.Domain.Entities.AuditLog", b =>
+                {
+                    b.HasOne("TeamUp.Domain.Entities.Student", "ActorStudent")
+                        .WithMany()
+                        .HasForeignKey("ActorStudentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ActorStudent");
                 });
 
             modelBuilder.Entity("TeamUp.Domain.Entities.Event", b =>
@@ -1153,6 +1264,11 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("TeamUp.Domain.Entities.SessionAttendance", b =>
                 {
+                    b.HasOne("TeamUp.Domain.Entities.Student", "RecordedByStudent")
+                        .WithMany()
+                        .HasForeignKey("RecordedByStudentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("TeamUp.Domain.Entities.EventSession", "Session")
                         .WithMany()
                         .HasForeignKey("SessionId")
@@ -1164,6 +1280,8 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("RecordedByStudent");
 
                     b.Navigation("Session");
 

@@ -9,6 +9,8 @@ public class SessionAttendance : BaseEntity
     public int StudentId { get; set; }
     public DateTime CheckInTime { get; set; } = DateTime.UtcNow;
     public VerificationMethod VerificationMethod { get; set; }
+    public int? RecordedByStudentId { get; set; }
     public EventSession Session { get; set; } = null!;
     public Student Student { get; set; } = null!;
+    public Student? RecordedByStudent { get; set; }
 }

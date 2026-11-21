@@ -33,6 +33,7 @@ public interface IAppDbContext
     DbSet<Badge> Badges { get; }
     DbSet<StudentBadge> StudentBadges { get; }
     DbSet<Notification> Notifications { get; }
+    DbSet<AuditLog> AuditLogs { get; }
 
     DatabaseFacade Database { get; }
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
