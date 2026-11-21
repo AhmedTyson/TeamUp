@@ -45,25 +45,34 @@
 4. **Append-Only Ledgers:**
    - Entities implementing `IAppendOnly` (such as `ScoreTransaction`) can never be modified or deleted. Compensating entries must be written instead.
 5. **Shared Configuration:**
-   - Do NOT edit `AppDbContext.cs` directly for entity-specific mappings. Add an `IEntityTypeConfiguration<T>` in `src/TeamUp.Infrastructure/Persistence/Configurations/`.
+   - Do NOT edit `AppDbContext.cs` directly for entity-specific mappings. Add an `IEntityTypeConfiguration<T>` in `backend/src/TeamUp.Infrastructure/Persistence/Configurations/`.
+6. **API-Only Backend Rule:**
+   - `backend/src/TeamUp.Api` is strictly a JSON REST API (no MVC views or `.cshtml` pages).
+   - Server-side templates (`.cshtml` / HTML) are allowed **only** for transactional emails or reports under `backend/src/TeamUp.Infrastructure/Templates/`.
 
 ---
 
 ## 4. Local Development Commands
 
 ```bash
-# Build with warnings as errors
-dotnet build TeamUp.sln
+# Build backend with warnings as errors
+dotnet build backend/TeamUp.sln
 
-# Run all tests
-dotnet test TeamUp.sln
+# Run all backend tests
+dotnet test backend/TeamUp.sln
 
 # Run API locally
-dotnet run --project src/TeamUp.Api
+dotnet run --project backend/src/TeamUp.Api
 
 # Add a migration (M1 only, or coordinated)
-dotnet ef migrations add <Name> --project src/TeamUp.Infrastructure --startup-project src/TeamUp.Api --output-dir Persistence/Migrations
+dotnet ef migrations add <Name> --project backend/src/TeamUp.Infrastructure --startup-project backend/src/TeamUp.Api --output-dir Persistence/Migrations
 
 # Update local SQL Server database
-dotnet ef database update --project src/TeamUp.Infrastructure --startup-project src/TeamUp.Api
+dotnet ef database update --project backend/src/TeamUp.Infrastructure --startup-project backend/src/TeamUp.Api
+
+# Run React frontend locally (proxies /api to http://localhost:5186)
+cd frontend && npm install && npm run dev
+
+# Run frontend tests and production build
+cd frontend && npm run test && npm run build
 ```

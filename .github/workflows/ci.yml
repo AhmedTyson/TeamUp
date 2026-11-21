@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
-    name: Build & Test (.NET 10)
+  backend-build-and-test:
+    name: Backend Build & Test (.NET 10)
     runs-on: ubuntu-latest
 
     steps:
@@ -21,22 +21,49 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore TeamUp.sln
+        run: dotnet restore backend/TeamUp.sln
 
       - name: Build solution
-        run: dotnet build TeamUp.sln --no-restore --configuration Release
+        run: dotnet build backend/TeamUp.sln --no-restore --configuration Release
 
       - name: Run unit & integration tests
-        run: dotnet test TeamUp.sln --no-build --configuration Release --verbosity normal
+        run: dotnet test backend/TeamUp.sln --no-build --configuration Release --verbosity normal
 
       - name: Install dotnet-ef tool
         run: dotnet tool restore
 
       - name: Verify migration idempotency & zero cascades
         run: |
-          dotnet ef migrations script --project src/TeamUp.Infrastructure --startup-project src/TeamUp.Api -i -o idempotency-check.sql
+          dotnet ef migrations script --project backend/src/TeamUp.Infrastructure --startup-project backend/src/TeamUp.Api -i -o idempotency-check.sql
           if grep -E "ON DELETE CASCADE|ON DELETE SET NULL" idempotency-check.sql; then
             echo "ERROR: Physical cascades or SET NULL detected in generated SQL!"
             exit 1
           fi
           echo "Verified: Zero physical cascades in generated migrations."
+
+  frontend-build-and-test:
+    name: Frontend Build & Test (React + Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend tests
+        run: npm run test
+
+      - name: Type-check & build production bundle
+        run: npm run build
