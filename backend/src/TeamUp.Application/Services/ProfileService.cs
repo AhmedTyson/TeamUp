@@ -1,13 +1,22 @@
+// Date: 2026-11-21
+// Purpose: Student account, extended profile, privacy-filtered directory, and audited soft-delete service (STRIDE THR-I-01, THR-R-01, THR-E-02).
+
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
+using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Common.Security;
 using TeamUp.Application.Students;
 using TeamUp.Domain.Entities;
+using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Services;
 
-public sealed class ProfileService(IAppDbContext db)
+public sealed class ProfileService(
+    IAppDbContext db,
+    ISecurityStampValidator stampValidator,
+    IAuditLogService auditLog)
     : IStudentAccountService, IStudentProfileService, IStudentInterestService
 {
     public async Task<StudentDetailDto> GetMyAccountAsync(int studentId, CancellationToken ct = default)
@@ -30,7 +39,7 @@ public sealed class ProfileService(IAppDbContext db)
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
             student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
-            profileDto, interests);
+            profileDto, interests, student.ShowEmailInDirectory);
     }
 
     public async Task<StudentDetailDto> UpdateMyAccountAsync(int studentId, UpdateStudentRequest req, CancellationToken ct = default)
@@ -47,20 +56,31 @@ public sealed class ProfileService(IAppDbContext db)
         if (req.AcademicYear.HasValue && req.AcademicYear.Value >= 1 && req.AcademicYear.Value <= 7)
             student.AcademicYear = req.AcademicYear.Value;
 
+        if (req.ShowEmailInDirectory.HasValue)
+            student.ShowEmailInDirectory = req.ShowEmailInDirectory.Value;
+
         await db.SaveChangesAsync(ct);
 
         return await GetMyAccountAsync(studentId, ct);
     }
 
-    public async Task<PagedResult<StudentCardDto>> GetStudentsDirectoryAsync(StudentDirectoryQuery query, CancellationToken ct = default)
+    public async Task<PagedResult<StudentCardDto>> GetStudentsDirectoryAsync(
+        StudentDirectoryQuery query,
+        int viewerStudentId = 0,
+        string? viewerRole = null,
+        CancellationToken ct = default)
     {
         var page = query.ToPageRequest();
+        var isAdmin = string.Equals(viewerRole, nameof(UserRole.PlatformAdmin), StringComparison.OrdinalIgnoreCase);
         var dbQuery = db.Students.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var term = query.Search.Trim();
-            dbQuery = dbQuery.Where(s => s.FirstName.Contains(term) || s.LastName.Contains(term) || s.Email.Contains(term));
+            dbQuery = dbQuery.Where(s =>
+                s.FirstName.Contains(term)
+                || s.LastName.Contains(term)
+                || ((isAdmin || s.StudentId == viewerStudentId || s.ShowEmailInDirectory) && s.Email.Contains(term)));
         }
 
         if (query.FacultyId.HasValue)
@@ -80,7 +100,7 @@ public sealed class ProfileService(IAppDbContext db)
                 s.StudentId,
                 s.FirstName,
                 s.LastName,
-                s.Email,
+                isAdmin || s.StudentId == viewerStudentId || s.ShowEmailInDirectory ? s.Email : null,
                 s.AcademicYear,
                 s.Role.ToString(),
                 s.Faculty.FacultyId,
@@ -124,8 +144,11 @@ public sealed class ProfileService(IAppDbContext db)
         var student = await db.Students.FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
             ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
 
+        var snapshot = new { student.StudentId, student.Email, Role = student.Role.ToString() };
+
         student.RefreshToken = null;
         student.RefreshTokenExpiresAt = null;
+        student.SecurityStamp = Guid.NewGuid();
 
         // Clean task assignments for soft-deleted student
         var assignedTasks = await db.ProjectTasks.Where(t => t.AssignedStudentId == studentId).ToListAsync(ct);
@@ -134,8 +157,20 @@ public sealed class ProfileService(IAppDbContext db)
             task.AssignedStudentId = null;
         }
 
+        // Persist security stamp rotation & task unassignment before soft-delete interceptor freezes non-DeletedAt props
+        await db.SaveChangesAsync(ct);
+
         db.Students.Remove(student);
         await db.SaveChangesAsync(ct);
+        stampValidator.Invalidate(studentId);
+
+        await auditLog.RecordAsync(
+            "EntitySoftDeleted",
+            "Student",
+            studentId.ToString(),
+            oldValues: snapshot,
+            newValues: new { DeletedAt = student.DeletedAt },
+            ct: ct);
     }
 
     public async Task<StudentProfileDto> GetExtendedProfileAsync(int studentId, CancellationToken ct = default)
@@ -203,7 +238,7 @@ public sealed class ProfileService(IAppDbContext db)
         {
             if (existing.DeletedAt is not null)
             {
-                existing.DeletedAt = null; // Restore soft-deleted interest
+                existing.DeletedAt = null;
                 await db.SaveChangesAsync(ct);
             }
             return;
@@ -221,7 +256,7 @@ public sealed class ProfileService(IAppDbContext db)
         var item = await db.StudentInterests.FirstOrDefaultAsync(i => i.StudentId == studentId && i.Interest == tag, ct);
         if (item is not null)
         {
-            db.StudentInterests.Remove(item); // Soft delete via interceptor
+            db.StudentInterests.Remove(item);
             await db.SaveChangesAsync(ct);
         }
     }

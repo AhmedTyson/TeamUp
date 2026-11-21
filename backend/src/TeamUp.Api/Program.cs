@@ -1,13 +1,20 @@
+// Date: 2026-11-21
+// Purpose: ASP.NET Core 10 API bootstrap enforcing STRIDE security controls (startup secret validation, proxy hardening, global/tiered rate limiting, SecurityStamp JWT validation, strict CORS, security headers, and health probes).
+
+using System.Net;
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using TeamUp.Api.Middleware;
 using TeamUp.Application;
+using TeamUp.Application.Common.Caching;
+using TeamUp.Application.Common.Models;
+using TeamUp.Application.Common.Security;
 using TeamUp.Domain.Entities;
 using TeamUp.Infrastructure;
 using TeamUp.Infrastructure.Persistence;
@@ -15,14 +22,87 @@ using TeamUp.Infrastructure.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// STRIDE THR-S-02: trust X-Forwarded-For / X-Forwarded-Proto ONLY from explicitly configured proxies/networks.
+// Default loopback proxies are cleared so untrusted callers cannot spoof client IPs to bypass rate limiting.
+builder.Services.AddOptions<ForwardedHeadersOptions>()
+    .Configure<IConfiguration>((options, config) =>
+    {
+        options.KnownProxies.Clear();
+        options.KnownIPNetworks.Clear();
+        options.ForwardLimit = config.GetValue("ForwardedHeaders:ForwardLimit", 1);
+
+        var knownProxies = config.GetSection("ForwardedHeaders:KnownProxies").Get<string[]>() ?? [];
+        foreach (var proxy in knownProxies)
+        {
+            if (IPAddress.TryParse(proxy, out var ip))
+                options.KnownProxies.Add(ip);
+        }
+
+        var knownNetworks = config.GetSection("ForwardedHeaders:KnownNetworks").Get<string[]>() ?? [];
+        foreach (var cidr in knownNetworks)
+        {
+            if (System.Net.IPNetwork.TryParse(cidr, out var network))
+                options.KnownIPNetworks.Add(network);
+        }
+
+        options.ForwardedHeaders = (options.KnownProxies.Count > 0 || options.KnownIPNetworks.Count > 0)
+            ? ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            : ForwardedHeaders.None;
+    });
+
+// STRIDE THR-I-02: strict explicit CORS policy (exact origins, explicit HTTP methods and headers)
+var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+var allowedOrigins = configuredOrigins is { Length: > 0 }
+    ? configuredOrigins
+    : (builder.Environment.IsDevelopment()
+        ? ["http://localhost:5173", "http://localhost:4173"]
+        : []);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                .WithHeaders("Authorization", "Content-Type", "Accept", "X-Requested-With")
+                .AllowCredentials();
+        }
+    });
+});
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IRequestContext, HttpRequestContext>();
+
 builder.Services.AddControllers(options => options.Filters.Add<TeamUp.Api.Filters.ValidationFilter>())
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
-builder.Services.AddOpenApi();
+
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) =>
+    {
+        document.Info.Title = "TeamUp API";
+        document.Info.Version = "v1";
+        document.Info.Description = "TeamUp Student Collaboration, Organizations, Events & Gamification REST API (.NET 10).";
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "Supply a valid JWT access token obtained from POST /api/v1/auth/login."
+        };
+        return Task.CompletedTask;
+    });
+});
+
 builder.Services.AddProblemDetails();
-builder.Services.AddExceptionHandler<TeamUp.Api.Middleware.GlobalExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -31,7 +111,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer();
 
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-    .Configure<Microsoft.Extensions.Options.IOptions<TeamUp.Application.Common.Security.JwtOptions>>((options, jwtOpt) =>
+    .Configure<Microsoft.Extensions.Options.IOptions<JwtOptions>>((options, jwtOpt) =>
     {
         var opt = jwtOpt.Value;
         var key = Encoding.UTF8.GetBytes(opt.Key);
@@ -49,12 +129,42 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
 
         options.Events = new JwtBearerEvents
         {
+            // STRIDE THR-E-02: immediately reject tokens whose SecurityStamp, active status, or role no longer match persistence
+            OnTokenValidated = async context =>
+            {
+                var principal = context.Principal;
+                if (principal is null)
+                {
+                    context.Fail("Invalid token principal.");
+                    return;
+                }
+
+                var studentId = principal.GetStudentId();
+                var tokenStamp = principal.GetSecurityStamp();
+                var tokenRole = principal.GetUserRole();
+
+                if (studentId <= 0 || tokenStamp is null)
+                {
+                    context.Fail("Token is missing required security claims.");
+                    return;
+                }
+
+                var validator = context.HttpContext.RequestServices
+                    .GetRequiredService<TeamUp.Application.Common.Caching.ISecurityStampValidator>();
+                var currentState = await validator.GetActiveStudentStateAsync(studentId, context.HttpContext.RequestAborted);
+                if (currentState is null
+                    || currentState.SecurityStamp != tokenStamp.Value
+                    || !string.Equals(currentState.Role, tokenRole, StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Fail("Session has been revoked or account permissions changed. Please sign in again.");
+                }
+            },
             OnChallenge = async context =>
             {
                 context.HandleResponse();
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/json; charset=utf-8";
-                var payload = TeamUp.Application.Common.Models.BaseResponse.Fail(
+                var payload = BaseResponse.Fail(
                     "Authentication is required. Please supply a valid Bearer token.",
                     StatusCodes.Status401Unauthorized);
                 await context.Response.WriteAsJsonAsync(payload);
@@ -63,7 +173,7 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.ContentType = "application/json; charset=utf-8";
-                var payload = TeamUp.Application.Common.Models.BaseResponse.Fail(
+                var payload = BaseResponse.Fail(
                     "Access denied. You do not have permission to access this resource.",
                     StatusCodes.Status403Forbidden);
                 await context.Response.WriteAsJsonAsync(payload);
@@ -77,26 +187,103 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("OrgAdminOrPlatformAdmin", p => p.RequireRole("OrgAdmin", "PlatformAdmin"));
 });
 
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddPolicy("auth-policy", httpContext =>
+// STRIDE THR-S-02 / THR-D-01 / THR-I-01: global + tiered rate limiting using sanitized RemoteIpAddress ONLY (never raw X-Forwarded-For)
+builder.Services.AddRateLimiter();
+builder.Services.AddOptions<Microsoft.AspNetCore.RateLimiting.RateLimiterOptions>()
+    .Configure<Microsoft.Extensions.Options.IOptions<RateLimitingOptions>>((options, rlOpt) =>
     {
-        var clientIp = httpContext.Connection.RemoteIpAddress?.ToString()
-            ?? httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
-            ?? "anonymous";
+        var rateLimits = rlOpt.Value;
+        var rateWindow = TimeSpan.FromSeconds(Math.Max(1, rateLimits.WindowSeconds));
 
-        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        options.OnRejected = async (context, ct) =>
         {
-            PermitLimit = 60,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0
+            context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            context.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+            if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+            {
+                context.HttpContext.Response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
+            }
+            else
+            {
+                context.HttpContext.Response.Headers.RetryAfter = rateLimits.WindowSeconds.ToString();
+            }
+
+            var payload = BaseResponse.Fail(
+                "Rate limit exceeded. Please slow down and try again shortly.",
+                StatusCodes.Status429TooManyRequests);
+            await context.HttpContext.Response.WriteAsJsonAsync(payload, ct);
+        };
+
+        options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        {
+            if (httpContext.Request.Path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase))
+                return RateLimitPartition.GetNoLimiter("health");
+
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                var studentId = httpContext.User.GetStudentId();
+                var userPartition = studentId > 0 ? $"user:{studentId}" : $"ip:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+                return RateLimitPartition.GetFixedWindowLimiter(userPartition, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = rateLimits.AuthenticatedPermitLimit,
+                    Window = rateWindow,
+                    QueueLimit = 0
+                });
+            }
+
+            var anonIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter($"anon:{anonIp}", _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = rateLimits.AnonymousPermitLimit,
+                Window = rateWindow,
+                QueueLimit = 0
+            });
+        });
+
+        options.AddPolicy("auth-policy", httpContext =>
+        {
+            var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter($"auth:{clientIp}", _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = rateLimits.AuthPermitLimit,
+                Window = rateWindow,
+                QueueLimit = 0
+            });
+        });
+
+        options.AddPolicy("directory-policy", httpContext =>
+        {
+            var studentId = httpContext.User.GetStudentId();
+            var partitionKey = studentId > 0
+                ? $"dir:user:{studentId}"
+                : $"dir:ip:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+            return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = rateLimits.DirectoryPermitLimit,
+                Window = rateWindow,
+                QueueLimit = 0
+            });
         });
     });
-});
 
 var app = builder.Build();
 
+// STRIDE THR-S-01 / THR-S-03 / THR-I-03: fail fast if insecure secrets, email sink, or SQL TLS settings are used outside Development
+var resolvedCs = app.Configuration.GetConnectionString("TeamUpDb")
+    ?? app.Configuration.GetConnectionString("DefaultConnection");
+
+SecurityStartupValidator.Validate(new SecurityStartupSettings(
+    IsDevelopment: app.Environment.IsDevelopment(),
+    IsProduction: app.Environment.IsProduction(),
+    JwtKey: app.Configuration["Jwt:Key"],
+    JwtIssuer: app.Configuration["Jwt:Issuer"],
+    JwtAudience: app.Configuration["Jwt:Audience"],
+    EmailProvider: app.Configuration["Email:Provider"],
+    DatabaseProvider: app.Configuration["DatabaseProvider"],
+    ConnectionString: resolvedCs));
+
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages(async context =>
 {
@@ -113,9 +300,23 @@ app.UseStatusCodePages(async context =>
             429 => "Rate limit exceeded. Please slow down and try again shortly.",
             _ => $"HTTP error {response.StatusCode}."
         };
-        var payload = TeamUp.Application.Common.Models.BaseResponse.Fail(msg, response.StatusCode);
+        var payload = BaseResponse.Fail(msg, response.StatusCode);
         await response.WriteAsJsonAsync(payload);
     }
+});
+
+// Baseline HTTP security headers
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    context.Response.Headers["X-Permitted-Cross-Domain-Policies"] = "none";
+    var isReport = context.Request.Path.Value?.EndsWith("/report", StringComparison.OrdinalIgnoreCase) == true;
+    context.Response.Headers["Content-Security-Policy"] = isReport
+        ? "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'"
+        : "default-src 'none'; frame-ancestors 'none'";
+    await next();
 });
 
 if (app.Environment.IsDevelopment())
@@ -133,13 +334,27 @@ if (app.Environment.IsDevelopment())
         await DbSeeder.SeedAsync(db, hash);
     }
 }
+else
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
+app.UseCors("FrontendPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
+app.MapGet("/health", async (AppDbContext? db, CancellationToken ct) =>
+{
+    if (db is null)
+        return Results.Ok(new { status = "Healthy", database = "NotConfigured" });
+
+    var canConnect = await db.Database.CanConnectAsync(ct);
+    return canConnect
+        ? Results.Ok(new { status = "Healthy", database = "Connected" })
+        : Results.Json(new { status = "Unhealthy", database = "Disconnected" }, statusCode: StatusCodes.Status503ServiceUnavailable);
+});
 
 app.Run();
 

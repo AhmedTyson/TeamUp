@@ -1,3 +1,6 @@
+// Date: 2026-11-21
+// Purpose: Student account, profile, directory query (max 20 page size), and privacy-aware card DTOs (STRIDE THR-I-01).
+
 using TeamUp.Application.Common;
 
 namespace TeamUp.Application.Students;
@@ -19,7 +22,8 @@ public sealed record UpsertProfileRequest(
 public sealed record UpdateStudentRequest(
     string? FirstName,
     string? LastName,
-    int? AcademicYear
+    int? AcademicYear,
+    bool? ShowEmailInDirectory = null
 );
 
 public sealed record StudentDetailDto(
@@ -33,14 +37,15 @@ public sealed record StudentDetailDto(
     string FacultyName,
     string UniversityName,
     StudentProfileDto? Profile,
-    IReadOnlyList<string> Interests
+    IReadOnlyList<string> Interests,
+    bool ShowEmailInDirectory = false
 );
 
 public sealed record StudentCardDto(
     int StudentId,
     string FirstName,
     string LastName,
-    string Email,
+    string? Email,
     int AcademicYear,
     string Role,
     int FacultyId,
@@ -68,7 +73,10 @@ public sealed record StudentDirectoryQuery(
     int PageSize = 20
 )
 {
-    public PageRequest ToPageRequest() => new(Page, PageSize);
+    /// <summary>Aggressive directory page-size cap preventing bulk student roster harvesting (STRIDE THR-I-01).</summary>
+    public const int MaxDirectoryPageSize = 20;
+
+    public PageRequest ToPageRequest() => new(Page, Math.Clamp(PageSize, 1, MaxDirectoryPageSize));
 }
 
 public sealed record AddInterestRequest(

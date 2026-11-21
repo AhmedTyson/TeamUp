@@ -1,3 +1,6 @@
+// Date: 2026-11-21
+// Purpose: Student organizations and membership endpoints with scoped per-organization BOLA authorization (STRIDE THR-T-01, THR-E-01).
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
@@ -26,7 +29,7 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     [ProducesForbidden, ProducesConflict]
     public async Task<IActionResult> CreateOrganization([FromBody] CreateOrganizationRequest request, CancellationToken ct)
     {
-        var result = await organizationService.CreateOrganizationAsync(request, ct);
+        var result = await organizationService.CreateOrganizationAsync(CurrentStudentId, request, ct);
         return CreatedResponse(nameof(GetOrganizationById), new { id = result.OrganizationId }, result, "Organization created successfully.");
     }
 
@@ -39,12 +42,11 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     }
 
     [HttpPatch("{id:int}")]
-    [Authorize(Roles = "OrgAdmin,PlatformAdmin")]
     [ProducesOk<OrganizationDetailDto>]
     [ProducesForbidden, ProducesNotFound, ProducesConflict]
     public async Task<IActionResult> UpdateOrganization([FromRoute] int id, [FromBody] UpdateOrganizationRequest request, CancellationToken ct)
     {
-        var result = await organizationService.UpdateOrganizationAsync(id, request, ct);
+        var result = await organizationService.UpdateOrganizationAsync(id, CurrentStudentId, CurrentUserRole, request, ct);
         return OkResponse(result, "Organization updated successfully.");
     }
 
@@ -66,14 +68,13 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     }
 
     [HttpPatch("{id:int}/members/{studentId:int}")]
-    [Authorize(Roles = "OrgAdmin,PlatformAdmin")]
     [ProducesOk<OrganizationMemberDto>]
     [ProducesForbidden, ProducesNotFound]
     public async Task<IActionResult> UpdateMemberRole(
         [FromRoute] int id, [FromRoute] int studentId,
         [FromBody] UpdateOrganizationMemberRequest request, CancellationToken ct)
     {
-        var result = await organizationService.UpdateMemberRoleAsync(id, studentId, request, ct);
+        var result = await organizationService.UpdateMemberRoleAsync(id, studentId, CurrentStudentId, CurrentUserRole, request, ct);
         return OkResponse(result, "Organization member role updated successfully.");
     }
 
@@ -81,19 +82,15 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     [ProducesNoContent, ProducesForbidden, ProducesNotFound]
     public async Task<IActionResult> RemoveMember([FromRoute] int id, [FromRoute] int studentId, CancellationToken ct)
     {
-        if (CurrentStudentId != studentId && CurrentUserRole is not ("OrgAdmin" or "PlatformAdmin"))
-            return Forbid();
-
-        await organizationService.RemoveMemberAsync(id, studentId, ct);
+        await organizationService.RemoveMemberAsync(id, studentId, CurrentStudentId, CurrentUserRole, ct);
         return NoContentResponse();
     }
 
     [HttpGet("{id:int}/applications")]
-    [Authorize(Roles = "OrgAdmin,PlatformAdmin")]
     [ProducesOk<IReadOnlyList<MembershipApplicationDto>>, ProducesForbidden, ProducesNotFound]
     public async Task<IActionResult> GetApplications([FromRoute] int id, CancellationToken ct)
     {
-        var result = await organizationService.GetApplicationsAsync(id, ct);
+        var result = await organizationService.GetApplicationsAsync(id, CurrentStudentId, CurrentUserRole, ct);
         return OkResponse(result);
     }
 
@@ -108,14 +105,13 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     }
 
     [HttpPatch("{id:int}/applications/{appId:int}")]
-    [Authorize(Roles = "OrgAdmin,PlatformAdmin")]
     [ProducesOk<MembershipApplicationDto>]
     [ProducesForbidden, ProducesNotFound, ProducesConflict]
     public async Task<IActionResult> ReviewApplication(
         [FromRoute] int id, [FromRoute] int appId,
         [FromBody] ReviewMembershipApplicationRequest request, CancellationToken ct)
     {
-        var result = await organizationService.ReviewApplicationAsync(id, appId, request, ct);
+        var result = await organizationService.ReviewApplicationAsync(id, appId, CurrentStudentId, CurrentUserRole, request, ct);
         return OkResponse(result, "Membership application reviewed successfully.");
     }
 

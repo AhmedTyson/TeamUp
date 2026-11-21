@@ -1,3 +1,6 @@
+// Date: 2026-11-21
+// Purpose: Event registration & waitlist cancellation endpoints enforcing organization-scoped authorization (STRIDE THR-T-01, THR-D-02).
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
@@ -12,11 +15,11 @@ namespace TeamUp.Api.Controllers;
 public sealed class EventRegistrationsController(IEventService eventService) : BaseApiController
 {
     [HttpGet]
-    [Authorize(Roles = "OrgAdmin,PlatformAdmin")]
     [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<EventRegistrationDto>>), StatusCodes.Status200OK)]
+    [ProducesForbidden]
     public async Task<IActionResult> GetRegistrations([FromRoute] int id, CancellationToken ct)
     {
-        var result = await eventService.GetRegistrationsAsync(id, ct);
+        var result = await eventService.GetRegistrationsAsync(id, CurrentStudentId, CurrentUserRole, ct);
         return OkResponse(result);
     }
 
@@ -31,13 +34,12 @@ public sealed class EventRegistrationsController(IEventService eventService) : B
     }
 
     [HttpDelete]
+    [ProducesNoContent, ProducesForbidden]
     public async Task<IActionResult> Cancel(
         [FromRoute] int id, [FromQuery] int? studentId, CancellationToken ct)
     {
         var targetStudentId = studentId ?? CurrentStudentId;
-        if (targetStudentId != CurrentStudentId && !User.IsInRole("OrgAdmin") && !User.IsInRole("PlatformAdmin"))
-            return Forbid();
-        await eventService.CancelRegistrationAsync(id, targetStudentId, ct);
+        await eventService.CancelRegistrationAsync(id, targetStudentId, CurrentStudentId, CurrentUserRole, ct);
         return NoContentResponse();
     }
 }

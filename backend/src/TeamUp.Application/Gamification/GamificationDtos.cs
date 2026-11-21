@@ -27,3 +27,14 @@ public sealed record CreateScoreTransactionRequest(
     string Reason,
     ScoreSourceType SourceType = ScoreSourceType.Manual
 );
+
+public sealed record LeaderboardEntryDto(
+    int Rank,
+    int StudentId,
+    string FirstName,
+    string LastName,
+    string FacultyName,
+    string UniversityName,
+    int TotalPoints,
+    int Level
+);

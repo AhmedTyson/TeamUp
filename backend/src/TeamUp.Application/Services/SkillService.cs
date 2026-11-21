@@ -1,15 +1,30 @@
+// Date: 2026-11-21
+// Purpose: Master skills catalog and student skill claims service with IMemoryCache caching and audited soft-delete.
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Common.Security;
 using TeamUp.Application.Skills;
 using TeamUp.Domain.Entities;
 
 namespace TeamUp.Application.Services;
 
-public sealed class SkillService(IAppDbContext db) : ISkillService
+public sealed class SkillService(
+    IAppDbContext db,
+    IMemoryCache cache,
+    IAuditLogService auditLog) : ISkillService
 {
     public async Task<IReadOnlyList<SkillDto>> GetSkillsAsync(string? category, string? search, CancellationToken ct = default)
     {
+        var isUnfiltered = string.IsNullOrWhiteSpace(category) && string.IsNullOrWhiteSpace(search);
+        if (isUnfiltered && cache.TryGetValue(CatalogCacheKeys.MasterSkills, out IReadOnlyList<SkillDto>? cached) && cached is not null)
+        {
+            return cached;
+        }
+
         var query = db.Skills.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(category))
@@ -24,11 +39,16 @@ public sealed class SkillService(IAppDbContext db) : ISkillService
             query = query.Where(s => s.Name.Contains(term) || s.Category.Contains(term));
         }
 
-        return await query
+        var results = await query
             .OrderBy(s => s.Category)
             .ThenBy(s => s.Name)
             .Select(s => new SkillDto(s.SkillId, s.Name, s.Category, s.Description))
             .ToListAsync(ct);
+
+        if (isUnfiltered)
+            cache.Set(CatalogCacheKeys.MasterSkills, results, CatalogCacheKeys.DefaultTtl);
+
+        return results;
     }
 
     public async Task<SkillDto> GetSkillByIdAsync(int id, CancellationToken ct = default)
@@ -49,11 +69,11 @@ public sealed class SkillService(IAppDbContext db) : ISkillService
             if (existing.DeletedAt is null)
                 throw new ConflictException($"A skill named '{name}' already exists in the master catalog.");
 
-            // Restore soft-deleted skill
             existing.DeletedAt = null;
             existing.Category = request.Category.Trim();
             existing.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
             await db.SaveChangesAsync(ct);
+            cache.Remove(CatalogCacheKeys.MasterSkills);
             return new SkillDto(existing.SkillId, existing.Name, existing.Category, existing.Description);
         }
 
@@ -66,6 +86,7 @@ public sealed class SkillService(IAppDbContext db) : ISkillService
 
         db.Skills.Add(skill);
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.MasterSkills);
 
         return new SkillDto(skill.SkillId, skill.Name, skill.Category, skill.Description);
     }
@@ -87,6 +108,7 @@ public sealed class SkillService(IAppDbContext db) : ISkillService
         skill.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
 
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.MasterSkills);
 
         return new SkillDto(skill.SkillId, skill.Name, skill.Category, skill.Description);
     }
@@ -96,8 +118,18 @@ public sealed class SkillService(IAppDbContext db) : ISkillService
         var skill = await db.Skills.FirstOrDefaultAsync(s => s.SkillId == id, ct)
             ?? throw new NotFoundException($"Skill with ID {id} was not found.");
 
+        var name = skill.Name;
         db.Skills.Remove(skill);
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.MasterSkills);
+
+        await auditLog.RecordAsync(
+            "EntitySoftDeleted",
+            "Skill",
+            id.ToString(),
+            oldValues: new { id, Name = name },
+            newValues: new { DeletedAt = skill.DeletedAt },
+            ct: ct);
     }
 
     public async Task<IReadOnlyList<StudentSkillDto>> GetStudentSkillsAsync(int studentId, CancellationToken ct = default)

@@ -1,16 +1,35 @@
+// Date: 2026-11-21
+// Purpose: Event, session, waitlist-locking registration, tenant-scoped attendance with RecordedByStudentId & rotating QR codes, and attendance report service (STRIDE THR-T-01, THR-T-02, THR-R-02, THR-D-02).
+
+using System.Data;
+using System.Net;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Common.Security;
 using TeamUp.Application.Events;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
-using TeamUp.Application.Common.Interfaces;
+using TeamUp.Domain.Events;
 
 namespace TeamUp.Application.Services;
 
-public sealed class EventService(IAppDbContext db) : IEventService
+public sealed class EventService(
+    IAppDbContext db,
+    IOrganizationAuthorizationService orgAuth,
+    IAttendanceCodeService attendanceCodes,
+    ITemplateRenderer templateRenderer) : IEventService
 {
-    public async Task<PagedResult<EventDto>> GetEventsAsync(string? search, int? organizationId, PageRequest page, CancellationToken ct = default)
+    public async Task<PagedResult<EventDto>> GetEventsAsync(
+        string? search,
+        int? organizationId,
+        PageRequest page,
+        EventType? type = null,
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken ct = default)
     {
         var query = db.Events.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(search))
@@ -20,6 +39,12 @@ public sealed class EventService(IAppDbContext db) : IEventService
         }
         if (organizationId.HasValue)
             query = query.Where(x => x.OrganizationId == organizationId.Value);
+        if (type.HasValue)
+            query = query.Where(x => x.Type == type.Value);
+        if (from.HasValue)
+            query = query.Where(x => x.EndDate >= from.Value);
+        if (to.HasValue)
+            query = query.Where(x => x.StartDate <= to.Value);
 
         var total = await query.CountAsync(ct);
         var events = await query.OrderBy(x => x.StartDate).ThenBy(x => x.Title)
@@ -49,8 +74,11 @@ public sealed class EventService(IAppDbContext db) : IEventService
         return ToEventDto(entity, count);
     }
 
-    public async Task<EventDto> CreateEventAsync(CreateEventRequest request, CancellationToken ct = default)
+    public async Task<EventDto> CreateEventAsync(
+        int actorStudentId, string? actorRole, CreateEventRequest request, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageOrganizationAsync(request.OrganizationId, actorStudentId, actorRole, ct);
+
         if (request.EndDate < request.StartDate)
             throw new BadRequestException("Event EndDate must be greater than or equal to StartDate.");
         if (request.Capacity < 1)
@@ -75,8 +103,11 @@ public sealed class EventService(IAppDbContext db) : IEventService
         return ToEventDto(entity, 0);
     }
 
-    public async Task<EventDto> UpdateEventAsync(int id, UpdateEventRequest request, CancellationToken ct = default)
+    public async Task<EventDto> UpdateEventAsync(
+        int id, int actorStudentId, string? actorRole, UpdateEventRequest request, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageEventAsync(id, actorStudentId, actorRole, ct);
+
         if (request.EndDate < request.StartDate)
             throw new BadRequestException("Event EndDate must be greater than or equal to StartDate.");
         if (request.Capacity < 1)
@@ -99,8 +130,10 @@ public sealed class EventService(IAppDbContext db) : IEventService
         return await GetEventByIdAsync(id, ct);
     }
 
-    public async Task DeleteEventAsync(int id, CancellationToken ct = default)
+    public async Task DeleteEventAsync(int id, int actorStudentId, string? actorRole, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageEventAsync(id, actorStudentId, actorRole, ct);
+
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var entity = await db.Events.Include(x => x.Sessions)
             .FirstOrDefaultAsync(x => x.EventId == id, ct)
@@ -122,8 +155,11 @@ public sealed class EventService(IAppDbContext db) : IEventService
             .ToListAsync(ct);
     }
 
-    public async Task<EventSessionDto> CreateSessionAsync(int eventId, CreateEventSessionRequest request, CancellationToken ct = default)
+    public async Task<EventSessionDto> CreateSessionAsync(
+        int eventId, int actorStudentId, string? actorRole, CreateEventSessionRequest request, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageEventAsync(eventId, actorStudentId, actorRole, ct);
+
         var parent = await db.Events.FirstOrDefaultAsync(x => x.EventId == eventId, ct)
             ?? throw new NotFoundException($"Event with ID {eventId} was not found.");
         ValidateSessionWindow(parent, request.StartTime, request.EndTime);
@@ -143,8 +179,11 @@ public sealed class EventService(IAppDbContext db) : IEventService
         return ToSessionDto(session);
     }
 
-    public async Task<EventSessionDto> UpdateSessionAsync(int sessionId, UpdateEventSessionRequest request, CancellationToken ct = default)
+    public async Task<EventSessionDto> UpdateSessionAsync(
+        int sessionId, int actorStudentId, string? actorRole, UpdateEventSessionRequest request, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageSessionAsync(sessionId, actorStudentId, actorRole, ct);
+
         var session = await db.EventSessions.FirstOrDefaultAsync(x => x.SessionId == sessionId, ct)
             ?? throw new NotFoundException($"Session with ID {sessionId} was not found.");
         var parent = await db.Events.FirstOrDefaultAsync(x => x.EventId == session.EventId, ct)
@@ -162,19 +201,21 @@ public sealed class EventService(IAppDbContext db) : IEventService
         return ToSessionDto(session);
     }
 
-    public async Task DeleteSessionAsync(int sessionId, CancellationToken ct = default)
+    public async Task DeleteSessionAsync(int sessionId, int actorStudentId, string? actorRole, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageSessionAsync(sessionId, actorStudentId, actorRole, ct);
+
         var session = await db.EventSessions.FirstOrDefaultAsync(x => x.SessionId == sessionId, ct)
             ?? throw new NotFoundException($"Session with ID {sessionId} was not found.");
         db.EventSessions.Remove(session);
         await db.SaveChangesAsync(ct);
     }
 
-
-    public async Task<IReadOnlyList<EventRegistrationDto>> GetRegistrationsAsync(int eventId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<EventRegistrationDto>> GetRegistrationsAsync(
+        int eventId, int actorStudentId, string? actorRole, CancellationToken ct = default)
     {
-        if (!await db.Events.AnyAsync(x => x.EventId == eventId, ct))
-            throw new NotFoundException($"Event with ID {eventId} was not found.");
+        await orgAuth.EnsureCanManageEventAsync(eventId, actorStudentId, actorRole, ct);
+
         return await db.EventRegistrations.AsNoTracking()
             .Where(x => x.EventId == eventId && x.Status != RegistrationStatus.Cancelled)
             .OrderBy(x => x.Status).ThenBy(x => x.RegisteredAt)
@@ -185,8 +226,8 @@ public sealed class EventService(IAppDbContext db) : IEventService
 
     public async Task<EventRegistrationDto> RegisterAsync(int eventId, int studentId, CancellationToken ct = default)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct);
-        var eventEntity = await db.Events.FirstOrDefaultAsync(x => x.EventId == eventId, ct)
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        var eventEntity = await LoadEventWithRowLockAsync(eventId, ct)
             ?? throw new NotFoundException($"Event with ID {eventId} was not found.");
         var student = await db.Students.FirstOrDefaultAsync(x => x.StudentId == studentId, ct)
             ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
@@ -225,11 +266,19 @@ public sealed class EventService(IAppDbContext db) : IEventService
             student.Email, existing.RegisteredAt, existing.Status);
     }
 
-    public async Task CancelRegistrationAsync(int eventId, int studentId, CancellationToken ct = default)
+    public async Task CancelRegistrationAsync(
+        int eventId, int targetStudentId, int actorStudentId, string? actorRole, CancellationToken ct = default)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        if (targetStudentId != actorStudentId)
+            await orgAuth.EnsureCanManageEventAsync(eventId, actorStudentId, actorRole, ct);
+
+        // STRIDE THR-D-02: Serializable transaction + explicit SQL Server UPDLOCK/ROWLOCK preventing waitlist race conditions
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        var eventEntity = await LoadEventWithRowLockAsync(eventId, ct)
+            ?? throw new NotFoundException($"Event with ID {eventId} was not found.");
+
         var registration = await db.EventRegistrations.FirstOrDefaultAsync(
-            x => x.EventId == eventId && x.StudentId == studentId, ct)
+            x => x.EventId == eventId && x.StudentId == targetStudentId, ct)
             ?? throw new NotFoundException("Event registration was not found.");
         if (registration.Status == RegistrationStatus.Cancelled)
             throw new ConflictException("This event registration has already been cancelled.");
@@ -244,61 +293,213 @@ public sealed class EventService(IAppDbContext db) : IEventService
                 .OrderBy(x => x.RegisteredAt)
                 .FirstOrDefaultAsync(ct);
             if (next is not null)
+            {
                 next.Status = RegistrationStatus.Confirmed;
+                next.AddDomainEvent(new WaitlistPromotedDomainEvent(eventId, next.StudentId, eventEntity.Title));
+            }
         }
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
     }
 
-    public async Task<IReadOnlyList<SessionAttendanceDto>> GetAttendanceAsync(int sessionId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<SessionAttendanceDto>> GetAttendanceAsync(
+        int sessionId, int actorStudentId, string? actorRole, CancellationToken ct = default)
     {
-        if (!await db.EventSessions.AnyAsync(x => x.SessionId == sessionId, ct))
-            throw new NotFoundException($"Session with ID {sessionId} was not found.");
+        await orgAuth.EnsureCanManageSessionAsync(sessionId, actorStudentId, actorRole, ct);
+
         return await db.SessionAttendances.AsNoTracking()
             .Where(x => x.SessionId == sessionId)
             .OrderBy(x => x.CheckInTime)
-            .Select(x => new SessionAttendanceDto(x.SessionId, x.StudentId,
-                x.Student.FirstName, x.Student.LastName, x.CheckInTime, x.VerificationMethod))
+            .Select(x => new SessionAttendanceDto(
+                x.SessionId,
+                x.StudentId,
+                x.Student.FirstName,
+                x.Student.LastName,
+                x.CheckInTime,
+                x.VerificationMethod,
+                x.RecordedByStudentId))
             .ToListAsync(ct);
     }
 
-    public async Task<SessionAttendanceDto> CheckInAsync(int sessionId, CreateAttendanceRequest request, CancellationToken ct = default)
+    public async Task<SessionCheckInCodeDto> GenerateCheckInCodeAsync(
+        int sessionId, int actorStudentId, string? actorRole, CancellationToken ct = default)
     {
-        if (!Enum.IsDefined(request.VerificationMethod))
-            throw new BadRequestException("Invalid attendance verification method.");
-        var sessionExists = await db.EventSessions.AnyAsync(x => x.SessionId == sessionId, ct);
-        if (!sessionExists)
-            throw new NotFoundException($"Session with ID {sessionId} was not found.");
-        var student = await db.Students.FirstOrDefaultAsync(x => x.StudentId == request.StudentId, ct)
-            ?? throw new NotFoundException($"Student with ID {request.StudentId} was not found.");
-        var session = await db.EventSessions.FirstAsync(x => x.SessionId == sessionId, ct);
-        var isRegistered = await db.EventRegistrations.AnyAsync(x => x.EventId == session.EventId
-            && x.StudentId == request.StudentId && x.Status == RegistrationStatus.Confirmed, ct);
-        if (!isRegistered)
-            throw new BadRequestException("Only students with a confirmed event registration can check in.");
-        if (await db.SessionAttendances.IgnoreQueryFilters().AnyAsync(x => x.SessionId == sessionId && x.StudentId == request.StudentId, ct))
-            throw new ConflictException("The student has already checked in to this session.");
-
-        var attendance = new SessionAttendance
-        {
-            SessionId = sessionId,
-            StudentId = request.StudentId,
-            CheckInTime = DateTime.UtcNow,
-            VerificationMethod = request.VerificationMethod
-        };
-        db.SessionAttendances.Add(attendance);
-        await db.SaveChangesAsync(ct);
-        return new SessionAttendanceDto(sessionId, request.StudentId, student.FirstName,
-            student.LastName, attendance.CheckInTime, attendance.VerificationMethod);
+        await orgAuth.EnsureCanManageSessionAsync(sessionId, actorStudentId, actorRole, ct);
+        var (code, expiresAt) = attendanceCodes.GenerateCode(sessionId);
+        return new SessionCheckInCodeDto(sessionId, code, expiresAt);
     }
 
-    public async Task RevokeAttendanceAsync(int sessionId, int studentId, CancellationToken ct = default)
+    public async Task<SessionAttendanceDto> CheckInAsync(
+        int sessionId, int actorStudentId, string? actorRole, CreateAttendanceRequest request, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageSessionAsync(sessionId, actorStudentId, actorRole, ct);
+
+        if (!Enum.IsDefined(request.VerificationMethod))
+            throw new BadRequestException("Invalid attendance verification method.");
+
+        // STRIDE THR-T-02: Validate dynamic rotating check-in code whenever supplied for QR check-in
+        if (request.VerificationMethod == VerificationMethod.QRCode
+            && !string.IsNullOrWhiteSpace(request.VerificationCode)
+            && !attendanceCodes.ValidateCode(sessionId, request.VerificationCode))
+        {
+            throw new BadRequestException("Invalid or expired session QR check-in code.");
+        }
+
+        return await RecordAttendanceCoreAsync(
+            sessionId,
+            request.StudentId,
+            request.VerificationMethod,
+            recordedByStudentId: actorStudentId > 0 ? actorStudentId : null,
+            ct);
+    }
+
+    public async Task<SessionAttendanceDto> SelfCheckInAsync(
+        int sessionId, int studentId, string verificationCode, CancellationToken ct = default)
+    {
+        if (!await db.EventSessions.AsNoTracking().AnyAsync(s => s.SessionId == sessionId, ct))
+            throw new NotFoundException($"Session with ID {sessionId} was not found.");
+
+        if (!attendanceCodes.ValidateCode(sessionId, verificationCode))
+            throw new BadRequestException("Invalid or expired session check-in code.");
+
+        return await RecordAttendanceCoreAsync(
+            sessionId,
+            studentId,
+            VerificationMethod.QRCode,
+            recordedByStudentId: studentId,
+            ct);
+    }
+
+    public async Task RevokeAttendanceAsync(
+        int sessionId, int studentId, int actorStudentId, string? actorRole, CancellationToken ct = default)
+    {
+        await orgAuth.EnsureCanManageSessionAsync(sessionId, actorStudentId, actorRole, ct);
+
         var attendance = await db.SessionAttendances.FirstOrDefaultAsync(
             x => x.SessionId == sessionId && x.StudentId == studentId, ct)
             ?? throw new NotFoundException("Session attendance record was not found.");
         db.SessionAttendances.Remove(attendance);
         await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<string> RenderAttendanceReportHtmlAsync(
+        int sessionId, int actorStudentId, string? actorRole, CancellationToken ct = default)
+    {
+        await orgAuth.EnsureCanManageSessionAsync(sessionId, actorStudentId, actorRole, ct);
+
+        var session = await db.EventSessions.AsNoTracking()
+            .Include(s => s.Event)
+            .ThenInclude(e => e.Organization)
+            .FirstOrDefaultAsync(s => s.SessionId == sessionId, ct)
+            ?? throw new NotFoundException($"Session with ID {sessionId} was not found.");
+
+        var attendees = await db.SessionAttendances.AsNoTracking()
+            .Where(a => a.SessionId == sessionId)
+            .OrderBy(a => a.CheckInTime)
+            .Select(a => new
+            {
+                a.StudentId,
+                FullName = a.Student.FirstName + " " + a.Student.LastName,
+                a.VerificationMethod,
+                a.CheckInTime,
+                a.RecordedByStudentId
+            })
+            .ToListAsync(ct);
+
+        var confirmedCount = await db.EventRegistrations.AsNoTracking()
+            .CountAsync(r => r.EventId == session.EventId && r.Status == RegistrationStatus.Confirmed, ct);
+
+        var rows = new StringBuilder();
+        if (attendees.Count == 0)
+        {
+            rows.Append("<tr><td colspan=\"5\">No attendance records yet.</td></tr>");
+        }
+        else
+        {
+            foreach (var row in attendees)
+            {
+                rows.Append("<tr>")
+                    .Append($"<td>{row.StudentId}</td>")
+                    .Append($"<td>{WebUtility.HtmlEncode(row.FullName)}</td>")
+                    .Append($"<td>{WebUtility.HtmlEncode(row.VerificationMethod.ToString())}</td>")
+                    .Append($"<td>{WebUtility.HtmlEncode(row.CheckInTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'"))}</td>")
+                    .Append($"<td>{(row.RecordedByStudentId.HasValue ? row.RecordedByStudentId.Value.ToString() : "—")}</td>")
+                    .Append("</tr>");
+            }
+        }
+
+        var values = new Dictionary<string, string>
+        {
+            ["OrganizationName"] = WebUtility.HtmlEncode(session.Event.Organization.Name),
+            ["EventTitle"] = WebUtility.HtmlEncode(session.Event.Title),
+            ["SessionTitle"] = WebUtility.HtmlEncode($"#{session.SessionNo} — {session.Title}"),
+            ["Room"] = WebUtility.HtmlEncode(session.Room ?? session.Event.Location),
+            ["SessionWindow"] = WebUtility.HtmlEncode($"{session.StartTime:yyyy-MM-dd HH:mm} – {session.EndTime:HH:mm} UTC"),
+            ["CheckedInCount"] = attendees.Count.ToString(),
+            ["ConfirmedCount"] = confirmedCount.ToString(),
+            ["GeneratedAtUtc"] = WebUtility.HtmlEncode(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss 'UTC'")),
+            ["AttendanceRows"] = rows.ToString()
+        };
+
+        return await templateRenderer.RenderReportAsync("SessionAttendanceReport.html", values, ct);
+    }
+
+    private async Task<SessionAttendanceDto> RecordAttendanceCoreAsync(
+        int sessionId,
+        int studentId,
+        VerificationMethod verificationMethod,
+        int? recordedByStudentId,
+        CancellationToken ct)
+    {
+        var session = await db.EventSessions.FirstOrDefaultAsync(x => x.SessionId == sessionId, ct)
+            ?? throw new NotFoundException($"Session with ID {sessionId} was not found.");
+        var student = await db.Students.FirstOrDefaultAsync(x => x.StudentId == studentId, ct)
+            ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
+        var isRegistered = await db.EventRegistrations.AnyAsync(x => x.EventId == session.EventId
+            && x.StudentId == studentId && x.Status == RegistrationStatus.Confirmed, ct);
+        if (!isRegistered)
+            throw new BadRequestException("Only students with a confirmed event registration can check in.");
+        if (await db.SessionAttendances.IgnoreQueryFilters().AnyAsync(x => x.SessionId == sessionId && x.StudentId == studentId, ct))
+            throw new ConflictException("The student has already checked in to this session.");
+
+        // Ensure RecordedByStudentId satisfies FK if provided
+        int? safeRecorderId = null;
+        if (recordedByStudentId is > 0 && await db.Students.AnyAsync(s => s.StudentId == recordedByStudentId.Value, ct))
+            safeRecorderId = recordedByStudentId.Value;
+
+        var attendance = new SessionAttendance
+        {
+            SessionId = sessionId,
+            StudentId = studentId,
+            CheckInTime = DateTime.UtcNow,
+            VerificationMethod = verificationMethod,
+            RecordedByStudentId = safeRecorderId
+        };
+        attendance.AddDomainEvent(new SessionAttendedDomainEvent(sessionId, session.EventId, studentId, session.Title));
+
+        db.SessionAttendances.Add(attendance);
+        await db.SaveChangesAsync(ct);
+
+        return new SessionAttendanceDto(
+            sessionId,
+            studentId,
+            student.FirstName,
+            student.LastName,
+            attendance.CheckInTime,
+            attendance.VerificationMethod,
+            attendance.RecordedByStudentId);
+    }
+
+    private async Task<Event?> LoadEventWithRowLockAsync(int eventId, CancellationToken ct)
+    {
+        if (db.Database.ProviderName?.Contains("SqlServer", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return await db.Events
+                .FromSqlInterpolated($"SELECT * FROM [Event] WITH (UPDLOCK, ROWLOCK) WHERE [EventId] = {eventId} AND [DeletedAt] IS NULL")
+                .FirstOrDefaultAsync(ct);
+        }
+
+        return await db.Events.FirstOrDefaultAsync(x => x.EventId == eventId, ct);
     }
 
     private static void ValidateSessionWindow(Event parent, DateTime start, DateTime end)

@@ -1,14 +1,20 @@
+// Date: 2026-11-21
+// Purpose: Append-only gamification scoring ledger service with level math, ranked leaderboard, and manual-adjustment audit logging.
+
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Common.Security;
 using TeamUp.Application.Gamification;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Services;
 
-public sealed class GamificationService(IAppDbContext db) : IGamificationService
+public sealed class GamificationService(
+    IAppDbContext db,
+    IAuditLogService? auditLog = null) : IGamificationService
 {
     public StudentScoreDto CalculateLevelMetrics(int studentId, int totalPoints)
     {
@@ -91,6 +97,16 @@ public sealed class GamificationService(IAppDbContext db) : IGamificationService
         db.ScoreTransactions.Add(tx);
         await db.SaveChangesAsync(ct);
 
+        if (sourceType == ScoreSourceType.Manual && auditLog is not null)
+        {
+            await auditLog.RecordAsync(
+                "ManualScoreAdjusted",
+                "ScoreTransaction",
+                tx.TransactionId.ToString(),
+                newValues: new { studentId, points, tx.Reason, SourceType = sourceType.ToString() },
+                ct: ct);
+        }
+
         return new ScoreTransactionDto(
             tx.TransactionId,
             tx.StudentId,
@@ -98,5 +114,51 @@ public sealed class GamificationService(IAppDbContext db) : IGamificationService
             tx.Reason,
             tx.SourceType,
             tx.CreatedAt);
+    }
+
+    public async Task<PagedResult<LeaderboardEntryDto>> GetLeaderboardAsync(PageRequest page, CancellationToken ct = default)
+    {
+        var safePageSize = Math.Clamp(page.PageSize, 1, 50);
+        var safePage = Math.Max(1, page.Page);
+        var skip = (safePage - 1) * safePageSize;
+
+        var total = await db.Students.AsNoTracking().CountAsync(ct);
+
+        var scored = await db.Students
+            .AsNoTracking()
+            .Select(s => new
+            {
+                s.StudentId,
+                s.FirstName,
+                s.LastName,
+                FacultyName = s.Faculty.Name,
+                UniversityName = s.Faculty.University.Name,
+                TotalPoints = db.ScoreTransactions
+                    .Where(t => t.StudentId == s.StudentId)
+                    .Sum(t => (int?)t.Points) ?? 0
+            })
+            .OrderByDescending(x => x.TotalPoints)
+            .ThenBy(x => x.StudentId)
+            .Skip(skip)
+            .Take(safePageSize)
+            .ToListAsync(ct);
+
+        var entries = scored
+            .Select((row, index) =>
+            {
+                var metrics = CalculateLevelMetrics(row.StudentId, row.TotalPoints);
+                return new LeaderboardEntryDto(
+                    Rank: skip + index + 1,
+                    row.StudentId,
+                    row.FirstName,
+                    row.LastName,
+                    row.FacultyName,
+                    row.UniversityName,
+                    row.TotalPoints,
+                    metrics.Level);
+            })
+            .ToList();
+
+        return new PagedResult<LeaderboardEntryDto>(entries, safePage, safePageSize, total);
     }
 }

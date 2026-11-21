@@ -58,5 +58,18 @@ public sealed class CreateAttendanceRequestValidator : AbstractValidator<CreateA
     {
         RuleFor(x => x.StudentId).GreaterThan(0);
         RuleFor(x => x.VerificationMethod).IsInEnum();
+        RuleFor(x => x.VerificationCode)
+            .MaximumLength(128)
+            .When(x => !string.IsNullOrWhiteSpace(x.VerificationCode));
+    }
+}
+
+public sealed class SelfCheckInRequestValidator : AbstractValidator<SelfCheckInRequest>
+{
+    public SelfCheckInRequestValidator()
+    {
+        RuleFor(x => x.VerificationCode)
+            .NotEmpty().WithMessage("Verification code is required.")
+            .MaximumLength(128);
     }
 }

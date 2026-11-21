@@ -6,6 +6,7 @@ using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Projects;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
+using TeamUp.Domain.Events;
 
 namespace TeamUp.Application.Services;
 
@@ -68,10 +69,20 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
             if (request.MaxTeamSize.Value < currentSize) throw new ConflictException("MaxTeamSize cannot be lower than the current team size.");
             project.MaxTeamSize = request.MaxTeamSize.Value;
         }
+        var previousStatus = project.Status;
         if (request.Status.HasValue)
         {
             if (!Enum.IsDefined(request.Status.Value)) throw new BadRequestException("Invalid project status.");
             project.Status = request.Status.Value;
+        }
+        if (project.Status == ProjectStatus.Completed && previousStatus != ProjectStatus.Completed)
+        {
+            var memberIds = await db.ProjectMembers.AsNoTracking()
+                .Where(m => m.ProjectId == projectId)
+                .Select(m => m.StudentId)
+                .ToListAsync(ct);
+            if (memberIds.Count > 0)
+                project.AddDomainEvent(new ProjectCompletedDomainEvent(project.ProjectId, project.Title, memberIds));
         }
         await db.SaveChangesAsync(ct);
         return await GetProjectAsync(projectId, ct);
@@ -196,6 +207,7 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
             }
         }
         application.Status = request.Status;
+        application.AddDomainEvent(new ApplicationReviewedDomainEvent(application.StudentId, project.Title, "Project", request.Status));
         await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
         return ToApplicationDto(application);
     }
@@ -239,6 +251,7 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         var task = await db.ProjectTasks.Include(t => t.AssignedStudent).FirstOrDefaultAsync(t => t.TaskId == taskId, ct)
             ?? throw new NotFoundException("Task not found.");
         await EnsureMemberAsync(studentId, task.ProjectId, ct);
+        var previousStatus = task.Status;
         if (request.Title is not null) task.Title = request.Title.Trim();
         if (request.Description is not null) task.Description = request.Description;
         if (request.Status.HasValue)
@@ -252,6 +265,10 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
             task.Priority = request.Priority.Value;
         }
         if (request.DueDate.HasValue) task.DueDate = request.DueDate.Value;
+        if (task.Status == ProjectTaskStatus.Done && previousStatus != ProjectTaskStatus.Done && task.AssignedStudentId.HasValue)
+        {
+            task.AddDomainEvent(new TaskCompletedDomainEvent(task.TaskId, task.ProjectId, task.AssignedStudentId.Value, task.Title));
+        }
         await db.SaveChangesAsync(ct); return ToTaskDto(task);
     }
 
@@ -261,7 +278,9 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         var project = await GetProjectEntityAsync(task.ProjectId, ct); EnsureCreator(project, studentId);
         if (!await db.ProjectMembers.AnyAsync(m => m.ProjectId == task.ProjectId && m.StudentId == request.StudentId, ct))
             throw new BadRequestException("Task can only be assigned to a confirmed project member.");
-        task.AssignedStudentId = request.StudentId; await db.SaveChangesAsync(ct);
+        task.AssignedStudentId = request.StudentId;
+        task.AddDomainEvent(new TaskAssignedDomainEvent(task.TaskId, task.ProjectId, request.StudentId, task.Title));
+        await db.SaveChangesAsync(ct);
     }
 
     public async Task UnassignTaskAsync(int studentId, int taskId, CancellationToken ct)

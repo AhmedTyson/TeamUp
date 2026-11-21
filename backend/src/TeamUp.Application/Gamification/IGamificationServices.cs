@@ -9,6 +9,7 @@ public interface IGamificationService
     Task<StudentScoreDto> GetStudentScoreAsync(int studentId, CancellationToken ct = default);
     Task<PagedResult<ScoreTransactionDto>> GetScoreTransactionsAsync(int studentId, PageRequest page, CancellationToken ct = default);
     Task<ScoreTransactionDto> AddScoreTransactionAsync(int studentId, int points, string reason, ScoreSourceType sourceType = ScoreSourceType.Manual, CancellationToken ct = default);
+    Task<PagedResult<LeaderboardEntryDto>> GetLeaderboardAsync(PageRequest page, CancellationToken ct = default);
 }
 
 public interface IBadgeService

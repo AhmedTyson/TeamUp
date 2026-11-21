@@ -262,10 +262,17 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
         var loginRes = await _client.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest(email, "Password123!"));
         Assert.Equal(HttpStatusCode.Unauthorized, loginRes.StatusCode);
 
-        // Subsquent search must not include deleted student
-        var dirRes = await client.GetAsync($"/api/v1/students?search=Tamer");
+        // Deleted student's existing access token is immediately revoked (STRIDE THR-E-02)
+        var selfAfterDelete = await client.GetAsync("/api/v1/students?search=Tamer");
+        Assert.Equal(HttpStatusCode.Unauthorized, selfAfterDelete.StatusCode);
+
+        // Subsequent directory search by another active student must not include deleted student
+        using var viewerClient = factory.CreateClient();
+        viewerClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", factory.CreateStudentToken(7777));
+        var dirRes = await viewerClient.GetAsync("/api/v1/students?search=Tamer");
+        Assert.Equal(HttpStatusCode.OK, dirRes.StatusCode);
         var dir = await GetDataAsync<TeamUp.Application.Common.PagedResult<StudentCardDto>>(dirRes);
-        Assert.DoesNotContain(dir.Items, s => s.Email == email);
+        Assert.DoesNotContain(dir.Items, s => s.StudentId == auth.Student.StudentId);
     }
 
     [Fact]

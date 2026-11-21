@@ -1,9 +1,13 @@
+// Date: 2026-11-21
+// Purpose: Authentication service with SecurityStamp revocation, 15-minute reset expiry, and tenant-scoped org_admin JWT claims (STRIDE THR-S-03, THR-E-01, THR-E-02).
+
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using TeamUp.Application.Auth;
+using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
@@ -17,7 +21,9 @@ public sealed class AuthService(
     IJwtTokenService jwt,
     IPasswordHasher<Student> hasher,
     IEmailSender emailSender,
-    IOptions<JwtOptions> jwtOptions) : IAuthService
+    IOptions<JwtOptions> jwtOptions,
+    IOrganizationAuthorizationService orgAuth,
+    ISecurityStampValidator stampValidator) : IAuthService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
@@ -47,6 +53,7 @@ public sealed class AuthService(
             AcademicYear = req.AcademicYear,
             FacultyId = req.FacultyId,
             Role = UserRole.Student,
+            SecurityStamp = Guid.NewGuid(),
             RefreshToken = jwt.HashToken(rawRefreshToken),
             RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays),
         };
@@ -55,7 +62,12 @@ public sealed class AuthService(
         await db.SaveChangesAsync(ct);
 
         var (accessToken, expiresAt) = jwt.GenerateAccessToken(
-            student.StudentId, student.Email, student.Role.ToString(), $"{student.FirstName} {student.LastName}");
+            student.StudentId,
+            student.Email,
+            student.Role.ToString(),
+            $"{student.FirstName} {student.LastName}",
+            student.SecurityStamp,
+            []);
 
         var summary = new StudentSummaryDto(
             student.StudentId, student.FirstName, student.LastName, student.Email,
@@ -82,8 +94,17 @@ public sealed class AuthService(
         if (result == PasswordVerificationResult.Failed)
             throw new UnauthorizedException("Invalid email or password.");
 
+        if (student.SecurityStamp == Guid.Empty)
+            student.SecurityStamp = Guid.NewGuid();
+
+        var adminOrgIds = await orgAuth.GetAdminOrganizationIdsAsync(student.StudentId, ct);
         var (accessToken, expiresAt) = jwt.GenerateAccessToken(
-            student.StudentId, student.Email, student.Role.ToString(), $"{student.FirstName} {student.LastName}");
+            student.StudentId,
+            student.Email,
+            student.Role.ToString(),
+            $"{student.FirstName} {student.LastName}",
+            student.SecurityStamp,
+            adminOrgIds);
 
         var rawRefreshToken = jwt.GenerateRefreshToken();
         student.RefreshToken = jwt.HashToken(rawRefreshToken);
@@ -113,8 +134,17 @@ public sealed class AuthService(
         if (student is null || student.RefreshTokenExpiresAt is null || student.RefreshTokenExpiresAt <= DateTime.UtcNow)
             throw new UnauthorizedException("Invalid or expired refresh token.");
 
+        if (student.SecurityStamp == Guid.Empty)
+            student.SecurityStamp = Guid.NewGuid();
+
+        var adminOrgIds = await orgAuth.GetAdminOrganizationIdsAsync(student.StudentId, ct);
         var (accessToken, expiresAt) = jwt.GenerateAccessToken(
-            student.StudentId, student.Email, student.Role.ToString(), $"{student.FirstName} {student.LastName}");
+            student.StudentId,
+            student.Email,
+            student.Role.ToString(),
+            $"{student.FirstName} {student.LastName}",
+            student.SecurityStamp,
+            adminOrgIds);
 
         var rawRefreshToken = jwt.GenerateRefreshToken();
         student.RefreshToken = jwt.HashToken(rawRefreshToken);
@@ -136,7 +166,9 @@ public sealed class AuthService(
         {
             student.RefreshToken = null;
             student.RefreshTokenExpiresAt = null;
+            student.SecurityStamp = Guid.NewGuid();
             await db.SaveChangesAsync(ct);
+            stampValidator.Invalidate(studentId);
         }
     }
 
@@ -149,7 +181,7 @@ public sealed class AuthService(
         {
             var rawResetToken = jwt.GenerateRefreshToken();
             student.PasswordResetToken = jwt.HashToken(rawResetToken);
-            student.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddHours(1);
+            student.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(Math.Clamp(_jwtOptions.PasswordResetTokenMinutes, 5, 60));
             await db.SaveChangesAsync(ct);
 
             await emailSender.SendPasswordResetEmailAsync(student.Email, rawResetToken, ct);
@@ -180,10 +212,12 @@ public sealed class AuthService(
         student.PasswordResetToken = null;
         student.PasswordResetTokenExpiresAt = null;
 
-        // Invalidate active session tokens on password change
+        // Immediately invalidate all active access & refresh tokens on password change (STRIDE THR-E-02)
         student.RefreshToken = null;
         student.RefreshTokenExpiresAt = null;
+        student.SecurityStamp = Guid.NewGuid();
 
         await db.SaveChangesAsync(ct);
+        stampValidator.Invalidate(student.StudentId);
     }
 }

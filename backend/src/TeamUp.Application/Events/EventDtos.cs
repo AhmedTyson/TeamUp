@@ -1,3 +1,6 @@
+// Date: 2026-11-21
+// Purpose: Event, session, registration, attendance origin (RecordedByStudentId), and rotating QR/PIN check-in DTOs (STRIDE THR-T-02, THR-R-02).
+
 using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Events;
@@ -65,9 +68,20 @@ public sealed record EventRegistrationDto(
     string LastName,
     string Email,
     DateTime RegisteredAt,
-    TeamUp.Domain.Enums.RegistrationStatus Status);
+    RegistrationStatus Status);
 
-public sealed record CreateAttendanceRequest(int StudentId, TeamUp.Domain.Enums.VerificationMethod VerificationMethod);
+public sealed record CreateAttendanceRequest(
+    int StudentId,
+    VerificationMethod VerificationMethod,
+    string? VerificationCode = null);
+
+public sealed record SelfCheckInRequest(
+    string VerificationCode);
+
+public sealed record SessionCheckInCodeDto(
+    int SessionId,
+    string Code,
+    DateTime ExpiresAtUtc);
 
 public sealed record SessionAttendanceDto(
     int SessionId,
@@ -75,4 +89,5 @@ public sealed record SessionAttendanceDto(
     string FirstName,
     string LastName,
     DateTime CheckInTime,
-    TeamUp.Domain.Enums.VerificationMethod VerificationMethod);
+    VerificationMethod VerificationMethod,
+    int? RecordedByStudentId = null);

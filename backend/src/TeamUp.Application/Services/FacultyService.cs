@@ -1,12 +1,21 @@
+// Date: 2026-11-21
+// Purpose: Faculty catalog service with academic catalog cache invalidation and audited soft-delete.
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Common.Security;
 using TeamUp.Application.Universities;
 using TeamUp.Domain.Entities;
 
 namespace TeamUp.Application.Services;
 
-public sealed class FacultyService(IAppDbContext db) : IFacultyService
+public sealed class FacultyService(
+    IAppDbContext db,
+    IMemoryCache cache,
+    IAuditLogService auditLog) : IFacultyService
 {
     public async Task<IReadOnlyList<FacultyDto>> GetFacultiesByUniversityIdAsync(int universityId, CancellationToken ct = default)
     {
@@ -65,6 +74,7 @@ public sealed class FacultyService(IAppDbContext db) : IFacultyService
 
         db.Faculties.Add(faculty);
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.AcademicCatalog);
 
         return new FacultyDto(
             faculty.FacultyId,
@@ -95,6 +105,7 @@ public sealed class FacultyService(IAppDbContext db) : IFacultyService
         faculty.Code = code;
 
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.AcademicCatalog);
 
         return new FacultyDto(
             faculty.FacultyId,
@@ -110,7 +121,18 @@ public sealed class FacultyService(IAppDbContext db) : IFacultyService
         var faculty = await db.Faculties.FirstOrDefaultAsync(f => f.FacultyId == id, ct)
             ?? throw new NotFoundException($"Faculty with ID {id} was not found.");
 
+        var code = faculty.Code;
+        var name = faculty.Name;
         db.Faculties.Remove(faculty);
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.AcademicCatalog);
+
+        await auditLog.RecordAsync(
+            "EntitySoftDeleted",
+            "Faculty",
+            id.ToString(),
+            oldValues: new { id, Name = name, Code = code },
+            newValues: new { DeletedAt = faculty.DeletedAt },
+            ct: ct);
     }
 }

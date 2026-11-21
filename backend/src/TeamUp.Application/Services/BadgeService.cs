@@ -1,13 +1,22 @@
+// Date: 2026-11-21
+// Purpose: Badge catalog & automated idempotent achievement evaluator (PointsThreshold, EventCount, TaskCount) with IMemoryCache and audit logging.
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Common.Security;
 using TeamUp.Application.Gamification;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Services;
 
-public sealed class BadgeService(IAppDbContext db) : IBadgeService
+public sealed class BadgeService(
+    IAppDbContext db,
+    IMemoryCache cache,
+    IAuditLogService auditLog) : IBadgeService
 {
     public async Task<IReadOnlyList<string>> EvaluateStudentBadgesAsync(int studentId, CancellationToken ct = default)
     {
@@ -24,6 +33,10 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
             .Distinct()
             .CountAsync(ct);
 
+        var completedTasks = await db.ProjectTasks
+            .AsNoTracking()
+            .CountAsync(t => t.AssignedStudentId == studentId && t.Status == ProjectTaskStatus.Done, ct);
+
         var earnedBadgeIds = await db.StudentBadges
             .Where(sb => sb.StudentId == studentId)
             .Select(sb => sb.BadgeId)
@@ -39,6 +52,7 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
             {
                 BadgeCriteriaType.PointsThreshold => totalPoints >= badge.CriteriaValue,
                 BadgeCriteriaType.EventCount => eventsAttended >= badge.CriteriaValue,
+                BadgeCriteriaType.TaskCount => completedTasks >= badge.CriteriaValue,
                 _ => false
             };
 
@@ -51,7 +65,6 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
                     AwardedAt = DateTime.UtcNow,
                 });
 
-                // Auto dispatch in-app notification
                 db.Notifications.Add(new Notification
                 {
                     StudentId = studentId,
@@ -76,8 +89,9 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
 
     public async Task<StudentBadgeDto> ManualAwardBadgeAsync(int studentId, int badgeId, CancellationToken ct = default)
     {
-        var student = await db.Students.FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
-            ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
+        var studentExists = await db.Students.AnyAsync(s => s.StudentId == studentId, ct);
+        if (!studentExists)
+            throw new NotFoundException($"Student with ID {studentId} was not found.");
 
         var badge = await db.Badges.FirstOrDefaultAsync(b => b.BadgeId == badgeId, ct)
             ?? throw new NotFoundException($"Badge with ID {badgeId} was not found.");
@@ -108,6 +122,13 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
         });
 
         await db.SaveChangesAsync(ct);
+
+        await auditLog.RecordAsync(
+            "ManualBadgeAwarded",
+            "StudentBadge",
+            $"{studentId}:{badgeId}",
+            newValues: new { studentId, badgeId, badge.Name },
+            ct: ct);
 
         return new StudentBadgeDto(
             studentId,
@@ -145,7 +166,10 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
 
     public async Task<IReadOnlyList<BadgeDto>> GetBadgeCatalogAsync(CancellationToken ct = default)
     {
-        return await db.Badges
+        if (cache.TryGetValue(CatalogCacheKeys.BadgeCatalog, out IReadOnlyList<BadgeDto>? cached) && cached is not null)
+            return cached;
+
+        var items = await db.Badges
             .AsNoTracking()
             .OrderBy(b => b.BadgeId)
             .Select(b => new BadgeDto(
@@ -156,6 +180,9 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
                 b.CriteriaType,
                 b.CriteriaValue))
             .ToListAsync(ct);
+
+        cache.Set(CatalogCacheKeys.BadgeCatalog, items, CatalogCacheKeys.DefaultTtl);
+        return items;
     }
 
     public async Task<BadgeDto> CreateBadgeAsync(CreateBadgeRequest request, CancellationToken ct = default)
@@ -175,6 +202,7 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
 
         db.Badges.Add(badge);
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.BadgeCatalog);
 
         return new BadgeDto(
             badge.BadgeId,
@@ -207,6 +235,7 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
         if (request.CriteriaValue.HasValue) badge.CriteriaValue = request.CriteriaValue.Value;
 
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.BadgeCatalog);
 
         return new BadgeDto(
             badge.BadgeId,
@@ -222,7 +251,17 @@ public sealed class BadgeService(IAppDbContext db) : IBadgeService
         var badge = await db.Badges.FirstOrDefaultAsync(b => b.BadgeId == badgeId, ct)
             ?? throw new NotFoundException($"Badge with ID {badgeId} was not found.");
 
+        var badgeName = badge.Name;
         db.Badges.Remove(badge);
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.BadgeCatalog);
+
+        await auditLog.RecordAsync(
+            "EntitySoftDeleted",
+            "Badge",
+            badgeId.ToString(),
+            oldValues: new { badgeId, Name = badgeName },
+            newValues: new { DeletedAt = badge.DeletedAt },
+            ct: ct);
     }
 }

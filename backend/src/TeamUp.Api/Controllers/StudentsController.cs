@@ -1,5 +1,9 @@
+// Date: 2026-11-21
+// Purpose: Authenticated student account lifecycle and privacy-filtered, rate-limited directory discovery (STRIDE THR-I-01).
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Common;
 using TeamUp.Application.Students;
@@ -14,10 +18,11 @@ namespace TeamUp.Api.Controllers;
 public class StudentsController(IStudentAccountService accountService) : BaseApiController
 {
     [HttpGet]
+    [EnableRateLimiting("directory-policy")]
     [ProducesOk<PagedResult<StudentCardDto>>]
     public async Task<IActionResult> GetStudentsDirectory([FromQuery] StudentDirectoryQuery query, CancellationToken ct)
     {
-        var result = await accountService.GetStudentsDirectoryAsync(query, ct);
+        var result = await accountService.GetStudentsDirectoryAsync(query, CurrentStudentId, CurrentUserRole, ct);
         return OkResponse(result);
     }
 

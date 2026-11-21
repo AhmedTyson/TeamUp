@@ -1,3 +1,6 @@
+// Date: 2026-11-21
+// Purpose: Student account, profile, and interest service contracts with privacy-aware directory lookup (STRIDE THR-I-01).
+
 using TeamUp.Application.Common;
 
 namespace TeamUp.Application.Students;
@@ -7,7 +10,11 @@ public interface IStudentAccountService
 {
     Task<StudentDetailDto> GetMyAccountAsync(int studentId, CancellationToken ct = default);
     Task<StudentDetailDto> UpdateMyAccountAsync(int studentId, UpdateStudentRequest req, CancellationToken ct = default);
-    Task<PagedResult<StudentCardDto>> GetStudentsDirectoryAsync(StudentDirectoryQuery query, CancellationToken ct = default);
+    Task<PagedResult<StudentCardDto>> GetStudentsDirectoryAsync(
+        StudentDirectoryQuery query,
+        int viewerStudentId = 0,
+        string? viewerRole = null,
+        CancellationToken ct = default);
     Task<StudentPublicProfileDto> GetStudentPublicProfileByIdAsync(int studentId, CancellationToken ct = default);
     Task DeleteStudentAccountAsync(int studentId, CancellationToken ct = default);
 }

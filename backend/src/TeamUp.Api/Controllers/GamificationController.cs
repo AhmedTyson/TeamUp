@@ -1,3 +1,6 @@
+// Date: 2026-11-21
+// Purpose: Gamification score summary, owner/admin-scoped score ledger, manual adjustments, and campus leaderboard endpoints.
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
@@ -19,13 +22,16 @@ public class GamificationController(IGamificationService gamificationService) : 
     }
 
     [HttpGet("students/{id:int}/score-transactions")]
-    [ProducesOk<PagedResult<ScoreTransactionDto>>, ProducesNotFound]
+    [ProducesOk<PagedResult<ScoreTransactionDto>>, ProducesForbidden, ProducesNotFound]
     public async Task<IActionResult> GetScoreTransactions(
         [FromRoute] int id,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
+        if (CurrentStudentId != id && !User.IsInRole("PlatformAdmin"))
+            return Forbid();
+
         var result = await gamificationService.GetScoreTransactionsAsync(id, new PageRequest(page, pageSize), ct);
         return OkResponse(result);
     }
@@ -38,5 +44,16 @@ public class GamificationController(IGamificationService gamificationService) : 
     {
         var result = await gamificationService.AddScoreTransactionAsync(request.StudentId, request.Points, request.Reason, request.SourceType, ct);
         return CreatedResponse(result, "Score transaction created successfully.");
+    }
+
+    [HttpGet("gamification/leaderboard")]
+    [ProducesOk<PagedResult<LeaderboardEntryDto>>]
+    public async Task<IActionResult> GetLeaderboard(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var result = await gamificationService.GetLeaderboardAsync(new PageRequest(page, pageSize), ct);
+        return OkResponse(result);
     }
 }

@@ -1,14 +1,23 @@
+// Date: 2026-11-21
+// Purpose: Organization service enforcing scoped per-organization BOLA authorization, creator admin bootstrap, application notifications, and deletion audit logs (STRIDE THR-T-01, THR-R-01, THR-E-01).
+
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Common.Security;
 using TeamUp.Application.Organizations;
+using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
+using TeamUp.Domain.Events;
 
 namespace TeamUp.Application.Services;
 
-public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
+public sealed class OrganizationService(
+    IAppDbContext db,
+    IOrganizationAuthorizationService orgAuth,
+    IAuditLogService auditLog) : IOrganizationService
 {
     public async Task<PagedResult<OrganizationSummaryDto>> GetOrganizationsAsync(
         string? search, string? category, PageRequest page, CancellationToken ct = default)
@@ -51,11 +60,14 @@ public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
             organization.Description, organization.Category, organization.LogoUrl, members, events);
     }
 
-    public async Task<OrganizationDetailDto> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default)
+    public async Task<OrganizationDetailDto> CreateOrganizationAsync(
+        int creatorStudentId, CreateOrganizationRequest request, CancellationToken ct = default)
     {
         var name = request.Name.Trim();
         if (await db.Organizations.AnyAsync(x => x.Name == name, ct))
             throw new ConflictException($"An organization named '{name}' already exists.");
+
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
         var organization = new Organization
         {
@@ -66,12 +78,29 @@ public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
         };
         db.Organizations.Add(organization);
         await db.SaveChangesAsync(ct);
-        return new OrganizationDetailDto(organization.OrganizationId, organization.Name,
-            organization.Description, organization.Category, organization.LogoUrl, [], []);
+
+        // Assign creator as scoped Admin of THIS organization only (STRIDE THR-T-01 / THR-E-01)
+        if (creatorStudentId > 0 && await db.Students.AnyAsync(s => s.StudentId == creatorStudentId, ct))
+        {
+            db.OrganizationMembers.Add(new OrganizationMember
+            {
+                OrganizationId = organization.OrganizationId,
+                StudentId = creatorStudentId,
+                Role = OrganizationRoles.Admin,
+                JoinedAt = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync(ct);
+        }
+
+        await transaction.CommitAsync(ct);
+        return await GetOrganizationByIdAsync(organization.OrganizationId, ct);
     }
 
-    public async Task<OrganizationDetailDto> UpdateOrganizationAsync(int id, UpdateOrganizationRequest request, CancellationToken ct = default)
+    public async Task<OrganizationDetailDto> UpdateOrganizationAsync(
+        int id, int actorStudentId, string? actorRole, UpdateOrganizationRequest request, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageOrganizationAsync(id, actorStudentId, actorRole, ct);
+
         var organization = await db.Organizations.FirstOrDefaultAsync(x => x.OrganizationId == id, ct)
             ?? throw new NotFoundException($"Organization with ID {id} was not found.");
         var name = request.Name.Trim();
@@ -92,6 +121,7 @@ public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var organization = await db.Organizations.FirstOrDefaultAsync(x => x.OrganizationId == id, ct)
             ?? throw new NotFoundException($"Organization with ID {id} was not found.");
+        var orgName = organization.Name;
         var members = await db.OrganizationMembers.Where(x => x.OrganizationId == id).ToListAsync(ct);
         var applications = await db.MembershipApplications.Where(x => x.OrganizationId == id).ToListAsync(ct);
         var events = await db.Events.Include(x => x.Sessions)
@@ -105,6 +135,14 @@ public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
         db.Organizations.Remove(organization);
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+
+        await auditLog.RecordAsync(
+            "EntitySoftDeleted",
+            "Organization",
+            id.ToString(),
+            oldValues: new { organization.OrganizationId, Name = orgName },
+            newValues: new { DeletedAt = organization.DeletedAt },
+            ct: ct);
     }
 
     public async Task<IReadOnlyList<OrganizationMemberDto>> GetMembersAsync(int organizationId, CancellationToken ct = default)
@@ -120,19 +158,38 @@ public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
     }
 
     public async Task<OrganizationMemberDto> UpdateMemberRoleAsync(
-        int organizationId, int studentId, UpdateOrganizationMemberRequest request, CancellationToken ct = default)
+        int organizationId, int studentId, int actorStudentId, string? actorRole,
+        UpdateOrganizationMemberRequest request, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageOrganizationAsync(organizationId, actorStudentId, actorRole, ct);
+
         var member = await db.OrganizationMembers
             .Include(x => x.Student)
             .FirstOrDefaultAsync(x => x.OrganizationId == organizationId && x.StudentId == studentId, ct)
             ?? throw new NotFoundException("The requested organization member was not found.");
+
+        var oldRole = member.Role;
         member.Role = request.Role.Trim();
         await db.SaveChangesAsync(ct);
+
+        await auditLog.RecordAsync(
+            "OrganizationMemberRoleChanged",
+            "OrganizationMember",
+            $"{organizationId}:{studentId}",
+            oldValues: new { Role = oldRole },
+            newValues: new { member.Role },
+            actorStudentIdOverride: actorStudentId > 0 ? actorStudentId : null,
+            ct: ct);
+
         return ToMemberDto(member);
     }
 
-    public async Task RemoveMemberAsync(int organizationId, int studentId, CancellationToken ct = default)
+    public async Task RemoveMemberAsync(
+        int organizationId, int studentId, int actorStudentId, string? actorRole, CancellationToken ct = default)
     {
+        if (actorStudentId != studentId)
+            await orgAuth.EnsureCanManageOrganizationAsync(organizationId, actorStudentId, actorRole, ct);
+
         var member = await db.OrganizationMembers.FirstOrDefaultAsync(
             x => x.OrganizationId == organizationId && x.StudentId == studentId, ct)
             ?? throw new NotFoundException("The requested organization member was not found.");
@@ -141,8 +198,11 @@ public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task<IReadOnlyList<MembershipApplicationDto>> GetApplicationsAsync(int organizationId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<MembershipApplicationDto>> GetApplicationsAsync(
+        int organizationId, int actorStudentId, string? actorRole, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageOrganizationAsync(organizationId, actorStudentId, actorRole, ct);
+
         if (!await db.Organizations.AnyAsync(x => x.OrganizationId == organizationId, ct))
             throw new NotFoundException($"Organization with ID {organizationId} was not found.");
         return await db.MembershipApplications.AsNoTracking()
@@ -180,13 +240,17 @@ public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
     }
 
     public async Task<MembershipApplicationDto> ReviewApplicationAsync(
-        int organizationId, int applicationId, ReviewMembershipApplicationRequest request, CancellationToken ct = default)
+        int organizationId, int applicationId, int actorStudentId, string? actorRole,
+        ReviewMembershipApplicationRequest request, CancellationToken ct = default)
     {
+        await orgAuth.EnsureCanManageOrganizationAsync(organizationId, actorStudentId, actorRole, ct);
+
         if (request.Status is not (ApplicationStatus.Accepted or ApplicationStatus.Rejected))
             throw new BadRequestException("An application can only be accepted or rejected by an organization admin.");
 
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var application = await db.MembershipApplications
+            .Include(x => x.Organization)
             .FirstOrDefaultAsync(x => x.OrganizationId == organizationId && x.ApplicationId == applicationId, ct)
             ?? throw new NotFoundException("Membership application was not found.");
         if (application.Status != ApplicationStatus.Pending)
@@ -202,13 +266,13 @@ public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
                 {
                     OrganizationId = organizationId,
                     StudentId = application.StudentId,
-                    Role = "Member",
+                    Role = OrganizationRoles.Member,
                     JoinedAt = DateTime.UtcNow
                 });
             }
             else
             {
-                previousMembership.Role = "Member";
+                previousMembership.Role = OrganizationRoles.Member;
                 previousMembership.JoinedAt = DateTime.UtcNow;
                 previousMembership.DeletedAt = null;
             }
@@ -216,6 +280,11 @@ public sealed class OrganizationService(IAppDbContext db) : IOrganizationService
 
         application.Status = request.Status;
         application.ReviewedAt = DateTime.UtcNow;
+        application.AddDomainEvent(new ApplicationReviewedDomainEvent(
+            application.StudentId,
+            application.Organization.Name,
+            "Organization",
+            request.Status));
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 

@@ -1,9 +1,13 @@
+// Date: 2026-11-21
+// Purpose: Campus events & session scheduling endpoints with scoped organization BOLA authorization and type/date filtering.
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Models;
 using TeamUp.Application.Events;
+using TeamUp.Domain.Enums;
 
 namespace TeamUp.Api.Controllers;
 
@@ -14,19 +18,25 @@ public sealed class EventsController(IEventService eventService) : BaseApiContro
     [HttpGet]
     [ProducesResponseType(typeof(BaseResponse<PagedResult<EventDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetEvents(
-        [FromQuery] string? search, [FromQuery] int? organizationId,
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
+        [FromQuery] string? search,
+        [FromQuery] int? organizationId,
+        [FromQuery] EventType? type = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
-        var result = await eventService.GetEventsAsync(search, organizationId, new PageRequest(page, pageSize), ct);
+        var result = await eventService.GetEventsAsync(search, organizationId, new PageRequest(page, pageSize), type, from, to, ct);
         return OkResponse(result);
     }
 
     [HttpPost]
-    [Authorize(Roles = "OrgAdmin,PlatformAdmin")]
     [ProducesResponseType(typeof(BaseResponse<EventDto>), StatusCodes.Status201Created)]
+    [ProducesForbidden]
     public async Task<IActionResult> CreateEvent([FromBody] CreateEventRequest request, CancellationToken ct)
     {
-        var result = await eventService.CreateEventAsync(request, ct);
+        var result = await eventService.CreateEventAsync(CurrentStudentId, CurrentUserRole, request, ct);
         return CreatedAtAction(nameof(GetEventById), new { id = result.EventId },
             BaseResponse<EventDto>.Ok(result, "Event created successfully.", StatusCodes.Status201Created));
     }
@@ -40,20 +50,20 @@ public sealed class EventsController(IEventService eventService) : BaseApiContro
     }
 
     [HttpPatch("{id:int}")]
-    [Authorize(Roles = "OrgAdmin,PlatformAdmin")]
     [ProducesResponseType(typeof(BaseResponse<EventDto>), StatusCodes.Status200OK)]
+    [ProducesForbidden]
     public async Task<IActionResult> UpdateEvent([FromRoute] int id, [FromBody] UpdateEventRequest request, CancellationToken ct)
     {
-        var result = await eventService.UpdateEventAsync(id, request, ct);
+        var result = await eventService.UpdateEventAsync(id, CurrentStudentId, CurrentUserRole, request, ct);
         return OkResponse(result, "Event updated successfully.");
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "OrgAdmin,PlatformAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesForbidden]
     public async Task<IActionResult> DeleteEvent([FromRoute] int id, CancellationToken ct)
     {
-        await eventService.DeleteEventAsync(id, ct);
+        await eventService.DeleteEventAsync(id, CurrentStudentId, CurrentUserRole, ct);
         return NoContentResponse();
     }
 
@@ -66,11 +76,11 @@ public sealed class EventsController(IEventService eventService) : BaseApiContro
     }
 
     [HttpPost("{id:int}/sessions")]
-    [Authorize(Roles = "OrgAdmin,PlatformAdmin")]
     [ProducesResponseType(typeof(BaseResponse<EventSessionDto>), StatusCodes.Status201Created)]
+    [ProducesForbidden]
     public async Task<IActionResult> CreateSession([FromRoute] int id, [FromBody] CreateEventSessionRequest request, CancellationToken ct)
     {
-        var result = await eventService.CreateSessionAsync(id, request, ct);
+        var result = await eventService.CreateSessionAsync(id, CurrentStudentId, CurrentUserRole, request, ct);
         return CreatedResponse(result, "Event session created successfully.");
     }
 }

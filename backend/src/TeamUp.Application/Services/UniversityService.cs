@@ -1,13 +1,22 @@
+// Date: 2026-11-21
+// Purpose: University catalog service with IMemoryCache read-through caching, automatic invalidation, and audited soft-delete.
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using TeamUp.Application.Common;
+using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Common.Security;
 using TeamUp.Application.Universities;
 using TeamUp.Domain.Entities;
 
 namespace TeamUp.Application.Services;
 
-public sealed class UniversityService(IAppDbContext db) : IUniversityService
+public sealed class UniversityService(
+    IAppDbContext db,
+    IMemoryCache cache,
+    IAuditLogService auditLog) : IUniversityService
 {
     public async Task<PagedResult<UniversityDto>> GetUniversitiesAsync(string? search, PageRequest page, CancellationToken ct = default)
     {
@@ -39,7 +48,13 @@ public sealed class UniversityService(IAppDbContext db) : IUniversityService
 
     public async Task<IReadOnlyList<UniversityDetailDto>> GetAcademicCatalogAsync(CancellationToken ct = default)
     {
-        return await db.Universities
+        if (cache.TryGetValue(CatalogCacheKeys.AcademicCatalog, out IReadOnlyList<UniversityDetailDto>? cached)
+            && cached is not null)
+        {
+            return cached;
+        }
+
+        var catalog = await db.Universities
             .AsNoTracking()
             .OrderBy(u => u.Name)
             .Select(u => new UniversityDetailDto(
@@ -53,6 +68,9 @@ public sealed class UniversityService(IAppDbContext db) : IUniversityService
                     .Select(f => new FacultySummaryDto(f.FacultyId, f.Name, f.Code))
                     .ToList()))
             .ToListAsync(ct);
+
+        cache.Set(CatalogCacheKeys.AcademicCatalog, catalog, CatalogCacheKeys.DefaultTtl);
+        return catalog;
     }
 
     public async Task<UniversityDetailDto> GetUniversityByIdAsync(int id, CancellationToken ct = default)
@@ -88,6 +106,7 @@ public sealed class UniversityService(IAppDbContext db) : IUniversityService
 
         db.Universities.Add(uni);
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.AcademicCatalog);
 
         return new UniversityDetailDto(uni.UniversityId, uni.Name, uni.City, uni.Country, uni.Website, []);
     }
@@ -112,6 +131,7 @@ public sealed class UniversityService(IAppDbContext db) : IUniversityService
         uni.Website = string.IsNullOrWhiteSpace(req.Website) ? null : req.Website.Trim();
 
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.AcademicCatalog);
 
         var faculties = uni.Faculties
             .OrderBy(f => f.Name)
@@ -128,6 +148,8 @@ public sealed class UniversityService(IAppDbContext db) : IUniversityService
             .FirstOrDefaultAsync(u => u.UniversityId == id, ct)
             ?? throw new NotFoundException($"University with ID {id} was not found.");
 
+        var uniName = uni.Name;
+
         // Cascade soft-delete to faculties
         foreach (var faculty in uni.Faculties)
         {
@@ -136,5 +158,14 @@ public sealed class UniversityService(IAppDbContext db) : IUniversityService
 
         db.Universities.Remove(uni);
         await db.SaveChangesAsync(ct);
+        cache.Remove(CatalogCacheKeys.AcademicCatalog);
+
+        await auditLog.RecordAsync(
+            "EntitySoftDeleted",
+            "University",
+            id.ToString(),
+            oldValues: new { id, Name = uniName },
+            newValues: new { DeletedAt = uni.DeletedAt },
+            ct: ct);
     }
 }

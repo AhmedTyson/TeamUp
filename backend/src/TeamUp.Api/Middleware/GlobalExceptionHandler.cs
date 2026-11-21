@@ -21,6 +21,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             ForbiddenException forbidden => (StatusCodes.Status403Forbidden, forbidden.Message, null),
             BadRequestException badReq => (StatusCodes.Status400BadRequest, badReq.Message, null),
             ArgumentException argEx => (StatusCodes.Status400BadRequest, argEx.Message, null),
+            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "The record was modified concurrently by another request. Please refresh and try again.", null),
             DbUpdateException dbEx when IsUniqueConstraintViolation(dbEx) =>
                 (StatusCodes.Status409Conflict, "A conflicting unique record already exists in the database.", null),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected server error occurred. Please try again later.", null)
