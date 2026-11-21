@@ -1,0 +1,106 @@
+/**
+ * @date 2026-11-21
+ * @purpose Centralized, strongly-typed route definitions matching TeamUp.Api v1 controllers.
+ */
+const V1 = "/api/v1";
+
+export const API_ENDPOINTS = {
+  health: "/health",
+  openApi: "/openapi/v1.json",
+
+  auth: {
+    register: `${V1}/auth/register`,
+    login: `${V1}/auth/login`,
+    refresh: `${V1}/auth/refresh`,
+    logout: `${V1}/auth/logout`,
+    forgotPassword: `${V1}/auth/forgot-password`,
+    resetPassword: `${V1}/auth/reset-password`,
+  },
+
+  universities: {
+    list: `${V1}/universities`,
+    catalog: `${V1}/universities/catalog`,
+    byId: (id: number) => `${V1}/universities/${id}`,
+    faculties: (universityId: number) => `${V1}/universities/${universityId}/faculties`,
+  },
+
+  faculties: {
+    byId: (id: number) => `${V1}/faculties/${id}`,
+  },
+
+  students: {
+    list: `${V1}/students`,
+    me: `${V1}/students/me`,
+    byId: (id: number) => `${V1}/students/${id}`,
+    profile: (id: number) => `${V1}/students/${id}/profile`,
+    myProfile: `${V1}/students/me/profile`,
+    interests: (id: number) => `${V1}/students/${id}/interests`,
+    myInterests: `${V1}/students/me/interests`,
+    myInterest: (interest: string) => `${V1}/students/me/interests/${encodeURIComponent(interest)}`,
+    skills: (id: number) => `${V1}/students/${id}/skills`,
+    mySkill: (skillId: number) => `${V1}/students/me/skills/${skillId}`,
+    score: (id: number) => `${V1}/students/${id}/score`,
+    scoreTransactions: (id: number) => `${V1}/students/${id}/score-transactions`,
+    badges: (id: number) => `${V1}/students/${id}/badges`,
+  },
+
+  skills: {
+    list: `${V1}/skills`,
+    byId: (id: number) => `${V1}/skills/${id}`,
+  },
+
+  projects: {
+    list: `${V1}/projects`,
+    byId: (id: number) => `${V1}/projects/${id}`,
+    requiredSkills: (id: number) => `${V1}/projects/${id}/required-skills`,
+    requiredSkill: (id: number, skillId: number) => `${V1}/projects/${id}/required-skills/${skillId}`,
+    members: (id: number) => `${V1}/projects/${id}/members`,
+    member: (id: number, studentId: number) => `${V1}/projects/${id}/members/${studentId}`,
+    applications: (id: number) => `${V1}/projects/${id}/applications`,
+    application: (id: number, appId: number) => `${V1}/projects/${id}/applications/${appId}`,
+    tasks: (id: number) => `${V1}/projects/${id}/tasks`,
+  },
+
+  tasks: {
+    byId: (id: number) => `${V1}/tasks/${id}`,
+    assignee: (id: number) => `${V1}/tasks/${id}/assignee`,
+  },
+
+  organizations: {
+    list: `${V1}/organizations`,
+    byId: (id: number) => `${V1}/organizations/${id}`,
+    members: (id: number) => `${V1}/organizations/${id}/members`,
+    member: (id: number, studentId: number) => `${V1}/organizations/${id}/members/${studentId}`,
+    applications: (id: number) => `${V1}/organizations/${id}/applications`,
+    application: (id: number, appId: number) => `${V1}/organizations/${id}/applications/${appId}`,
+  },
+
+  events: {
+    list: `${V1}/events`,
+    byId: (id: number) => `${V1}/events/${id}`,
+    sessions: (id: number) => `${V1}/events/${id}/sessions`,
+    registrations: (id: number) => `${V1}/events/${id}/registrations`,
+  },
+
+  sessions: {
+    byId: (id: number) => `${V1}/sessions/${id}`,
+    attendance: (id: number) => `${V1}/sessions/${id}/attendance`,
+    studentAttendance: (id: number, studentId: number) => `${V1}/sessions/${id}/attendance/${studentId}`,
+  },
+
+  gamification: {
+    badges: `${V1}/badges`,
+    badgeById: (id: number) => `${V1}/badges/${id}`,
+    scoreTransactions: `${V1}/score-transactions`,
+    notifications: `${V1}/notifications`,
+    notificationById: (id: number) => `${V1}/notifications/${id}`,
+    markAllNotificationsRead: `${V1}/notifications/mark-all-read`,
+  },
+
+  admin: {
+    dashboard: `${V1}/admin/dashboard`,
+    studentRole: (id: number) => `${V1}/admin/students/${id}/role`,
+    softDeleted: `${V1}/admin/soft-deleted`,
+    restore: (entityType: string, id: number) => `${V1}/admin/restore/${entityType}/${id}`,
+  },
+} as const;

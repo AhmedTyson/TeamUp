@@ -1,3 +1,4 @@
+# .NET / IDE
 bin/
 obj/
 .vs/
@@ -5,6 +6,17 @@ obj/
 *.user
 *.suo
 TestResults/
+appsettings.*.local.json
+
+# Frontend (Node / Vite / React)
+node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+*.tsbuildinfo
+
+# Python / Tooling
 __pycache__/
 *.pyc
-appsettings.*.local.json

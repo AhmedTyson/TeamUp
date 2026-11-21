@@ -1,0 +1,25 @@
+/**
+ * @date 2026-11-21
+ * @purpose Tailwind CSS v4 entrypoint and TeamUp brand design tokens.
+ */
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #14151c;
+  --color-surface: #1b1d26;
+  --color-surface-elevated: #222532;
+  --color-accent: #d3fb52;
+  --color-emerald: #10b981;
+  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+  --font-display: "Antonio", "Barlow Condensed", sans-serif;
+  --font-brand: "Barlow Condensed", sans-serif;
+  --font-heading: "Plus Jakarta Sans", "DM Sans", sans-serif;
+}
+
+html,
+body {
+  background-color: var(--color-canvas);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+}
