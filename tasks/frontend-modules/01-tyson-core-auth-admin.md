@@ -75,12 +75,12 @@ M1 establishes the **Phase 0 shared foundation** that unblocks M2, M3, and M4 by
 - [x] **M1-10:** Upgrade `AppShell` and `Navbar` for authenticated app routes (responsive mobile drawer, active nav indicator, slots for M4's `<NotificationBell />` and `<XpLevelChip />`, Admin link visible only to `PlatformAdmin`, Sign Out calling `POST /auth/logout`).
 
 ### Phase 2 — Platform Admin Governance Suite (Days 7–11)
-- [ ] **M1-11:** Create `frontend/src/api/admin.api.ts` covering all 5 admin endpoints.
-- [ ] **M1-12:** Build `/admin` Dashboard KPIs + role distribution breakdown cards + sub-navigation tabs.
-- [ ] **M1-13:** Build `/admin/catalog` Universities & nested Faculties CRUD management (create/edit/soft-delete with URL validation via `https?://` and confirmation dialogs).
-- [ ] **M1-14:** Build `/admin/roles` Student Role Governance view (handles `403` `THR-E-03` promotion guard cleanly and warns that role changes immediately invalidate target user sessions).
-- [ ] **M1-15:** Build `/admin/restore` 8-entity Soft-Delete Recycle Bin with entity-type filter pills and instant Restore + cache invalidation.
-- [ ] **M1-16:** Build `/admin/audit-logs` paginated, filterable immutable Audit Log table with expandable Old/New JSON diff inspection drawer.
+- [x] **M1-11:** Create `frontend/src/api/admin.api.ts` covering all 5 admin endpoints.
+- [x] **M1-12:** Build `/admin` Dashboard KPIs + role distribution breakdown cards + sub-navigation tabs.
+- [x] **M1-13:** Build `/admin/catalog` Universities & nested Faculties CRUD management (create/edit/soft-delete with URL validation via `https?://` and confirmation dialogs).
+- [x] **M1-14:** Build `/admin/roles` Student Role Governance view (handles `403` `THR-E-03` promotion guard cleanly and warns that role changes immediately invalidate target user sessions).
+- [x] **M1-15:** Build `/admin/restore` 8-entity Soft-Delete Recycle Bin with entity-type filter pills and instant Restore + cache invalidation.
+- [x] **M1-16:** Build `/admin/audit-logs` paginated, filterable immutable Audit Log table with expandable Old/New JSON diff inspection drawer.
 
 ### Phase 3 — Integration & Testing (Days 12–14)
 - [ ] **M1-17:** Write Vitest tests for Axios refresh-token mutex (concurrent `401` calls trigger only 1 `/auth/refresh`), `AuthContext` guards, Login/Register forms, and Admin Restore flow.

@@ -51,6 +51,7 @@ export type {
 export { healthApi } from "./health.api";
 export { authApi } from "./auth.api";
 export { universitiesApi } from "./universities.api";
+export { adminApi } from "./admin.api";
 export type { ApiResponse, ErrorDetail, PagedResult, HealthStatus } from "./types";
 export type {
   LoginPayload,
@@ -73,3 +74,12 @@ export type {
   CreateFacultyPayload,
   UpdateFacultyPayload,
 } from "./universities.api";
+export type {
+  AdminDashboardStats,
+  UpdateUserRolePayload,
+  SoftDeletedItem,
+  AuditLogItem,
+  AuditLogQueryParams,
+  AdminStudentDirectoryItem,
+  AdminStudentSearchParams,
+} from "./admin.api";
