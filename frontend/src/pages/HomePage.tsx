@@ -62,7 +62,7 @@ export function HomePage() {
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
           <Link
-            to="/auth"
+            to="/auth/login"
             className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
           >
             Student Sign In

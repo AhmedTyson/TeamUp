@@ -1,7 +1,9 @@
 /**
  * @date 2026-11-21
- * @purpose Centralized, strongly-typed route definitions matching TeamUp.Api v1 controllers.
+ * @purpose Centralized, strongly-typed route definitions matching all 67 paths in TeamUp.Api OpenAPI v1 spec.
  */
+import type { RestorableEntityType } from "./enums";
+
 const V1 = "/api/v1";
 
 export const API_ENDPOINTS = {
@@ -42,6 +44,7 @@ export const API_ENDPOINTS = {
     score: (id: number) => `${V1}/students/${id}/score`,
     scoreTransactions: (id: number) => `${V1}/students/${id}/score-transactions`,
     badges: (id: number) => `${V1}/students/${id}/badges`,
+    manualAwardBadge: (id: number, badgeId: number) => `${V1}/students/${id}/badges/${badgeId}`,
   },
 
   skills: {
@@ -85,10 +88,14 @@ export const API_ENDPOINTS = {
   sessions: {
     byId: (id: number) => `${V1}/sessions/${id}`,
     attendance: (id: number) => `${V1}/sessions/${id}/attendance`,
+    checkInCode: (id: number) => `${V1}/sessions/${id}/attendance/check-in-code`,
+    selfCheckIn: (id: number) => `${V1}/sessions/${id}/attendance/self-check-in`,
+    attendanceReport: (id: number) => `${V1}/sessions/${id}/attendance/report`,
     studentAttendance: (id: number, studentId: number) => `${V1}/sessions/${id}/attendance/${studentId}`,
   },
 
   gamification: {
+    leaderboard: `${V1}/gamification/leaderboard`,
     badges: `${V1}/badges`,
     badgeById: (id: number) => `${V1}/badges/${id}`,
     scoreTransactions: `${V1}/score-transactions`,
@@ -101,6 +108,8 @@ export const API_ENDPOINTS = {
     dashboard: `${V1}/admin/dashboard`,
     studentRole: (id: number) => `${V1}/admin/students/${id}/role`,
     softDeleted: `${V1}/admin/soft-deleted`,
-    restore: (entityType: string, id: number) => `${V1}/admin/restore/${entityType}/${id}`,
+    restore: (entityType: RestorableEntityType | string, id: number) =>
+      `${V1}/admin/restore/${entityType}/${id}`,
+    auditLogs: `${V1}/admin/audit-logs`,
   },
 } as const;
