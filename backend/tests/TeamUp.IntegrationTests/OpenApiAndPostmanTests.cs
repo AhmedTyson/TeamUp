@@ -30,8 +30,8 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
         Assert.True(paths.Count > 10, "OpenAPI spec should expose multiple endpoint paths.");
 
         // Export static openapi.json to docs/api/openapi.json
-        var outputPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "docs", "api", "openapi.json");
-        outputPath = Path.GetFullPath(outputPath);
+        var outputPath = Path.Combine(ResolveRepoRoot(), "docs", "api", "openapi.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
         var formattedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(outputPath, formattedJson);
@@ -42,7 +42,7 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
     [Fact]
     public async Task PostmanCollection_GeneratesAndExportsValidV2Collection()
     {
-        var postmanDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "docs", "api", "postman"));
+        var postmanDir = Path.Combine(ResolveRepoRoot(), "docs", "api", "postman");
         Directory.CreateDirectory(postmanDir);
 
         var collectionPath = Path.Combine(postmanDir, "TeamUp_Collection.json");
@@ -177,5 +177,21 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
             ["name"] = name,
             ["request"] = req
         };
+    }
+
+    private static string ResolveRepoRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            if (Directory.Exists(Path.Combine(dir.FullName, "docs"))
+                && Directory.Exists(Path.Combine(dir.FullName, "backend")))
+            {
+                return dir.FullName;
+            }
+            dir = dir.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate repository root containing 'docs' and 'backend'.");
     }
 }
