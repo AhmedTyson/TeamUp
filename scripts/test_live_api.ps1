@@ -1,7 +1,8 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 
+$repoRoot = Split-Path -Parent $PSScriptRoot
 $baseUrl = "http://localhost:5199"
-$reportPath = "C:\Users\ahmed\Downloads\TeamUp\docs\api\AUTH-PROFILE-TEST-REPORT.md"
+$reportPath = Join-Path $repoRoot "docs\api\AUTH-PROFILE-TEST-REPORT.md"
 $logLines = [System.Collections.Generic.List[string]]::new()
 
 function Add-ReportLine($str) {
@@ -114,11 +115,12 @@ function Send-HttpReq {
 
 # 1. Start Server
 Write-Host "Starting TeamUp.Api on $baseUrl..." -ForegroundColor Cyan
-$job = Start-Job -ScriptBlock {
-    Set-Location "C:\Users\ahmed\Downloads\TeamUp"
+$job = Start-Job -ArgumentList $repoRoot -ScriptBlock {
+    param($root)
+    Set-Location $root
     $env:ASPNETCORE_ENVIRONMENT = "Development"
     $env:ASPNETCORE_URLS = "http://localhost:5199"
-    dotnet run --project src/TeamUp.Api --no-build --urls http://localhost:5199
+    dotnet run --project backend/src/TeamUp.Api --no-build --urls http://localhost:5199
 }
 
 # Wait for server
@@ -326,7 +328,7 @@ Send-HttpReq -Name "23. Verify Both Interest Tags Active" -Method "GET" -Path "/
 
 # ----------------- Module 2: Universities & Faculties Tests -----------------
 # Get Admin Token
-$adminPass = ([regex]::Match(((dotnet user-secrets list --project src/TeamUp.Api | Select-String "Seed:AdminPassword").ToString()),'Seed:AdminPassword = (.*)')).Groups[1].Value.Trim()
+$adminPass = ([regex]::Match(((dotnet user-secrets list --project backend/src/TeamUp.Api | Select-String "Seed:AdminPassword").ToString()),'Seed:AdminPassword = (.*)')).Groups[1].Value.Trim()
 $adminLoginRes = Send-HttpReq -Name "24. PlatformAdmin Authentication" -Method "POST" -Path "/api/v1/auth/login" `
     -Body ([ordered]@{
         email = "admin@teamup.local"
@@ -436,28 +438,29 @@ Send-HttpReq -Name "38. Get Public Student Profile Card (GET /students/{id})" -M
     -Headers $authHeaders -ExpectedStatus 200
 
 # ----------------- Module 4: Password Recovery & Reset Tests -----------------
-# Test 39: Forgot Password Request
+# Test 39: Forgot Password Request (must not leak raw reset token in HTTP body)
 $forgotRes = Send-HttpReq -Name "39. Request Password Reset Token (POST /auth/forgot-password)" -Method "POST" -Path "/api/v1/auth/forgot-password" `
     -Body ([ordered]@{
         email = $testEmail
     }) -ExpectedStatus 200
 
-$resetToken = if ($forgotRes.Json.data) { $forgotRes.Json.data.resetToken } else { $forgotRes.Json.resetToken }
+if ($forgotRes.Json.data -and $forgotRes.Json.data.PSObject.Properties["resetToken"]) {
+    throw "SECURITY FAILURE: resetToken was leaked in /api/v1/auth/forgot-password response!"
+}
 
-# Test 40: Reset Password with Valid Token
-$newPassword = "UpdatedSecurePassword2026!"
-Send-HttpReq -Name "40. Reset Password with Token (POST /auth/reset-password)" -Method "POST" -Path "/api/v1/auth/reset-password" `
+# Test 40: Reset Password with Invalid Token is Rejected (401)
+Send-HttpReq -Name "40. Reject Invalid Password Reset Token (POST /auth/reset-password)" -Method "POST" -Path "/api/v1/auth/reset-password" `
     -Body ([ordered]@{
         email = $testEmail
-        token = $resetToken
-        newPassword = $newPassword
-    }) -ExpectedStatus 200
+        token = "invalid_token_probe"
+        newPassword = "UpdatedSecurePassword2026!"
+    }) -ExpectedStatus 401
 
-# Test 41: Login with New Password
-$newLoginRes = Send-HttpReq -Name "41. Authenticate with New Password (POST /auth/login)" -Method "POST" -Path "/api/v1/auth/login" `
+# Test 41: Authenticate with Existing Password
+$newLoginRes = Send-HttpReq -Name "41. Authenticate Student Session (POST /auth/login)" -Method "POST" -Path "/api/v1/auth/login" `
     -Body ([ordered]@{
         email = $testEmail
-        password = $newPassword
+        password = $password
     }) -ExpectedStatus 200
 
 $newStudentToken = if ($newLoginRes.Json.data) { $newLoginRes.Json.data.accessToken } else { $newLoginRes.Json.accessToken }
@@ -492,7 +495,7 @@ Send-HttpReq -Name "46. Soft-Delete Student Account (DELETE /students/me)" -Meth
 Send-HttpReq -Name "47. Login Rejection for Soft-Deleted Student" -Method "POST" -Path "/api/v1/auth/login" `
     -Body ([ordered]@{
         email = $testEmail
-        password = $newPassword
+        password = $password
     }) -ExpectedStatus 401
 
 # Test 48: Directory Omits Soft-Deleted Student

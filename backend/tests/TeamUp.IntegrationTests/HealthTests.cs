@@ -28,4 +28,30 @@ public class HealthTests(TeamUpApiFactory factory) : IClassFixture<TeamUpApiFact
         Assert.Equal(404, err.StatusCode);
         Assert.Contains("not found", err.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task CorsPreflight_AllowedFrontendOrigin_ReturnsAllowOriginHeader()
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Options, "/api/v1/universities/catalog");
+        req.Headers.Add("Origin", "http://localhost:5173");
+        req.Headers.Add("Access-Control-Request-Method", "GET");
+
+        var res = await _client.SendAsync(req);
+
+        Assert.Equal(HttpStatusCode.NoContent, res.StatusCode);
+        Assert.True(res.Headers.TryGetValues("Access-Control-Allow-Origin", out var values));
+        Assert.Contains("http://localhost:5173", values);
+    }
+
+    [Fact]
+    public async Task CorsPreflight_DisallowedOrigin_OmitsAllowOriginHeader()
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Options, "/api/v1/universities/catalog");
+        req.Headers.Add("Origin", "https://untrusted.example");
+        req.Headers.Add("Access-Control-Request-Method", "GET");
+
+        var res = await _client.SendAsync(req);
+
+        Assert.False(res.Headers.Contains("Access-Control-Allow-Origin"));
+    }
 }
