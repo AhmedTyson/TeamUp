@@ -3,9 +3,9 @@
 > **Single Source of Truth** for all configuration settings consumed by the TeamUp ASP.NET Core Web API.
 
 > **Sources:**
-> - [src/TeamUp.Api/appsettings.json](../src/TeamUp.Api/appsettings.json)
-> - [src/TeamUp.Api/appsettings.Development.json](../src/TeamUp.Api/appsettings.Development.json)
-> - [src/TeamUp.Api/Program.cs](../src/TeamUp.Api/Program.cs)
+> - [backend/src/TeamUp.Api/appsettings.json](../backend/src/TeamUp.Api/appsettings.json)
+> - [backend/src/TeamUp.Api/appsettings.Development.json](../backend/src/TeamUp.Api/appsettings.Development.json)
+> - [backend/src/TeamUp.Api/Program.cs](../backend/src/TeamUp.Api/Program.cs)
 
 ---
 
@@ -49,20 +49,25 @@
 |---|---|---|---|
 | `Jwt:Issuer` | `TeamUp` | `https://api.teamup.edu` | Issuer claim (`iss`) validated in access tokens. |
 | `Jwt:Audience` | `TeamUp.Clients` | `https://teamup.edu` | Audience claim (`aud`) identifying valid clients. |
-| `Jwt:Key` | `DevelopmentFallbackSecretKey...` | Cryptographic 64+ char random string | Secret key for signing HMAC-SHA256 JWT tokens. |
-| `Jwt:AccessTokenMinutes` | `60` | `15` – `60` | Lifespan of short-lived JWT access tokens. |
-| `Jwt:RefreshTokenDays` | `7` | `7` – `30` | Lifespan of cryptographically secure refresh tokens. |
+| `Jwt:Key` | Set in `appsettings.Development.json` | Cryptographic 64+ char random string | Secret key for signing HMAC-SHA256 JWT tokens. Startup fails fast outside Development if missing, `< 32` bytes, or a fallback default. |
+| `Jwt:AccessTokenMinutes` | `15` | `15` | Lifespan of short-lived JWT access tokens (revoked immediately via `SecurityStamp`). |
+| `Jwt:RefreshTokenDays` | `7` | `7` – `30` | Lifespan of cryptographically secure refresh tokens (stored SHA-256 hashed). |
+| `Jwt:PasswordResetTokenMinutes` | `15` | `15` | Expiration window for one-time password reset tokens. |
+| `Email:Provider` | `InMemory` (Dev only) | `Smtp` (Mandatory in Production) | Dispatches transactional emails via SMTP (`Templates/Emails/PasswordReset.html`). Startup fails in Production if set to `InMemory`. |
+| `Admin:AllowRuntimePlatformAdminPromotion` | `false` | `false` | Blocks runtime `PATCH /api/v1/admin/students/{id}/role` elevation to `PlatformAdmin` (STRIDE THR-E-03). |
+| `ForwardedHeaders:KnownProxies` / `KnownNetworks` | `[]` | Trusted proxy IPs / CIDRs | Only honors `X-Forwarded-For` / `X-Forwarded-Proto` when trusted proxies are explicitly configured (STRIDE THR-S-02). |
 
 ---
 
 ## Rate Limiting Configuration
 
-| Parameter | Value | Behavior |
+| Parameter | Default Value | Behavior |
 |---|---|---|
-| **Rate Limit Policy** | `auth-policy` | Fixed-window partition mapped per client IP. |
-| **Permit Limit** | `60 requests` | Maximum allowed calls per time window. |
-| **Window Duration** | `1 minute` | Fixed duration before quota resets. |
-| **Rejection Code** | `429 Too Many Requests` | Returns RFC 7807 structured JSON envelope. |
+| **Global Authenticated (`RateLimiting:AuthenticatedPermitLimit`)** | `120 req / min` | Fixed-window per authenticated `StudentId` (`/health` exempt). |
+| **Global Anonymous (`RateLimiting:AnonymousPermitLimit`)** | `30 req / min` | Fixed-window per sanitized `RemoteIpAddress` (never raw `X-Forwarded-For`). |
+| **Auth Policy (`RateLimiting:AuthPermitLimit`)** | `30 req / min` | Fixed-window on `/api/v1/auth/*` per `RemoteIpAddress`. |
+| **Directory Policy (`RateLimiting:DirectoryPermitLimit`)** | `30 req / min` | Fixed-window on `GET /api/v1/students` per authenticated user (max 20 rows/page). |
+| **Rejection Code** | `429 Too Many Requests` | Returns `BaseResponse` JSON envelope with `Retry-After` header. |
 
 ---
 

@@ -3,9 +3,9 @@
 > **Local Development & Quickstart Manual** · Step-by-step instructions for provisioning Microsoft SQL Server, configuring user secrets, executing migrations, seeding demo fixtures, and running the automated test suite.
 
 > **Sources:**
-> - [src/TeamUp.Api/appsettings.json](../src/TeamUp.Api/appsettings.json)
-> - [src/TeamUp.Api/Properties/launchSettings.json](../src/TeamUp.Api/Properties/launchSettings.json)
-> - [src/TeamUp.Infrastructure/Seed/DbSeeder.cs](../src/TeamUp.Infrastructure/Seed/DbSeeder.cs)
+> - [backend/src/TeamUp.Api/appsettings.json](../backend/src/TeamUp.Api/appsettings.json)
+> - [backend/src/TeamUp.Api/Properties/launchSettings.json](../backend/src/TeamUp.Api/Properties/launchSettings.json)
+> - [backend/src/TeamUp.Infrastructure/Seed/DbSeeder.cs](../backend/src/TeamUp.Infrastructure/Seed/DbSeeder.cs)
 > - [scripts/test_live_api.ps1](../scripts/test_live_api.ps1)
 
 ---
@@ -59,13 +59,13 @@ Alternatively, connect to a local SQL Server instance:
 Sensitive settings (database connection string, JWT signing keys, admin seed password) must never be committed to source control. Configure them using .NET Secret Manager:
 
 ```bash
-cd src/TeamUp.Api
+cd backend/src/TeamUp.Api
 
 # 1. Initialize User Secrets
 dotnet user-secrets init
 
 # 2. Set SQL Server Connection String
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost,14333;Database=TeamUpDB;User Id=sa;Password=YourStrong@Passw0rd!;TrustServerCertificate=True;MultipleActiveResultSets=True;"
+dotnet user-secrets set "ConnectionStrings:TeamUpDb" "Server=localhost,14333;Database=TeamUpDB;User Id=sa;Password=YourStrong@Passw0rd!;TrustServerCertificate=True;MultipleActiveResultSets=True;"
 
 # 3. Configure JWT Secret Key (min 32 characters)
 dotnet user-secrets set "Jwt:Key" "SuperSecretProductionGradeEncryptionKeyForTeamUpApplication2026!"
@@ -85,7 +85,7 @@ EF Core migrations apply automatically when `Seed:Enabled = true` in development
 
 ```bash
 # Apply migrations using dotnet ef CLI
-dotnet ef database update --project src/TeamUp.Infrastructure --startup-project src/TeamUp.Api
+dotnet ef database update --project backend/src/TeamUp.Infrastructure --startup-project backend/src/TeamUp.Api
 ```
 
 ### Default Seed Credentials
@@ -105,7 +105,7 @@ When `Seed:Enabled` is activated, `DbSeeder.cs` idempotently provisions initial 
 Launch the ASP.NET Core Web API:
 
 ```bash
-dotnet run --project src/TeamUp.Api
+dotnet run --project backend/src/TeamUp.Api
 ```
 
 - **Base HTTP URL:** `http://localhost:5186`
@@ -146,17 +146,17 @@ pwsh scripts/test_live_api.ps1
 TeamUp features 100 automated tests covering unit domain math, validation rules, soft-delete interceptors, and full HTTP integration workflows:
 
 ```bash
-# Run all unit and integration tests
-dotnet test
+# Run all backend unit and integration tests
+dotnet test backend/TeamUp.sln
 
 # Run only unit tests
-dotnet test tests/TeamUp.UnitTests
+dotnet test backend/tests/TeamUp.UnitTests
 
 # Run only integration tests (spawns in-memory WebApplicationFactory)
-dotnet test tests/TeamUp.IntegrationTests
+dotnet test backend/tests/TeamUp.IntegrationTests
 
-# Run tests with detailed test names
-dotnet test --logger "console;verbosity=detailed"
+# Run frontend unit tests & build
+cd frontend && npm run test && npm run build
 ```
 
 ---

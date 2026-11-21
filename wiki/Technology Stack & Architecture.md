@@ -4,9 +4,9 @@
 
 > **Sources:**
 > - [Directory.Build.props](../Directory.Build.props)
-> - [src/TeamUp.Api/TeamUp.Api.csproj](../src/TeamUp.Api/TeamUp.Api.csproj)
-> - [src/TeamUp.Application/TeamUp.Application.csproj](../src/TeamUp.Application/TeamUp.Application.csproj)
-> - [src/TeamUp.Infrastructure/TeamUp.Infrastructure.csproj](../src/TeamUp.Infrastructure/TeamUp.Infrastructure.csproj)
+> - [backend/src/TeamUp.Api/TeamUp.Api.csproj](../backend/src/TeamUp.Api/TeamUp.Api.csproj)
+> - [backend/src/TeamUp.Application/TeamUp.Application.csproj](../backend/src/TeamUp.Application/TeamUp.Application.csproj)
+> - [backend/src/TeamUp.Infrastructure/TeamUp.Infrastructure.csproj](../backend/src/TeamUp.Infrastructure/TeamUp.Infrastructure.csproj)
 > - [docs/architecture/CLEAN-CODE-AUDIT.md](../docs/architecture/CLEAN-CODE-AUDIT.md)
 
 ---

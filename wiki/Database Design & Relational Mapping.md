@@ -7,7 +7,7 @@
 > - [ERD/TeamUp-Chen-ERD.png](../ERD/TeamUp-Chen-ERD.png)
 > - [Mapping/description.md](../Mapping/description.md)
 > - [Mapping/TeamUp-Relational-Mapping.png](../Mapping/TeamUp-Relational-Mapping.png)
-> - [src/TeamUp.Infrastructure/Persistence/Configurations](../src/TeamUp.Infrastructure/Persistence/Configurations)
+> - [backend/src/TeamUp.Infrastructure/Persistence/Configurations](../backend/src/TeamUp.Infrastructure/Persistence/Configurations)
 
 ---
 

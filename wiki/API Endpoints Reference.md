@@ -5,7 +5,7 @@
 > **Sources:**
 > - [docs/api/API-PROPOSAL.md](../docs/api/API-PROPOSAL.md)
 > - [docs/api/openapi.json](../docs/api/openapi.json)
-> - [src/TeamUp.Api/Controllers](../src/TeamUp.Api/Controllers)
+> - [backend/src/TeamUp.Api/Controllers](../backend/src/TeamUp.Api/Controllers)
 
 ---
 

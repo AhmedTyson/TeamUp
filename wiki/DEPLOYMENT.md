@@ -3,8 +3,8 @@
 > **Production Deployment Manual & Operational Runbook** · Production containerization, environment configuration, EF Core migration procedures, Nginx reverse proxy configuration, and disaster recovery policies.
 
 > **Sources:**
-> - [src/TeamUp.Api/appsettings.json](../src/TeamUp.Api/appsettings.json)
-> - [src/TeamUp.Api/Program.cs](../src/TeamUp.Api/Program.cs)
+> - [backend/src/TeamUp.Api/appsettings.json](../backend/src/TeamUp.Api/appsettings.json)
+> - [backend/src/TeamUp.Api/Program.cs](../backend/src/TeamUp.Api/Program.cs)
 > - [wiki/Infrastructure.md](./Infrastructure.md)
 
 ---
@@ -45,16 +45,31 @@ ASPNETCORE_ENVIRONMENT=Production
 ASPNETCORE_URLS=http://+:5186
 
 # Database Connection String
-ConnectionStrings__DefaultConnection="Server=sql.internal.teamup.edu;Database=TeamUpDB_Prod;User Id=teamup_app;Password=Prod_Strong_Password_2026!;TrustServerCertificate=False;Encrypt=True;"
+ConnectionStrings__TeamUpDb="Server=sql.internal.teamup.edu;Database=TeamUpDB_Prod;User Id=teamup_app;Password=Prod_Strong_Password_2026!;TrustServerCertificate=False;Encrypt=True;"
 
-# JWT Security Credentials (Min 32 random bytes)
+# JWT Security Credentials (Min 32 random bytes; startup fails fast on fallback/short keys)
 Jwt__Issuer="TeamUp"
 Jwt__Audience="TeamUp.Clients"
 Jwt__Key="ProductionSuperSecretSecureKey64CharactersLongForHMACSHA256Encryption2026!"
-Jwt__AccessTokenMinutes=60
+Jwt__AccessTokenMinutes=15
 Jwt__RefreshTokenDays=7
+Jwt__PasswordResetTokenMinutes=15
 
-# Seed Configuration (Disabled in Production)
+# Email Transport (SMTP mandatory in Production; InMemory rejected at startup)
+Email__Provider="Smtp"
+Email__SmtpHost="smtp.teamup.edu"
+Email__SmtpPort=587
+Email__UseSsl=true
+Email__Username="no-reply@teamup.edu"
+Email__Password="<vault-managed-smtp-secret>"
+Email__FromAddress="no-reply@teamup.edu"
+
+# Reverse Proxy Trust & CORS
+ForwardedHeaders__KnownProxies__0="127.0.0.1"
+Cors__AllowedOrigins__0="https://teamup.edu"
+
+# Governance & Seed Configuration (Disabled in Production)
+Admin__AllowRuntimePlatformAdminPromotion=false
 Seed__Enabled=false
 ```
 
@@ -67,7 +82,7 @@ Database migrations are managed via EF Core bundle executables or idempotent SQL
 ### Step 1: Generate Migration Script
 ```bash
 dotnet ef migrations script --idempotent --output deploy.sql \
-  --project src/TeamUp.Infrastructure --startup-project src/TeamUp.Api
+  --project backend/src/TeamUp.Infrastructure --startup-project backend/src/TeamUp.Api
 ```
 
 ### Step 2: Validate Schema Constraints
@@ -84,7 +99,7 @@ WHERE fk.delete_referential_action_desc <> 'NO_ACTION';
 ### Step 3: Apply Migrations
 Apply the bundle to the target database:
 ```bash
-./bundle --connection "$ConnectionStrings__DefaultConnection"
+./bundle --connection "$ConnectionStrings__TeamUpDb"
 ```
 
 ---

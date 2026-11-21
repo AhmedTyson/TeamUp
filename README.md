@@ -38,27 +38,42 @@ Welcome to the **TeamUp** repository! **TeamUp** is an enterprise-grade academic
 
 ```text
 TeamUp/
-├── src/
-│   ├── TeamUp.Domain/             # Enterprise Entities, Invariants, Enums, Base Contracts (0 dependencies)
-│   ├── TeamUp.Application/        # CQRS Services, DTOs, FluentValidators, Domain Event Handlers
-│   ├── TeamUp.Infrastructure/     # EF Core 10 AppDbContext, Migrations, Interceptors, Seeders
-│   └── TeamUp.Api/                # ASP.NET Core 10 Web API, Thin Controllers, Filters, Middleware
-├── frontend/                      # 🎨 Standalone student web app & landing page (Tailwind CSS, GSAP/vanilla)
-│   └── index.html                 # Interactive landing page: liquid green nav, search, 4 showcase rows
-├── assets/                        # 🖼️ Vector brand assets & official logo marks (SVG)
-│   ├── teamup-logo.svg            # Master TeamUp vector brand mark (glow wordmark)
-│   ├── logo.svg                   # Brand mark asset
-│   └── icon.svg                   # Electric-lime application icon
-├── tests/
-│   ├── TeamUp.UnitTests/          # Unit tests (Gamification formulas, FluentValidators, Interceptors)
-│   └── TeamUp.IntegrationTests/   # End-to-end integration tests (WebApplicationFactory & DB context)
-├── wiki/                          # 📚 Comprehensive project documentation home (guides, references & audits)
-├── docs/                          # Architectural audits, API proposals, OpenAPI JSON & Postman files
-├── ERD/                           # Peter Chen ERD (13 entities, 19 relationships), SVG/PNG diagrams
-├── Mapping/                       # Relational schema mapping (23 tables across 5 tiers), 3NF checks
-├── tasks/                         # 20-Phase implementation roadmap and modular task checklists
-├── scripts/                       # PowerShell live HTTP API verification scripts (test_live_api.ps1)
-└── TeamUp.sln                     # Visual Studio / Rider .NET 10 solution file
+├── backend/                           # ⚙️ .NET 10 Clean Architecture Backend & Pure JSON REST API (Zero MVC Views)
+│   ├── TeamUp.sln                     # Visual Studio / Rider .NET 10 solution file
+│   ├── Directory.Build.props          # Shared .NET build settings (Nullable, TreatWarningsAsErrors)
+│   ├── src/
+│   │   ├── TeamUp.Domain/             # Enterprise Entities, Invariants, Enums, Base Contracts (0 dependencies)
+│   │   ├── TeamUp.Application/        # CQRS Services, DTOs, FluentValidators, Domain Event Handlers
+│   │   ├── TeamUp.Infrastructure/     # EF Core 10 AppDbContext, Migrations, Interceptors, Seeders
+│   │   │   └── Templates/             # Only allowed location for Razor/.cshtml templates (Emails/ & Reports/)
+│   │   └── TeamUp.Api/                # ASP.NET Core 10 Pure REST API (/api/v1/*), Thin Controllers, CORS, OpenAPI
+│   └── tests/
+│       ├── TeamUp.UnitTests/          # Unit tests (Gamification formulas, FluentValidators, Interceptors)
+│       └── TeamUp.IntegrationTests/   # End-to-end integration tests (WebApplicationFactory, CORS, OpenAPI export)
+├── frontend/                          # 🎨 React 19 + Vite + TypeScript + Tailwind CSS v4 SPA (create-vrtw stack)
+│   ├── src/
+│   │   ├── api/                       # Typed Axios HTTP client, JWT interceptors & /api/v1/* endpoint modules
+│   │   ├── app/                       # React Router route table & app-level providers
+│   │   ├── components/                # Shared layout shell & reusable UI components
+│   │   ├── features/                  # Vertical feature slices (auth, projects, organizations, events, skills, gamification, profile)
+│   │   ├── hooks/                     # Custom React hooks (useApiHealth, etc.)
+│   │   ├── lib/                       # Env config & JWT token storage helpers
+│   │   ├── pages/                     # Top-level routed pages
+│   │   └── test/                      # Vitest + Testing Library test suites
+│   ├── vite.config.ts                 # Vite + Tailwind v4 plugin + /api & /health dev proxy to backend :5186
+│   └── package.json                   # Frontend dependencies & scripts
+├── docs/
+│   ├── api/                           # OpenAPI v3 spec (openapi.json), Postman collection/env, API reports
+│   ├── architecture/                  # Clean Architecture & N-Tier SOLID design specs
+│   ├── prototypes/                    # Archived static HTML landing prototype (landing-static.html)
+│   └── research/                      # AI engine research pillars
+├── assets/                            # 🖼️ Vector brand assets & official logo marks (SVG/PNG)
+├── wiki/                              # 📚 Comprehensive project documentation home (guides, references & audits)
+├── ERD/                               # Peter Chen ERD (13 entities, 19 relationships), SVG/PNG diagrams
+├── Mapping/                           # Relational schema mapping (23 tables across 5 tiers), 3NF checks
+├── tasks/                             # 20-Phase implementation roadmap and modular task checklists
+├── scripts/                           # PowerShell live HTTP API verification scripts (test_live_api.ps1)
+└── dotnet-tools.json                  # Local dotnet-ef tool manifest (usable from repo root or backend/)
 ```
 
 ---
@@ -67,7 +82,7 @@ TeamUp/
 
 | Domain / Layer | Technology | Key Capabilities & Highlights |
 |---|---|---|
-| **Frontend Web App** | HTML5, Tailwind CSS, Vanilla JS | Interactive showcase (`frontend/index.html`): liquid lime-green morphing nav (`#d3fb52`), typewriter search bar, 4 interactive feature rows (Team Formation, Activities, Workshops, Gamification), and seamless marquee ticker. |
+| **Frontend Web App** | React 19, Vite, TypeScript, Tailwind CSS v4 | Decoupled SPA (`frontend/`) built on the `create-vrtw` stack (React Router, Lucide Icons, Axios) with typed `/api/v1/*` client modules, Vite dev proxy to `:5186`, and Vitest suites. |
 | **Identity & Governance** | .NET 10, PBKDF2, JWT Bearer | Student registration with faculty affiliation, HMAC-SHA256 JWT, SHA-256 hashed refresh token rotation, 15-minute crypto password resets (redacted from HTTP payloads), public student directory, portfolio cards, and admin governance. |
 | **Academic Catalog** | In-Memory Caching (`IMemoryCache`) | Multi-tenant university & faculty hierarchy, cached anonymous lookup (`/api/v1/universities/catalog`) for sub-5ms registration UX, administrative CRUD with cache invalidation. |
 | **Projects & Sprint Tasks** | Clean DDD, CQRS | Cross-functional project creation (`+250 pts / project`), required skills matrix, vacancy recruitment, applicant vetting workflow, and Kanban task boards (`Todo` ➔ `InProgress` ➔ `Completed`). |
@@ -91,13 +106,13 @@ docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd!" \
 
 ### 2. Configure User Secrets
 
-From the solution root, set local secrets using the .NET Secret Manager:
+From the repository root, set local secrets using the .NET Secret Manager:
 
 ```bash
-cd src/TeamUp.Api
+cd backend/src/TeamUp.Api
 
 # Set SQL Server connection string
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost,14333;Database=TeamUpDB;User Id=sa;Password=YourStrong@Passw0rd!;TrustServerCertificate=True;MultipleActiveResultSets=True;"
+dotnet user-secrets set "ConnectionStrings:TeamUpDb" "Server=localhost,14333;Database=TeamUpDB;User Id=sa;Password=YourStrong@Passw0rd!;TrustServerCertificate=True;MultipleActiveResultSets=True;"
 
 # Set JWT secret key & parameters
 dotnet user-secrets set "Jwt:Key" "SuperSecretDevelopmentKeyForTeamUpAppAtLeast32BytesLong2026!"
@@ -112,7 +127,7 @@ dotnet user-secrets set "Seed:AdminPassword" "Admin@TeamUp2026!"
 ### 3. Run Migrations & Start the Web API
 
 ```bash
-# Apply EF Core migrations
+# From backend/src/TeamUp.Api — apply EF Core migrations
 dotnet ef database update --project ../TeamUp.Infrastructure --startup-project .
 
 # Launch API host
@@ -124,15 +139,15 @@ dotnet run
 - **Health Check Endpoint:** `GET http://localhost:5186/health` (Returns `{"status": "Healthy"}`)
 - **OpenAPI Document:** `http://localhost:5186/openapi/v1.json`
 
-### 4. Serve the Frontend Landing Page
+### 4. Start the React Frontend (Vite + Tailwind CSS v4)
 
 ```bash
-# Open frontend directly in your browser, or serve via Python / HTTP server:
 cd frontend
-python -m http.server 8080
+npm install
+npm run dev
 ```
 
-- **Landing Page:** `http://localhost:8080/index.html`
+- **Frontend Dev Server:** `http://localhost:5173` (automatically proxies `/api`, `/health`, and `/openapi` to `http://localhost:5186`)
 
 ### 5. Default Seed Credentials
 
@@ -151,14 +166,17 @@ When `Seed:Enabled = true`, `DbSeeder.cs` provisions initial seed accounts:
 Execute the complete automated test suite (57 Unit Tests + 43 Integration Tests):
 
 ```bash
-# Run all automated tests
-dotnet test
+# Run all backend automated tests
+dotnet test backend/TeamUp.sln
 
 # Run unit tests only
-dotnet test tests/TeamUp.UnitTests
+dotnet test backend/tests/TeamUp.UnitTests
 
 # Run integration tests only (in-memory WebApplicationFactory)
-dotnet test tests/TeamUp.IntegrationTests
+dotnet test backend/tests/TeamUp.IntegrationTests
+
+# Run frontend tests & production build check
+cd frontend && npm run test && npm run build
 
 # Run PowerShell live API runner against running host
 pwsh scripts/test_live_api.ps1

@@ -3,7 +3,7 @@
 > **Infrastructure Architecture & Operational Topologies** · Containerization specifications, Docker Compose, GitHub Actions continuous integration, partitioned rate limiting, and runtime health telemetry.
 
 > **Sources:**
-> - [src/TeamUp.Api/Program.cs](../src/TeamUp.Api/Program.cs)
+> - [backend/src/TeamUp.Api/Program.cs](../backend/src/TeamUp.Api/Program.cs)
 > - [Directory.Build.props](../Directory.Build.props)
 > - [.github/workflows](../.github/workflows)
 > - [scripts/test_live_api.ps1](../scripts/test_live_api.ps1)

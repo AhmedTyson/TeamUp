@@ -5,8 +5,8 @@
 > **Sources:**
 > - [docs/api/API-PROPOSAL.md](../docs/api/API-PROPOSAL.md)
 > - [docs/api/API-ENDPOINTS.md](../docs/api/API-ENDPOINTS.md)
-> - [src/TeamUp.Api/Controllers](../src/TeamUp.Api/Controllers)
-> - [src/TeamUp.Application/Common/Models](../src/TeamUp.Application/Common/Models)
+> - [backend/src/TeamUp.Api/Controllers](../backend/src/TeamUp.Api/Controllers)
+> - [backend/src/TeamUp.Application/Common/Models](../backend/src/TeamUp.Application/Common/Models)
 
 ---
 

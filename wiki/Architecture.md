@@ -5,8 +5,8 @@
 > **Sources:**
 > - [docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md)
 > - [docs/architecture/CLEAN-CODE-AUDIT.md](../docs/architecture/CLEAN-CODE-AUDIT.md)
-> - [src/TeamUp.Domain/Common](../src/TeamUp.Domain/Common)
-> - [src/TeamUp.Infrastructure/Persistence/AppDbContext.cs](../src/TeamUp.Infrastructure/Persistence/AppDbContext.cs)
+> - [backend/src/TeamUp.Domain/Common](../backend/src/TeamUp.Domain/Common)
+> - [backend/src/TeamUp.Infrastructure/Persistence/AppDbContext.cs](../backend/src/TeamUp.Infrastructure/Persistence/AppDbContext.cs)
 
 ---
 

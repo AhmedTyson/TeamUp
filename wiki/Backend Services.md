@@ -3,8 +3,8 @@
 > **Service Catalogue & Core Business Logic Guide** · In-depth documentation of Application Services, interface contracts, domain validation logic, and reactive event-driven side effects across all 4 modules.
 
 > **Sources:**
-> - [src/TeamUp.Application/Services](../src/TeamUp.Application/Services)
-> - [src/TeamUp.Infrastructure/Services](../src/TeamUp.Infrastructure/Services)
+> - [backend/src/TeamUp.Application/Services](../backend/src/TeamUp.Application/Services)
+> - [backend/src/TeamUp.Infrastructure/Services](../backend/src/TeamUp.Infrastructure/Services)
 > - [docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md)
 
 ---

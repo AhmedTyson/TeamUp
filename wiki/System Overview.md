@@ -4,8 +4,8 @@
 
 > **Sources:**
 > - [README.md](../README.md)
-> - [TeamUp.sln](../TeamUp.sln)
-> - [src/TeamUp.Api/Program.cs](../src/TeamUp.Api/Program.cs)
+> - [backend/TeamUp.sln](../backend/TeamUp.sln)
+> - [backend/src/TeamUp.Api/Program.cs](../backend/src/TeamUp.Api/Program.cs)
 > - [docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md)
 > - [docs/api/API-PROPOSAL.md](../docs/api/API-PROPOSAL.md)
 

@@ -5,7 +5,7 @@
 > **Sources:**
 > - [docs/architecture/CLEAN-CODE-AUDIT.md](../docs/architecture/CLEAN-CODE-AUDIT.md)
 > - [docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md)
-> - [TeamUp.sln](../TeamUp.sln)
+> - [backend/TeamUp.sln](../backend/TeamUp.sln)
 
 ---
 
