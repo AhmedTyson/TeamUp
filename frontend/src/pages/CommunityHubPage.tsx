@@ -2,10 +2,13 @@
  * @date 2026-11-22
  * @purpose Handshake Career-Centers & Editorial Builders Community hub powering /students, /leaderboard, /gamification, /profile/me, and /notifications.
  */
-import { Award, Bell, CheckCircle2, Compass, GraduationCap, Trophy } from "lucide-react";
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Award, Bell, Camera, CheckCircle2, Compass, GraduationCap, Loader2, Trophy } from "lucide-react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
+import { studentsApi, type PublicStudentShowcaseItem } from "@/api";
 import {
+  Avatar,
   Badge,
   DataTable,
   Pagination,
@@ -14,107 +17,21 @@ import {
   type DataTableColumn,
 } from "@/components/ui";
 import { useAuth } from "@/features/auth";
+import { usePublicPeopleShowcase } from "@/features/catalog/usePublicPeopleShowcase";
 import { useUniversityCatalog } from "@/features/catalog/useUniversityCatalogFallback";
 import { cn } from "@/lib/cn";
+import { queryKeys } from "@/lib/queryKeys";
+
+const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 
 export interface CommunityHubPageProps {
   mode: "students" | "portfolio" | "leaderboard" | "gamification" | "notifications";
 }
 
-interface CampusBuilderRow {
-  id: string;
+interface RankedShowcaseBuilder extends PublicStudentShowcaseItem {
   rank: number;
-  name: string;
-  university: string;
-  facultyCode: string;
-  yearLabel: string;
-  xp: number;
-  level: number;
-  badgesCount: number;
-  topSkills: readonly string[];
-  portraitSrc: string;
 }
-
-const CAMPUS_BUILDERS: readonly CampusBuilderRow[] = [
-  {
-    id: "b-1",
-    rank: 1,
-    name: "Salma Khaled",
-    university: "Cairo University",
-    facultyCode: "FCAI",
-    yearLabel: "Year 4",
-    xp: 2840,
-    level: 7,
-    badgesCount: 9,
-    topSkills: ["PyTorch", "React", "FastAPI"],
-    portraitSrc: "/images/hero/hero-student-green.jpg",
-  },
-  {
-    id: "b-2",
-    rank: 2,
-    name: "Omar Mostafa",
-    university: "Capital University",
-    facultyCode: "ENG_CAPU",
-    yearLabel: "Year 3",
-    xp: 2490,
-    level: 6,
-    badgesCount: 8,
-    topSkills: ["STM32", "ROS2", "TypeScript"],
-    portraitSrc: "/images/hero/hero-student-teal.jpg",
-  },
-  {
-    id: "b-3",
-    rank: 3,
-    name: "Youssef Adel",
-    university: "Ain Shams University",
-    facultyCode: "CIS",
-    yearLabel: "Year 3",
-    xp: 2310,
-    level: 6,
-    badgesCount: 7,
-    topSkills: ["ASP.NET Core", "PostgreSQL", "Docker"],
-    portraitSrc: "/images/hero/hero-student-lime.jpg",
-  },
-  {
-    id: "b-4",
-    rank: 4,
-    name: "Hana El-Sayed",
-    university: "Alexandria University",
-    facultyCode: "CDS_ALEX",
-    yearLabel: "Year 2",
-    xp: 1920,
-    level: 5,
-    badgesCount: 6,
-    topSkills: ["Computer Vision", "Python", "Figma"],
-    portraitSrc: "/images/hero/hero-student-green.jpg",
-  },
-  {
-    id: "b-5",
-    rank: 5,
-    name: "Karim Mansour",
-    university: "German University in Cairo (GUC)",
-    facultyCode: "MET_GUC",
-    yearLabel: "Year 4",
-    xp: 1780,
-    level: 5,
-    badgesCount: 6,
-    topSkills: ["Go", "React", "UI Systems"],
-    portraitSrc: "/images/hero/hero-student-teal.jpg",
-  },
-  {
-    id: "b-6",
-    rank: 6,
-    name: "Mariam Nabil",
-    university: "Mansoura University",
-    facultyCode: "FCI_MANS",
-    yearLabel: "Year 2",
-    xp: 1540,
-    level: 4,
-    badgesCount: 5,
-    topSkills: ["Transformers", "Python", "UI Research"],
-    portraitSrc: "/images/hero/hero-student-green.jpg",
-  },
-];
 
 const UNLOCKABLE_BADGES = [
   { id: "first-ship", title: "Squad Pioneer", rule: "Complete your first sprint milestone", xp: "+250 XP" },
@@ -130,18 +47,72 @@ const SAMPLE_NOTIFICATIONS = [
 ] as const;
 
 export function CommunityHubPage({ mode }: CommunityHubPageProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, refreshSession } = useAuth();
+  const queryClient = useQueryClient();
   const { resolveLogo } = useUniversityCatalog();
+  const { students } = usePublicPeopleShowcase(12);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoSuccess, setPhotoSuccess] = useState<string | null>(null);
+  const [uploadedPreviewUrl, setUploadedPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const pageSize = 6;
 
+  const photoUploadMutation = useMutation({
+    mutationFn: (file: File) => studentsApi.uploadProfilePhoto(file),
+    onSuccess: async (updatedProfile) => {
+      setPhotoError(null);
+      if (updatedProfile.photoUrl) {
+        setUploadedPreviewUrl(updatedProfile.photoUrl);
+      }
+      setPhotoSuccess("Profile photo updated and published.");
+      await Promise.all([
+        refreshSession(),
+        queryClient.invalidateQueries({ queryKey: queryKeys.students.all }),
+      ]);
+    },
+    onError: (err: unknown) => {
+      setPhotoSuccess(null);
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Unable to upload profile photo. Please use JPEG, PNG, or WebP under 2 MB.";
+      setPhotoError(message);
+    },
+  });
+
+  const handlePhotoSelected = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+    setPhotoSuccess(null);
+    if (!ALLOWED_PHOTO_TYPES.has(file.type)) {
+      setPhotoError("Please select a valid JPEG, PNG, or WebP image.");
+      return;
+    }
+    if (file.size <= 0 || file.size > MAX_PHOTO_BYTES) {
+      setPhotoError("Profile photo must not exceed 2 MB.");
+      return;
+    }
+    setPhotoError(null);
+    photoUploadMutation.mutate(file);
+  };
+
+  const rankedBuilders: RankedShowcaseBuilder[] = students.map((student, index) => ({
+    ...student,
+    rank: index + 1,
+  }));
+
   const q = search.trim().toLowerCase();
-  const filteredBuilders = CAMPUS_BUILDERS.filter(
+  const filteredBuilders = rankedBuilders.filter(
     (b) =>
       !q ||
-      b.name.toLowerCase().includes(q) ||
-      b.university.toLowerCase().includes(q) ||
+      `${b.firstName} ${b.lastName}`.toLowerCase().includes(q) ||
+      b.universityName.toLowerCase().includes(q) ||
+      b.facultyCode.toLowerCase().includes(q) ||
       b.topSkills.some((sk) => sk.toLowerCase().includes(q)),
   );
 
@@ -150,7 +121,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
   const safePage = Math.min(page, totalPages);
   const pagedBuilders = filteredBuilders.slice((safePage - 1) * pageSize, safePage * pageSize);
 
-  const columns: readonly DataTableColumn<CampusBuilderRow>[] = [
+  const columns: readonly DataTableColumn<RankedShowcaseBuilder>[] = [
     {
       key: "rank",
       header: "Rank",
@@ -163,29 +134,36 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
     {
       key: "builder",
       header: "Student Builder",
-      cell: (row) => (
-        <div className="flex items-center gap-3">
-          <img
-            src={row.portraitSrc}
-            alt={row.name}
-            className="size-9 rounded-full object-cover object-top ring-2 ring-white/15"
-          />
-          <div>
-            <p className="font-semibold text-white">{row.name}</p>
-            <p className="text-xs text-[#9ca3af]">
-              {row.facultyCode} · {row.yearLabel}
-            </p>
+      cell: (row) => {
+        const fullName = `${row.firstName} ${row.lastName}`;
+        return (
+          <div className="flex items-center gap-3">
+            <img
+              src={row.photoUrl}
+              alt={fullName}
+              className="size-9 rounded-full object-cover object-top ring-2 ring-white/15"
+            />
+            <div>
+              <p className="font-semibold text-white">{fullName}</p>
+              <p className="text-xs text-[#9ca3af]">
+                {row.facultyCode} · Year {row.academicYear}
+              </p>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: "university",
       header: "University",
       cell: (row) => (
         <div className="flex items-center gap-2">
-          <UniversityLogo name={row.university} logoUrl={resolveLogo(row.university)} size="sm" />
-          <span className="text-xs font-medium text-white/90">{row.university}</span>
+          <UniversityLogo
+            name={row.universityName}
+            logoUrl={row.universityLogoUrl ?? resolveLogo(row.universityName)}
+            size="sm"
+          />
+          <span className="text-xs font-medium text-white/90">{row.universityName}</span>
         </div>
       ),
     },
@@ -194,7 +172,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
       header: "Verified XP",
       cell: (row) => (
         <span className="font-mono text-xs font-bold tabular-nums text-[#d3fb52]">
-          {row.xp} XP · Lvl {row.level}
+          {row.totalPoints} XP · Lvl {row.level}
         </span>
       ),
     },
@@ -226,31 +204,34 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
 
           {/* Top 3 Rosetta Student Podium Cards */}
           <div className="mx-auto mt-8 grid max-w-[820px] gap-4 sm:grid-cols-3">
-            {CAMPUS_BUILDERS.slice(0, 3).map((leader, idx) => (
-              <div
-                key={leader.id}
-                className={cn(
-                  "flex items-center gap-3 rounded-2xl border bg-[#14151c]/88 p-4 text-left backdrop-blur-md",
-                  idx === 0 ? "border-[#d3fb52]/60" : "border-white/12",
-                )}
-              >
-                <img
-                  src={leader.portraitSrc}
-                  alt={leader.name}
-                  className="size-12 shrink-0 rounded-2xl object-cover object-top"
-                />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <Trophy className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
-                    <span className="font-mono text-[11px] font-bold text-[#d3fb52]">
-                      #{leader.rank} · {leader.xp} XP
-                    </span>
+            {rankedBuilders.slice(0, 3).map((leader, idx) => {
+              const fullName = `${leader.firstName} ${leader.lastName}`;
+              return (
+                <div
+                  key={leader.studentId}
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl border bg-[#14151c]/88 p-4 text-left backdrop-blur-md",
+                    idx === 0 ? "border-[#d3fb52]/60" : "border-white/12",
+                  )}
+                >
+                  <img
+                    src={leader.photoUrl}
+                    alt={fullName}
+                    className="size-12 shrink-0 rounded-2xl object-cover object-top"
+                  />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <Trophy className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
+                      <span className="font-mono text-[11px] font-bold text-[#d3fb52]">
+                        #{leader.rank} · {leader.totalPoints} XP
+                      </span>
+                    </div>
+                    <p className="truncate text-sm font-bold text-white">{fullName}</p>
+                    <p className="truncate text-[11px] text-[#9ca3af]">{leader.universityName}</p>
                   </div>
-                  <p className="truncate text-sm font-bold text-white">{leader.name}</p>
-                  <p className="truncate text-[11px] text-[#9ca3af]">{leader.university}</p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -300,7 +281,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
           <DataTable
             columns={columns}
             data={pagedBuilders}
-            keyExtractor={(row) => row.id}
+            keyExtractor={(row) => row.studentId}
             caption="Campus leaderboard standings"
           />
         </section>
@@ -357,28 +338,65 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
   }
 
   if (mode === "portfolio") {
+    const activePhotoUrl = uploadedPreviewUrl ?? user?.photoUrl ?? user?.profile?.photoUrl ?? null;
+
     return (
       <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-6 sm:p-8">
         <div className="teamup-hero-bg flex flex-col justify-between gap-6 rounded-2xl border border-white/12 p-6 sm:flex-row sm:items-center">
-          <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#d3fb52]">
-              Student Portfolio
-            </p>
-            <h1
-              className="text-3xl font-bold text-white sm:text-4xl"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              {isAuthenticated && user
-                ? `${user.firstName} ${user.lastName}`
-                : "Claim Your Verified Student Portfolio"}
-            </h1>
-            <p className="text-sm text-white/80">
-              {isAuthenticated && user
-                ? `${user.universityName} · ${user.facultyName} · Year ${user.academicYear}`
-                : "Sign in with your university email to display your verified skills, squad history, and workshop badges."}
-            </p>
+          <div className="flex items-center gap-4">
+            {isAuthenticated && user && (
+              <Avatar
+                src={activePhotoUrl}
+                name={`${user.firstName} ${user.lastName}`}
+                size="lg"
+              />
+            )}
+            <div className="space-y-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#d3fb52]">
+                Student Portfolio
+              </p>
+              <h1
+                className="text-3xl font-bold text-white sm:text-4xl"
+                style={{ fontFamily: "var(--font-heading)" }}
+              >
+                {isAuthenticated && user
+                  ? `${user.firstName} ${user.lastName}`
+                  : "Claim Your Verified Student Portfolio"}
+              </h1>
+              <p className="text-sm text-white/80">
+                {isAuthenticated && user
+                  ? `${user.universityName} · ${user.facultyName} · Year ${user.academicYear}`
+                  : "Sign in with your university email to display your verified skills, squad history, and workshop badges."}
+              </p>
+            </div>
           </div>
-          {!isAuthenticated && (
+
+          {isAuthenticated && user ? (
+            <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+              <input
+                ref={fileInputRef}
+                type="file"
+                aria-label="Upload profile photo"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handlePhotoSelected}
+                className="sr-only"
+              />
+              <button
+                type="button"
+                disabled={photoUploadMutation.isPending}
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full bg-[#d3fb52] px-5 text-sm font-bold text-[#14151c] transition-colors hover:bg-[#deff6e] disabled:cursor-wait disabled:opacity-60"
+              >
+                {photoUploadMutation.isPending ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Camera className="size-4" aria-hidden="true" />
+                )}
+                <span>{photoUploadMutation.isPending ? "Uploading..." : "Upload Photo"}</span>
+              </button>
+              <span className="text-[11px] text-white/70">JPEG, PNG or WebP · max 2 MB</span>
+            </div>
+          ) : (
             <Link
               to="/auth/login"
               className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-[#d3fb52] px-6 text-sm font-bold text-[#14151c] transition-colors hover:bg-[#deff6e]"
@@ -387,6 +405,24 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
             </Link>
           )}
         </div>
+
+        {photoError && (
+          <div
+            role="alert"
+            className="rounded-2xl border border-red-400/35 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+          >
+            {photoError}
+          </div>
+        )}
+
+        {photoSuccess && (
+          <div
+            role="status"
+            className="rounded-2xl border border-[#d3fb52]/35 bg-[#d3fb52]/10 px-4 py-3 text-sm text-[#d3fb52]"
+          >
+            {photoSuccess}
+          </div>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-white/[0.08] bg-[#14151c] p-5">
@@ -484,60 +520,63 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {pagedBuilders.map((builder) => (
-            <article
-              key={builder.id}
-              className="flex flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 transition-colors hover:border-[#d3fb52]/40"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={builder.portraitSrc}
-                      alt={builder.name}
-                      className="size-12 rounded-2xl object-cover object-top"
-                    />
-                    <div>
-                      <h3
-                        className="text-base font-bold text-white"
-                        style={{ fontFamily: "var(--font-heading)" }}
-                      >
-                        {builder.name}
-                      </h3>
-                      <p className="font-mono text-xs text-[#9ca3af]">
-                        {builder.facultyCode} · {builder.yearLabel}
-                      </p>
+          {pagedBuilders.map((builder) => {
+            const fullName = `${builder.firstName} ${builder.lastName}`;
+            return (
+              <article
+                key={builder.studentId}
+                className="flex flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 transition-colors hover:border-[#d3fb52]/40"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={builder.photoUrl}
+                        alt={fullName}
+                        className="size-12 rounded-2xl object-cover object-top"
+                      />
+                      <div>
+                        <h3
+                          className="text-base font-bold text-white"
+                          style={{ fontFamily: "var(--font-heading)" }}
+                        >
+                          {fullName}
+                        </h3>
+                        <p className="font-mono text-xs text-[#9ca3af]">
+                          {builder.facultyCode} · Year {builder.academicYear}
+                        </p>
+                      </div>
                     </div>
+                    <UniversityLogo
+                      name={builder.universityName}
+                      logoUrl={builder.universityLogoUrl ?? resolveLogo(builder.universityName)}
+                      size="sm"
+                    />
                   </div>
-                  <UniversityLogo
-                    name={builder.university}
-                    logoUrl={resolveLogo(builder.university)}
-                    size="sm"
-                  />
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {builder.topSkills.map((sk) => (
+                      <Badge key={sk} variant="default" size="sm">
+                        {sk}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {builder.topSkills.map((sk) => (
-                    <Badge key={sk} variant="default" size="sm">
-                      {sk}
-                    </Badge>
-                  ))}
+                <div className="flex items-center justify-between border-t border-white/[0.08] pt-3 text-xs">
+                  <span className="font-mono font-semibold text-[#d3fb52]">
+                    {builder.totalPoints} XP · {builder.badgesCount} badges
+                  </span>
+                  <Link
+                    to={`/students/${builder.studentId}`}
+                    className="font-semibold text-white/80 hover:text-[#d3fb52]"
+                  >
+                    View Profile →
+                  </Link>
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-white/[0.08] pt-3 text-xs">
-                <span className="font-mono font-semibold text-[#d3fb52]">
-                  {builder.xp} XP · {builder.badgesCount} badges
-                </span>
-                <Link
-                  to={`/students/${builder.id}`}
-                  className="font-semibold text-white/80 hover:text-[#d3fb52]"
-                >
-                  View Profile →
-                </Link>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
 
         {totalPages > 1 && (

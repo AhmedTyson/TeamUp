@@ -16,6 +16,16 @@ export default defineConfig(({ mode }) => {
       target: proxyTarget,
       changeOrigin: true,
     },
+    "/images/people": {
+      target: proxyTarget,
+      changeOrigin: true,
+      bypass(req: { url?: string }) {
+        if (req.url && !req.url.includes("/student-")) {
+          return req.url;
+        }
+        return undefined;
+      },
+    },
     "/health": {
       target: proxyTarget,
       changeOrigin: true,

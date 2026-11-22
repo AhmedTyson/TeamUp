@@ -272,11 +272,12 @@ export function createApiClient(
 
   instance.interceptors.request.use((config) => {
     const token = tokenStorage.getAccessToken();
-    if (token) {
-      config.headers = AxiosHeaders.from(config.headers);
-      if (!config.headers.has("Authorization")) {
-        config.headers.set("Authorization", `Bearer ${token}`);
-      }
+    config.headers = AxiosHeaders.from(config.headers);
+    if (token && !config.headers.has("Authorization")) {
+      config.headers.set("Authorization", `Bearer ${token}`);
+    }
+    if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+      config.headers.delete("Content-Type");
     }
     return config;
   });

@@ -32,10 +32,12 @@ export const API_ENDPOINTS = {
 
   students: {
     list: `${V1}/students`,
+    showcase: `${V1}/students/showcase`,
     me: `${V1}/students/me`,
     byId: (id: number) => `${V1}/students/${id}`,
     profile: (id: number) => `${V1}/students/${id}/profile`,
     myProfile: `${V1}/students/me/profile`,
+    myProfilePhoto: `${V1}/students/me/profile/photo`,
     interests: (id: number) => `${V1}/students/${id}/interests`,
     myInterests: `${V1}/students/me/interests`,
     myInterest: (interest: string) => `${V1}/students/me/interests/${encodeURIComponent(interest)}`,

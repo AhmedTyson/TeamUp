@@ -1,10 +1,10 @@
 /**
- * @date 2026-11-21
- * @purpose Safe Avatar primitive validating image URLs via isSafeHttpUrl with crisp Handshake monogram fallback.
+ * @date 2026-11-22
+ * @purpose Safe Avatar primitive validating public relative asset paths and external HTTP URLs via isSafeAssetOrHttpUrl with Handshake monogram fallback.
  */
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
-import { isSafeHttpUrl } from "@/lib/urlValidation";
+import { resolveMediaUrl } from "@/lib/urlValidation";
 
 export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
 
@@ -44,7 +44,8 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
     setFailed(false);
   }, [src]);
 
-  const canRenderImage = Boolean(src && isSafeHttpUrl(src) && !failed);
+  const resolvedSrc = resolveMediaUrl(src);
+  const canRenderImage = Boolean(resolvedSrc && !failed);
 
   return (
     <span
@@ -56,9 +57,9 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
         className,
       )}
     >
-      {canRenderImage && src ? (
+      {canRenderImage && resolvedSrc ? (
         <img
-          src={src}
+          src={resolvedSrc}
           alt={name}
           onError={() => setFailed(true)}
           className="size-full object-cover"

@@ -35,6 +35,13 @@ export interface ResetPasswordPayload {
   newPassword: string;
 }
 
+export interface AuthStudentProfileSummary {
+  bio: string | null;
+  photoUrl: string | null;
+  gitHubUrl: string | null;
+  linkedInUrl: string | null;
+}
+
 export interface AuthStudentSummary {
   studentId: number;
   firstName: string;
@@ -45,6 +52,8 @@ export interface AuthStudentSummary {
   facultyId: number;
   facultyName: string;
   universityName: string;
+  photoUrl?: string | null;
+  profile?: AuthStudentProfileSummary | null;
   showEmailInDirectory?: boolean;
 }
 

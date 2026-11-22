@@ -25,6 +25,7 @@ import {
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Avatar } from "@/components/ui";
 import { useAuth } from "@/features/auth";
+import { usePublicPeopleShowcase } from "@/features/catalog/usePublicPeopleShowcase";
 import { cn } from "@/lib/cn";
 import { NotificationBell } from "./NotificationBell";
 import { XpLevelChip } from "./XpLevelChip";
@@ -78,7 +79,7 @@ const NAV_OPTIONS: readonly NavOptionGroup[] = [
     to: "/students",
     highlightTag: "Verified Campus Identity",
     highlightCopy: "Showcase verified projects, skills, and faculty credentials.",
-    imageSrc: "/images/hero/hero-student-teal.jpg",
+    imageSrc: "/images/people/omar-mostafa.jpg",
     imageAlt: "Engineering student builder portrait representing verified student profiles",
     imagePosition: "object-top",
     subOptions: [
@@ -192,13 +193,23 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
   openMenuIdRef.current = openMenuId;
   displayedMenuIdRef.current = displayedMenuId;
 
-  const displayedOption = useMemo(
-    () =>
-      displayedMenuId
-        ? (NAV_OPTIONS.find((item) => item.id === displayedMenuId) ?? null)
-        : null,
-    [displayedMenuId],
-  );
+  const { students: showcaseStudents } = usePublicPeopleShowcase(6, Boolean(openMenuId));
+  const featuredShowcaseStudent = showcaseStudents[1] ?? showcaseStudents[0] ?? null;
+
+  const displayedOption = useMemo(() => {
+    if (!displayedMenuId) {
+      return null;
+    }
+    const baseOption = NAV_OPTIONS.find((item) => item.id === displayedMenuId) ?? null;
+    if (!baseOption || baseOption.id !== "profiles-scoring" || !featuredShowcaseStudent) {
+      return baseOption;
+    }
+    return {
+      ...baseOption,
+      imageSrc: featuredShowcaseStudent.photoUrl,
+      imageAlt: `${featuredShowcaseStudent.firstName} ${featuredShowcaseStudent.lastName} — ${featuredShowcaseStudent.universityName} verified student portrait`,
+    };
+  }, [displayedMenuId, featuredShowcaseStudent]);
 
   const clearCloseTimer = useCallback(() => {
     if (closeMenuTimerRef.current !== null) {
@@ -680,7 +691,11 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                     : "border-white/15 bg-[#1b1d26]/90 text-white hover:border-[#d3fb52]/40",
                 )}
               >
-                <Avatar name={`${user.firstName} ${user.lastName}`} size="xs" />
+                <Avatar
+                  src={user.photoUrl ?? user.profile?.photoUrl}
+                  name={`${user.firstName} ${user.lastName}`}
+                  size="xs"
+                />
                 <span className="hidden sm:inline">{user.firstName}</span>
               </Link>
 

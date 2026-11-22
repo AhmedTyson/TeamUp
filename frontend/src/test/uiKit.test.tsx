@@ -64,14 +64,25 @@ describe("Handshake UI primitive kit", () => {
     expect(screen.getByText("Waitlisted")).toBeInTheDocument();
   });
 
-  it("falls back to initials on Avatar when src is missing or unsafe", () => {
-    render(
+  it("renders public /images/people Avatar src and falls back to initials when unsafe", () => {
+    const { rerender } = render(
+      <div>
+        <Avatar name="Salma Khaled" src="/images/people/salma-khaled.jpg" />
+      </div>,
+    );
+
+    const img = screen.getByAltText("Salma Khaled");
+    expect(img).toHaveAttribute("src", "/images/people/salma-khaled.jpg");
+
+    rerender(
       <div>
         <Avatar name="Ahmed Elsayed" src="javascript:alert(1)" />
+        <Avatar name="Omar Mostafa" src="/images/../secret.jpg" />
       </div>,
     );
 
     expect(screen.getByRole("img", { name: "Ahmed Elsayed" })).toHaveTextContent("AE");
+    expect(screen.getByRole("img", { name: "Omar Mostafa" })).toHaveTextContent("OM");
     expect(document.querySelector("img")).toBeNull();
   });
 

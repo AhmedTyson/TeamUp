@@ -113,7 +113,30 @@ test.describe("M1 Authentication E2E Smoke Suite", () => {
   test("LandingPage & Morphing Navbar: opens liquid gliding-pill dropdown menus, morphs to white floating pill with T icon on scroll, and navigates via sub-option", async ({
     page,
   }) => {
+    // Public API showcase and static people images must be publicly served from TeamUp.Api
+    const showcaseRes = await page.request.get("http://localhost:5186/api/v1/students/showcase?limit=6");
+    expect(showcaseRes.ok()).toBe(true);
+    const showcaseBody = await showcaseRes.json();
+    expect(showcaseBody.data.length).toBeGreaterThanOrEqual(3);
+    expect(showcaseBody.data[0].photoUrl).toMatch(/^\/images\/people\//);
+    expect(JSON.stringify(showcaseBody)).not.toContain("@");
+
+    const imgRes = await page.request.get("http://localhost:5186/images/people/salma-khaled.jpg");
+    expect(imgRes.ok()).toBe(true);
+    expect(imgRes.headers()["content-type"]).toContain("image/jpeg");
+
     await page.goto("/");
+
+    const heroPortraits = page
+      .locator('section[aria-label="TeamUp Campus Student Hero"] img[src*="/images/people/"]');
+    await expect(heroPortraits).toHaveCount(3);
+    for (const idx of [0, 1, 2]) {
+      await expect(heroPortraits.nth(idx)).toBeVisible();
+      const loadedWidth = await heroPortraits
+        .nth(idx)
+        .evaluate((el) => (el as HTMLImageElement).naturalWidth);
+      expect(loadedWidth).toBeGreaterThan(0);
+    }
 
     await expect(page.locator("#brand-wordmark")).toBeVisible();
     await expect(page.locator("#brand-icon-scrolled")).toHaveCount(0);

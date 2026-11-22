@@ -58,6 +58,7 @@ describe("API layer contracts", () => {
     expect(API_ENDPOINTS.sessions.selfCheckIn(9)).toBe("/api/v1/sessions/9/attendance/self-check-in");
     expect(API_ENDPOINTS.sessions.attendanceReport(9)).toBe("/api/v1/sessions/9/attendance/report");
     expect(API_ENDPOINTS.students.manualAwardBadge(12, 4)).toBe("/api/v1/students/12/badges/4");
+    expect(API_ENDPOINTS.students.myProfilePhoto).toBe("/api/v1/students/me/profile/photo");
   });
 
   it("validates OrganizationRoles admin helper and restorable entity enum", () => {
@@ -315,5 +316,32 @@ describe("Axios single-flight 401 refresh mutex, 429 parsing, and HTML fetcher",
 
     const html = await fetchApiHtml(API_ENDPOINTS.sessions.attendanceReport(5), undefined, client);
     expect(html).toContain("<h1>Attendance Report</h1>");
+  });
+
+  it("removes default JSON Content-Type header when sending FormData uploads", async () => {
+    const client = createApiClient({ baseURL: "" });
+    client.defaults.adapter = async (config) => {
+      const headers = AxiosHeaders.from(config.headers);
+      const contentType = String(headers.get("Content-Type") ?? "");
+      expect(contentType).not.toContain("application/json");
+      return {
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config,
+        data: {
+          success: true,
+          message: "Uploaded",
+          statusCode: 200,
+          data: { bio: null, photoUrl: "/images/people/student-1-demo.png", gitHubUrl: null, linkedInUrl: null },
+          timestamp: "2026-11-22T00:00:00Z",
+        },
+      };
+    };
+
+    const formData = new FormData();
+    formData.append("file", new Blob(["png"], { type: "image/png" }), "portrait.png");
+    const response = await client.post(API_ENDPOINTS.students.myProfilePhoto, formData);
+    expect(response.status).toBe(200);
   });
 });

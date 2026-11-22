@@ -51,7 +51,9 @@ export type {
 export { healthApi } from "./health.api";
 export { authApi } from "./auth.api";
 export { universitiesApi } from "./universities.api";
+export { studentsApi } from "./students.api";
 export { adminApi } from "./admin.api";
+export type { PublicStudentShowcaseItem, StudentProfile } from "./students.api";
 export type { ApiResponse, ErrorDetail, PagedResult, HealthStatus } from "./types";
 export type {
   LoginPayload,

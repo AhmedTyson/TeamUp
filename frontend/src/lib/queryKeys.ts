@@ -36,6 +36,7 @@ export const queryKeys = {
 
   students: {
     all: ["students"] as const,
+    showcase: (limit = 6) => ["students", "showcase", { limit }] as const,
     directory: (params?: QueryParams) => ["students", "directory", params ?? {}] as const,
     detail: (id: number) => ["students", "detail", id] as const,
     profile: (id: number) => ["students", "profile", id] as const,

@@ -9,7 +9,12 @@ import { computeJsonDiffEntries, formatDateTime } from "@/lib/formatters";
 import { decodeJwtPayload, isTokenExpired } from "@/lib/jwt";
 import { createAppQueryClient, shouldRetryApiError } from "@/lib/queryClient";
 import { invalidateGamification, queryKeys } from "@/lib/queryKeys";
-import { isSafeHttpUrl, optionalSafeUrlSchema, safeUrlSchema } from "@/lib/urlValidation";
+import {
+  isSafeHttpUrl,
+  optionalSafeUrlSchema,
+  resolveMediaUrl,
+  safeUrlSchema,
+} from "@/lib/urlValidation";
 
 function createFakeJwt(payload: Record<string, unknown>): string {
   const encode = (obj: object) =>
@@ -74,6 +79,20 @@ describe("Safe URL validation (STRIDE THR-T-03)", () => {
     expect(safeUrlSchema.safeParse("https://linkedin.com/in/student").success).toBe(true);
     expect(safeUrlSchema.safeParse("javascript:void(0)").success).toBe(false);
     expect(optionalSafeUrlSchema.safeParse("").success).toBe(true);
+  });
+
+  it("resolves uploaded backend portrait paths against VITE_API_BASE_URL while keeping seeded paths local", () => {
+    expect(resolveMediaUrl("/images/people/salma-khaled.jpg", "https://teamup-api.runasp.net")).toBe(
+      "/images/people/salma-khaled.jpg",
+    );
+    expect(
+      resolveMediaUrl("/images/people/student-10-abc.jpg", "https://teamup-api.runasp.net/api"),
+    ).toBe("https://teamup-api.runasp.net/images/people/student-10-abc.jpg");
+    expect(resolveMediaUrl("/images/people/student-10-abc.jpg", "")).toBe(
+      "/images/people/student-10-abc.jpg",
+    );
+    expect(resolveMediaUrl("//evil.example.com/a.jpg", "https://teamup-api.runasp.net")).toBeNull();
+    expect(resolveMediaUrl("/images/../secret.jpg", "https://teamup-api.runasp.net")).toBeNull();
   });
 });
 

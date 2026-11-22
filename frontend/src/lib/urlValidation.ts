@@ -3,6 +3,7 @@
  * @purpose Client-side safe external URL validator mirroring backend SafeUrlValidator (STRIDE THR-T-03).
  */
 import { z } from "zod";
+import { env } from "@/lib/env";
 
 const BLOCKED_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1", "[::1]"]);
 
@@ -39,6 +40,33 @@ export function isSafeAssetOrHttpUrl(value: string | null | undefined): boolean 
     return !trimmed.includes("..") && !/[\x00-\x1f\x7f]/.test(trimmed);
   }
   return isSafeHttpUrl(trimmed);
+}
+
+/**
+ * Resolves uploaded backend portrait URLs (/images/people/student-*) against VITE_API_BASE_URL
+ * when the frontend SPA is hosted on a separate domain, while keeping seeded static assets local.
+ */
+export function resolveMediaUrl(
+  value: string | null | undefined,
+  apiBaseUrl: string = env.apiBaseUrl,
+): string | null {
+  if (!value) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!isSafeAssetOrHttpUrl(trimmed)) {
+    return null;
+  }
+  const trimmedBase = apiBaseUrl.trim();
+  if (trimmed.startsWith("/images/people/student-") && trimmedBase.length > 0) {
+    try {
+      const origin = new URL(trimmedBase).origin;
+      return `${origin}${trimmed}`;
+    } catch {
+      return trimmed;
+    }
+  }
+  return trimmed;
 }
 
 export const safeUrlSchema = z
