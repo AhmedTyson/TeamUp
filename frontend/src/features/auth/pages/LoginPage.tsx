@@ -1,10 +1,10 @@
 /**
  * @date 2026-11-22
- * @purpose Student sign-in screen handling session-expired banners, FluentValidation field errors, and rate-limit cooldowns.
+ * @purpose Student sign-in screen with focusable error summary, session-expired alerts, 429 cooldown timer, and route-specific role scope preview.
  */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
-import { useEffect, useState } from "react";
+import { CheckCircle2, Eye, EyeOff, KeyRound, Lock, LogIn, Mail, Shield } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -31,6 +31,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const errorRegionRef = useRef<HTMLDivElement>(null);
 
   const reason = searchParams.get("reason");
   const resetStatus = searchParams.get("reset");
@@ -38,6 +39,7 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
@@ -84,14 +86,53 @@ export function LoginPage() {
         setCooldownSeconds(error.retryAfterSeconds ?? 30);
       }
       setSubmitError(error);
+      requestAnimationFrame(() => {
+        errorRegionRef.current?.focus();
+      });
     }
   };
 
+  const applyDemoCredentials = (email: string) => {
+    const demoPassword =
+      (import.meta.env.VITE_DEV_SEED_PASSWORD as string | undefined) || "Adm!0RK8zvFIO2BDTX";
+    setValue("email", email, { shouldDirty: true, shouldValidate: true });
+    setValue("password", demoPassword, { shouldDirty: true });
+  };
+
+  const devQuickFill = import.meta.env.DEV ? (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/[0.08] bg-[#14151c]/70 px-3.5 py-2.5">
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#9ca3af]">
+        <KeyRound className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
+        Demo quick-fill
+      </span>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => applyDemoCredentials("admin@teamup.local")}
+          className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-white/12 bg-[#1b1d26] px-2.5 py-1 text-xs font-medium text-white transition-colors hover:border-[#d3fb52]/50 hover:text-[#d3fb52]"
+        >
+          <Shield className="size-3" aria-hidden="true" />
+          PlatformAdmin
+        </button>
+        <button
+          type="button"
+          onClick={() => applyDemoCredentials("nour@cu.edu.eg")}
+          className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-white/12 bg-[#1b1d26] px-2.5 py-1 text-xs font-medium text-white transition-colors hover:border-[#d3fb52]/50 hover:text-[#d3fb52]"
+        >
+          OrgAdmin Demo
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <AuthSplitLayout
-      badge="Campus Identity · JWT 15m"
+      eyebrow="Student Portal"
       headline="Step back into your campus squad."
-      showcaseSubtitle="Pick up active Kanban tasks, review organization invitations, and verify upcoming event sessions with your university account."
+      showcaseSubtitle="Pick up active Kanban tasks, review organization invitations, and join upcoming event sessions with your university account."
+      heroImageSrc="/images/hero/hero-squad-lab.jpg"
+      heroImageAlt="University students collaborating around laptops in a sunlit innovation lab"
+      heroImagePosition="object-center"
       title="Sign in to TeamUp"
       description="Use your registered student email and password to continue."
       footer={
@@ -118,7 +159,7 @@ export function LoginPage() {
         <ErrorBanner
           variant="warning"
           title="Session expired"
-          message="Your 15-minute access token expired or your security stamp was rotated. Please sign in again."
+          message="Your session has expired. Please sign in again to continue."
         />
       )}
 
@@ -138,10 +179,12 @@ export function LoginPage() {
       )}
 
       {submitError !== null && (
-        <ErrorBanner
-          error={submitError}
-          retryAfterSeconds={cooldownSeconds > 0 ? cooldownSeconds : undefined}
-        />
+        <div ref={errorRegionRef} tabIndex={-1} className="focus:outline-none">
+          <ErrorBanner
+            error={submitError}
+            retryAfterSeconds={cooldownSeconds > 0 ? cooldownSeconds : undefined}
+          />
+        </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
@@ -194,6 +237,7 @@ export function LoginPage() {
           </Button>
         </div>
       </form>
+      {devQuickFill}
     </AuthSplitLayout>
   );
 }

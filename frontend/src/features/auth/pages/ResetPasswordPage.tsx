@@ -1,6 +1,6 @@
 /**
  * @date 2026-11-22
- * @purpose Password reset screen supporting ?email=&token= query prefill, strength checklist, and 429 cooldown handling.
+ * @purpose Password reset screen supporting ?email=&token= query prefill, visual strength bar, and SecurityStamp rotation preview.
  */
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, KeyRound, Lock, Mail, ShieldCheck } from "lucide-react";
@@ -75,9 +75,12 @@ export function ResetPasswordPage() {
 
   return (
     <AuthSplitLayout
-      badge="Security Stamp Rotation"
+      eyebrow="Security Update"
       headline="Set a new password."
-      showcaseSubtitle="Completing a password reset rotates your SecurityStamp and immediately revokes any existing access or refresh tokens."
+      showcaseSubtitle="Choose a strong password for your university account to get back to your teams, clubs, and workshops."
+      heroImageSrc="/images/hero/hero-demo-day.jpg"
+      heroImageAlt="Student teammates showcasing their engineering project prototype at Demo Day"
+      heroImagePosition="object-center"
       title="Reset your password"
       description="Enter your email, 15-minute recovery token, and your new password."
       footer={

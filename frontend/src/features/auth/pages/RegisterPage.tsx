@@ -1,15 +1,15 @@
 /**
  * @date 2026-11-22
- * @purpose Student registration screen with cached University -> Faculty cascade, academic year picker, and FluentValidation error mapping.
+ * @purpose Student onboarding registration screen with live University -> Faculty catalog cascade, Campus Credential Card preview, and focusable error summary.
  */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, GraduationCap, Lock, Mail, UserPlus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Building2, Eye, EyeOff, GraduationCap, Lock, Mail, UserPlus } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ApiClientError } from "@/api";
-import { Button, ErrorBanner, Input, Select, type SelectOption } from "@/components/ui";
+import { Avatar, Badge, Button, ErrorBanner, Input, Select, UniversityLogo, type SelectOption } from "@/components/ui";
 import { mapApiErrorsToForm } from "@/lib/formErrors";
 import { AuthSplitLayout } from "../components/AuthSplitLayout";
 import { PasswordStrengthHints } from "../components/PasswordStrengthHints";
@@ -33,6 +33,7 @@ export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const errorRegionRef = useRef<HTMLDivElement>(null);
 
   const catalogQuery = useAcademicCatalogQuery();
 
@@ -56,7 +57,12 @@ export function RegisterPage() {
     },
   });
 
+  const watchedFirstName = useWatch({ control, name: "firstName" }) ?? "";
+  const watchedLastName = useWatch({ control, name: "lastName" }) ?? "";
+  const watchedEmail = useWatch({ control, name: "email" }) ?? "";
   const selectedUniversityId = useWatch({ control, name: "universityId" }) ?? "";
+  const selectedFacultyId = useWatch({ control, name: "facultyId" }) ?? "";
+  const watchedAcademicYear = useWatch({ control, name: "academicYear" }) ?? "1";
   const watchedPassword = useWatch({ control, name: "password" }) ?? "";
 
   useEffect(() => {
@@ -95,6 +101,14 @@ export function RegisterPage() {
     }));
   }, [selectedUniversity]);
 
+  const selectedFaculty = useMemo(() => {
+    const parsedId = Number.parseInt(selectedFacultyId, 10);
+    if (!selectedUniversity || !Number.isInteger(parsedId) || parsedId <= 0) {
+      return undefined;
+    }
+    return selectedUniversity.faculties.find((f) => f.facultyId === parsedId);
+  }, [selectedUniversity, selectedFacultyId]);
+
   const universityRegistration = register("universityId", {
     onChange: () => {
       setValue("facultyId", "", { shouldValidate: false, shouldDirty: true });
@@ -129,14 +143,88 @@ export function RegisterPage() {
         setCooldownSeconds(error.retryAfterSeconds ?? 30);
       }
       setSubmitError(error);
+      requestAnimationFrame(() => {
+        errorRegionRef.current?.focus();
+      });
     }
   };
 
+  const fullNamePreview =
+    [watchedFirstName.trim(), watchedLastName.trim()].filter(Boolean).join(" ") ||
+    "Your Student Name";
+
+  const credentialCardPreview = (
+    <div className="rounded-2xl border border-white/15 bg-[#14151c]/88 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl">
+      <div className="flex items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+        <span className="font-mono text-[11px] uppercase tracking-wider text-white/75">
+          Campus Pass Preview
+        </span>
+        <Badge variant="accent" size="sm">
+          Student · Yr {watchedAcademicYear}
+        </Badge>
+      </div>
+
+      <div className="mt-3.5 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar name={fullNamePreview} size="md" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">{fullNamePreview}</p>
+            <p className="truncate text-xs text-white/70">
+              {watchedEmail.trim() || "student@university.edu"}
+            </p>
+          </div>
+        </div>
+        {selectedUniversity && (
+          <UniversityLogo
+            name={selectedUniversity.name}
+            logoUrl={selectedUniversity.logoUrl}
+            size="md"
+            className="ring-2 ring-[#d3fb52]/40"
+          />
+        )}
+      </div>
+
+      <div className="mt-3.5 space-y-1.5 rounded-xl border border-white/[0.08] bg-[#1b1d26]/85 p-3 text-xs">
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 text-[#9ca3af]">
+            {selectedUniversity ? (
+              <UniversityLogo
+                name={selectedUniversity.name}
+                logoUrl={selectedUniversity.logoUrl}
+                size="sm"
+                className="size-5 rounded-md"
+              />
+            ) : (
+              <Building2 className="size-3.5 text-emerald-400" aria-hidden="true" />
+            )}
+            University
+          </span>
+          <span className="truncate font-medium text-white">
+            {selectedUniversity ? selectedUniversity.name : "Select university"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 text-[#9ca3af]">
+            <GraduationCap className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
+            Faculty
+          </span>
+          <span className="truncate font-medium text-white">
+            {selectedFaculty ? `${selectedFaculty.code} · ${selectedFaculty.name}` : "Pending"}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <AuthSplitLayout
-      badge="Academic Onboarding"
+      eyebrow="Campus Onboarding"
       headline="Claim your university profile."
-      showcaseSubtitle="Connect directly with your university and faculty network to discover teammates, campus clubs, and verified XP milestones."
+      showcaseSubtitle="Connect directly with your university and faculty network to discover teammates, campus clubs, and student activities."
+      heroImageSrc="/images/hero/hero-club-meetup.jpg"
+      heroImageAlt="University student club members brainstorming outdoors around hardware and laptops"
+      heroImagePosition="object-center"
+      previewSlot={credentialCardPreview}
       title="Create student account"
       description="Select your university and faculty from the verified academic catalog."
       footer={
@@ -162,10 +250,12 @@ export function RegisterPage() {
       )}
 
       {submitError !== null && (
-        <ErrorBanner
-          error={submitError}
-          retryAfterSeconds={cooldownSeconds > 0 ? cooldownSeconds : undefined}
-        />
+        <div ref={errorRegionRef} tabIndex={-1} className="focus:outline-none">
+          <ErrorBanner
+            error={submitError}
+            retryAfterSeconds={cooldownSeconds > 0 ? cooldownSeconds : undefined}
+          />
+        </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
@@ -265,14 +355,6 @@ export function RegisterPage() {
         />
 
         <PasswordStrengthHints password={watchedPassword} />
-
-        <div className="flex items-center gap-2 rounded-xl border border-white/8 bg-[#14151c]/70 px-3.5 py-2.5 text-xs text-[#9ca3af]">
-          <GraduationCap className="size-4 shrink-0 text-[#d3fb52]" aria-hidden="true" />
-          <span>
-            New accounts join with the <strong className="text-white">Student</strong> role and an
-            empty XP ledger.
-          </span>
-        </div>
 
         <Button
           type="submit"

@@ -1,6 +1,6 @@
 /**
  * @date 2026-11-22
- * @purpose Opaque password recovery request screen explaining the 15-minute token TTL and enforcing 429 cooldowns.
+ * @purpose Opaque password recovery request screen with 3-step recovery lifecycle preview and 429 cooldown enforcement.
  */
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, CheckCircle2, Clock, Mail, Send } from "lucide-react";
@@ -64,9 +64,12 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthSplitLayout
-      badge="Zero-Enumeration Recovery"
+      eyebrow="Account Recovery"
       headline="Recover access safely."
-      showcaseSubtitle="TeamUp never reveals whether an email is registered. Recovery tokens are one-time use and expire automatically after 15 minutes."
+      showcaseSubtitle="Enter your university email and we'll send you a one-time code to reset your password and get back to your projects."
+      heroImageSrc="/images/hero/hero-workshop-hall.jpg"
+      heroImageAlt="Students participating in a hands-on engineering workshop in a modern auditorium"
+      heroImagePosition="object-center"
       title="Forgot your password?"
       description="Enter your student email address to receive a time-limited reset code."
       footer={
