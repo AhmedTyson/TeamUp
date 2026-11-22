@@ -64,27 +64,27 @@ M2 owns the core student collaboration loop: discovering projects by skill and s
 ## 4. Phased Task Checklist
 
 ### Phase 1 — Typed APIs, Skills Catalog & Project Discovery (Days 3–6)
-- [ ] **M2-01:** Create `skills.api.ts`, `projects.api.ts`, and `tasks.api.ts` with full TypeScript DTOs matching `docs/api/openapi.json`.
-- [ ] **M2-02:** Build `/skills` page with category pills, debounced keyword search, skill cards, and `PlatformAdmin` Create/Edit/Delete skill modal.
-- [ ] **M2-03:** Build **"My Claimed Skills"** manager (`PUT/DELETE /students/me/skills/{skillId}`) with `Beginner / Intermediate / Advanced` selector and years-of-experience stepper.
-- [ ] **M2-04:** Build `/projects` Discovery Directory with URL-synced query params (`?keyword=&status=&skillId=&page=`) so M4's landing page search routes seamlessly into filtered results; render `<SpotlightCard>` project tiles with capacity progress bars (`teamSize / maxTeamSize`) and status pills (`Recruiting`, `InProgress`, `Completed`, `Archived`).
-- [ ] **M2-05:** Build `/projects/:id` Header & Overview tab showing creator badge, status switcher (creator-only), edit/soft-delete actions, and Required Skills matrix (`Mandatory` lime badge vs `Preferred` subtle badge + visual match indicator against the logged-in student's claimed skills!).
+- [x] **M2-01:** Create `skills.api.ts`, `projects.api.ts`, and `tasks.api.ts` with typed DTOs and wrappers matching `docs/api/openapi.json`.
+- [x] **M2-02:** Build `/skills` page with category filter, debounced keyword search, skill cards, and `PlatformAdmin` Create/Edit/Delete skill controls.
+- [x] **M2-03:** Build **"My Claimed Skills"** manager (`PUT/DELETE /students/me/skills/{skillId}`) with proficiency selector and years-of-experience input.
+- [x] **M2-04:** Build `/projects` discovery with URL-synced `keyword`, `status`, `skillId`, and `page` filters, `<SpotlightCard>` project tiles, team-capacity progress, and status pills.
+- [x] **M2-05:** Build `/projects/:id` overview with lead-only edit/status/delete actions, required-skill editor and match indicators against the logged-in student's claimed skills.
 
 ### Phase 2 — Team Recruitment, Applications & Sprint Kanban Board (Days 7–11)
-- [ ] **M2-06:** Build `/projects/new` Project Creation form with Zod validation (`maxTeamSize >= 1`) + post-create quick skill tagging.
-- [ ] **M2-07:** Build Required Skills Editor (creator-only) allowing add/update (`PUT`) and remove (`DELETE`) of required skills with proficiency level and mandatory toggle.
-- [ ] **M2-08:** Build Team Roster tab: member list linking to `/students/:id`, inline role editor (`PATCH .../members/{studentId}`), and remove/leave confirmation warning that removing a member unassigns their tasks.
-- [ ] **M2-09:** Build Applications tab:
+- [x] **M2-06:** Build `/projects/new` creation form with Zod validation (`maxTeamSize >= 1`) and optional required-skill tagging.
+- [x] **M2-07:** Build lead-only Required Skills editor supporting add/update/remove, proficiency level, and mandatory toggle.
+- [x] **M2-08:** Build Team Roster tab with profile links, inline role updates, and remove/leave confirmation warning about task assignments.
+- [x] **M2-09:** Build Applications tab:
   - Non-member view: **Apply to Join** modal (`POST .../applications`) + **Withdraw** button for pending application.
   - Creator/Lead view: Applicant queue with **Accept / Reject** buttons, handling `409 Conflict` cleanly when concurrent accepts hit `maxTeamSize` (`RowVersion` protection).
-- [ ] **M2-10:** Build Sprint Kanban Board tab (`Todo`, `InProgress`, `InReview`, `Done`):
+- [x] **M2-10:** Build Sprint Kanban Board tab (`Todo`, `InProgress`, `InReview`, `Done`):
   - Task cards with `TaskPriority` badges (`Low`, `Medium`, `High`, `Urgent`), due date overdue highlight, assignee avatar, and quick status transition menu (accessible keyboard-first + optional drag-and-drop).
   - Create / Edit / Delete task modal and Assignee picker restricted strictly to current `ProjectDetailDto.members`.
   - On status transition to `Done` (or project `Completed`), fire `invalidateGamification()` and show celebratory lime XP toast (`+50 XP awarded!`).
 
 ### Phase 3 — Cross-Module Widget & Testing (Days 12–14)
-- [ ] **M2-11:** Export `<StudentSkillsPanel studentId={id} editable={isMe} />` for M4 to embed inside `/students/:id` and `/profile/me`.
-- [ ] **M2-12:** Write Vitest + Testing Library suites for Project Discovery filtering, Application Accept `409` concurrency error handling, Kanban task creation/status move, and Skill Claim upsert/removal.
+- [x] **M2-11:** Export `<StudentSkillsPanel studentId={id} editable={isMe} />` for profile integration.
+- [x] **M2-12:** Write Vitest + Testing Library suites for Project Discovery filtering, Application Accept `409` handling, Kanban task creation/status move, and Skill Claim upsert/removal.
 
 ---
 
