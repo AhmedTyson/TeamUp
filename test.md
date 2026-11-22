@@ -19,3 +19,9 @@
 | `npm run build` | Passed |
 
 The test runner printed connection-refused/socket-reset messages for `localhost:3000`, but both the focused and full Vitest commands exited successfully. The build reported a non-blocking large JavaScript chunk warning.
+
+## Pull request follow-up
+
+- The GitHub E2E run exposed an ambiguous `page.locator("header")` assertion after the Projects page added its own semantic header. The smoke test now targets the navigation header by `#main-header`.
+- Local Playwright execution could not be completed: Chromium was not installed, and `npx playwright install chromium` failed because the machine ran out of disk space (`ENOSPC`). The updated E2E test still needs a successful GitHub Actions run for end-to-end confirmation.
+- Vercel deployment logs were not available locally because the Vercel CLI requires account authentication. The local production build passed, but that does not establish the cause of the Vercel deployment failure.

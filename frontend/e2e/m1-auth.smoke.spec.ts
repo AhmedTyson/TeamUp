@@ -51,7 +51,7 @@ test.describe("M1 Authentication E2E Smoke Suite", () => {
     await page.getByRole("button", { name: /Create Account/i }).click();
 
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(page.locator("header")).toContainText("Salma");
+    await expect(page.locator("#main-header")).toContainText("Salma");
     await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
   });
 
