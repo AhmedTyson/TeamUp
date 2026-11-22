@@ -1,11 +1,11 @@
 /**
- * @date 2026-11-21
+ * @date 2026-11-22
  * @purpose M4 (Youssef) route fragment owning Landing, Student Directory, Profiles, Leaderboard, Gamification, and Notifications routes.
  */
 import type { RouteObject } from "react-router-dom";
-import { API_ENDPOINTS } from "@/api";
+import { ProposedHeroDemo } from "@/components/home/ProposedHeroDemo";
+import { CommunityHubPage } from "@/pages/CommunityHubPage";
 import { HomePage } from "@/pages/HomePage";
-import { ModulePlaceholderPage } from "@/pages/ModulePlaceholderPage";
 
 export const communityRoutes: RouteObject[] = [
   {
@@ -13,63 +13,31 @@ export const communityRoutes: RouteObject[] = [
     element: <HomePage />,
   },
   {
+    path: "demo/hero",
+    element: <ProposedHeroDemo />,
+  },
+  {
     path: "students",
-    element: (
-      <ModulePlaceholderPage
-        title="Student Directory"
-        description="Privacy-hardened campus student discovery with faculty and academic year filters."
-        endpoint={API_ENDPOINTS.students.list}
-      />
-    ),
+    element: <CommunityHubPage mode="students" />,
   },
   {
     path: "students/:id",
-    element: (
-      <ModulePlaceholderPage
-        title="Student Portfolio"
-        description="Public student profile, verified skills, interests, and earned campus badges."
-        endpoint={API_ENDPOINTS.students.list}
-      />
-    ),
+    element: <CommunityHubPage mode="students" />,
   },
   {
     path: "profile/me",
-    element: (
-      <ModulePlaceholderPage
-        title="My Account & Portfolio"
-        description="Manage your bio, external links, directory email privacy, skills, and interest tags."
-        endpoint={API_ENDPOINTS.students.me}
-      />
-    ),
+    element: <CommunityHubPage mode="portfolio" />,
   },
   {
     path: "leaderboard",
-    element: (
-      <ModulePlaceholderPage
-        title="Campus Leaderboard"
-        description="Top student contributors ranked by verifiable XP across projects and events."
-        endpoint={API_ENDPOINTS.gamification.leaderboard}
-      />
-    ),
+    element: <CommunityHubPage mode="leaderboard" />,
   },
   {
     path: "gamification",
-    element: (
-      <ModulePlaceholderPage
-        title="Gamification & Badges"
-        description="Immutable score ledger, progressive level ranks, achievement badges, and notifications."
-        endpoint={API_ENDPOINTS.gamification.badges}
-      />
-    ),
+    element: <CommunityHubPage mode="gamification" />,
   },
   {
     path: "notifications",
-    element: (
-      <ModulePlaceholderPage
-        title="Notifications Inbox"
-        description="Stay updated on project applications, assigned sprint tasks, earned badges, and event reminders."
-        endpoint={API_ENDPOINTS.gamification.notifications}
-      />
-    ),
+    element: <CommunityHubPage mode="notifications" />,
   },
 ];
