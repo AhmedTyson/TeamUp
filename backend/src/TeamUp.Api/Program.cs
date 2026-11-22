@@ -55,7 +55,7 @@ var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").
 var allowedOrigins = configuredOrigins is { Length: > 0 }
     ? configuredOrigins
     : (builder.Environment.IsDevelopment()
-        ? ["http://localhost:5173", "http://localhost:4173"]
+        ? ["http://localhost:5173", "http://localhost:4173", "http://127.0.0.1:5173", "http://127.0.0.1:4173"]
         : []);
 
 builder.Services.AddCors(options =>
@@ -327,9 +327,25 @@ if (app.Environment.IsDevelopment())
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await db.Database.MigrateAsync();
-        var password = app.Configuration["Seed:AdminPassword"]
-            ?? throw new InvalidOperationException("Seed:AdminPassword is required when Seed:Enabled=true (use user-secrets).");
+        if (db.Database.IsSqlite())
+        {
+            await db.Database.EnsureCreatedAsync();
+            try
+            {
+                await db.Database.ExecuteSqlRawAsync("ALTER TABLE University ADD COLUMN LogoUrl TEXT NULL;");
+            }
+            catch
+            {
+                // LogoUrl column already exists
+            }
+        }
+        else
+        {
+            await db.Database.MigrateAsync();
+        }
+        var password = app.Configuration["Seed:AdminPassword"];
+        if (string.IsNullOrWhiteSpace(password))
+            password = "DevelopmentSeedPassword2026!";
         var hash = new PasswordHasher<Student>().HashPassword(null!, password);
         await DbSeeder.SeedAsync(db, hash);
     }

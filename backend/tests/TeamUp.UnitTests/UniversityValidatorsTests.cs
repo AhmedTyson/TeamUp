@@ -11,9 +11,26 @@ public class UniversityValidatorsTests
     [Fact]
     public void CreateUniversity_Valid_Passes()
     {
-        var req = new CreateUniversityRequest("Ain Shams University", "Cairo", "Egypt", "https://asu.edu.eg");
+        var req = new CreateUniversityRequest(
+            "Ain Shams University",
+            "Cairo",
+            "Egypt",
+            "https://asu.edu.eg",
+            "https://upload.wikimedia.org/wikipedia/en/3/3d/Ain_Shams_logo.png");
         var res = _createUniValidator.Validate(req);
         Assert.True(res.IsValid);
+    }
+
+    [Theory]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("http://localhost:8080/logo.png")]
+    [InlineData("not a relative or http url")]
+    public void CreateUniversity_InvalidLogoUrl_Fails(string invalidLogo)
+    {
+        var req = new CreateUniversityRequest("ASU", "Cairo", "Egypt", "https://asu.edu.eg", invalidLogo);
+        var res = _createUniValidator.Validate(req);
+        Assert.False(res.IsValid);
+        Assert.Contains(res.Errors, e => e.PropertyName == "LogoUrl");
     }
 
     [Theory]

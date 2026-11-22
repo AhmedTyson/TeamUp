@@ -100,6 +100,8 @@ public class TeamUpApiFactory : WebApplicationFactory<Program>
             {
                 ["DatabaseProvider"] = "Sqlite",
                 ["ConnectionStrings:TeamUpDb"] = "",
+                ["UseSqliteFallbackIfOffline"] = "false",
+                ["Seed:Enabled"] = "false",
                 ["Cors:AllowedOrigins:0"] = "http://localhost:5173",
                 ["Jwt:Key"] = "IntegrationTestSigningKeyForTeamUpMustBeAtLeast32BytesLong!",
                 ["Email:Provider"] = "InMemory",

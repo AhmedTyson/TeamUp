@@ -40,6 +40,7 @@ public sealed class UniversityService(
                 u.City,
                 u.Country,
                 u.Website,
+                u.LogoUrl,
                 u.Faculties.Count))
             .ToListAsync(ct);
 
@@ -63,6 +64,7 @@ public sealed class UniversityService(
                 u.City,
                 u.Country,
                 u.Website,
+                u.LogoUrl,
                 u.Faculties
                     .OrderBy(f => f.Name)
                     .Select(f => new FacultySummaryDto(f.FacultyId, f.Name, f.Code))
@@ -86,7 +88,7 @@ public sealed class UniversityService(
             .Select(f => new FacultySummaryDto(f.FacultyId, f.Name, f.Code))
             .ToList();
 
-        return new UniversityDetailDto(uni.UniversityId, uni.Name, uni.City, uni.Country, uni.Website, faculties);
+        return new UniversityDetailDto(uni.UniversityId, uni.Name, uni.City, uni.Country, uni.Website, uni.LogoUrl, faculties);
     }
 
     public async Task<UniversityDetailDto> CreateUniversityAsync(CreateUniversityRequest req, CancellationToken ct = default)
@@ -102,13 +104,14 @@ public sealed class UniversityService(
             City = req.City.Trim(),
             Country = req.Country.Trim(),
             Website = string.IsNullOrWhiteSpace(req.Website) ? null : req.Website.Trim(),
+            LogoUrl = string.IsNullOrWhiteSpace(req.LogoUrl) ? null : req.LogoUrl.Trim(),
         };
 
         db.Universities.Add(uni);
         await db.SaveChangesAsync(ct);
         cache.Remove(CatalogCacheKeys.AcademicCatalog);
 
-        return new UniversityDetailDto(uni.UniversityId, uni.Name, uni.City, uni.Country, uni.Website, []);
+        return new UniversityDetailDto(uni.UniversityId, uni.Name, uni.City, uni.Country, uni.Website, uni.LogoUrl, []);
     }
 
     public async Task<UniversityDetailDto> UpdateUniversityAsync(int id, UpdateUniversityRequest req, CancellationToken ct = default)
@@ -129,6 +132,7 @@ public sealed class UniversityService(
         uni.City = req.City.Trim();
         uni.Country = req.Country.Trim();
         uni.Website = string.IsNullOrWhiteSpace(req.Website) ? null : req.Website.Trim();
+        uni.LogoUrl = string.IsNullOrWhiteSpace(req.LogoUrl) ? null : req.LogoUrl.Trim();
 
         await db.SaveChangesAsync(ct);
         cache.Remove(CatalogCacheKeys.AcademicCatalog);
@@ -138,7 +142,7 @@ public sealed class UniversityService(
             .Select(f => new FacultySummaryDto(f.FacultyId, f.Name, f.Code))
             .ToList();
 
-        return new UniversityDetailDto(uni.UniversityId, uni.Name, uni.City, uni.Country, uni.Website, faculties);
+        return new UniversityDetailDto(uni.UniversityId, uni.Name, uni.City, uni.Country, uni.Website, uni.LogoUrl, faculties);
     }
 
     public async Task DeleteUniversityAsync(int id, CancellationToken ct = default)

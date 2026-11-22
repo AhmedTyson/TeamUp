@@ -18,6 +18,7 @@ public class UniversityConfig : IEntityTypeConfiguration<University>
         b.Property(x => x.City).HasMaxLength(100).IsRequired();
         b.Property(x => x.Country).HasMaxLength(100).IsRequired();
         b.Property(x => x.Website).HasMaxLength(200);
+        b.Property(x => x.LogoUrl).HasMaxLength(500);
         b.HasIndex(x => x.Name).IsUnique().HasFilter(Sql.NotDeleted);
     }
 }

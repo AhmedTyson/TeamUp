@@ -26,6 +26,12 @@ public class CreateUniversityRequestValidator : AbstractValidator<CreateUniversi
             .MaximumLength(200)
             .Must(SafeUrlValidator.IsSafeExternalHttpUrl).WithMessage("Website must be a valid public HTTP or HTTPS URL.")
             .When(x => !string.IsNullOrWhiteSpace(x.Website));
+
+        RuleFor(x => x.LogoUrl)
+            .MaximumLength(500)
+            .Must(SafeUrlValidator.IsSafeAssetOrExternalUrl)
+            .WithMessage("Logo URL must be a valid relative asset path (/logos/...) or public HTTP/HTTPS URL.")
+            .When(x => !string.IsNullOrWhiteSpace(x.LogoUrl));
     }
 }
 
@@ -49,5 +55,11 @@ public class UpdateUniversityRequestValidator : AbstractValidator<UpdateUniversi
             .MaximumLength(200)
             .Must(SafeUrlValidator.IsSafeExternalHttpUrl).WithMessage("Website must be a valid public HTTP or HTTPS URL.")
             .When(x => !string.IsNullOrWhiteSpace(x.Website));
+
+        RuleFor(x => x.LogoUrl)
+            .MaximumLength(500)
+            .Must(SafeUrlValidator.IsSafeAssetOrExternalUrl)
+            .WithMessage("Logo URL must be a valid relative asset path (/logos/...) or public HTTP/HTTPS URL.")
+            .When(x => !string.IsNullOrWhiteSpace(x.LogoUrl));
     }
 }

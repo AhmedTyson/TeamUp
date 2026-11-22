@@ -99,24 +99,26 @@ public class UniversityAndFacultyTests(TeamUpApiFactory factory) : IClassFixture
 
         // 1. Create University
         var name = $"Uni_{Guid.NewGuid():N}";
-        var req = new CreateUniversityRequest(name, "Giza", "Egypt", "https://newuni.edu.eg");
+        var req = new CreateUniversityRequest(name, "Giza", "Egypt", "https://newuni.edu.eg", "https://upload.wikimedia.org/wikipedia/commons/3/3c/Cairo_University_new_logo.png");
         var createRes = await client.PostAsJsonAsync("/api/v1/universities", req);
         Assert.Equal(HttpStatusCode.Created, createRes.StatusCode);
 
         var created = await GetDataAsync<UniversityDetailDto>(createRes);
         Assert.Equal(name, created.Name);
+        Assert.Equal("https://upload.wikimedia.org/wikipedia/commons/3/3c/Cairo_University_new_logo.png", created.LogoUrl);
 
         // 2. Duplicate Name returns 409 Conflict
         var dupRes = await client.PostAsJsonAsync("/api/v1/universities", req);
         Assert.Equal(HttpStatusCode.Conflict, dupRes.StatusCode);
 
         // 3. Update University
-        var updateReq = new UpdateUniversityRequest($"{name} Updated", "Cairo", "Egypt", "https://updated.edu.eg");
+        var updateReq = new UpdateUniversityRequest($"{name} Updated", "Cairo", "Egypt", "https://updated.edu.eg", "https://cdn.teamup.test/logo.svg");
         var updateRes = await client.PutAsJsonAsync($"/api/v1/universities/{created.UniversityId}", updateReq);
         Assert.Equal(HttpStatusCode.OK, updateRes.StatusCode);
 
         var updated = await GetDataAsync<UniversityDetailDto>(updateRes);
         Assert.Equal($"{name} Updated", updated.Name);
+        Assert.Equal("https://cdn.teamup.test/logo.svg", updated.LogoUrl);
 
         // 4. Create child faculty
         var facReq = new CreateFacultyRequest("Faculty of Engineering", "ENG_NEW");

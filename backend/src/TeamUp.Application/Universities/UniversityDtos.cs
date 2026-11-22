@@ -4,14 +4,16 @@ public sealed record CreateUniversityRequest(
     string Name,
     string City,
     string Country,
-    string? Website
+    string? Website,
+    string? LogoUrl = null
 );
 
 public sealed record UpdateUniversityRequest(
     string Name,
     string City,
     string Country,
-    string? Website
+    string? Website,
+    string? LogoUrl = null
 );
 
 public sealed record UniversityDto(
@@ -20,6 +22,7 @@ public sealed record UniversityDto(
     string City,
     string Country,
     string? Website,
+    string? LogoUrl,
     int FacultyCount
 );
 
@@ -35,5 +38,6 @@ public sealed record UniversityDetailDto(
     string City,
     string Country,
     string? Website,
+    string? LogoUrl,
     IReadOnlyList<FacultySummaryDto> Faculties
 );

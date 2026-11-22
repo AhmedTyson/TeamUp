@@ -9,5 +9,6 @@ public class University : BaseEntity
     public string City { get; set; } = null!;
     public string Country { get; set; } = null!;
     public string? Website { get; set; }
+    public string? LogoUrl { get; set; }
     public ICollection<Faculty> Faculties { get; set; } = [];
 }
