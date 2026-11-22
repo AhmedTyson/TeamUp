@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380" role="img" aria-label="Cross-faculty project team formation illustration">
+  <defs>
+    <linearGradient id="tf-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d3fb52" />
+      <stop offset="100%" stop-color="#8be084" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="380" rx="28" fill="url(#tf-grad)" />
+  <rect x="36" y="34" width="528" height="312" rx="22" fill="#ffffff" opacity="0.96" />
+  <rect x="64" y="64" width="136" height="30" rx="15" fill="#14151c" />
+  <text x="132" y="83" text-anchor="middle" fill="#d3fb52" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="800">ACTIVE SQUAD · 4/5</text>
+  <text x="64" y="132" fill="#111827" font-family="'Plus Jakarta Sans', sans-serif" font-size="24" font-weight="800">AI &amp; Full-Stack Campus App</text>
+  <text x="64" y="158" fill="#4b5563" font-family="'DM Sans', sans-serif" font-size="14">Cross-faculty graduation &amp; hackathon squad</text>
+
+  <!-- Skill Chips -->
+  <rect x="64" y="182" width="102" height="34" rx="12" fill="#f3f6f4" stroke="#d1fae5" stroke-width="1.5" />
+  <text x="115" y="203" text-anchor="middle" fill="#15733f" font-family="'DM Sans', sans-serif" font-size="13" font-weight="700">TypeScript</text>
+  <rect x="178" y="182" width="88" height="34" rx="12" fill="#f3f6f4" stroke="#d1fae5" stroke-width="1.5" />
+  <text x="222" y="203" text-anchor="middle" fill="#15733f" font-family="'DM Sans', sans-serif" font-size="13" font-weight="700">React</text>
+  <rect x="278" y="182" width="118" height="34" rx="12" fill="#d3fb52" />
+  <text x="337" y="203" text-anchor="middle" fill="#14151c" font-family="'DM Sans', sans-serif" font-size="13" font-weight="800">UI/UX Needed</text>
+
+  <!-- Team Members Strip -->
+  <rect x="64" y="242" width="472" height="76" rx="16" fill="#14151c" />
+  <circle cx="106" cy="280" r="20" fill="#d3fb52" />
+  <text x="106" y="285" text-anchor="middle" fill="#14151c" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="800">NH</text>
+  <circle cx="152" cy="280" r="20" fill="#38bdf8" />
+  <text x="152" y="285" text-anchor="middle" fill="#14151c" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="800">AK</text>
+  <circle cx="198" cy="280" r="20" fill="#10b981" />
+  <text x="198" y="285" text-anchor="middle" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="800">SK</text>
+  <text x="238" y="275" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="700">Nour Hassan · Project Lead</text>
+  <text x="238" y="297" fill="#d3fb52" font-family="'DM Sans', sans-serif" font-size="13">+250 XP upon milestone verification</text>
+</svg>

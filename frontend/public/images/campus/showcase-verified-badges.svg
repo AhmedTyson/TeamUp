@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380" role="img" aria-label="Student badges and university leaderboard illustration">
+  <defs>
+    <linearGradient id="bg-grad-4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14151c" />
+      <stop offset="100%" stop-color="#216e4e" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="380" rx="28" fill="url(#bg-grad-4)" />
+  <rect x="36" y="34" width="528" height="312" rx="22" fill="#ffffff" />
+  <text x="64" y="78" fill="#6b7280" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="800" letter-spacing="1.2">CAMPUS ACHIEVEMENTS &amp; RANK</text>
+  <text x="64" y="114" fill="#111827" font-family="'Plus Jakarta Sans', sans-serif" font-size="28" font-weight="800">Level 6 · Top 3% in Faculty</text>
+
+  <!-- Badge Cards -->
+  <rect x="64" y="140" width="146" height="106" rx="16" fill="#f3f6f4" />
+  <circle cx="94" cy="174" r="18" fill="#d3fb52" />
+  <path d="M94 164 L97 171 L104 172 L99 177 L100 184 L94 180 L88 184 L89 177 L84 172 L91 171 Z" fill="#14151c" />
+  <text x="80" y="216" fill="#111827" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="800">Team Pioneer</text>
+  <text x="80" y="234" fill="#6b7280" font-family="'DM Sans', sans-serif" font-size="12">3+ Shipped Projects</text>
+
+  <rect x="226" y="140" width="146" height="106" rx="16" fill="#f3f6f4" />
+  <circle cx="256" cy="174" r="18" fill="#15733f" />
+  <path d="M249 174 L254 179 L264 168" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" />
+  <text x="242" y="216" fill="#111827" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="800">Workshop Star</text>
+  <text x="242" y="234" fill="#6b7280" font-family="'DM Sans', sans-serif" font-size="12">10+ Verified Sessions</text>
+
+  <rect x="388" y="140" width="148" height="106" rx="16" fill="#14151c" />
+  <circle cx="418" cy="174" r="18" fill="#d3fb52" />
+  <text x="418" y="179" text-anchor="middle" fill="#14151c" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="900">#1</text>
+  <text x="404" y="216" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="800">Rising Star</text>
+  <text x="404" y="234" fill="#d3fb52" font-family="'DM Sans', sans-serif" font-size="12">2,540 Earned Points</text>
+
+  <!-- Score bar -->
+  <rect x="64" y="268" width="472" height="50" rx="14" fill="#d3fb52" />
+  <text x="86" y="298" fill="#14151c" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="800">Verified Portfolio · Cairo, Ain Shams &amp; Alexandria Campuses</text>
+</svg>
