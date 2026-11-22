@@ -16,9 +16,11 @@ import {
   DataTable,
   EmptyState,
   ErrorBanner,
+  Pagination,
   type DataTableColumn,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { formatDateTime } from "@/lib/formatters";
 import { AdminConsoleLayout } from "../components/AdminConsoleLayout";
 import { useRestoreEntityMutation, useSoftDeletedQuery } from "../hooks/useAdminHooks";
 
@@ -26,11 +28,19 @@ type FilterType = "all" | RestorableEntityType;
 
 export function AdminRestorePage() {
   const [selectedType, setSelectedType] = useState<FilterType>("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [restoringKey, setRestoringKey] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState<unknown>(null);
 
   const softDeletedQuery = useSoftDeletedQuery(selectedType);
   const restoreMutation = useRestoreEntityMutation();
+
+  const allItems = softDeletedQuery.data ?? [];
+  const totalCount = allItems.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pagedItems = allItems.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   const handleRestore = async (item: SoftDeletedItem) => {
     const key = `${item.entityType}-${item.id}`;
@@ -68,10 +78,10 @@ export function AdminRestorePage() {
     },
     {
       key: "deletedAt",
-      header: "Deleted At",
+      header: "Archived On",
       cell: (row) => (
-        <span className="font-mono text-xs text-[#9ca3af] tabular-nums">
-          {new Date(row.deletedAt).toLocaleString()}
+        <span className="font-mono text-xs text-[#9ca3af] tabular-nums whitespace-nowrap">
+          {formatDateTime(row.deletedAt)}
         </span>
       ),
     },
@@ -101,13 +111,16 @@ export function AdminRestorePage() {
 
   return (
     <AdminConsoleLayout
-      title="Soft-Delete Recycle Bin"
-      description="Inspect and restore soft-deleted records across all 8 platform entity types with automatic cache invalidation."
+      title="Archived Records"
+      description="Review and restore archived universities, faculties, students, projects, and campus activities."
     >
       <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Entity type filters">
         <button
           type="button"
-          onClick={() => setSelectedType("all")}
+          onClick={() => {
+            setSelectedType("all");
+            setPage(1);
+          }}
           className={cn(
             "cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
             selectedType === "all"
@@ -122,7 +135,10 @@ export function AdminRestorePage() {
           <button
             key={type}
             type="button"
-            onClick={() => setSelectedType(type)}
+            onClick={() => {
+              setSelectedType(type);
+              setPage(1);
+            }}
             className={cn(
               "cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
               selectedType === type
@@ -148,17 +164,32 @@ export function AdminRestorePage() {
 
       <DataTable
         columns={columns}
-        data={softDeletedQuery.data ?? []}
+        data={pagedItems}
         keyExtractor={(row) => `${row.entityType}-${row.id}`}
         isLoading={softDeletedQuery.isPending}
         emptyState={
           <EmptyState
             icon={<Trash2 className="size-6" aria-hidden="true" />}
-            title="Recycle bin is empty"
-            description="No soft-deleted records match the active filter."
+            title="No archived records"
+            description="No archived items match the selected filter."
           />
         }
       />
+
+      {totalCount > 0 && (
+        <Pagination
+          page={safePage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          pageSizeOptions={[10, 20]}
+          onPageChange={setPage}
+          onPageSizeChange={(nextSize) => {
+            setPageSize(nextSize);
+            setPage(1);
+          }}
+        />
+      )}
     </AdminConsoleLayout>
   );
 }

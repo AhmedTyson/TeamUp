@@ -1,6 +1,6 @@
 /**
  * @date 2026-11-22
- * @purpose Filterable, paginated immutable AuditLog viewer with Old/New JSON state diff inspection modal (STRIDE THR-R-01).
+ * @purpose Filterable, paginated immutable AuditLog viewer with structured field-by-field diff table and Raw JSON snapshot inspection (STRIDE THR-R-01).
  */
 import { ClipboardList, Eye, FilterX } from "lucide-react";
 import { useState } from "react";
@@ -18,6 +18,8 @@ import {
   type DataTableColumn,
   type SelectOption,
 } from "@/components/ui";
+import { cn } from "@/lib/cn";
+import { computeJsonDiffEntries, formatDateTime } from "@/lib/formatters";
 import { AdminConsoleLayout } from "../components/AdminConsoleLayout";
 import { useAuditLogsQuery } from "../hooks/useAdminHooks";
 
@@ -49,6 +51,7 @@ export function AdminAuditLogsPage() {
   const [entityTypeFilter, setEntityTypeFilter] = useState("");
   const [actorIdInput, setActorIdInput] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [selectedLog, setSelectedLog] = useState<AuditLogItem | null>(null);
 
   const parsedActorId = Number.parseInt(actorIdInput.trim(), 10);
@@ -57,7 +60,7 @@ export function AdminAuditLogsPage() {
     entityType: entityTypeFilter || undefined,
     actorStudentId: Number.isInteger(parsedActorId) && parsedActorId > 0 ? parsedActorId : undefined,
     page,
-    pageSize: 20,
+    pageSize,
   });
 
   const clearFilters = () => {
@@ -72,8 +75,8 @@ export function AdminAuditLogsPage() {
       key: "occurredAt",
       header: "Timestamp",
       cell: (row) => (
-        <span className="font-mono text-xs text-[#9ca3af] tabular-nums">
-          {new Date(row.occurredAt).toLocaleString()}
+        <span className="font-mono text-xs text-[#9ca3af] tabular-nums whitespace-nowrap">
+          {formatDateTime(row.occurredAt)}
         </span>
       ),
     },
@@ -93,13 +96,10 @@ export function AdminAuditLogsPage() {
     },
     {
       key: "actor",
-      header: "Actor",
+      header: "Administrator",
       cell: (row) => (
         <div className="text-xs">
-          <p className="text-white/90">{row.actorEmail ?? "System / Bootstrap"}</p>
-          {row.actorStudentId !== null && (
-            <p className="font-mono text-[#9ca3af]">Student #{row.actorStudentId}</p>
-          )}
+          <p className="text-white/90">{row.actorEmail ?? "System"}</p>
         </div>
       ),
     },
@@ -112,7 +112,7 @@ export function AdminAuditLogsPage() {
     },
     {
       key: "diff",
-      header: "State Diff",
+      header: "Details",
       cell: (row) => (
         <Button
           size="sm"
@@ -126,10 +126,14 @@ export function AdminAuditLogsPage() {
     },
   ];
 
+  const structuredEntries = selectedLog
+    ? computeJsonDiffEntries(selectedLog.oldValues, selectedLog.newValues)
+    : [];
+
   return (
     <AdminConsoleLayout
-      title="Immutable Audit Logs"
-      description="Filter administrative mutations by action, target entity type, or actor student ID and inspect Old vs New JSON state snapshots."
+      title="Activity Log"
+      description="Review administrative actions and changes across universities, faculties, and roles."
       actions={
         <Button
           variant="secondary"
@@ -163,7 +167,7 @@ export function AdminAuditLogsPage() {
         />
 
         <Input
-          label="Actor Student ID"
+          label="Administrator ID"
           type="number"
           min={1}
           placeholder="e.g. 1"
@@ -209,7 +213,12 @@ export function AdminAuditLogsPage() {
           totalPages={auditLogsQuery.data.totalPages}
           totalCount={auditLogsQuery.data.totalCount}
           pageSize={auditLogsQuery.data.pageSize}
+          pageSizeOptions={[10, 20, 50]}
           onPageChange={setPage}
+          onPageSizeChange={(nextSize) => {
+            setPageSize(nextSize);
+            setPage(1);
+          }}
         />
       )}
 
@@ -220,27 +229,71 @@ export function AdminAuditLogsPage() {
         title={`Audit Entry #${selectedLog?.auditLogId ?? ""} · ${selectedLog?.action ?? ""}`}
         description={
           selectedLog
-            ? `${selectedLog.entityType} #${selectedLog.entityId} · ${new Date(selectedLog.occurredAt).toLocaleString()} · IP: ${selectedLog.clientIp ?? "N/A"}`
+            ? `${selectedLog.entityType} #${selectedLog.entityId} · ${formatDateTime(selectedLog.occurredAt)} · IP: ${selectedLog.clientIp ?? "N/A"}`
             : undefined
         }
       >
         {selectedLog && (
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af]">
-                Previous State (OldValues)
-              </p>
-              <pre className="max-h-72 overflow-auto rounded-xl border border-white/10 bg-[#14151c] p-3.5 font-mono text-xs text-red-200/90">
-                {formatJsonValue(selectedLog.oldValues)}
-              </pre>
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af]">
-                Updated State (NewValues)
-              </p>
-              <pre className="max-h-72 overflow-auto rounded-xl border border-white/10 bg-[#14151c] p-3.5 font-mono text-xs text-emerald-200/95">
-                {formatJsonValue(selectedLog.newValues)}
-              </pre>
+          <div className="space-y-5">
+            {structuredEntries.length > 0 && (
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-[#14151c]">
+                <div className="border-b border-white/[0.08] px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-[#9ca3af]">
+                  Field-by-Field Comparison
+                </div>
+                <table className="w-full border-collapse text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-white/[0.08] text-[#9ca3af]">
+                      <th className="px-3.5 py-2 font-medium">Property</th>
+                      <th className="px-3.5 py-2 font-medium">Before</th>
+                      <th className="px-3.5 py-2 font-medium">After</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.06]">
+                    {structuredEntries.map((entry) => (
+                      <tr key={entry.field}>
+                        <td className="px-3.5 py-2 font-mono font-semibold text-white">
+                          {entry.field}
+                        </td>
+                        <td
+                          className={cn(
+                            "px-3.5 py-2 font-mono",
+                            entry.changed ? "text-red-300" : "text-[#9ca3af]",
+                          )}
+                        >
+                          {entry.before}
+                        </td>
+                        <td
+                          className={cn(
+                            "px-3.5 py-2 font-mono",
+                            entry.changed ? "text-emerald-300" : "text-[#9ca3af]",
+                          )}
+                        >
+                          {entry.after}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af]">
+                  Previous Values
+                </p>
+                <pre className="max-h-56 overflow-auto rounded-xl border border-white/10 bg-[#14151c] p-3.5 font-mono text-xs text-red-200/90">
+                  {formatJsonValue(selectedLog.oldValues)}
+                </pre>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af]">
+                  Updated Values
+                </p>
+                <pre className="max-h-56 overflow-auto rounded-xl border border-white/10 bg-[#14151c] p-3.5 font-mono text-xs text-emerald-200/95">
+                  {formatJsonValue(selectedLog.newValues)}
+                </pre>
+              </div>
             </div>
           </div>
         )}

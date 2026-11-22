@@ -1,31 +1,65 @@
 /**
- * @date 2026-11-21
- * @purpose React hook checking TeamUp.Api availability via GET /health.
+ * @date 2026-11-22
+ * @purpose React hooks checking TeamUp.Api and database connectivity via GET /health with periodic polling and manual retry.
  */
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { healthApi } from "@/api";
+import { queryKeys } from "@/lib/queryKeys";
 
-export type ApiConnectionState = "checking" | "online" | "offline";
+export type ApiConnectionState = "checking" | "online" | "degraded" | "offline";
 
-export function useApiHealth(): ApiConnectionState {
-  const [state, setState] = useState<ApiConnectionState>("checking");
+export interface ApiHealthDetails {
+  state: ApiConnectionState;
+  database: string | null;
+  refetch: () => void;
+}
 
-  useEffect(() => {
-    const controller = new AbortController();
+export function useApiHealthDetails(): ApiHealthDetails {
+  const query = useQuery({
+    queryKey: queryKeys.health,
+    queryFn: ({ signal }) => healthApi.check(signal),
+    refetchInterval: 30_000,
+    retry: false,
+    staleTime: 10_000,
+  });
 
-    healthApi
-      .check(controller.signal)
-      .then((res) => {
-        setState(res.status.toLowerCase() === "healthy" ? "online" : "offline");
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) {
-          setState("offline");
-        }
-      });
+  if (query.isPending) {
+    return {
+      state: "checking",
+      database: null,
+      refetch: () => {
+        void query.refetch();
+      },
+    };
+  }
 
-    return () => controller.abort();
-  }, []);
+  if (query.isError || !query.data) {
+    return {
+      state: "offline",
+      database: null,
+      refetch: () => {
+        void query.refetch();
+      },
+    };
+  }
 
-  return state;
+  const isHealthy = query.data.status.toLowerCase() === "healthy";
+  const dbStatus = query.data.database ?? null;
+  const isDbConnected = !dbStatus || dbStatus.toLowerCase() === "connected";
+
+  return {
+    state: isHealthy && isDbConnected ? "online" : "degraded",
+    database: dbStatus,
+    refetch: () => {
+      void query.refetch();
+    },
+  };
+}
+
+export function useApiHealth(): "checking" | "online" | "offline" {
+  const { state } = useApiHealthDetails();
+  if (state === "checking") {
+    return "checking";
+  }
+  return state === "online" ? "online" : "offline";
 }

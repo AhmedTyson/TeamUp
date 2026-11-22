@@ -61,3 +61,6 @@ export { Skeleton, SkeletonCard } from "./Skeleton";
 
 export { ErrorBanner, ForbiddenBanner } from "./ErrorBanner";
 export type { ErrorBannerProps, ErrorBannerVariant } from "./ErrorBanner";
+
+export { UniversityLogo } from "./UniversityLogo";
+export type { UniversityLogoProps } from "./UniversityLogo";

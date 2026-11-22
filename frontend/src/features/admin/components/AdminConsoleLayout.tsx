@@ -7,12 +7,10 @@ import {
   ClipboardList,
   LayoutDashboard,
   RotateCcw,
-  Shield,
   UserCog,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { Badge } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
 export interface AdminConsoleLayoutProps {
@@ -26,8 +24,8 @@ const ADMIN_TABS = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
   { to: "/admin/catalog", label: "Academic Catalog", icon: Building2, end: false },
   { to: "/admin/roles", label: "Role Governance", icon: UserCog, end: false },
-  { to: "/admin/restore", label: "Recycle Bin", icon: RotateCcw, end: false },
-  { to: "/admin/audit-logs", label: "Audit Logs", icon: ClipboardList, end: false },
+  { to: "/admin/restore", label: "Archive", icon: RotateCcw, end: false },
+  { to: "/admin/audit-logs", label: "Activity Log", icon: ClipboardList, end: false },
 ] as const;
 
 export function AdminConsoleLayout({
@@ -39,11 +37,7 @@ export function AdminConsoleLayout({
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div className="space-y-2">
-          <Badge variant="accent" size="md">
-            <Shield className="size-3.5" aria-hidden="true" />
-            PlatformAdmin Console
-          </Badge>
+        <div className="space-y-1.5">
           <h1
             className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
             style={{ fontFamily: "var(--font-heading)" }}

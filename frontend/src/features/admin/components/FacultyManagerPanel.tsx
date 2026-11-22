@@ -1,9 +1,9 @@
 /**
  * @date 2026-11-22
- * @purpose Nested faculty CRUD panel for a selected university inside PlatformAdmin Academic Catalog governance.
+ * @purpose Nested faculty CRUD inspector panel displayed side-by-side in the AdminCatalogPage Master-Detail split layout.
  */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GraduationCap, Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ import {
   Input,
   Modal,
   Skeleton,
+  UniversityLogo,
 } from "@/components/ui";
 import { mapApiErrorsToForm } from "@/lib/formErrors";
 import {
@@ -35,11 +36,15 @@ import { facultyFormSchema, type FacultyFormValues } from "../schemas/adminSchem
 export interface FacultyManagerPanelProps {
   universityId: number;
   universityName: string;
+  universityLogoUrl?: string | null;
+  onClose?: () => void;
 }
 
 export function FacultyManagerPanel({
   universityId,
   universityName,
+  universityLogoUrl,
+  onClose,
 }: FacultyManagerPanelProps) {
   const facultiesQuery = useUniversityFacultiesQuery(universityId);
   const createMutation = useCreateFacultyMutation();
@@ -108,7 +113,7 @@ export function FacultyManagerPanel({
         facultyId: deletingFaculty.facultyId,
         universityId,
       });
-      toast.success(`Faculty "${deletingFaculty.name}" moved to recycle bin.`);
+      toast.success(`Faculty "${deletingFaculty.name}" moved to archive.`);
       setDeletingFaculty(null);
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Failed to delete faculty.");
@@ -118,29 +123,40 @@ export function FacultyManagerPanel({
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <div>
-          <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="size-5 text-[#d3fb52]" aria-hidden="true" />
-            Faculties · {universityName}
+    <Card variant="elevated" className="lg:sticky lg:top-20">
+      <CardHeader className="flex flex-row items-start justify-between gap-3 border-b border-white/[0.085]">
+        <div className="space-y-1">
+          <CardTitle className="flex items-center gap-2.5 text-base">
+            <UniversityLogo name={universityName} logoUrl={universityLogoUrl} size="sm" />
+            <span>Faculties · {universityName}</span>
           </CardTitle>
-          <CardDescription>
-            Create, edit, or soft-delete faculties under this university (auto-invalidates catalog
-            cache).
+          <CardDescription className="text-xs">
+            Add or edit accredited faculties and academic codes for this university.
           </CardDescription>
         </div>
 
-        <Button
-          size="sm"
-          leftIcon={<Plus className="size-3.5" aria-hidden="true" />}
-          onClick={openCreateModal}
-        >
-          Add Faculty
-        </Button>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <Button
+            size="sm"
+            leftIcon={<Plus className="size-3.5" aria-hidden="true" />}
+            onClick={openCreateModal}
+          >
+            Add Faculty
+          </Button>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close faculty inspector"
+              className="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-[#14151c] text-white/65 transition-colors hover:border-white/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          )}
+        </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 pt-4">
         {facultiesQuery.isError && (
           <ErrorBanner
             error={facultiesQuery.error}
@@ -152,8 +168,8 @@ export function FacultyManagerPanel({
 
         {facultiesQuery.isPending ? (
           <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
           </div>
         ) : (facultiesQuery.data?.length ?? 0) === 0 ? (
           <EmptyState
@@ -166,29 +182,31 @@ export function FacultyManagerPanel({
             }
           />
         ) : (
-          <div className="divide-y divide-white/[0.08] rounded-xl border border-white/[0.085] bg-[#14151c]/70">
+          <div className="divide-y divide-white/[0.08] rounded-xl border border-white/[0.085] bg-[#14151c]/75">
             {facultiesQuery.data?.map((faculty) => (
               <div
                 key={faculty.facultyId}
-                className="flex flex-col justify-between gap-3 px-4 py-3 sm:flex-row sm:items-center"
+                className="flex flex-col justify-between gap-2.5 px-3.5 py-3 sm:flex-row sm:items-center"
               >
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-white">{faculty.name}</span>
+                <div className="min-w-0 space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="truncate text-sm font-semibold text-white">
+                      {faculty.name}
+                    </span>
                     <Badge variant="accent" size="sm">
                       {faculty.code}
                     </Badge>
                   </div>
                   <p className="text-xs text-[#9ca3af] tabular-nums">
-                    ID #{faculty.facultyId} · {faculty.studentCount} enrolled student(s)
+                    {faculty.studentCount} enrolled student(s)
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-1.5">
                   <Button
                     variant="secondary"
                     size="sm"
-                    leftIcon={<Pencil className="size-3.5" aria-hidden="true" />}
+                    leftIcon={<Pencil className="size-3" aria-hidden="true" />}
                     onClick={() => openEditModal(faculty)}
                   >
                     Edit
@@ -196,7 +214,7 @@ export function FacultyManagerPanel({
                   <Button
                     variant="danger"
                     size="sm"
-                    leftIcon={<Trash2 className="size-3.5" aria-hidden="true" />}
+                    leftIcon={<Trash2 className="size-3" aria-hidden="true" />}
                     onClick={() => setDeletingFaculty(faculty)}
                   >
                     Delete
@@ -249,9 +267,9 @@ export function FacultyManagerPanel({
         open={deletingFaculty !== null}
         onClose={() => setDeletingFaculty(null)}
         onConfirm={handleConfirmDelete}
-        title="Soft-delete faculty?"
-        description={`"${deletingFaculty?.name ?? ""}" will be hidden from registration lookups and moved to /admin/restore.`}
-        confirmLabel="Soft Delete"
+        title="Archive faculty?"
+        description={`"${deletingFaculty?.name ?? ""}" will be hidden from student registration. You can restore it anytime from the Archive.`}
+        confirmLabel="Archive Faculty"
         isLoading={deleteMutation.isPending}
       />
     </Card>

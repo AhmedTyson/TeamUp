@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import { USER_ROLES } from "@/api";
-import { isSafeHttpUrl } from "@/lib/urlValidation";
+import { isSafeAssetOrHttpUrl, isSafeHttpUrl } from "@/lib/urlValidation";
 
 export const universityFormSchema = z.object({
   name: z
@@ -30,6 +30,15 @@ export const universityFormSchema = z.object({
       (val) => val.length === 0 || isSafeHttpUrl(val),
       "Website must be a valid public HTTP or HTTPS URL.",
     ),
+  logoUrl: z
+    .string()
+    .trim()
+    .max(500, "Logo URL must not exceed 500 characters.")
+    .refine(
+      (val) => val.length === 0 || isSafeAssetOrHttpUrl(val),
+      "Logo URL must be a valid relative asset path (/logos/...) or public HTTP/HTTPS URL.",
+    )
+    .optional(),
 });
 
 export type UniversityFormValues = z.infer<typeof universityFormSchema>;

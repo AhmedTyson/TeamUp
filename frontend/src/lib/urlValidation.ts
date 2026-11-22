@@ -30,6 +30,17 @@ export function isSafeHttpUrl(value: string | null | undefined): boolean {
   }
 }
 
+export function isSafeAssetOrHttpUrl(value: string | null | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+  const trimmed = value.trim();
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
+    return !trimmed.includes("..") && !/[\x00-\x1f\x7f]/.test(trimmed);
+  }
+  return isSafeHttpUrl(trimmed);
+}
+
 export const safeUrlSchema = z
   .string()
   .trim()

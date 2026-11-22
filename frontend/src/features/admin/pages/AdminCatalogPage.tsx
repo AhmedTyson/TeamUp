@@ -1,11 +1,12 @@
 /**
  * @date 2026-11-22
- * @purpose PlatformAdmin Universities & nested Faculties CRUD console with STRIDE THR-T-03 safe URL validation.
+ * @purpose PlatformAdmin Universities & nested Faculties Master-Detail governance console with database logo preview and URL-synced pagination.
  */
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { UniversitySummary } from "@/api";
 import {
@@ -19,8 +20,10 @@ import {
   Modal,
   Pagination,
   SearchInput,
+  UniversityLogo,
   type DataTableColumn,
 } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import { mapApiErrorsToForm } from "@/lib/formErrors";
 import { isSafeHttpUrl } from "@/lib/urlValidation";
 import { AdminConsoleLayout } from "../components/AdminConsoleLayout";
@@ -33,19 +36,36 @@ import {
 } from "../hooks/useAdminHooks";
 import { universityFormSchema, type UniversityFormValues } from "../schemas/adminSchemas";
 
+const DEFAULT_PAGE_SIZE = 6;
+
 export function AdminCatalogPage() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = Math.max(1, Number.parseInt(searchParams.get("page") ?? "1", 10) || 1);
+  const initialSizeRaw = Number.parseInt(searchParams.get("pageSize") ?? String(DEFAULT_PAGE_SIZE), 10);
+  const initialPageSize = [6, 12, 24].includes(initialSizeRaw) ? initialSizeRaw : DEFAULT_PAGE_SIZE;
+  const initialSearch = searchParams.get("search") ?? "";
+
+  const [search, setSearch] = useState(initialSearch);
+  const [page, setPage] = useState(initialPage);
+  const [pageSize, setPageSize] = useState(initialPageSize);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversitySummary | null>(null);
   const [editingUniversity, setEditingUniversity] = useState<UniversitySummary | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deletingUniversity, setDeletingUniversity] = useState<UniversitySummary | null>(null);
   const [formError, setFormError] = useState<unknown>(null);
 
+  const syncQueryParams = (nextPage: number, nextPageSize: number, nextSearch: string) => {
+    const next = new URLSearchParams();
+    if (nextPage > 1) next.set("page", String(nextPage));
+    if (nextPageSize !== DEFAULT_PAGE_SIZE) next.set("pageSize", String(nextPageSize));
+    if (nextSearch.trim()) next.set("search", nextSearch.trim());
+    setSearchParams(next, { replace: true });
+  };
+
   const universitiesQuery = useUniversitiesListQuery({
     search: search.trim() || undefined,
     page,
-    pageSize: 10,
+    pageSize,
   });
 
   const createMutation = useCreateUniversityMutation();
@@ -54,19 +74,23 @@ export function AdminCatalogPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     setError,
     formState: { errors },
   } = useForm<UniversityFormValues>({
     resolver: zodResolver(universityFormSchema),
-    defaultValues: { name: "", city: "", country: "", website: "" },
+    defaultValues: { name: "", city: "", country: "", website: "", logoUrl: "" },
   });
+
+  const watchedName = useWatch({ control, name: "name" }) ?? "";
+  const watchedLogoUrl = useWatch({ control, name: "logoUrl" }) ?? "";
 
   const openCreateModal = () => {
     setEditingUniversity(null);
     setFormError(null);
-    reset({ name: "", city: "", country: "", website: "" });
+    reset({ name: "", city: "", country: "", website: "", logoUrl: "" });
     setIsModalOpen(true);
   };
 
@@ -78,17 +102,20 @@ export function AdminCatalogPage() {
       city: uni.city,
       country: uni.country,
       website: uni.website ?? "",
+      logoUrl: uni.logoUrl ?? "",
     });
     setIsModalOpen(true);
   };
 
   const onSubmit = async (values: UniversityFormValues) => {
     setFormError(null);
+    const trimmedLogo = values.logoUrl?.trim() ?? "";
     const payload = {
       name: values.name.trim(),
       city: values.city.trim(),
       country: values.country.trim(),
       website: values.website.trim() || null,
+      ...(trimmedLogo ? { logoUrl: trimmedLogo } : editingUniversity ? { logoUrl: null } : {}),
     };
 
     try {
@@ -101,7 +128,7 @@ export function AdminCatalogPage() {
       }
       setIsModalOpen(false);
     } catch (error: unknown) {
-      mapApiErrorsToForm(error, setError, ["name", "city", "country", "website"]);
+      mapApiErrorsToForm(error, setError, ["name", "city", "country", "website", "logoUrl"]);
       setFormError(error);
     }
   };
@@ -112,7 +139,7 @@ export function AdminCatalogPage() {
     }
     try {
       await deleteMutation.mutateAsync(deletingUniversity.universityId);
-      toast.success(`"${deletingUniversity.name}" moved to recycle bin.`);
+      toast.success(`"${deletingUniversity.name}" moved to archive.`);
       if (selectedUniversity?.universityId === deletingUniversity.universityId) {
         setSelectedUniversity(null);
       }
@@ -126,14 +153,25 @@ export function AdminCatalogPage() {
     {
       key: "name",
       header: "University",
-      cell: (row) => (
-        <div className="space-y-0.5">
-          <p className="font-semibold text-white">{row.name}</p>
-          <p className="text-xs text-[#9ca3af]">
-            {row.city}, {row.country}
-          </p>
-        </div>
-      ),
+      cell: (row) => {
+        const isSelected = selectedUniversity?.universityId === row.universityId;
+        return (
+          <div className="flex items-center gap-3">
+            <UniversityLogo
+              name={row.name}
+              logoUrl={row.logoUrl}
+              size="md"
+              className={cn(isSelected && "ring-2 ring-[#d3fb52]")}
+            />
+            <div className="space-y-0.5">
+              <p className="font-semibold text-white">{row.name}</p>
+              <p className="text-xs text-[#9ca3af]">
+                {row.city}, {row.country}
+              </p>
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: "website",
@@ -156,40 +194,45 @@ export function AdminCatalogPage() {
     {
       key: "facultyCount",
       header: "Faculties",
-      cell: (row) => <Badge variant="default">{row.facultyCount}</Badge>,
+      cell: (row) => (
+        <Badge variant="default" className="tabular-nums">
+          {row.facultyCount}
+        </Badge>
+      ),
     },
     {
       key: "actions",
       header: "Actions",
-      cell: (row) => (
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            size="sm"
-            variant={
-              selectedUniversity?.universityId === row.universityId ? "primary" : "secondary"
-            }
-            onClick={() => setSelectedUniversity(row)}
-          >
-            Manage Faculties
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            leftIcon={<Pencil className="size-3.5" aria-hidden="true" />}
-            onClick={() => openEditModal(row)}
-          >
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            leftIcon={<Trash2 className="size-3.5" aria-hidden="true" />}
-            onClick={() => setDeletingUniversity(row)}
-          >
-            Delete
-          </Button>
-        </div>
-      ),
+      cell: (row) => {
+        const isSelected = selectedUniversity?.universityId === row.universityId;
+        return (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Button
+              size="sm"
+              variant={isSelected ? "primary" : "secondary"}
+              onClick={() => setSelectedUniversity(isSelected ? null : row)}
+            >
+              {isSelected ? "Viewing Faculties" : "Manage Faculties"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              leftIcon={<Pencil className="size-3.5" aria-hidden="true" />}
+              onClick={() => openEditModal(row)}
+            >
+              Edit
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              leftIcon={<Trash2 className="size-3.5" aria-hidden="true" />}
+              onClick={() => setDeletingUniversity(row)}
+            >
+              Delete
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -198,7 +241,7 @@ export function AdminCatalogPage() {
   return (
     <AdminConsoleLayout
       title="Academic Catalog Governance"
-      description="Create, update, or soft-delete universities and manage nested faculties used across student registration."
+      description="Manage partner universities, official websites, and academic faculties across the network."
       actions={
         <Button
           leftIcon={<Plus className="size-4" aria-hidden="true" />}
@@ -214,9 +257,10 @@ export function AdminCatalogPage() {
           onChange={(value) => {
             setSearch(value);
             setPage(1);
+            syncQueryParams(1, pageSize, value);
           }}
           placeholder="Search universities by name or city…"
-          containerClassName="sm:max-w-sm"
+          containerClassName="w-full sm:w-80 sm:max-w-sm"
         />
       </div>
 
@@ -229,46 +273,85 @@ export function AdminCatalogPage() {
         />
       )}
 
-      <DataTable
-        columns={columns}
-        data={universitiesQuery.data?.items ?? []}
-        keyExtractor={(row) => row.universityId}
-        isLoading={universitiesQuery.isPending}
-        emptyState={
-          <EmptyState
-            icon={<Building2 className="size-6" aria-hidden="true" />}
-            title="No universities match your search"
-            description="Create a university or clear the current filter to view all academic institutions."
-            action={<Button onClick={openCreateModal}>Add University</Button>}
+      {/* Master-Detail Split Layout: compresses table to 7/12 columns when Faculty inspector opens */}
+      <div className="grid items-start gap-6 lg:grid-cols-12">
+        <div
+          className={cn(
+            "space-y-4 transition-all duration-300",
+            selectedUniversity ? "lg:col-span-7" : "lg:col-span-12",
+          )}
+        >
+          <DataTable
+            columns={columns}
+            data={universitiesQuery.data?.items ?? []}
+            keyExtractor={(row) => row.universityId}
+            isLoading={universitiesQuery.isPending}
+            emptyState={
+              <EmptyState
+                icon={<Building2 className="size-6" aria-hidden="true" />}
+                title="No universities match your search"
+                description="Create a university or clear the current filter to view all academic institutions."
+                action={<Button onClick={openCreateModal}>Add University</Button>}
+              />
+            }
           />
-        }
-      />
 
-      {universitiesQuery.data && (
-        <Pagination
-          page={universitiesQuery.data.page}
-          totalPages={universitiesQuery.data.totalPages}
-          totalCount={universitiesQuery.data.totalCount}
-          pageSize={universitiesQuery.data.pageSize}
-          onPageChange={setPage}
-        />
-      )}
+          {universitiesQuery.data && (
+            <Pagination
+              page={universitiesQuery.data.page}
+              totalPages={universitiesQuery.data.totalPages}
+              totalCount={universitiesQuery.data.totalCount}
+              pageSize={universitiesQuery.data.pageSize}
+              pageSizeOptions={[6, 12, 24]}
+              onPageChange={(nextPage) => {
+                setPage(nextPage);
+                syncQueryParams(nextPage, pageSize, search);
+              }}
+              onPageSizeChange={(nextSize) => {
+                setPageSize(nextSize);
+                setPage(1);
+                syncQueryParams(1, nextSize, search);
+              }}
+            />
+          )}
+        </div>
 
-      {selectedUniversity && (
-        <FacultyManagerPanel
-          universityId={selectedUniversity.universityId}
-          universityName={selectedUniversity.name}
-        />
-      )}
+        {selectedUniversity && (
+          <div className="lg:col-span-5">
+            <FacultyManagerPanel
+              universityId={selectedUniversity.universityId}
+              universityName={selectedUniversity.name}
+              universityLogoUrl={selectedUniversity.logoUrl}
+              onClose={() => setSelectedUniversity(null)}
+            />
+          </div>
+        )}
+      </div>
 
       <Modal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingUniversity ? "Edit University" : "Add University"}
-        description="External website URLs must use public http:// or https:// protocols (STRIDE THR-T-03)."
+        description="Enter the official university name, campus city, public website, and emblem path."
       >
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           {formError !== null && <ErrorBanner error={formError} />}
+
+          <div className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-[#14151c] p-3.5">
+            <UniversityLogo
+              name={watchedName || "University"}
+              logoUrl={watchedLogoUrl}
+              size="lg"
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-white">
+                {watchedName.trim() || "Official Institutional Emblem"}
+              </p>
+              <p className="text-xs text-[#9ca3af]">
+                Live preview rendered from database logo URL
+              </p>
+            </div>
+          </div>
 
           <Input
             label="University Name"
@@ -299,9 +382,17 @@ export function AdminCatalogPage() {
             label="Official Website"
             type="url"
             placeholder="https://cu.edu.eg"
-            hint="Optional public HTTP/HTTPS URL (localhost and non-HTTP schemes are rejected)."
+            hint="Optional public website URL (e.g. https://cu.edu.eg)."
             error={errors.website?.message}
             {...register("website")}
+          />
+
+          <Input
+            label="Logo URL"
+            placeholder="https://upload.wikimedia.org/wikipedia/commons/3/3c/Cairo_University_new_logo.png"
+            hint="Official public HTTPS university logo image URL."
+            error={errors.logoUrl?.message}
+            {...register("logoUrl")}
           />
 
           <div className="flex justify-end gap-2 pt-2">
@@ -319,9 +410,9 @@ export function AdminCatalogPage() {
         open={deletingUniversity !== null}
         onClose={() => setDeletingUniversity(null)}
         onConfirm={handleConfirmDelete}
-        title="Soft-delete university?"
-        description={`"${deletingUniversity?.name ?? ""}" and its catalog visibility will be archived. You can restore it later from /admin/restore.`}
-        confirmLabel="Soft Delete"
+        title="Archive university?"
+        description={`"${deletingUniversity?.name ?? ""}" will be hidden from student registration. You can restore it anytime from the Archive.`}
+        confirmLabel="Archive University"
         isLoading={deleteMutation.isPending}
       />
     </AdminConsoleLayout>

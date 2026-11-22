@@ -26,4 +26,5 @@ export interface PagedResult<T> {
 
 export interface HealthStatus {
   status: string;
+  database?: string;
 }

@@ -18,6 +18,7 @@ export interface UniversityCatalogItem {
   city: string;
   country: string;
   website?: string | null;
+  logoUrl?: string | null;
   faculties: FacultyCatalogItem[];
 }
 
@@ -27,6 +28,7 @@ export interface UniversitySummary {
   city: string;
   country: string;
   website: string | null;
+  logoUrl?: string | null;
   facultyCount: number;
 }
 
@@ -43,6 +45,7 @@ export interface CreateUniversityPayload {
   city: string;
   country: string;
   website?: string | null;
+  logoUrl?: string | null;
 }
 
 export interface UpdateUniversityPayload {
@@ -50,6 +53,7 @@ export interface UpdateUniversityPayload {
   city: string;
   country: string;
   website?: string | null;
+  logoUrl?: string | null;
 }
 
 export interface FacultyDetail {

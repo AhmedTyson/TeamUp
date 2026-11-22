@@ -28,6 +28,7 @@ export interface TeamUpRequestConfig extends AxiosRequestConfig {
 interface InternalTeamUpRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
   _skipAuthRefresh?: boolean;
+  _directFallbackTried?: boolean;
 }
 
 export interface CreateApiClientOptions {
@@ -317,6 +318,19 @@ export function createApiClient(
         } catch (refreshError: unknown) {
           return Promise.reject(refreshError);
         }
+      }
+
+      if (
+        import.meta.env.DEV &&
+        !import.meta.env.VITEST &&
+        !baseURL &&
+        originalConfig &&
+        !originalConfig._directFallbackTried &&
+        (status === 0 || status === 502 || status === 504)
+      ) {
+        originalConfig._directFallbackTried = true;
+        originalConfig.baseURL = import.meta.env.VITE_API_PROXY_TARGET || "http://localhost:5186";
+        return await instance.request(originalConfig);
       }
 
       return Promise.reject(normalizeAxiosError(error));

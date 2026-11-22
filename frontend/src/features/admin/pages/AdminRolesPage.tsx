@@ -3,7 +3,7 @@
  * @purpose PlatformAdmin Student Role Governance view with THR-E-02 SecurityStamp revocation notice and THR-E-03 PlatformAdmin guard handling.
  */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ShieldAlert, UserCog, Users } from "lucide-react";
+import { UserCog, Users } from "lucide-react";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import {
   type UserRole,
 } from "@/api";
 import {
+  Avatar,
   Badge,
   Button,
   DataTable,
@@ -38,13 +39,22 @@ const ROLE_OPTIONS: readonly SelectOption[] = [
   { value: USER_ROLES.OrgAdmin, label: "OrgAdmin (Can Create & Manage Organizations)" },
   {
     value: USER_ROLES.PlatformAdmin,
-    label: "PlatformAdmin (Guarded by THR-E-03 Server Policy)",
+    label: "PlatformAdmin (System Administrator)",
   },
 ];
 
+const ROLE_FILTER_PILLS = [
+  { id: "ALL", label: "All Roles" },
+  { id: USER_ROLES.Student, label: "Students" },
+  { id: USER_ROLES.OrgAdmin, label: "Org Admins" },
+  { id: USER_ROLES.PlatformAdmin, label: "Platform Admins" },
+] as const;
+
 export function AdminRolesPage() {
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("ALL");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [modalOpen, setModalOpen] = useState(false);
   const [targetLabel, setTargetLabel] = useState<string>("");
   const [mutationError, setMutationError] = useState<unknown>(null);
@@ -52,8 +62,13 @@ export function AdminRolesPage() {
   const studentsQuery = useAdminStudentSearchQuery({
     search: search.trim() || undefined,
     page,
-    pageSize: 10,
+    pageSize,
   });
+
+  const filteredStudents =
+    roleFilter === "ALL"
+      ? (studentsQuery.data?.items ?? [])
+      : (studentsQuery.data?.items ?? []).filter((item) => item.role === roleFilter);
 
   const updateRoleMutation = useUpdateStudentRoleMutation();
 
@@ -73,7 +88,7 @@ export function AdminRolesPage() {
   const openModalForStudent = (student?: AdminStudentDirectoryItem) => {
     setMutationError(null);
     if (student) {
-      setTargetLabel(`${student.firstName} ${student.lastName} (#${student.studentId})`);
+      setTargetLabel(`${student.firstName} ${student.lastName}`);
       reset({ studentId: String(student.studentId), role: student.role });
     } else {
       setTargetLabel("Target Student Account");
@@ -92,7 +107,7 @@ export function AdminRolesPage() {
         role: values.role as UserRole,
       });
       toast.success(
-        `Updated ${updated.firstName} ${updated.lastName} to ${updated.role}. Active tokens revoked.`,
+        `Updated ${updated.firstName} ${updated.lastName} to ${updated.role}.`,
       );
       setModalOpen(false);
     } catch (error: unknown) {
@@ -105,12 +120,14 @@ export function AdminRolesPage() {
       key: "student",
       header: "Student",
       cell: (row) => (
-        <div className="space-y-0.5">
-          <p className="font-semibold text-white">
-            {row.firstName} {row.lastName}{" "}
-            <span className="font-mono text-xs text-[#9ca3af]">#{row.studentId}</span>
-          </p>
-          <p className="text-xs text-[#9ca3af]">{row.email ?? "Email private"}</p>
+        <div className="flex items-center gap-3">
+          <Avatar name={`${row.firstName} ${row.lastName}`} size="sm" />
+          <div className="space-y-0.5">
+            <p className="font-semibold text-white">
+              {row.firstName} {row.lastName}
+            </p>
+            <p className="text-xs text-[#9ca3af]">{row.email ?? "Email private"}</p>
+          </div>
         </div>
       ),
     },
@@ -162,7 +179,7 @@ export function AdminRolesPage() {
   return (
     <AdminConsoleLayout
       title="Student Role Governance"
-      description="Promote or demote Student and OrgAdmin roles. Changing a role immediately rotates the user's SecurityStamp and revokes active JWTs."
+      description="Search the student directory and manage Organization Admin permissions across campus accounts."
       actions={
         <Button
           variant="secondary"
@@ -173,30 +190,34 @@ export function AdminRolesPage() {
         </Button>
       }
     >
-      <div className="flex items-start gap-3 rounded-2xl border border-amber-500/35 bg-amber-500/10 p-4 text-xs text-amber-100">
-        <ShieldAlert className="mt-0.5 size-5 shrink-0 text-amber-300" aria-hidden="true" />
-        <div className="space-y-1">
-          <p className="font-semibold">
-            Security Stamp Revocation (THR-E-02) &amp; Elevation Guard (THR-E-03)
-          </p>
-          <p className="text-amber-100/80">
-            Updating any student&apos;s role immediately invalidates their active access and refresh
-            tokens. Runtime promotion to <strong className="text-white">PlatformAdmin</strong> is
-            restricted by default on the API and returns <code>403 Forbidden</code> unless bootstrap
-            overrides are explicitly enabled.
-          </p>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <SearchInput
+          value={search}
+          onChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
+          placeholder="Search student directory by name or email…"
+          containerClassName="w-full sm:w-80 sm:max-w-sm"
+        />
+
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Role filter">
+          {ROLE_FILTER_PILLS.map((pill) => (
+            <button
+              key={pill.id}
+              type="button"
+              onClick={() => setRoleFilter(pill.id)}
+              className={`cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] ${
+                roleFilter === pill.id
+                  ? "bg-[#d3fb52] text-[#14151c]"
+                  : "border border-white/12 bg-[#1b1d26] text-white/75 hover:text-white"
+              }`}
+            >
+              {pill.label}
+            </button>
+          ))}
         </div>
       </div>
-
-      <SearchInput
-        value={search}
-        onChange={(value) => {
-          setSearch(value);
-          setPage(1);
-        }}
-        placeholder="Search student directory by name or email…"
-        containerClassName="sm:max-w-sm"
-      />
 
       {studentsQuery.isError && (
         <ErrorBanner
@@ -209,7 +230,7 @@ export function AdminRolesPage() {
 
       <DataTable
         columns={columns}
-        data={studentsQuery.data?.items ?? []}
+        data={filteredStudents}
         keyExtractor={(row) => row.studentId}
         isLoading={studentsQuery.isPending}
         emptyState={
@@ -232,7 +253,12 @@ export function AdminRolesPage() {
           totalPages={studentsQuery.data.totalPages}
           totalCount={studentsQuery.data.totalCount}
           pageSize={studentsQuery.data.pageSize}
+          pageSizeOptions={[10, 20]}
           onPageChange={setPage}
+          onPageSizeChange={(nextSize) => {
+            setPageSize(nextSize);
+            setPage(1);
+          }}
         />
       )}
 
@@ -240,7 +266,7 @@ export function AdminRolesPage() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title={`Update Role · ${targetLabel}`}
-        description="Assign a new platform role. Target user sessions will be revoked immediately."
+        description="Select the platform role for this student account."
       >
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           {mutationError !== null && <ErrorBanner error={mutationError} />}
@@ -265,14 +291,13 @@ export function AdminRolesPage() {
           {selectedRole === USER_ROLES.PlatformAdmin && (
             <ErrorBanner
               variant="warning"
-              title="THR-E-03 PlatformAdmin Elevation Guard"
-              message="Runtime promotion to PlatformAdmin is rejected by default on the server (403 Forbidden) and must normally be provisioned via bootstrap seeders."
+              title="System Administrator Restriction"
+              message="Runtime elevation to PlatformAdmin is restricted by default and must be provisioned by system configuration."
             />
           )}
 
           <div className="rounded-xl border border-white/10 bg-[#14151c]/75 px-3.5 py-2.5 text-xs text-[#9ca3af]">
-            Warning: Applying this change rotates the user&apos;s SecurityStamp, revoking all
-            active access and refresh tokens immediately.
+            Note: Role changes take effect immediately on the student&apos;s active session.
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

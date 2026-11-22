@@ -1,8 +1,8 @@
 /**
- * @date 2026-11-21
- * @purpose Accessible Pagination control supporting page-size selectors (e.g., [10, 20] cap for student directory).
+ * @date 2026-11-22
+ * @purpose Handshake-styled modern Pagination control with first/last page jumps, range telemetry, and dynamic page-size selector.
  */
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "./Button";
 
@@ -102,7 +102,20 @@ export function Pagination({
         )}
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1">
+        {safeTotalPages > 3 && (
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={safePage <= 1}
+            onClick={() => onPageChange(1)}
+            aria-label="First page"
+            className="hidden sm:inline-flex"
+          >
+            <ChevronsLeft className="size-3.5" aria-hidden="true" />
+          </Button>
+        )}
+
         <Button
           variant="secondary"
           size="sm"
@@ -126,11 +139,11 @@ export function Pagination({
               onClick={() => onPageChange(item)}
               aria-current={item === safePage ? "page" : undefined}
               className={cn(
-                "inline-flex size-8 cursor-pointer items-center justify-center rounded-lg text-xs font-semibold tabular-nums transition-colors",
+                "inline-flex size-8 cursor-pointer items-center justify-center rounded-lg text-xs font-semibold tabular-nums transition-all duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
                 item === safePage
-                  ? "bg-[#d3fb52] text-[#14151c]"
-                  : "text-white/75 hover:bg-white/10 hover:text-white",
+                  ? "bg-[#d3fb52] text-[#14151c] shadow-[0_4px_14px_rgba(211,251,82,0.35)]"
+                  : "border border-transparent text-white/75 hover:border-white/15 hover:bg-white/10 hover:text-white",
               )}
             >
               {item}
@@ -148,6 +161,19 @@ export function Pagination({
         >
           Next
         </Button>
+
+        {safeTotalPages > 3 && (
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={safePage >= safeTotalPages}
+            onClick={() => onPageChange(safeTotalPages)}
+            aria-label="Last page"
+            className="hidden sm:inline-flex"
+          >
+            <ChevronsRight className="size-3.5" aria-hidden="true" />
+          </Button>
+        )}
       </div>
     </nav>
   );
