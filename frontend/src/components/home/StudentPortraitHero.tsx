@@ -10,17 +10,23 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import type { UniversityCatalogItem } from "@/api";
+import type { PublicStudentShowcaseItem, UniversityCatalogItem } from "@/api";
 import { UniversityLogo } from "@/components/ui";
+import {
+  FALLBACK_SHOWCASE_STUDENTS,
+  usePublicPeopleShowcase,
+} from "@/features/catalog/usePublicPeopleShowcase";
 import { cn } from "@/lib/cn";
 
 export interface StudentPortraitStageCard {
   id: string;
+  studentId: number;
   imageSrc: string;
   imageAlt: string;
   university: string;
+  universityLogoUrl: string | null;
   badgeText: string;
   href: string;
   surfaceClass: string;
@@ -29,47 +35,75 @@ export interface StudentPortraitStageCard {
   Icon: LucideIcon;
 }
 
-export const STUDENT_STAGE_CARDS: readonly StudentPortraitStageCard[] = [
+const STAGE_SLOT_STYLES = [
   {
+    preferredIndex: 1,
     id: "student-teal",
-    imageSrc: "/images/hero/hero-student-teal.jpg",
-    imageAlt:
-      "University engineering student smiling with headphones and backpack against a deep teal studio backdrop",
-    university: "Cairo University",
-    badgeText: "Cairo · AI Squad",
     href: "/projects",
     surfaceClass: "bg-[#3b8f82]",
     cardTiltClass: "sm:-rotate-6 sm:hover:-rotate-3 sm:hover:-translate-y-1.5",
-    wireframeClass: "translate-x-2 -translate-y-2 group-hover:translate-x-1 group-hover:-translate-y-1",
+    wireframeClass:
+      "translate-x-2 -translate-y-2 group-hover:translate-x-1 group-hover:-translate-y-1",
     Icon: Users,
+    formatBadge: (student: PublicStudentShowcaseItem) =>
+      `${student.firstName} · ${student.facultyCode}`,
   },
   {
+    preferredIndex: 0,
     id: "student-green",
-    imageSrc: "/images/hero/hero-student-green.jpg",
-    imageAlt:
-      "University student smiling with notebooks and laptop against an emerald campus backdrop",
-    university: "Capital University",
-    badgeText: "Capital · Clubs Lead",
     href: "/organizations",
     surfaceClass: "bg-[#3fc970]",
     cardTiltClass: "z-10 sm:scale-[1.04] sm:hover:-translate-y-2",
     wireframeClass: "-translate-y-2.5 group-hover:-translate-y-1.5",
     Icon: Sparkles,
+    formatBadge: (student: PublicStudentShowcaseItem) =>
+      `${student.firstName} · ${student.facultyCode}`,
   },
   {
+    preferredIndex: 2,
     id: "student-lime",
-    imageSrc: "/images/hero/hero-student-lime.jpg",
-    imageAlt:
-      "University student builder smiling with thumbs-up against a fresh lime-sage studio backdrop",
-    university: "Ain Shams University",
-    badgeText: "Ain Shams · +100 XP",
     href: "/events",
     surfaceClass: "bg-[#a9dc48]",
     cardTiltClass: "sm:rotate-6 sm:hover:rotate-3 sm:hover:-translate-y-1.5",
-    wireframeClass: "-translate-x-2 -translate-y-2 group-hover:-translate-x-1 group-hover:-translate-y-1",
+    wireframeClass:
+      "-translate-x-2 -translate-y-2 group-hover:-translate-x-1 group-hover:-translate-y-1",
     Icon: CalendarCheck,
+    formatBadge: (student: PublicStudentShowcaseItem) =>
+      `${student.firstName} · ${student.totalPoints} XP`,
   },
-];
+] as const;
+
+export function buildStudentStageCards(
+  students: readonly PublicStudentShowcaseItem[],
+): readonly StudentPortraitStageCard[] {
+  const pool: PublicStudentShowcaseItem[] = [...students];
+  for (const fallback of FALLBACK_SHOWCASE_STUDENTS) {
+    if (pool.length >= 3) {
+      break;
+    }
+    if (!pool.some((item) => item.studentId === fallback.studentId)) {
+      pool.push(fallback);
+    }
+  }
+
+  return STAGE_SLOT_STYLES.map((slot) => {
+    const student = pool[slot.preferredIndex] ?? pool[0];
+    return {
+      id: slot.id,
+      studentId: student.studentId,
+      imageSrc: student.photoUrl,
+      imageAlt: `${student.firstName} ${student.lastName} — ${student.universityName} student portrait`,
+      university: student.universityName,
+      universityLogoUrl: student.universityLogoUrl,
+      badgeText: slot.formatBadge(student),
+      href: slot.href,
+      surfaceClass: slot.surfaceClass,
+      cardTiltClass: slot.cardTiltClass,
+      wireframeClass: slot.wireframeClass,
+      Icon: slot.Icon,
+    };
+  });
+}
 
 export function HeroCampusIcons() {
   return (
@@ -81,7 +115,16 @@ export function HeroCampusIcons() {
       <svg
         viewBox="0 0 88 64"
         fill="none"
-        className="absolute right-[7%] top-[14%] hidden size-20 -rotate-12 md:block"
+        style={
+          {
+            "--icon-rot": "-12deg",
+            "--icon-duration": "7.8s",
+            "--icon-delay": "0s",
+            "--icon-dx": "4px",
+            "--icon-dy": "-10px",
+          } as CSSProperties
+        }
+        className="hero-icon-float absolute right-[7%] top-[14%] hidden size-20 md:block"
       >
         <path
           d="M6 26L44 10L82 26L44 42L6 26Z"
@@ -108,7 +151,16 @@ export function HeroCampusIcons() {
       <svg
         viewBox="0 0 80 60"
         fill="none"
-        className="absolute left-[8%] top-[18%] hidden size-16 -rotate-12 lg:block"
+        style={
+          {
+            "--icon-rot": "-12deg",
+            "--icon-duration": "8.6s",
+            "--icon-delay": "0.7s",
+            "--icon-dx": "-5px",
+            "--icon-dy": "-11px",
+          } as CSSProperties
+        }
+        className="hero-icon-float absolute left-[8%] top-[18%] hidden size-16 lg:block"
       >
         <path
           d="M8 14C20 10 34 12 40 18C46 12 60 10 72 14V48C60 44 46 46 40 52C34 46 20 44 8 48V14Z"
@@ -123,7 +175,16 @@ export function HeroCampusIcons() {
       <svg
         viewBox="0 0 68 56"
         fill="none"
-        className="absolute left-[22%] top-[14%] hidden size-12 rotate-6 xl:block"
+        style={
+          {
+            "--icon-rot": "6deg",
+            "--icon-duration": "7.2s",
+            "--icon-delay": "1.4s",
+            "--icon-dx": "6px",
+            "--icon-dy": "-9px",
+          } as CSSProperties
+        }
+        className="hero-icon-float absolute left-[22%] top-[14%] hidden size-12 xl:block"
       >
         <path
           d="M22 14L8 28L22 42"
@@ -152,7 +213,16 @@ export function HeroCampusIcons() {
       <svg
         viewBox="0 0 76 76"
         fill="none"
-        className="absolute bottom-[20%] left-[21%] hidden size-16 rotate-12 xl:block"
+        style={
+          {
+            "--icon-rot": "12deg",
+            "--icon-duration": "9.2s",
+            "--icon-delay": "0.4s",
+            "--icon-dx": "5px",
+            "--icon-dy": "-12px",
+          } as CSSProperties
+        }
+        className="hero-icon-float absolute bottom-[20%] left-[21%] hidden size-16 xl:block"
       >
         <path
           d="M48 12C57 18 61 32 55 44L34 55L21 42L32 21C37 15 43 13 48 12Z"
@@ -174,7 +244,16 @@ export function HeroCampusIcons() {
       <svg
         viewBox="0 0 72 84"
         fill="none"
-        className="absolute bottom-[36%] right-[9%] hidden size-16 rotate-12 lg:block"
+        style={
+          {
+            "--icon-rot": "12deg",
+            "--icon-duration": "8.4s",
+            "--icon-delay": "1.9s",
+            "--icon-dx": "-4px",
+            "--icon-dy": "-10px",
+          } as CSSProperties
+        }
+        className="hero-icon-float absolute bottom-[36%] right-[9%] hidden size-16 lg:block"
       >
         <rect
           x="16"
@@ -204,7 +283,16 @@ export function HeroCampusIcons() {
       <svg
         viewBox="0 0 68 68"
         fill="none"
-        className="absolute bottom-[16%] right-[21%] hidden size-14 -rotate-6 xl:block"
+        style={
+          {
+            "--icon-rot": "-6deg",
+            "--icon-duration": "9.8s",
+            "--icon-delay": "1.1s",
+            "--icon-dx": "4px",
+            "--icon-dy": "-9px",
+          } as CSSProperties
+        }
+        className="hero-icon-float absolute bottom-[16%] right-[21%] hidden size-14 xl:block"
       >
         <path
           d="M20 14H48V28C48 36 42 42 34 42C26 42 20 36 20 28V14Z"
@@ -240,13 +328,13 @@ export function CampusEmblemCluster({ universities, label }: CampusEmblemCluster
   const remaining = Math.max(0, universities.length - visible.length);
 
   return (
-    <div className="flex flex-col items-center gap-2 text-center">
+    <div className="animate-hero-emblems flex flex-col items-center gap-2 text-center">
       <span className="text-xs font-medium text-white/80">{label}</span>
       <div className="flex items-center -space-x-2">
         {visible.map((uni) => (
           <div
             key={uni.universityId}
-            className="size-8 overflow-hidden rounded-full bg-white p-1 ring-2 ring-[#14151c] shadow-md"
+            className="size-8 overflow-hidden rounded-full bg-white p-1 ring-2 ring-[#14151c] shadow-md transition-transform duration-200 hover:z-10 hover:-translate-y-1"
           >
             <UniversityLogo
               name={uni.name}
@@ -269,63 +357,84 @@ export function CampusEmblemCluster({ universities, label }: CampusEmblemCluster
 export interface StudentPortraitCardProps {
   card: StudentPortraitStageCard;
   logoUrl: string | null;
+  index?: number;
 }
 
-export function StudentPortraitCard({ card, logoUrl }: StudentPortraitCardProps) {
+export function StudentPortraitCard({ card, logoUrl, index = 0 }: StudentPortraitCardProps) {
   const Icon = card.Icon;
 
   return (
     <div
-      className={cn(
-        "group relative mx-auto w-full max-w-[260px] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform motion-reduce:transform-none sm:max-w-none",
-        card.cardTiltClass,
-      )}
+      className="hero-portrait-entrance mx-auto w-full max-w-[260px] sm:max-w-none"
+      style={{ "--card-delay": `${460 + index * 105}ms` } as CSSProperties}
     >
       <div
-        aria-hidden="true"
-        className={cn(
-          "pointer-events-none absolute inset-0 rounded-[24px] border-[1.5px] border-white/75 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none",
-          card.wireframeClass,
-        )}
-      />
-      <Link
-        to={card.href}
-        className={cn(
-          "relative isolate block overflow-hidden rounded-[24px] [clip-path:inset(0_round_24px)] transform-gpu shadow-[0_28px_60px_-14px_rgba(0,0,0,0.65)]",
-          card.surfaceClass,
-        )}
+        className="hero-portrait-float"
+        style={{ "--float-delay": `${index * 0.85}s` } as CSSProperties}
       >
-        <img
-          src={card.imageSrc}
-          alt={card.imageAlt}
-          loading="eager"
-          decoding="async"
-          className="aspect-[4/5] w-full rounded-[24px] object-cover object-top transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.03] motion-reduce:transform-none"
-        />
-        <div className="absolute inset-x-3 bottom-3 flex items-center gap-2 rounded-full border border-white/20 bg-[#14151c]/90 px-2.5 py-1.5 backdrop-blur-md shadow-lg">
-          <div className="size-6 shrink-0 overflow-hidden rounded-full bg-white p-0.5">
-            <UniversityLogo
-              name={card.university}
-              logoUrl={logoUrl}
-              size="sm"
-              className="size-full rounded-full border-0 bg-transparent p-0 shadow-none"
+        <div
+          className={cn(
+            "portrait-tilt-card group relative w-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
+            card.cardTiltClass,
+          )}
+        >
+          <div
+            aria-hidden="true"
+            className={cn(
+              "portrait-wireframe pointer-events-none absolute inset-0 rounded-[24px] border-[1.5px] border-white/75 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              card.wireframeClass,
+            )}
+          />
+          <Link
+            to={card.href}
+            className={cn(
+              "relative isolate block overflow-hidden rounded-[24px] [clip-path:inset(0_round_24px)] transform-gpu shadow-[0_28px_60px_-14px_rgba(0,0,0,0.65)]",
+              card.surfaceClass,
+            )}
+          >
+            <img
+              src={card.imageSrc}
+              alt={card.imageAlt}
+              loading="eager"
+              decoding="async"
+              className="portrait-photo aspect-[4/5] w-full rounded-[24px] object-cover object-top transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.03]"
             />
-          </div>
-          <Icon className="size-3.5 shrink-0 text-[#d3fb52]" aria-hidden="true" />
-          <span className="truncate text-[11px] font-bold tracking-tight text-white">
-            {card.badgeText}
-          </span>
+            <div className="absolute inset-x-3 bottom-3 flex items-center gap-2 rounded-full border border-white/20 bg-[#14151c]/90 px-2.5 py-1.5 backdrop-blur-md shadow-lg">
+              <div className="size-6 shrink-0 overflow-hidden rounded-full bg-white p-0.5">
+                <UniversityLogo
+                  name={card.university}
+                  logoUrl={logoUrl}
+                  size="sm"
+                  className="size-full rounded-full border-0 bg-transparent p-0 shadow-none"
+                />
+              </div>
+              <Icon className="size-3.5 shrink-0 text-[#d3fb52]" aria-hidden="true" />
+              <span className="truncate text-[11px] font-bold tracking-tight text-white">
+                {card.badgeText}
+              </span>
+            </div>
+          </Link>
         </div>
-      </Link>
+      </div>
     </div>
   );
 }
 
 export interface StudentPortraitHeroProps {
   universities: readonly UniversityCatalogItem[];
+  students?: readonly PublicStudentShowcaseItem[];
 }
 
-export function StudentPortraitHero({ universities }: StudentPortraitHeroProps) {
+export function StudentPortraitHero({
+  universities,
+  students: studentsProp,
+}: StudentPortraitHeroProps) {
+  const { students: liveStudents } = usePublicPeopleShowcase(6, !studentsProp);
+  const stageCards = useMemo(
+    () => buildStudentStageCards(studentsProp ?? liveStudents),
+    [studentsProp, liveStudents],
+  );
+
   const logoByName = useMemo(() => {
     const map = new Map<string, string | null>();
     universities.forEach((uni) => {
@@ -337,8 +446,9 @@ export function StudentPortraitHero({ universities }: StudentPortraitHeroProps) 
   return (
     <section
       aria-label="TeamUp Campus Student Hero"
-      className="teamup-hero-bg relative z-10 flex min-h-screen w-full flex-col justify-between px-4 pb-8 pt-28 sm:px-8"
+      className="teamup-hero-bg relative z-10 flex min-h-screen w-full flex-col justify-between overflow-hidden px-4 pb-8 pt-28 sm:px-8"
     >
+      <div aria-hidden="true" className="hero-aurora-layer" />
       <HeroCampusIcons />
 
       <div className="relative z-10 mx-auto my-auto flex w-full max-w-[1160px] flex-1 flex-col justify-between pt-2 sm:pt-4">
@@ -364,13 +474,16 @@ export function StudentPortraitHero({ universities }: StudentPortraitHeroProps) 
 
           {/* Action Row + Right-Flanked Circular DB University Emblems */}
           <div className="relative mt-6 flex w-full max-w-[900px] flex-col items-center justify-center gap-5 lg:flex-row">
-            <div className="flex flex-wrap items-center justify-center gap-3.5">
+            <div className="animate-hero-cta flex flex-wrap items-center justify-center gap-3.5">
               <Link
                 to="/auth/register"
-                className="inline-flex h-12 items-center gap-2 rounded-full bg-[#d3fb52] px-7 text-sm font-bold text-[#14151c] shadow-[0_14px_34px_rgba(211,251,82,0.28)] transition-colors hover:bg-[#c5f03a]"
+                className="group inline-flex h-12 items-center gap-2 rounded-full bg-[#d3fb52] px-7 text-sm font-bold text-[#14151c] shadow-[0_14px_34px_rgba(211,251,82,0.28)] transition-colors hover:bg-[#c5f03a]"
               >
                 <span>Join Your Campus</span>
-                <ArrowRight className="size-4" aria-hidden="true" />
+                <ArrowRight
+                  className="size-4 transition-transform duration-200 group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
               </Link>
               <Link
                 to="/projects"
@@ -392,11 +505,14 @@ export function StudentPortraitHero({ universities }: StudentPortraitHeroProps) 
 
         {/* Lower 3-Student Tilted Portrait Stage */}
         <div className="mx-auto mt-8 grid w-full max-w-[840px] grid-cols-1 items-end gap-6 px-3 sm:mt-10 sm:grid-cols-3 lg:gap-8">
-          {STUDENT_STAGE_CARDS.map((card) => (
+          {stageCards.map((card, index) => (
             <StudentPortraitCard
               key={card.id}
+              index={index}
               card={card}
-              logoUrl={logoByName.get(card.university.toLowerCase()) ?? null}
+              logoUrl={
+                card.universityLogoUrl ?? logoByName.get(card.university.toLowerCase()) ?? null
+              }
             />
           ))}
         </div>
@@ -411,7 +527,7 @@ export function StudentPortraitHero({ universities }: StudentPortraitHeroProps) 
         >
           <span className="text-[13px] font-medium tracking-wide">Explore platform modules</span>
           <svg
-            className="h-5 w-5 transition-transform duration-300 group-hover:translate-y-1"
+            className="hero-scroll-cue h-5 w-5 transition-transform duration-300 group-hover:translate-y-1"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

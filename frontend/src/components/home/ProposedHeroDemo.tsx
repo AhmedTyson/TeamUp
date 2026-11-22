@@ -2,7 +2,6 @@
  * @date 2026-11-22
  * @purpose Handshake Rosetta-locked brand hero demo (/demo/hero) combining Antonio typography and campus emerald-obsidian mesh with studio student portraits, offset white wireframes, floating hero campus icons, and live DB official university emblems.
  */
-import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -16,14 +15,15 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { universitiesApi, type UniversityCatalogItem } from "@/api";
 import {
+  buildStudentStageCards,
   CampusEmblemCluster,
   HeroCampusIcons,
-  STUDENT_STAGE_CARDS,
   StudentPortraitCard,
 } from "@/components/home/StudentPortraitHero";
 import { UniversityLogo } from "@/components/ui";
+import { usePublicPeopleShowcase } from "@/features/catalog/usePublicPeopleShowcase";
+import { useUniversityCatalog } from "@/features/catalog/useUniversityCatalogFallback";
 import { cn } from "@/lib/cn";
 
 type HeroLayoutConcept = "orbit" | "stage";
@@ -42,143 +42,13 @@ interface EditorialOrbitTile {
   Icon: LucideIcon;
 }
 
-const DEMO_FALLBACK_UNIVERSITIES: UniversityCatalogItem[] = [
-  {
-    universityId: 1,
-    name: "Cairo University",
-    city: "Giza",
-    country: "Egypt",
-    website: "https://cu.edu.eg",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Cairo_University_new_logo.png",
-    faculties: [
-      { facultyId: 1, name: "Faculty of Computers and Artificial Intelligence", code: "FCAI" },
-      { facultyId: 2, name: "Faculty of Engineering", code: "ENG" },
-    ],
-  },
-  {
-    universityId: 2,
-    name: "Ain Shams University",
-    city: "Cairo",
-    country: "Egypt",
-    website: "https://asu.edu.eg",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/en/3/3d/Ain_Shams_logo.png",
-    faculties: [
-      { facultyId: 3, name: "Faculty of Computer and Information Sciences", code: "CIS" },
-      { facultyId: 4, name: "Faculty of Engineering", code: "ENG_ASU" },
-    ],
-  },
-  {
-    universityId: 3,
-    name: "Alexandria University",
-    city: "Alexandria",
-    country: "Egypt",
-    website: "https://alexu.edu.eg",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/ar/6/63/%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D8%A5%D8%B3%D9%83%D9%86%D8%AF%D8%B1%D9%8A%D8%A9.png",
-    faculties: [
-      { facultyId: 5, name: "Faculty of Computing and Data Science", code: "CDS_ALEX" },
-      { facultyId: 6, name: "Faculty of Engineering", code: "ENG_ALEX" },
-    ],
-  },
-  {
-    universityId: 6,
-    name: "Capital University",
-    city: "Cairo",
-    country: "Egypt",
-    website: "https://capu.edu.eg",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Capital_University_Logo.png",
-    faculties: [
-      { facultyId: 11, name: "Faculty of Computers and Artificial Intelligence", code: "FCAI_CAPU" },
-      { facultyId: 12, name: "Faculty of Engineering", code: "ENG_CAPU" },
-    ],
-  },
-  {
-    universityId: 11,
-    name: "German University in Cairo (GUC)",
-    city: "New Cairo",
-    country: "Egypt",
-    website: "https://guc.edu.eg",
-    logoUrl: "https://www.guc.edu.eg/img/guc_logo_og.png",
-    faculties: [
-      { facultyId: 19, name: "Faculty of Media Engineering and Technology", code: "MET_GUC" },
-    ],
-  },
-  {
-    universityId: 12,
-    name: "The American University in Cairo (AUC)",
-    city: "New Cairo",
-    country: "Egypt",
-    website: "https://aucegypt.edu",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/1/1b/AUC_Arabic_Logo_2021.png",
-    faculties: [
-      { facultyId: 21, name: "School of Sciences and Engineering", code: "SSE_AUC" },
-    ],
-  },
-  {
-    universityId: 4,
-    name: "Mansoura University",
-    city: "Mansoura",
-    country: "Egypt",
-    website: "https://mans.edu.eg",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/ar/5/5e/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D9%85%D9%86%D8%B5%D9%88%D8%B1%D8%A9.png",
-    faculties: [{ facultyId: 7, name: "Faculty of Computers and Information", code: "FCI_MANS" }],
-  },
-  {
-    universityId: 5,
-    name: "Assiut University",
-    city: "Assiut",
-    country: "Egypt",
-    website: "https://aun.edu.eg",
-    logoUrl: "https://www.aun.edu.eg/main/themes/gavias_colin/aun-logo.png",
-    faculties: [{ facultyId: 9, name: "Faculty of Computers and Information", code: "FCI_AUN" }],
-  },
-  {
-    universityId: 7,
-    name: "Zagazig University",
-    city: "Zagazig",
-    country: "Egypt",
-    website: "https://zu.edu.eg",
-    logoUrl: "https://www.zu.edu.eg/uploads/2017/07/ZULogo.png",
-    faculties: [{ facultyId: 13, name: "Faculty of Computers and Informatics", code: "FCI_ZU" }],
-  },
-  {
-    universityId: 8,
-    name: "Tanta University",
-    city: "Tanta",
-    country: "Egypt",
-    website: "https://tanta.edu.eg",
-    logoUrl: "https://tanta.edu.eg/tantaedu/img/unv-logo.png",
-    faculties: [{ facultyId: 15, name: "Faculty of Engineering", code: "ENG_TANTA" }],
-  },
-  {
-    universityId: 9,
-    name: "Benha University",
-    city: "Benha",
-    country: "Egypt",
-    website: "https://bu.edu.eg",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/en/d/dc/Benha_University_Logo.png",
-    faculties: [{ facultyId: 17, name: "Faculty of Computers and AI", code: "FCAI_BU" }],
-  },
-  {
-    universityId: 10,
-    name: "Suez Canal University",
-    city: "Ismailia",
-    country: "Egypt",
-    website: "https://suez.edu.eg",
-    logoUrl:
-      "https://suez.edu.eg/ar/wp-content/uploads/2022/01/266177708_300900118547240_420708396794634738_n-1.png",
-    faculties: [{ facultyId: 18, name: "Faculty of Computers and Informatics", code: "FCI_SCU" }],
-  },
-];
-
 const ORBIT_TILES: readonly EditorialOrbitTile[] = [
   {
     id: "squad-portrait",
-    imageSrc: "/images/hero/hero-student-green.jpg",
-    imageAlt: "University student smiling with notebooks and laptop against an emerald campus backdrop",
+    imageSrc: "/images/people/salma-khaled.jpg",
+    imageAlt: "Salma Khaled — Cairo University student portrait",
     university: "Cairo University",
-    caption: "FCAI · Project Squads",
+    caption: "Salma · FCAI Squad",
     href: "/projects",
     aspectClass: "aspect-[4/5]",
     objectPositionClass: "object-top",
@@ -214,10 +84,10 @@ const ORBIT_TILES: readonly EditorialOrbitTile[] = [
   },
   {
     id: "portfolio-portrait",
-    imageSrc: "/images/hero/hero-student-teal.jpg",
-    imageAlt: "University engineering student smiling with headphones and backpack against a deep teal studio backdrop",
-    university: "Alexandria University",
-    caption: "Verified Portfolios",
+    imageSrc: "/images/people/omar-mostafa.jpg",
+    imageAlt: "Omar Mostafa — Capital University student portrait",
+    university: "Capital University",
+    caption: "Omar · Verified Portfolio",
     href: "/students",
     aspectClass: "aspect-[4/5]",
     objectPositionClass: "object-top",
@@ -292,33 +162,43 @@ export function ProposedHeroDemo() {
   const [layout, setLayout] = useState<HeroLayoutConcept>("orbit");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const catalogQuery = useQuery({
-    queryKey: ["public", "universities", "catalog"],
-    queryFn: ({ signal }) => universitiesApi.getCatalog(signal),
-    staleTime: 60_000,
-    retry: false,
-  });
+  const { universities, resolveLogo } = useUniversityCatalog();
+  const { students: showcaseStudents } = usePublicPeopleShowcase(6);
 
-  const universities =
-    catalogQuery.data && catalogQuery.data.length > 0
-      ? catalogQuery.data
-      : DEMO_FALLBACK_UNIVERSITIES;
+  const stageCards = useMemo(
+    () => buildStudentStageCards(showcaseStudents),
+    [showcaseStudents],
+  );
 
-  const logoByName = useMemo(() => {
-    const map = new Map<string, string | null>();
-    universities.forEach((uni) => {
-      map.set(uni.name.toLowerCase(), uni.logoUrl ?? null);
+  const orbitTiles = useMemo<readonly EditorialOrbitTile[]>(() => {
+    const salma = showcaseStudents[0];
+    const omar = showcaseStudents[1] ?? showcaseStudents[0];
+
+    return ORBIT_TILES.map((tile) => {
+      if (tile.id === "squad-portrait" && salma) {
+        return {
+          ...tile,
+          imageSrc: salma.photoUrl,
+          imageAlt: `${salma.firstName} ${salma.lastName} — ${salma.universityName} student portrait`,
+          university: salma.universityName,
+          caption: `${salma.firstName} · ${salma.facultyCode} Squad`,
+        };
+      }
+      if (tile.id === "portfolio-portrait" && omar) {
+        return {
+          ...tile,
+          imageSrc: omar.photoUrl,
+          imageAlt: `${omar.firstName} ${omar.lastName} — ${omar.universityName} student portrait`,
+          university: omar.universityName,
+          caption: `${omar.firstName} · Lvl ${omar.level} Portfolio`,
+        };
+      }
+      return tile;
     });
-    return map;
-  }, [universities]);
+  }, [showcaseStudents]);
 
-  const resolveUniversityLogo = (name: string) =>
-    logoByName.get(name.toLowerCase()) ??
-    DEMO_FALLBACK_UNIVERSITIES.find((u) => u.name.toLowerCase() === name.toLowerCase())?.logoUrl ??
-    null;
-
-  const leftOrbitTiles = ORBIT_TILES.slice(0, 2);
-  const rightOrbitTiles = ORBIT_TILES.slice(2, 4);
+  const leftOrbitTiles = orbitTiles.slice(0, 2);
+  const rightOrbitTiles = orbitTiles.slice(2, 4);
 
   const handleHeroSearch = (event: React.FormEvent) => {
     event.preventDefault();
@@ -346,7 +226,7 @@ export function ProposedHeroDemo() {
                   <EditorialOrbitCard
                     key={tile.id}
                     tile={tile}
-                    logoUrl={resolveUniversityLogo(tile.university)}
+                    logoUrl={resolveLogo(tile.university)}
                   />
                 ))}
               </div>
@@ -407,7 +287,7 @@ export function ProposedHeroDemo() {
                   <EditorialOrbitCard
                     key={tile.id}
                     tile={tile}
-                    logoUrl={resolveUniversityLogo(tile.university)}
+                    logoUrl={resolveLogo(tile.university)}
                   />
                 ))}
               </div>
@@ -415,11 +295,11 @@ export function ProposedHeroDemo() {
 
             {/* Clean Mobile / Tablet 2-Column Portrait & Photo Grid */}
             <div className="mx-auto mt-10 grid max-w-[600px] grid-cols-2 gap-4 lg:hidden">
-              {ORBIT_TILES.map((tile) => (
+              {orbitTiles.map((tile) => (
                 <EditorialOrbitCard
                   key={tile.id}
                   tile={tile}
-                  logoUrl={resolveUniversityLogo(tile.university)}
+                  logoUrl={resolveLogo(tile.university)}
                   isMobileGrid
                 />
               ))}
@@ -479,11 +359,12 @@ export function ProposedHeroDemo() {
 
             {/* Lower Stage: 3 Tilted Rosetta-Toned Student Portraits */}
             <div className="mx-auto mt-8 grid w-full max-w-[840px] grid-cols-1 items-end gap-6 px-3 sm:mt-10 sm:grid-cols-3 lg:gap-8">
-              {STUDENT_STAGE_CARDS.map((card) => (
+              {stageCards.map((card, index) => (
                 <StudentPortraitCard
                   key={card.id}
+                  index={index}
                   card={card}
-                  logoUrl={resolveUniversityLogo(card.university)}
+                  logoUrl={card.universityLogoUrl ?? resolveLogo(card.university)}
                 />
               ))}
             </div>

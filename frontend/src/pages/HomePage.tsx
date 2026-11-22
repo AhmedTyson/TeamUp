@@ -4,7 +4,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, ExternalLink } from "lucide-react";
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { universitiesApi, type UniversityCatalogItem } from "@/api";
 import { StudentPortraitHero } from "@/components/home/StudentPortraitHero";
@@ -313,22 +313,34 @@ export function HomePage() {
 
   // Scroll Reveal states
   const [servicesVisible, setServicesVisible] = useState(false);
+  const [marqueeVisible, setMarqueeVisible] = useState(false);
+  const [partnersVisible, setPartnersVisible] = useState(false);
+  const [galleryVisible, setGalleryVisible] = useState(false);
   const [visibleRows, setVisibleRows] = useState<Record<number, boolean>>({});
+  const [footerLinksRevealed, setFooterLinksRevealed] = useState(false);
   const [footerVisible, setFooterVisible] = useState(false);
 
   const servicesSectionRef = useRef<HTMLElement | null>(null);
+  const marqueeSectionRef = useRef<HTMLDivElement | null>(null);
+  const partnerSectionRef = useRef<HTMLDivElement | null>(null);
+  const gallerySectionRef = useRef<HTMLDivElement | null>(null);
   const showcaseRowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const footerSectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") {
       setServicesVisible(true);
+      setMarqueeVisible(true);
+      setPartnersVisible(true);
+      setGalleryVisible(true);
       setVisibleRows({ 0: true, 1: true, 2: true, 3: true });
+      setFooterLinksRevealed(true);
       setFooterVisible(true);
+      footerSectionRef.current?.style.setProperty("--footer-progress", "1");
       return;
     }
 
-    const observer = new IntersectionObserver(
+    const revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) {
@@ -336,30 +348,93 @@ export function HomePage() {
           }
           if (entry.target === servicesSectionRef.current) {
             setServicesVisible(true);
-            observer.unobserve(entry.target);
-          } else if (entry.target === footerSectionRef.current) {
-            setFooterVisible(true);
-            observer.unobserve(entry.target);
+            revealObserver.unobserve(entry.target);
+          } else if (entry.target === marqueeSectionRef.current) {
+            setMarqueeVisible(true);
+            revealObserver.unobserve(entry.target);
+          } else if (entry.target === partnerSectionRef.current) {
+            setPartnersVisible(true);
+            revealObserver.unobserve(entry.target);
+          } else if (entry.target === gallerySectionRef.current) {
+            setGalleryVisible(true);
+            revealObserver.unobserve(entry.target);
           } else {
             const idxStr = entry.target.getAttribute("data-showcase-row");
             if (idxStr !== null) {
               const rowIdx = Number.parseInt(idxStr, 10);
               setVisibleRows((prev) => ({ ...prev, [rowIdx]: true }));
-              observer.unobserve(entry.target);
+              revealObserver.unobserve(entry.target);
             }
           }
         });
       },
-      { threshold: 0.15 },
+      { threshold: 0.12 },
     );
 
-    if (servicesSectionRef.current) observer.observe(servicesSectionRef.current);
-    if (footerSectionRef.current) observer.observe(footerSectionRef.current);
+    if (servicesSectionRef.current) revealObserver.observe(servicesSectionRef.current);
+    if (marqueeSectionRef.current) revealObserver.observe(marqueeSectionRef.current);
+    if (partnerSectionRef.current) revealObserver.observe(partnerSectionRef.current);
+    if (gallerySectionRef.current) revealObserver.observe(gallerySectionRef.current);
     showcaseRowRefs.current.forEach((rowEl) => {
-      if (rowEl) observer.observe(rowEl);
+      if (rowEl) revealObserver.observe(rowEl);
     });
 
-    return () => observer.disconnect();
+    // Keep footerObserver as the final IntersectionObserver registered so persistent loop listeners align cleanly
+    const footerObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target === footerSectionRef.current) {
+            setFooterVisible(entry.isIntersecting);
+            if (entry.isIntersecting) {
+              setFooterLinksRevealed(true);
+            }
+          }
+        });
+      },
+      { threshold: [0.08, 0.25] },
+    );
+
+    if (footerSectionRef.current) {
+      footerObserver.observe(footerSectionRef.current);
+    }
+
+    let scrollRafId: number | null = null;
+    const syncFooterProgress = () => {
+      scrollRafId = null;
+      const footerEl = footerSectionRef.current;
+      if (!footerEl) {
+        return;
+      }
+      const rect = footerEl.getBoundingClientRect();
+      const vh = window.innerHeight || 900;
+      const enterEnd = Math.max(0, vh - rect.height * 0.82);
+      const travel = Math.max(1, vh - enterEnd);
+      const rawProgress = (vh - rect.top) / travel;
+      const doc = document.documentElement;
+      const nearBottom = doc.scrollHeight - (window.scrollY + vh) <= 8;
+      const clamped = nearBottom ? 1 : Math.max(0, Math.min(1, rawProgress));
+      footerEl.style.setProperty("--footer-progress", clamped.toFixed(3));
+    };
+
+    const handleScrollOrResize = () => {
+      if (scrollRafId === null) {
+        scrollRafId = window.requestAnimationFrame(syncFooterProgress);
+      }
+    };
+
+    syncFooterProgress();
+    window.addEventListener("scroll", handleScrollOrResize, { passive: true });
+    window.addEventListener("resize", handleScrollOrResize);
+
+    return () => {
+      revealObserver.disconnect();
+      footerObserver.disconnect();
+      if (scrollRafId !== null) {
+        window.cancelAnimationFrame(scrollRafId);
+      }
+      window.removeEventListener("scroll", handleScrollOrResize);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
   }, []);
 
   return (
@@ -404,39 +479,41 @@ export function HomePage() {
             {PLATFORM_SERVICES.map((service, index) => (
               <div
                 key={service.id}
-                role="link"
-                tabIndex={0}
-                onClick={() => void navigate(service.to)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    void navigate(service.to);
-                  }
-                }}
-                onMouseMove={updateSpotlightCoords}
-                style={{ transitionDelay: `${120 + index * 75}ms` }}
-                className={`service-card group flex min-h-[200px] cursor-pointer flex-col justify-between p-6 sm:min-h-[235px] sm:p-8 md:p-9 ${
-                  servicesVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-                }`}
+                style={{ "--reveal-delay": `${90 + index * 70}ms` } as CSSProperties}
+                className={`reveal-stagger-item ${servicesVisible ? "is-visible" : ""}`}
               >
-                <div className="relative z-10 flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-[20px] font-medium leading-snug tracking-[-0.015em] text-white transition-colors duration-300 group-hover:text-[#d3fb52] sm:text-[22px] md:text-[24px]">
-                      {service.title}
-                    </h3>
-                    <p className="mt-1.5 text-[16px] font-normal tracking-[-0.01em] text-[#9ca3af] sm:text-[18px]">
-                      {service.subtitleMetric}
+                <div
+                  role="link"
+                  tabIndex={0}
+                  onClick={() => void navigate(service.to)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      void navigate(service.to);
+                    }
+                  }}
+                  onMouseMove={updateSpotlightCoords}
+                  className="service-card group flex h-full min-h-[200px] cursor-pointer flex-col justify-between p-6 sm:min-h-[235px] sm:p-8 md:p-9"
+                >
+                  <div className="relative z-10 flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-[20px] font-medium leading-snug tracking-[-0.015em] text-white transition-colors duration-300 group-hover:text-[#d3fb52] sm:text-[22px] md:text-[24px]">
+                        {service.title}
+                      </h3>
+                      <p className="mt-1.5 text-[16px] font-normal tracking-[-0.01em] text-[#9ca3af] sm:text-[18px]">
+                        {service.subtitleMetric}
+                      </p>
+                    </div>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-white/40 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:border-[#d3fb52] group-hover:bg-[#d3fb52] group-hover:text-[#14151c]">
+                      <ArrowUpRight className="size-4 stroke-[2.2]" aria-hidden="true" />
+                    </span>
+                  </div>
+
+                  <div className="relative z-10 pt-8 sm:pt-10">
+                    <p className="text-[13.5px] font-medium leading-relaxed tracking-[-0.01em] text-white group-hover:text-white/95 sm:text-[14.5px]">
+                      {service.tagsLine}
                     </p>
                   </div>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-white/40 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:border-[#d3fb52] group-hover:bg-[#d3fb52] group-hover:text-[#14151c]">
-                    <ArrowUpRight className="size-4 stroke-[2.2]" aria-hidden="true" />
-                  </span>
-                </div>
-
-                <div className="relative z-10 pt-8 sm:pt-10">
-                  <p className="text-[13.5px] font-medium leading-relaxed tracking-[-0.01em] text-white group-hover:text-white/95 sm:text-[14.5px]">
-                    {service.tagsLine}
-                  </p>
                 </div>
               </div>
             ))}
@@ -444,7 +521,12 @@ export function HomePage() {
         </div>
 
         {/* Single-Row Seamless Right-to-Left Infinite Marquee */}
-        <div className="no-scrollbar relative left-1/2 mt-16 w-screen -translate-x-1/2 overflow-x-auto overflow-y-hidden py-4">
+        <div
+          ref={marqueeSectionRef}
+          className={`no-scrollbar section-reveal-up marquee-edge-mask relative left-1/2 mt-16 w-screen -translate-x-1/2 overflow-x-auto overflow-y-hidden py-4 ${
+            marqueeVisible ? "is-visible" : ""
+          }`}
+        >
           <div id="marquee-track" className="marquee-track-rtl">
             {[0, 1].map((copy) => (
               <div
@@ -477,7 +559,10 @@ export function HomePage() {
         {/* Database-Driven Official Egyptian University Network Directory with Modern Pagination */}
         <div
           id="partner-universities"
-          className="mx-auto mt-16 max-w-[1280px] rounded-[28px] border border-white/[0.085] bg-[#1b1d26] p-6 sm:p-8 md:p-10"
+          ref={partnerSectionRef}
+          className={`section-reveal-up mx-auto mt-16 max-w-[1280px] rounded-[28px] border border-white/[0.085] bg-[#1b1d26] p-6 sm:p-8 md:p-10 ${
+            partnersVisible ? "is-visible" : ""
+          }`}
         >
           <div className="flex flex-col justify-between gap-4 border-b border-white/[0.08] pb-6 md:flex-row md:items-end">
             <div className="space-y-2">
@@ -504,49 +589,52 @@ export function HomePage() {
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {pagedUniversities.map((uni) => (
+            {pagedUniversities.map((uni, index) => (
               <div
-                key={uni.universityId}
-                className="flex flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] bg-[#14151c] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/40"
+                key={`${safeCampusPage}-${uni.universityId}`}
+                style={{ "--reveal-delay": `${index * 65}ms` } as CSSProperties}
+                className={partnersVisible ? "campus-card-enter" : "opacity-0"}
               >
-                <div className="flex items-start gap-3.5">
-                  <UniversityLogo name={uni.name} logoUrl={uni.logoUrl} size="lg" />
-                  <div className="min-w-0 space-y-1">
-                    <h4 className="truncate text-base font-semibold text-white">{uni.name}</h4>
-                    <p className="text-xs text-[#9ca3af]">
-                      {uni.city}, {uni.country}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      <Badge variant="accent" size="sm">
-                        {uni.faculties.length} {uni.faculties.length === 1 ? "faculty" : "faculties"}
-                      </Badge>
-                      {uni.faculties.slice(0, 2).map((fac) => (
-                        <Badge key={fac.facultyId} variant="default" size="sm">
-                          {fac.code}
+                <div className="flex h-full flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] bg-[#14151c] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/40">
+                  <div className="flex items-start gap-3.5">
+                    <UniversityLogo name={uni.name} logoUrl={uni.logoUrl} size="lg" />
+                    <div className="min-w-0 space-y-1">
+                      <h4 className="truncate text-base font-semibold text-white">{uni.name}</h4>
+                      <p className="text-xs text-[#9ca3af]">
+                        {uni.city}, {uni.country}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        <Badge variant="accent" size="sm">
+                          {uni.faculties.length} {uni.faculties.length === 1 ? "faculty" : "faculties"}
                         </Badge>
-                      ))}
+                        {uni.faculties.slice(0, 2).map((fac) => (
+                          <Badge key={fac.facultyId} variant="default" size="sm">
+                            {fac.code}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
-                  <Link
-                    to="/auth/register"
-                    className="font-semibold text-[#d3fb52] hover:underline"
-                  >
-                    Register from this campus →
-                  </Link>
-                  {uni.website && isSafeHttpUrl(uni.website) && (
-                    <a
-                      href={uni.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-white/70 hover:text-white"
+                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
+                    <Link
+                      to="/auth/register"
+                      className="font-semibold text-[#d3fb52] hover:underline"
                     >
-                      Site
-                      <ExternalLink className="size-3" aria-hidden="true" />
-                    </a>
-                  )}
+                      Register from this campus →
+                    </Link>
+                    {uni.website && isSafeHttpUrl(uni.website) && (
+                      <a
+                        href={uni.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-white/70 hover:text-white"
+                      >
+                        Site
+                        <ExternalLink className="size-3" aria-hidden="true" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -568,97 +656,112 @@ export function HomePage() {
         </div>
 
         {/* Handshake Editorial Campus Gallery (High-Contrast White Inset Cards) */}
-        <div className="mx-auto mt-14 max-w-[1280px]">
+        <div ref={gallerySectionRef} className="mx-auto mt-14 max-w-[1280px]">
           <div className="grid gap-5 md:grid-cols-3">
-            <Link
-              to="/projects"
-              className="hs-white-card group flex flex-col justify-between overflow-hidden p-4 transition-transform duration-300 hover:-translate-y-1 sm:p-5"
+            <div
+              style={{ "--reveal-delay": "0ms" } as CSSProperties}
+              className={`reveal-stagger-item ${galleryVisible ? "is-visible" : ""}`}
             >
-              <div className="overflow-hidden rounded-2xl bg-[#14151c]">
-                <img
-                  src="/images/hero/hero-squad-lab.jpg"
-                  alt="Students forming cross-faculty engineering squads"
-                  loading="lazy"
-                  className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                />
-              </div>
-              <div className="mt-4 flex items-end justify-between gap-3">
-                <div>
-                  <span className="hs-pill-tag bg-[#14151c] text-[#d3fb52]">
-                    Project Matchmaking
-                  </span>
-                  <p className="mt-2 text-lg font-bold tracking-tight text-[#14151c]">
-                    Cross-Faculty Squads
-                  </p>
-                  <p className="mt-0.5 text-xs text-[#4b5563]">
-                    Connect engineering, AI, and design peers in minutes.
-                  </p>
+              <Link
+                to="/projects"
+                className="hs-white-card group flex h-full flex-col justify-between overflow-hidden p-4 transition-transform duration-300 hover:-translate-y-1 sm:p-5"
+              >
+                <div className="overflow-hidden rounded-2xl bg-[#14151c]">
+                  <img
+                    src="/images/hero/hero-squad-lab.jpg"
+                    alt="Students forming cross-faculty engineering squads"
+                    loading="lazy"
+                    className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
                 </div>
-                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-[#14151c] text-[#d3fb52]">
-                  <ArrowUpRight className="size-4" aria-hidden="true" />
-                </span>
-              </div>
-            </Link>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <div>
+                    <span className="hs-pill-tag bg-[#14151c] text-[#d3fb52]">
+                      Project Matchmaking
+                    </span>
+                    <p className="mt-2 text-lg font-bold tracking-tight text-[#14151c]">
+                      Cross-Faculty Squads
+                    </p>
+                    <p className="mt-0.5 text-xs text-[#4b5563]">
+                      Connect engineering, AI, and design peers in minutes.
+                    </p>
+                  </div>
+                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-[#14151c] text-[#d3fb52] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+                    <ArrowUpRight className="size-4" aria-hidden="true" />
+                  </span>
+                </div>
+              </Link>
+            </div>
 
-            <Link
-              to="/events"
-              className="hs-white-card group flex flex-col justify-between overflow-hidden p-4 transition-transform duration-300 hover:-translate-y-1 sm:p-5"
+            <div
+              style={{ "--reveal-delay": "110ms" } as CSSProperties}
+              className={`reveal-stagger-item ${galleryVisible ? "is-visible" : ""}`}
             >
-              <div className="overflow-hidden rounded-2xl bg-[#14151c]">
-                <img
-                  src="/images/hero/hero-workshop-hall.jpg"
-                  alt="University workshop check-in pass and QR verification"
-                  loading="lazy"
-                  className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                />
-              </div>
-              <div className="mt-4 flex items-end justify-between gap-3">
-                <div>
-                  <span className="hs-pill-tag bg-[#d3fb52] text-[#14151c]">
-                    Live Campus Events
-                  </span>
-                  <p className="mt-2 text-lg font-bold tracking-tight text-[#14151c]">
-                    Instant Workshop Check-In
-                  </p>
-                  <p className="mt-0.5 text-xs text-[#4b5563]">
-                    Reserve bootcamp seats and verify campus attendance cleanly.
-                  </p>
+              <Link
+                to="/events"
+                className="hs-white-card group flex h-full flex-col justify-between overflow-hidden p-4 transition-transform duration-300 hover:-translate-y-1 sm:p-5"
+              >
+                <div className="overflow-hidden rounded-2xl bg-[#14151c]">
+                  <img
+                    src="/images/hero/hero-workshop-hall.jpg"
+                    alt="University workshop check-in pass and QR verification"
+                    loading="lazy"
+                    className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
                 </div>
-                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-[#14151c] text-[#d3fb52]">
-                  <ArrowUpRight className="size-4" aria-hidden="true" />
-                </span>
-              </div>
-            </Link>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <div>
+                    <span className="hs-pill-tag bg-[#d3fb52] text-[#14151c]">
+                      Live Campus Events
+                    </span>
+                    <p className="mt-2 text-lg font-bold tracking-tight text-[#14151c]">
+                      Instant Workshop Check-In
+                    </p>
+                    <p className="mt-0.5 text-xs text-[#4b5563]">
+                      Reserve bootcamp seats and verify campus attendance cleanly.
+                    </p>
+                  </div>
+                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-[#14151c] text-[#d3fb52] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+                    <ArrowUpRight className="size-4" aria-hidden="true" />
+                  </span>
+                </div>
+              </Link>
+            </div>
 
-            <Link
-              to="/leaderboard"
-              className="hs-white-card group flex flex-col justify-between overflow-hidden p-4 transition-transform duration-300 hover:-translate-y-1 sm:p-5"
+            <div
+              style={{ "--reveal-delay": "220ms" } as CSSProperties}
+              className={`reveal-stagger-item ${galleryVisible ? "is-visible" : ""}`}
             >
-              <div className="overflow-hidden rounded-2xl bg-[#14151c]">
-                <img
-                  src="/images/hero/hero-demo-day.jpg"
-                  alt="Verified campus achievement badges and rankings"
-                  loading="lazy"
-                  className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                />
-              </div>
-              <div className="mt-4 flex items-end justify-between gap-3">
-                <div>
-                  <span className="hs-pill-tag bg-[#15733f] text-white">
-                    Student Portfolios
-                  </span>
-                  <p className="mt-2 text-lg font-bold tracking-tight text-[#14151c]">
-                    Verified Milestones &amp; XP
-                  </p>
-                  <p className="mt-0.5 text-xs text-[#4b5563]">
-                    Showcase shipped projects, badges, and campus rank.
-                  </p>
+              <Link
+                to="/leaderboard"
+                className="hs-white-card group flex h-full flex-col justify-between overflow-hidden p-4 transition-transform duration-300 hover:-translate-y-1 sm:p-5"
+              >
+                <div className="overflow-hidden rounded-2xl bg-[#14151c]">
+                  <img
+                    src="/images/hero/hero-demo-day.jpg"
+                    alt="Verified campus achievement badges and rankings"
+                    loading="lazy"
+                    className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
                 </div>
-                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-[#14151c] text-[#d3fb52]">
-                  <ArrowUpRight className="size-4" aria-hidden="true" />
-                </span>
-              </div>
-            </Link>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <div>
+                    <span className="hs-pill-tag bg-[#15733f] text-white">
+                      Student Portfolios
+                    </span>
+                    <p className="mt-2 text-lg font-bold tracking-tight text-[#14151c]">
+                      Verified Milestones &amp; XP
+                    </p>
+                    <p className="mt-0.5 text-xs text-[#4b5563]">
+                      Showcase shipped projects, badges, and campus rank.
+                    </p>
+                  </div>
+                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-[#14151c] text-[#d3fb52] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+                    <ArrowUpRight className="size-4" aria-hidden="true" />
+                  </span>
+                </div>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -717,24 +820,26 @@ export function HomePage() {
                 </div>
 
                 {/* Elevated Foreground White Match Card */}
-                <div className="relative z-10 ml-0 mt-10 max-w-[420px] rounded-[18px] bg-white p-4 shadow-[0_24px_48px_rgba(12,28,18,0.22)] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.015] sm:ml-1 sm:mt-14 sm:rounded-[20px] sm:p-5 md:ml-3 md:mt-16 md:p-6">
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[#9bb8ff] text-[18px] font-black italic text-[#101828] sm:h-12 sm:w-12 sm:rounded-[12px] sm:text-[22px]">
-                      AI
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[12px] font-medium text-[#4b5563] sm:text-[13px]">
-                        Graduation &amp; Hackathon Team
-                      </p>
-                      <h4 className="mt-0.5 text-[16.5px] font-bold tracking-[-0.015em] text-[#111827] sm:text-[19px]">
-                        Full-Stack &amp; AI Teammate
-                      </h4>
-                      <p className="mt-1 text-[13.5px] font-medium text-[#1f2937] sm:text-[14.5px]">
-                        +250 pts · 4 / 6 Members Joined
-                      </p>
-                      <p className="mt-1.5 text-[12px] text-[#6b7280] sm:mt-2 sm:text-[13px]">
-                        Required: React · Python · FastAPI (Computer Science)
-                      </p>
+                <div className="showcase-float-slow relative z-10 ml-0 mt-10 max-w-[420px] sm:ml-1 sm:mt-14 md:ml-3 md:mt-16">
+                  <div className="rounded-[18px] bg-white p-4 shadow-[0_24px_48px_rgba(12,28,18,0.22)] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.015] sm:rounded-[20px] sm:p-5 md:p-6">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[#9bb8ff] text-[18px] font-black italic text-[#101828] sm:h-12 sm:w-12 sm:rounded-[12px] sm:text-[22px]">
+                        AI
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-medium text-[#4b5563] sm:text-[13px]">
+                          Graduation &amp; Hackathon Team
+                        </p>
+                        <h4 className="mt-0.5 text-[16.5px] font-bold tracking-[-0.015em] text-[#111827] sm:text-[19px]">
+                          Full-Stack &amp; AI Teammate
+                        </h4>
+                        <p className="mt-1 text-[13.5px] font-medium text-[#1f2937] sm:text-[14.5px]">
+                          +250 pts · 4 / 6 Members Joined
+                        </p>
+                        <p className="mt-1.5 text-[12px] text-[#6b7280] sm:mt-2 sm:text-[13px]">
+                          Required: React · Python · FastAPI (Computer Science)
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -776,7 +881,7 @@ export function HomePage() {
             className="showcase-row grid grid-cols-1 items-center gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-16"
           >
             <div
-              className={`showcase-text-reveal-rtl order-2 lg:order-1 lg:col-span-5 ${
+              className={`showcase-text-reveal-ltr order-2 lg:order-1 lg:col-span-5 ${
                 visibleRows[1] ? "is-visible" : ""
               }`}
             >
@@ -877,7 +982,10 @@ export function HomePage() {
                   </div>
 
                   <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-3 sm:gap-2.5">
-                    <div className="rounded-xl border border-gray-200 p-2.5 text-left sm:p-3">
+                    <div
+                      style={{ "--reveal-delay": "180ms" } as CSSProperties}
+                      className="showcase-mini-item rounded-xl border border-gray-200 p-2.5 text-left sm:p-3"
+                    >
                       <p className="text-[12px] font-semibold leading-snug text-[#111827] sm:text-[12.5px]">
                         IEEE Student Branch
                       </p>
@@ -888,7 +996,10 @@ export function HomePage() {
                         Year 1 · Year 2 · Year 3
                       </p>
                     </div>
-                    <div className="rounded-xl border border-gray-200 p-2.5 text-left sm:p-3">
+                    <div
+                      style={{ "--reveal-delay": "280ms" } as CSSProperties}
+                      className="showcase-mini-item rounded-xl border border-gray-200 p-2.5 text-left sm:p-3"
+                    >
                       <p className="text-[12px] font-semibold leading-snug text-[#111827] sm:text-[12.5px]">
                         GDG Campus Lead
                       </p>
@@ -899,7 +1010,10 @@ export function HomePage() {
                         CS · Engineering · AI
                       </p>
                     </div>
-                    <div className="hidden rounded-xl border border-gray-200 p-3 text-left sm:block">
+                    <div
+                      style={{ "--reveal-delay": "380ms" } as CSSProperties}
+                      className="showcase-mini-item hidden rounded-xl border border-gray-200 p-3 text-left sm:block"
+                    >
                       <p className="text-[12.5px] font-semibold leading-snug text-[#111827]">
                         Enactus Entrepreneurs
                       </p>
@@ -945,64 +1059,59 @@ export function HomePage() {
                   </div>
 
                   <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/60">
-                    <div className="h-full w-[88%] rounded-full bg-[#1b4d3e]" />
+                    <div className="showcase-capacity-fill h-full w-[88%] rounded-full bg-[#1b4d3e]" />
                   </div>
                 </div>
 
                 {/* Elevated Foreground White Attendance Check-In Card */}
-                <div className="relative z-10 ml-0 mt-16 max-w-[430px] rounded-[18px] bg-white p-4 shadow-[0_24px_48px_rgba(12,28,18,0.25)] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.015] sm:ml-1 sm:mt-20 sm:rounded-[20px] sm:p-5 md:ml-4 md:mt-24 md:p-6">
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[#d3fb52] text-[#14151c] sm:h-12 sm:w-12 sm:rounded-[12px]">
-                      <svg
-                        className="h-5 w-5 sm:h-6 sm:w-6"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <rect width="5" height="5" x="3" y="3" rx="1" />
-                        <rect width="5" height="5" x="16" y="3" rx="1" />
-                        <rect width="5" height="5" x="3" y="16" rx="1" />
-                        <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
-                        <path d="M21 21v.01" />
-                        <path d="M12 7v3a2 2 0 0 1-2 2H7" />
-                        <path d="M3 12h.01" />
-                        <path d="M12 3h.01" />
-                        <path d="M12 16v.01" />
-                        <path d="M16 12h1" />
-                        <path d="M21 12v.01" />
-                        <path d="M12 21v-1" />
-                      </svg>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="flex items-center gap-1 text-[11.5px] font-semibold text-[#16a34a] sm:text-[12.5px]">
-                          <svg
-                            className="h-3.5 w-3.5 shrink-0"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            aria-hidden="true"
-                          >
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="m9 12 2 2 4-4" />
-                          </svg>
-                          <span className="truncate">Attendance Verified</span>
-                        </p>
-                        <span className="shrink-0 font-mono text-[11px] text-[#6b7280] sm:text-[12px]">
-                          QRCode · RFID
-                        </span>
+                <div className="showcase-float-slow relative z-10 ml-0 mt-16 max-w-[430px] sm:ml-1 sm:mt-20 md:ml-4 md:mt-24">
+                  <div className="rounded-[18px] bg-white p-4 shadow-[0_24px_48px_rgba(12,28,18,0.25)] transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.015] sm:rounded-[20px] sm:p-5 md:p-6">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[#d3fb52] text-[#14151c] sm:h-12 sm:w-12 sm:rounded-[12px]">
+                        <svg
+                          className="h-5 w-5 sm:h-6 sm:w-6"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <rect width="5" height="5" x="3" y="3" rx="1" />
+                          <rect width="5" height="5" x="16" y="3" rx="1" />
+                          <rect width="5" height="5" x="3" y="16" rx="1" />
+                          <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+                          <path d="M21 21v.01" />
+                          <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+                          <path d="M3 12h.01" />
+                          <path d="M12 3h.01" />
+                          <path d="M12 16v.01" />
+                          <path d="M16 12h1" />
+                          <path d="M21 12v.01" />
+                          <path d="M12 21v-1" />
+                        </svg>
                       </div>
-                      <h4 className="mt-1 text-[16px] font-bold tracking-[-0.015em] text-[#111827] sm:text-[18.5px]">
-                        System Design Bootcamp — Session 1
-                      </h4>
-                      <p className="mt-1 text-[12.5px] text-[#4b5563] sm:text-[13.5px]">
-                        Checked in at 10:02 AM · +100 pts awarded
-                      </p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#16a34a] sm:text-[12.5px]">
+                            <span className="relative flex size-2 shrink-0" aria-hidden="true">
+                              <span className="live-status-ping absolute inline-flex h-full w-full rounded-full bg-[#16a34a]" />
+                              <span className="relative inline-flex size-2 rounded-full bg-[#16a34a]" />
+                            </span>
+                            <span className="truncate">Attendance Verified</span>
+                          </p>
+                          <span className="shrink-0 font-mono text-[11px] text-[#6b7280] sm:text-[12px]">
+                            QRCode · RFID
+                          </span>
+                        </div>
+                        <h4 className="mt-1 text-[16px] font-bold tracking-[-0.015em] text-[#111827] sm:text-[18.5px]">
+                          System Design Bootcamp — Session 1
+                        </h4>
+                        <p className="mt-1 text-[12.5px] text-[#4b5563] sm:text-[13.5px]">
+                          Checked in at 10:02 AM · +100 pts awarded
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1044,7 +1153,7 @@ export function HomePage() {
             className="showcase-row grid grid-cols-1 items-center gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-16"
           >
             <div
-              className={`showcase-text-reveal-rtl order-2 lg:order-1 lg:col-span-5 ${
+              className={`showcase-text-reveal-ltr order-2 lg:order-1 lg:col-span-5 ${
                 visibleRows[3] ? "is-visible" : ""
               }`}
             >
@@ -1095,7 +1204,10 @@ export function HomePage() {
                   </div>
 
                   <div className="my-1 grid grid-cols-2 gap-2 sm:my-2 sm:grid-cols-3 sm:gap-2.5">
-                    <div className="flex items-center gap-2 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-2.5 sm:gap-2.5 sm:p-3">
+                    <div
+                      style={{ "--reveal-delay": "160ms" } as CSSProperties}
+                      className="showcase-mini-item flex items-center gap-2 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-2.5 sm:gap-2.5 sm:p-3"
+                    >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#d3fb52] text-[#14151c] sm:h-9 sm:w-9">
                         <svg
                           className="h-4 w-4"
@@ -1123,7 +1235,10 @@ export function HomePage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-2.5 sm:gap-2.5 sm:p-3">
+                    <div
+                      style={{ "--reveal-delay": "250ms" } as CSSProperties}
+                      className="showcase-mini-item flex items-center gap-2 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-2.5 sm:gap-2.5 sm:p-3"
+                    >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#15733f] text-white sm:h-9 sm:w-9">
                         <svg
                           className="h-4 w-4"
@@ -1147,7 +1262,10 @@ export function HomePage() {
                       </div>
                     </div>
 
-                    <div className="hidden items-center gap-2.5 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-3 sm:flex">
+                    <div
+                      style={{ "--reveal-delay": "340ms" } as CSSProperties}
+                      className="showcase-mini-item hidden items-center gap-2.5 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-3 sm:flex"
+                    >
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#111827] text-[#d3fb52]">
                         <svg
                           className="h-4 w-4"
@@ -1170,7 +1288,10 @@ export function HomePage() {
                   </div>
 
                   <div className="flex flex-col gap-1.5 border-t border-gray-100 pt-2.5 sm:pt-3">
-                    <div className="flex items-center justify-between gap-2 text-[11.5px] sm:text-[12.5px]">
+                    <div
+                      style={{ "--reveal-delay": "420ms" } as CSSProperties}
+                      className="showcase-mini-item flex items-center justify-between gap-2 text-[11.5px] sm:text-[12.5px]"
+                    >
                       <span className="flex items-center gap-1.5 truncate font-medium text-[#111827]">
                         <svg
                           className="h-3.5 w-3.5 shrink-0 text-[#15733f]"
@@ -1191,7 +1312,10 @@ export function HomePage() {
                         +250 pts
                       </span>
                     </div>
-                    <div className="flex items-center justify-between gap-2 text-[11.5px] sm:text-[12.5px]">
+                    <div
+                      style={{ "--reveal-delay": "500ms" } as CSSProperties}
+                      className="showcase-mini-item flex items-center justify-between gap-2 text-[11.5px] sm:text-[12.5px]"
+                    >
                       <span className="flex items-center gap-1.5 truncate font-medium text-[#111827]">
                         <svg
                           className="h-3.5 w-3.5 shrink-0 text-[#15733f]"
@@ -1224,15 +1348,18 @@ export function HomePage() {
       <footer
         id="footer-section"
         ref={footerSectionRef}
-        className="relative z-20 select-none overflow-x-hidden bg-[#14151c] px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16 md:px-12 md:pb-24 md:pt-24"
+        className={`relative z-20 select-none overflow-hidden bg-[#14151c] px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16 md:px-12 md:pb-24 md:pt-24 ${
+          footerVisible ? "is-footer-looping" : ""
+        }`}
       >
+        <div aria-hidden="true" className="footer-ambient-glow" />
         <div className="mx-auto max-w-[1220px]">
           <div className="grid grid-cols-1 gap-10 pb-10 sm:gap-12 sm:pb-14 lg:grid-cols-12 lg:gap-8 md:pb-20">
             {/* Left Column: Tagline */}
             <div
               id="footer-left-col"
               className={`footer-left-reveal-ltr lg:col-span-5 ${
-                footerVisible ? "is-visible" : ""
+                footerLinksRevealed ? "is-visible" : ""
               }`}
             >
               <h2
@@ -1249,7 +1376,7 @@ export function HomePage() {
             <div
               id="footer-right-col"
               className={`footer-right-reveal lg:col-span-7 ${
-                footerVisible ? "is-visible" : ""
+                footerLinksRevealed ? "is-visible" : ""
               }`}
             >
               <div className="grid grid-cols-2 gap-x-6 gap-y-8 text-left sm:grid-cols-3 sm:gap-x-10 sm:gap-y-12">
@@ -1354,38 +1481,63 @@ export function HomePage() {
           </div>
         </div>
 
-        {/* Bottom Giant Full-Width Brand Wordmark (One-Shot Burst Animation) */}
-        <div className="flex w-full items-center justify-center px-4 py-4 sm:px-8 sm:py-6 md:px-14 md:py-10">
+        {/* Footer Horizon Divider & Caption */}
+        <div className="mx-auto max-w-[1220px]">
+          <div className="border-t border-white/[0.08] py-4 text-xs text-[#9ca3af]">
+            <span>TeamUp · Egyptian Campus Collaboration Network</span>
+          </div>
+          <div aria-hidden="true" className="footer-horizon-line" />
+        </div>
+
+        {/* Bottom Giant Full-Width Brand Wordmark (Scroll-Stage & Continuous Loop) */}
+        <div className="footer-scroll-stage relative flex w-full items-center justify-center px-4 py-4 sm:px-8 sm:py-6 md:px-14 md:py-10">
           <div
             id="footer-brand-burst"
             className={`relative inline-flex origin-center scale-x-[1.14] items-baseline justify-center whitespace-nowrap pr-[0.08em] text-center font-black italic leading-[1.15] tracking-[0.02em] text-[#d3fb52] sm:scale-x-[1.24] sm:tracking-[0.03em] ${
-              footerVisible ? "is-burst-visible" : ""
+              footerVisible ? "is-burst-visible is-footer-looping" : ""
             }`}
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
               fontSize: "clamp(3.1rem, 18.2vw, 18.2rem)",
             }}
           >
-            <span className="burst-letter relative inline-block" style={{ animationDelay: "0ms" }}>
+            <span
+              className="burst-letter relative inline-block"
+              style={{ "--letter-delay": "0ms" } as CSSProperties}
+            >
               T
             </span>
-            <span className="burst-letter relative inline-block" style={{ animationDelay: "70ms" }}>
+            <span
+              className="burst-letter relative inline-block"
+              style={{ "--letter-delay": "95ms" } as CSSProperties}
+            >
               e
             </span>
-            <span className="burst-letter relative inline-block" style={{ animationDelay: "140ms" }}>
+            <span
+              className="burst-letter relative inline-block"
+              style={{ "--letter-delay": "190ms" } as CSSProperties}
+            >
               a
             </span>
-            <span className="burst-letter relative inline-block" style={{ animationDelay: "210ms" }}>
+            <span
+              className="burst-letter relative inline-block"
+              style={{ "--letter-delay": "285ms" } as CSSProperties}
+            >
               m
             </span>
-            <span className="burst-letter relative inline-block" style={{ animationDelay: "280ms" }}>
+            <span
+              className="burst-letter relative inline-block"
+              style={{ "--letter-delay": "380ms" } as CSSProperties}
+            >
               U
             </span>
-            <span className="burst-letter relative inline-block" style={{ animationDelay: "350ms" }}>
+            <span
+              className="burst-letter relative inline-block"
+              style={{ "--letter-delay": "475ms" } as CSSProperties}
+            >
               p
               <span
                 className="burst-rays absolute -top-[10%] left-1/2 flex -translate-x-1/2 items-center gap-2 sm:gap-3"
-                style={{ animationDelay: "480ms" }}
                 aria-hidden="true"
               >
                 <span className="h-3.5 w-1 origin-bottom -rotate-35 rounded-full bg-[#d3fb52] sm:h-5 sm:w-1.5 md:h-7 md:w-2" />
