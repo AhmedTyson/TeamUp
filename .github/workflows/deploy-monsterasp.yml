@@ -83,18 +83,33 @@ jobs:
             throw "msdeploy.exe was not found on the runner."
           }
 
-          $server = $env:MONSTERASP_SERVER.Trim()
+          $rawServer = $env:MONSTERASP_SERVER.Trim()
           $site = $env:MONSTERASP_SITE_NAME.Trim()
-          if ($server -match '^https?://') {
-            $computerUrl = if ($server -match '\?') { $server } else { "$($server.TrimEnd('/'))/msdeploy.axd?site=$site" }
-          } else {
-            $computerUrl = "https://${server}:8172/msdeploy.axd?site=$site"
+          $user = $env:MONSTERASP_USERNAME.Trim()
+          $pass = $env:MONSTERASP_PASSWORD.Trim("`r", "`n")
+
+          $serverForUri = if ($rawServer -match '^https?://') { $rawServer } else { "https://$rawServer" }
+          $parsedUri = [Uri]$serverForUri
+          $port = if ($parsedUri.IsDefaultPort -or $parsedUri.Port -le 0) { 8172 } else { $parsedUri.Port }
+          $computerUrl = "https://$($parsedUri.Host):$port/msdeploy.axd?site=$([Uri]::EscapeDataString($site))"
+
+          Write-Host "Site format check: hasScheme=$($site -match '://'), hasRunAspNet=$($site -match '\.runasp\.net'), empty=$($site.Length -eq 0)"
+          Write-Host "Server format check: port=$port, hasMsdeployPath=$($rawServer -match 'msdeploy\.axd'), hadSiteQuery=$($rawServer -match 'site=')"
+          Write-Host "Auth presence check: userNonEmpty=$($user.Length -gt 0), passNonEmpty=$($pass.Length -gt 0), usernameEqualsSite=$($user -eq $site)"
+          if ($site -match '://' -or $site -match '\.runasp\.net') {
+            Write-Warning "MONSTERASP_SITE_NAME should be your MonsterASP IIS site ID (for example site12345), not an HTTP URL or .runasp.net domain."
           }
+
+          $escapeSetting = { param([string]$v) $v.Replace("'", "''") }
+          $escSite = & $escapeSetting $site
+          $escUrl = & $escapeSetting $computerUrl
+          $escUser = & $escapeSetting $user
+          $escPass = & $escapeSetting $pass
 
           & $msdeploy `
             "-verb:sync" `
-            "-source:contentPath=${{ github.workspace }}\publish" `
-            "-dest:contentPath=$site,computerName=$computerUrl,userName=$($env:MONSTERASP_USERNAME),password=$($env:MONSTERASP_PASSWORD),authtype=Basic" `
+            "-source:iisApp='${{ github.workspace }}\publish'" `
+            "-dest:iisApp='$escSite',computerName='$escUrl',userName='$escUser',password='$escPass',authType='Basic'" `
             "-enableRule:AppOffline" `
             "-enableRule:DoNotDeleteRule" `
             "-allowUntrusted"
