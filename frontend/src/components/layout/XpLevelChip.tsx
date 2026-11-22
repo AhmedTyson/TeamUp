@@ -12,7 +12,12 @@ import {
   type ApiResponse,
 } from "@/api";
 import { useAuth } from "@/features/auth";
+import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
+
+export interface XpLevelChipProps {
+  isScrolled?: boolean;
+}
 
 export interface NavbarStudentScore {
   studentId: number;
@@ -24,7 +29,7 @@ export interface NavbarStudentScore {
   progress: number;
 }
 
-export function XpLevelChip() {
+export function XpLevelChip({ isScrolled = false }: XpLevelChipProps) {
   const { user, isAuthenticated } = useAuth();
   const studentId = user?.studentId ?? 0;
 
@@ -62,19 +67,29 @@ export function XpLevelChip() {
           ? `${score.pointsToNext} XP to Level ${score.level + 1} (${pct}%)`
           : "View XP & Badges"
       }
-      className="hidden items-center gap-1.5 rounded-full border border-[#d3fb52]/30 bg-[#d3fb52]/10 px-2 py-1 text-[11px] font-semibold text-[#d3fb52] transition-colors hover:bg-[#d3fb52]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:inline-flex xl:gap-2 xl:px-2.5 xl:text-xs"
+      className={cn(
+        "hidden items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:inline-flex xl:gap-2 xl:px-2.5 xl:text-xs",
+        isScrolled
+          ? "border-[#14151c] bg-[#14151c] text-white shadow-sm hover:bg-[#222532]"
+          : "border-[#d3fb52]/30 bg-[#d3fb52]/10 text-[#d3fb52] hover:bg-[#d3fb52]/20",
+      )}
     >
-      <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+      <Sparkles
+        className={cn("size-3.5 shrink-0", isScrolled && "text-[#d3fb52]")}
+        aria-hidden="true"
+      />
       {score ? (
         <span className="inline-flex items-center gap-1.5 tabular-nums">
           <span>Lvl {score.level}</span>
           <span className="text-white/40" aria-hidden="true">
             ·
           </span>
-          <span className="font-mono">{score.totalPoints} XP</span>
+          <span className={cn("font-mono", isScrolled && "text-[#d3fb52]")}>
+            {score.totalPoints} XP
+          </span>
         </span>
       ) : (
-        <span>XP &amp; Badges</span>
+        <span className={isScrolled ? "text-[#d3fb52]" : undefined}>XP &amp; Badges</span>
       )}
     </Link>
   );

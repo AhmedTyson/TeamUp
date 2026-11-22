@@ -381,14 +381,17 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
   return (
     <header
       id="main-header"
-      className="pointer-events-none fixed inset-x-0 top-3 z-50 px-3 sm:top-6 sm:px-5 xl:px-6"
+      className="pointer-events-none fixed inset-x-0 top-3 z-50 px-3 sm:top-6 sm:px-4 xl:px-6"
     >
       <div
         id="header-inner"
         className={cn(
           "pointer-events-auto mx-auto flex h-[56px] w-full items-center justify-between gap-2 rounded-[16px] border px-2.5 py-2 transition-[max-width,background-color,box-shadow,border-color] duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-3 xl:px-5",
           isScrolled
-            ? "max-w-[1040px] border-black/[0.06] bg-white/[0.985] shadow-[0_18px_46px_-8px_rgba(8,18,20,0.42)]"
+            ? cn(
+                isAuthenticated ? "max-w-[1200px]" : "max-w-[1040px]",
+                "border-black/[0.06] bg-white/[0.985] shadow-[0_18px_46px_-8px_rgba(8,18,20,0.42)]",
+              )
             : "max-w-[1392px] border-transparent bg-white/0 shadow-none",
         )}
       >
@@ -423,7 +426,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
             aria-label="TeamUp Home"
             className={cn(
               "inline-flex h-10 shrink-0 items-center overflow-hidden transition-[width] duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
-              isScrolled ? "w-10" : "w-[96px] sm:w-[104px] xl:w-[132px]",
+              isScrolled ? "w-10" : "w-[92px] sm:w-[98px] xl:w-[132px]",
             )}
           >
             {isScrolled ? (
@@ -507,7 +510,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                     }
                   }}
                   className={cn(
-                    "nav-option-btn cursor-pointer whitespace-nowrap rounded-[10px] px-2 py-2 text-[12px] font-medium tracking-[-0.01em] transition-colors duration-150 xl:px-3 xl:text-[13.5px]",
+                    "nav-option-btn cursor-pointer whitespace-nowrap rounded-[10px] px-1.5 py-2 text-[12px] font-medium tracking-[-0.01em] transition-colors duration-150 xl:px-3 xl:text-[13.5px]",
                     isScrolled
                       ? isOpen
                         ? "font-semibold text-[#14151c]"
@@ -528,7 +531,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
               to="/admin"
               className={({ isActive }) =>
                 cn(
-                  "relative z-10 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-[10px] px-2 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] xl:px-2.5 xl:text-[13.5px]",
+                  "relative z-10 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-[10px] px-1.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] xl:px-2.5 xl:text-[13.5px]",
                   isActive
                     ? "bg-[#d3fb52] font-semibold text-[#14151c]"
                     : isScrolled
@@ -677,7 +680,9 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
         <div className="flex shrink-0 items-center gap-2">
           {isAuthenticated && user ? (
             <div className="flex shrink-0 items-center gap-1.5">
-              <div className="shrink-0 whitespace-nowrap">{xpChipSlot ?? <XpLevelChip />}</div>
+              <div className="shrink-0 whitespace-nowrap">
+                {xpChipSlot ?? <XpLevelChip isScrolled={isScrolled} />}
+              </div>
 
               {notificationSlot ?? <NotificationBell />}
 
