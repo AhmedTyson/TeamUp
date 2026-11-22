@@ -83,8 +83,8 @@ M1 establishes the **Phase 0 shared foundation** that unblocks M2, M3, and M4 by
 - [x] **M1-16:** Build `/admin/audit-logs` paginated, filterable immutable Audit Log table with expandable Old/New JSON diff inspection drawer.
 
 ### Phase 3 — Integration & Testing (Days 12–14)
-- [ ] **M1-17:** Write Vitest tests for Axios refresh-token mutex (concurrent `401` calls trigger only 1 `/auth/refresh`), `AuthContext` guards, Login/Register forms, and Admin Restore flow.
-- [ ] **M1-18:** Mount M4's `<NotificationBell />` & `<XpLevelChip />` into `AppShell` and lead final cross-module PR review.
+- [x] **M1-17:** Write Vitest tests for Axios refresh-token mutex (concurrent `401` calls trigger only 1 `/auth/refresh`), `AuthContext` guards, Login/Register forms, and Admin Restore flow.
+- [x] **M1-18:** Mount M4's `<NotificationBell />` & `<XpLevelChip />` into `AppShell` and lead final cross-module PR review.
 
 ---
 
