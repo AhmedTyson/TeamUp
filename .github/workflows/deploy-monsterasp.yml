@@ -1,0 +1,103 @@
+name: Deploy Backend to MonsterASP.NET
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-monsterasp.yml'
+
+jobs:
+  deploy-backend:
+    name: Publish & WebDeploy .NET 10 API
+    runs-on: windows-latest
+
+    steps:
+      - name: Check MonsterASP.NET deployment secrets
+        id: secrets-check
+        env:
+          MONSTERASP_SERVER: ${{ secrets.MONSTERASP_SERVER }}
+          MONSTERASP_SITE_NAME: ${{ secrets.MONSTERASP_SITE_NAME }}
+          MONSTERASP_USERNAME: ${{ secrets.MONSTERASP_USERNAME }}
+          MONSTERASP_PASSWORD: ${{ secrets.MONSTERASP_PASSWORD }}
+        run: |
+          $hasAll = -not (
+            [string]::IsNullOrWhiteSpace($env:MONSTERASP_SERVER) -or
+            [string]::IsNullOrWhiteSpace($env:MONSTERASP_SITE_NAME) -or
+            [string]::IsNullOrWhiteSpace($env:MONSTERASP_USERNAME) -or
+            [string]::IsNullOrWhiteSpace($env:MONSTERASP_PASSWORD)
+          )
+          if ($hasAll) {
+            "configured=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } else {
+            Write-Host "Skipping MonsterASP.NET deploy: MONSTERASP_* secrets are not configured yet."
+            "configured=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+
+      - name: Checkout repository
+        if: steps.secrets-check.outputs.configured == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        if: steps.secrets-check.outputs.configured == 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish Release package
+        if: steps.secrets-check.outputs.configured == 'true'
+        run: |
+          dotnet publish backend/src/TeamUp.Api/TeamUp.Api.csproj -c Release -o "${{ github.workspace }}\publish"
+          Remove-Item -Path "${{ github.workspace }}\publish\appsettings.Development.json" -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path "${{ github.workspace }}\publish\appsettings.Production.example.json" -Force -ErrorAction SilentlyContinue
+          Get-ChildItem -Path "${{ github.workspace }}\publish" -Filter "*.dev.db*" -ErrorAction SilentlyContinue | Remove-Item -Force
+
+      - name: Write optional appsettings.Production.json from secret
+        if: steps.secrets-check.outputs.configured == 'true'
+        env:
+          MONSTERASP_APPSETTINGS_JSON: ${{ secrets.MONSTERASP_APPSETTINGS_JSON }}
+        run: |
+          if (-not [string]::IsNullOrWhiteSpace($env:MONSTERASP_APPSETTINGS_JSON)) {
+            $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+            [System.IO.File]::WriteAllText("${{ github.workspace }}\publish\appsettings.Production.json", $env:MONSTERASP_APPSETTINGS_JSON, $utf8NoBom)
+            Write-Host "Wrote appsettings.Production.json from secret."
+          }
+
+      - name: Deploy to MonsterASP.NET via WebDeploy
+        if: steps.secrets-check.outputs.configured == 'true'
+        env:
+          MONSTERASP_SERVER: ${{ secrets.MONSTERASP_SERVER }}
+          MONSTERASP_SITE_NAME: ${{ secrets.MONSTERASP_SITE_NAME }}
+          MONSTERASP_USERNAME: ${{ secrets.MONSTERASP_USERNAME }}
+          MONSTERASP_PASSWORD: ${{ secrets.MONSTERASP_PASSWORD }}
+        run: |
+          $msdeployCmd = Get-Command msdeploy.exe -ErrorAction SilentlyContinue
+          $msdeploy = if ($msdeployCmd) {
+            $msdeployCmd.Source
+          } elseif (Test-Path "${env:ProgramFiles}\IIS\Microsoft Web Deploy V3\msdeploy.exe") {
+            "${env:ProgramFiles}\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          } elseif (Test-Path "${env:ProgramFiles(x86)}\IIS\Microsoft Web Deploy V3\msdeploy.exe") {
+            "${env:ProgramFiles(x86)}\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          } else {
+            throw "msdeploy.exe was not found on the runner."
+          }
+
+          $server = $env:MONSTERASP_SERVER.Trim()
+          $site = $env:MONSTERASP_SITE_NAME.Trim()
+          if ($server -match '^https?://') {
+            $computerUrl = if ($server -match '\?') { $server } else { "$($server.TrimEnd('/'))/msdeploy.axd?site=$site" }
+          } else {
+            $computerUrl = "https://${server}:8172/msdeploy.axd?site=$site"
+          }
+
+          & $msdeploy `
+            "-verb:sync" `
+            "-source:contentPath=${{ github.workspace }}\publish" `
+            "-dest:contentPath=$site,computerName=$computerUrl,userName=$($env:MONSTERASP_USERNAME),password=$($env:MONSTERASP_PASSWORD),authtype=Basic" `
+            "-enableRule:AppOffline" `
+            "-enableRule:DoNotDeleteRule" `
+            "-allowUntrusted"
+          if ($LASTEXITCODE -ne 0) {
+            throw "WebDeploy exited with code $LASTEXITCODE."
+          }

@@ -7,7 +7,9 @@ obj/
 *.suo
 TestResults/
 appsettings.*.local.json
+backend/src/TeamUp.Api/appsettings.Production.json
 *.dev.db*
+artifacts/
 
 # Frontend (Node / Vite / React)
 node_modules/
