@@ -36,5 +36,6 @@ public sealed record LeaderboardEntryDto(
     string FacultyName,
     string UniversityName,
     int TotalPoints,
-    int Level
+    int Level,
+    string? PhotoUrl = null
 );

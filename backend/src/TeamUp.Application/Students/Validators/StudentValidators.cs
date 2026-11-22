@@ -33,7 +33,8 @@ public class UpsertProfileRequestValidator : AbstractValidator<UpsertProfileRequ
 
         RuleFor(x => x.PhotoUrl)
             .MaximumLength(300)
-            .Must(SafeUrlValidator.IsSafeExternalHttpUrl).WithMessage("Photo URL must be a valid public HTTP or HTTPS URL.")
+            .Must(SafeUrlValidator.IsSafeAssetOrExternalUrl)
+            .WithMessage("Photo URL must be a valid public relative asset path (/images/...) or HTTP/HTTPS URL.")
             .When(x => !string.IsNullOrWhiteSpace(x.PhotoUrl));
 
         RuleFor(x => x.GitHubUrl)

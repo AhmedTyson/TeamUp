@@ -133,6 +133,7 @@ public sealed class GamificationService(
                 s.LastName,
                 FacultyName = s.Faculty.Name,
                 UniversityName = s.Faculty.University.Name,
+                PhotoUrl = s.Profile != null ? s.Profile.PhotoUrl : null,
                 TotalPoints = db.ScoreTransactions
                     .Where(t => t.StudentId == s.StudentId)
                     .Sum(t => (int?)t.Points) ?? 0
@@ -155,7 +156,8 @@ public sealed class GamificationService(
                     row.FacultyName,
                     row.UniversityName,
                     row.TotalPoints,
-                    metrics.Level);
+                    metrics.Level,
+                    row.PhotoUrl);
             })
             .ToList();
 

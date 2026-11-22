@@ -1,10 +1,13 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TeamUp.Application.Auth;
+using TeamUp.Application.Common;
 using TeamUp.Application.Common.Models;
+using TeamUp.Application.Gamification;
 using TeamUp.Application.Students;
 using TeamUp.Infrastructure.Persistence;
 using TeamUp.Infrastructure.Services;
@@ -327,5 +330,136 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
             "/api/v1/auth/reset-password",
             new ResetPasswordRequest(email, "completely_invalid_token", "BrandNewPassword2026!"));
         Assert.Equal(HttpStatusCode.Unauthorized, invalidReset.StatusCode);
+    }
+
+    [Fact]
+    public async Task PublicPeopleImagesAndShowcaseEndpoint_ServeDatabasePortraitsWithoutPii()
+    {
+        // 1. Public static image in wwwroot/images/people is served without authentication
+        var staticImgRes = await _client.GetAsync("/images/people/salma-khaled.jpg");
+        Assert.Equal(HttpStatusCode.OK, staticImgRes.StatusCode);
+        Assert.Equal("image/jpeg", staticImgRes.Content.Headers.ContentType?.MediaType);
+
+        // 2. Register a student and store the public relative PhotoUrl in their database profile
+        var email = $"showcase_{Guid.NewGuid():N}@test.com";
+        var reg = new RegisterRequest("Salma", "Showcase", email, "Password123!", 4, factory.SeededFacultyId);
+        var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
+        Assert.Equal(HttpStatusCode.Created, regRes.StatusCode);
+        var auth = await GetDataAsync<AuthResponse>(regRes);
+
+        using var authClient = factory.CreateClient();
+        authClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        var upsertRes = await authClient.PutAsJsonAsync(
+            "/api/v1/students/me/profile",
+            new UpsertProfileRequest("AI & React builder", "/images/people/salma-khaled.jpg", null, null));
+        Assert.Equal(HttpStatusCode.OK, upsertRes.StatusCode);
+
+        // 3. Unauthenticated GET /api/v1/students/showcase exposes PhotoUrl & zero PII (no private email)
+        var showcaseRes = await _client.GetAsync("/api/v1/students/showcase?limit=6");
+        Assert.Equal(HttpStatusCode.OK, showcaseRes.StatusCode);
+        var showcaseRaw = await showcaseRes.Content.ReadAsStringAsync();
+        Assert.DoesNotContain(email, showcaseRaw, StringComparison.OrdinalIgnoreCase);
+
+        var showcase = await GetDataAsync<List<PublicStudentShowcaseDto>>(showcaseRes);
+        Assert.Contains(showcase, s =>
+            s.StudentId == auth.Student.StudentId
+            && s.PhotoUrl == "/images/people/salma-khaled.jpg"
+            && s.FirstName == "Salma");
+
+        // 4. Directory cards & leaderboard also return the database PhotoUrl
+        var dirRes = await authClient.GetAsync("/api/v1/students?search=Showcase");
+        Assert.Equal(HttpStatusCode.OK, dirRes.StatusCode);
+        var dir = await GetDataAsync<PagedResult<StudentCardDto>>(dirRes);
+        Assert.Contains(dir.Items, s =>
+            s.StudentId == auth.Student.StudentId
+            && s.PhotoUrl == "/images/people/salma-khaled.jpg");
+
+        var lbRes = await authClient.GetAsync("/api/v1/gamification/leaderboard?page=1&pageSize=20");
+        Assert.Equal(HttpStatusCode.OK, lbRes.StatusCode);
+        var lb = await GetDataAsync<PagedResult<LeaderboardEntryDto>>(lbRes);
+        Assert.Contains(lb.Items, e =>
+            e.StudentId == auth.Student.StudentId
+            && e.PhotoUrl == "/images/people/salma-khaled.jpg");
+    }
+
+    [Fact]
+    public async Task UploadProfilePhoto_ValidatesMagicBytes_StoresPublicImage_AndUpdatesDatabase()
+    {
+        // 1. Unauthenticated upload must return 401 Unauthorized
+        using var emptyContent = new MultipartFormDataContent();
+        var unauthRes = await _client.PostAsync("/api/v1/students/me/profile/photo", emptyContent);
+        Assert.Equal(HttpStatusCode.Unauthorized, unauthRes.StatusCode);
+
+        // 2. Register and authenticate student
+        var email = $"upload_{Guid.NewGuid():N}@test.com";
+        var reg = new RegisterRequest("Nadia", "Uploader", email, "Password123!", 3, factory.SeededFacultyId);
+        var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
+        Assert.Equal(HttpStatusCode.Created, regRes.StatusCode);
+        var auth = await GetDataAsync<AuthResponse>(regRes);
+
+        using var authClient = factory.CreateClient();
+        authClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        // 3. Spoofed SVG disguised with .jpg filename/Content-Type must return 400 Bad Request
+        using (var spoofForm = new MultipartFormDataContent())
+        {
+            var svgBytes = "<svg xmlns='http://www.w3.org/2000/svg'><script>alert(1)</script></svg>"u8.ToArray();
+            var spoofFile = new ByteArrayContent(svgBytes);
+            spoofFile.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpeg");
+            spoofForm.Add(spoofFile, "file", "evil.jpg");
+
+            var spoofRes = await authClient.PostAsync("/api/v1/students/me/profile/photo", spoofForm);
+            Assert.Equal(HttpStatusCode.BadRequest, spoofRes.StatusCode);
+        }
+
+        // 4. Valid 1x1 PNG upload returns 200 OK, writes file publicly, and updates database profile
+        var validPng = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=");
+
+        string? uploadedPhotoUrl = null;
+        try
+        {
+            using var validForm = new MultipartFormDataContent();
+            var pngContent = new ByteArrayContent(validPng);
+            pngContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/png");
+            validForm.Add(pngContent, "file", "portrait.png");
+
+            var uploadRes = await authClient.PostAsync("/api/v1/students/me/profile/photo", validForm);
+            Assert.Equal(HttpStatusCode.OK, uploadRes.StatusCode);
+
+            var profile = await GetDataAsync<StudentProfileDto>(uploadRes);
+            Assert.NotNull(profile.PhotoUrl);
+            Assert.Matches($"^/images/people/student-{auth.Student.StudentId}-[a-f0-9]{{32}}\\.png$", profile.PhotoUrl);
+            uploadedPhotoUrl = profile.PhotoUrl;
+
+            // Public static serving verification (unauthenticated)
+            var publicGet = await _client.GetAsync(uploadedPhotoUrl);
+            Assert.Equal(HttpStatusCode.OK, publicGet.StatusCode);
+            Assert.Equal("image/png", publicGet.Content.Headers.ContentType?.MediaType);
+
+            // Persisted in /students/me and public /students/showcase
+            var me = await GetDataAsync<StudentDetailDto>(await authClient.GetAsync("/api/v1/students/me"));
+            Assert.Equal(uploadedPhotoUrl, me.Profile?.PhotoUrl);
+
+            var showcaseRaw = await (await _client.GetAsync("/api/v1/students/showcase?limit=12")).Content.ReadAsStringAsync();
+            Assert.Contains(uploadedPhotoUrl, showcaseRaw);
+            Assert.DoesNotContain(email, showcaseRaw, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(uploadedPhotoUrl))
+            {
+                var env = factory.Services.GetRequiredService<IWebHostEnvironment>();
+                var webRoot = string.IsNullOrWhiteSpace(env.WebRootPath)
+                    ? Path.Combine(env.ContentRootPath, "wwwroot")
+                    : env.WebRootPath;
+                var fullPath = Path.Combine(webRoot, uploadedPhotoUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (File.Exists(fullPath))
+                {
+                    File.Delete(fullPath);
+                }
+            }
+        }
     }
 }

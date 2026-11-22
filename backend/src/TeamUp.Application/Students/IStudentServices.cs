@@ -16,6 +16,7 @@ public interface IStudentAccountService
         string? viewerRole = null,
         CancellationToken ct = default);
     Task<StudentPublicProfileDto> GetStudentPublicProfileByIdAsync(int studentId, CancellationToken ct = default);
+    Task<IReadOnlyList<PublicStudentShowcaseDto>> GetPublicShowcaseAsync(int limit = 6, CancellationToken ct = default);
     Task DeleteStudentAccountAsync(int studentId, CancellationToken ct = default);
 }
 
@@ -24,6 +25,7 @@ public interface IStudentProfileService
 {
     Task<StudentProfileDto> GetExtendedProfileAsync(int studentId, CancellationToken ct = default);
     Task<StudentProfileDto> UpsertExtendedProfileAsync(int studentId, UpsertProfileRequest req, CancellationToken ct = default);
+    Task<StudentProfileDto> UpdateProfilePhotoAsync(int studentId, string photoUrl, CancellationToken ct = default);
 }
 
 /// <summary>Single Responsibility: Student extracurricular and technical interest tags.</summary>

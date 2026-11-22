@@ -1,5 +1,6 @@
 using TeamUp.Application.Auth;
 using TeamUp.Application.Auth.Validators;
+using TeamUp.Application.Common.Validation;
 using TeamUp.Application.Students;
 using TeamUp.Application.Students.Validators;
 
@@ -56,21 +57,22 @@ public class ValidatorTests
         Assert.Contains(res.Errors, e => e.PropertyName == "AcademicYear");
     }
 
-    [Fact]
-    public void UpsertProfileValidator_ValidUrls_PassesValidation()
+    [Theory]
+    [InlineData("https://img.local/photo.png", true)]
+    [InlineData("/images/people/salma-khaled.jpg", true)]
+    [InlineData("not-a-valid-url", false)]
+    [InlineData("/images/../secret.jpg", false)]
+    [InlineData("//evil.example/a.jpg", false)]
+    [InlineData("javascript:alert(1)", false)]
+    public void UpsertProfileValidator_PhotoUrl_ValidatesPublicPathsAndHttpUrls(string photoUrl, bool expected)
     {
-        var req = new UpsertProfileRequest("My bio", "https://img.local/photo.png", "https://github.com/omar", "https://linkedin.com/in/omar");
+        var req = new UpsertProfileRequest("My bio", photoUrl, "https://github.com/omar", "https://linkedin.com/in/omar");
         var res = _profileValidator.Validate(req);
-        Assert.True(res.IsValid);
-    }
-
-    [Fact]
-    public void UpsertProfileValidator_InvalidUrl_FailsValidation()
-    {
-        var req = new UpsertProfileRequest("My bio", "not-a-valid-url", null, null);
-        var res = _profileValidator.Validate(req);
-        Assert.False(res.IsValid);
-        Assert.Contains(res.Errors, e => e.PropertyName == "PhotoUrl");
+        Assert.Equal(expected, res.IsValid);
+        if (!expected)
+        {
+            Assert.Contains(res.Errors, e => e.PropertyName == "PhotoUrl");
+        }
     }
 
     [Fact]
@@ -80,5 +82,25 @@ public class ValidatorTests
         var res = _interestValidator.Validate(req);
         Assert.False(res.IsValid);
         Assert.Contains(res.Errors, e => e.PropertyName == "Interest");
+    }
+
+    [Fact]
+    public void ImageFileValidator_DetectsValidSignatures_AndRejectsSpoofedHeaders()
+    {
+        Assert.True(ImageFileValidator.TryDetectImageExtension([0xFF, 0xD8, 0xFF, 0xE0], out var jpgExt, out var jpgMime));
+        Assert.Equal(".jpg", jpgExt);
+        Assert.Equal("image/jpeg", jpgMime);
+
+        Assert.True(ImageFileValidator.TryDetectImageExtension([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], out var pngExt, out var pngMime));
+        Assert.Equal(".png", pngExt);
+        Assert.Equal("image/png", pngMime);
+
+        Assert.True(ImageFileValidator.TryDetectImageExtension([0x52, 0x49, 0x46, 0x46, 0x20, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50], out var webpExt, out var webpMime));
+        Assert.Equal(".webp", webpExt);
+        Assert.Equal("image/webp", webpMime);
+
+        Assert.False(ImageFileValidator.TryDetectImageExtension("<svg><script>alert(1)</script></svg>"u8, out _, out _));
+        Assert.False(ImageFileValidator.TryDetectImageExtension("<html><body>bad</body></html>"u8, out _, out _));
+        Assert.False(ImageFileValidator.TryDetectImageExtension([0xFF, 0xD8], out _, out _));
     }
 }

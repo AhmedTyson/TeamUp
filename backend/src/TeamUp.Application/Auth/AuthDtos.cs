@@ -41,7 +41,8 @@ public sealed record StudentSummaryDto(
     string Role,
     int FacultyId,
     string FacultyName,
-    string UniversityName
+    string UniversityName,
+    string? PhotoUrl = null
 );
 
 public sealed record AuthResponse(

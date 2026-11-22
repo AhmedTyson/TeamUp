@@ -53,6 +53,7 @@ public sealed class AdminService(
         var student = await db.Students
             .Include(s => s.Faculty)
             .ThenInclude(f => f.University)
+            .Include(s => s.Profile)
             .FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
             ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
 
@@ -106,7 +107,8 @@ public sealed class AdminService(
             student.Role.ToString(),
             student.Faculty.FacultyId,
             student.Faculty.Name,
-            student.Faculty.University.Name);
+            student.Faculty.University.Name,
+            student.Profile?.PhotoUrl);
     }
 
     public async Task<IReadOnlyList<SoftDeletedItemDto>> GetSoftDeletedRecordsAsync(string? entityType, CancellationToken ct = default)

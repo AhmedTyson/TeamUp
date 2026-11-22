@@ -87,6 +87,7 @@ public sealed class AuthService(
         var student = await db.Students
             .Include(s => s.Faculty)
             .ThenInclude(f => f.University)
+            .Include(s => s.Profile)
             .FirstOrDefaultAsync(s => s.Email == email, ct)
             ?? throw new UnauthorizedException("Invalid email or password.");
 
@@ -114,7 +115,8 @@ public sealed class AuthService(
         var summary = new StudentSummaryDto(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
-            student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name);
+            student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
+            student.Profile?.PhotoUrl);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
@@ -129,6 +131,7 @@ public sealed class AuthService(
         var student = await db.Students
             .Include(s => s.Faculty)
             .ThenInclude(f => f.University)
+            .Include(s => s.Profile)
             .FirstOrDefaultAsync(s => s.RefreshToken == hashedToken, ct);
 
         if (student is null || student.RefreshTokenExpiresAt is null || student.RefreshTokenExpiresAt <= DateTime.UtcNow)
@@ -154,7 +157,8 @@ public sealed class AuthService(
         var summary = new StudentSummaryDto(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
-            student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name);
+            student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
+            student.Profile?.PhotoUrl);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }

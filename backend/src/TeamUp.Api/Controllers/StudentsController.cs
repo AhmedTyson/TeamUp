@@ -17,6 +17,15 @@ namespace TeamUp.Api.Controllers;
 [Authorize]
 public class StudentsController(IStudentAccountService accountService) : BaseApiController
 {
+    [HttpGet("showcase")]
+    [AllowAnonymous]
+    [ProducesOk<IReadOnlyList<PublicStudentShowcaseDto>>]
+    public async Task<IActionResult> GetPublicShowcase([FromQuery] int limit = 6, CancellationToken ct = default)
+    {
+        var result = await accountService.GetPublicShowcaseAsync(limit, ct);
+        return OkResponse(result);
+    }
+
     [HttpGet]
     [EnableRateLimiting("directory-policy")]
     [ProducesOk<PagedResult<StudentCardDto>>]

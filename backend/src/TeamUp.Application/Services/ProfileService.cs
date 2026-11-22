@@ -7,6 +7,7 @@ using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
+using TeamUp.Application.Common.Validation;
 using TeamUp.Application.Students;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
@@ -106,10 +107,70 @@ public sealed class ProfileService(
                 s.Faculty.FacultyId,
                 s.Faculty.Name,
                 s.Faculty.University.Name,
-                s.Interests.Select(i => i.Interest).ToList()))
+                s.Interests.Select(i => i.Interest).ToList(),
+                s.Profile != null ? s.Profile.PhotoUrl : null))
             .ToListAsync(ct);
 
         return new PagedResult<StudentCardDto>(items, page.SafePage, page.SafePageSize, total);
+    }
+
+    public async Task<IReadOnlyList<PublicStudentShowcaseDto>> GetPublicShowcaseAsync(int limit = 6, CancellationToken ct = default)
+    {
+        var safeLimit = Math.Clamp(limit, 1, 12);
+
+        var candidates = await db.Students
+            .AsNoTracking()
+            .Where(s => s.Role != UserRole.PlatformAdmin
+                && s.Profile != null
+                && !string.IsNullOrEmpty(s.Profile.PhotoUrl))
+            .Select(s => new
+            {
+                s.StudentId,
+                s.FirstName,
+                s.LastName,
+                s.AcademicYear,
+                FacultyName = s.Faculty.Name,
+                FacultyCode = s.Faculty.Code,
+                UniversityName = s.Faculty.University.Name,
+                UniversityLogoUrl = s.Faculty.University.LogoUrl,
+                Bio = s.Profile!.Bio,
+                PhotoUrl = s.Profile!.PhotoUrl!,
+                TotalPoints = db.ScoreTransactions
+                    .Where(t => t.StudentId == s.StudentId)
+                    .Sum(t => (int?)t.Points) ?? 0,
+                BadgesCount = db.StudentBadges.Count(b => b.StudentId == s.StudentId),
+                TopSkills = s.Skills
+                    .OrderBy(ss => ss.Skill.Name)
+                    .Select(ss => ss.Skill.Name)
+                    .Take(3)
+                    .ToList(),
+            })
+            .OrderByDescending(x => x.TotalPoints)
+            .ThenBy(x => x.StudentId)
+            .Take(safeLimit)
+            .ToListAsync(ct);
+
+        return candidates
+            .Select(row =>
+            {
+                var level = (int)Math.Floor(Math.Sqrt(Math.Max(row.TotalPoints, 0) / 100.0)) + 1;
+                return new PublicStudentShowcaseDto(
+                    row.StudentId,
+                    row.FirstName,
+                    row.LastName,
+                    row.AcademicYear,
+                    row.FacultyName,
+                    row.FacultyCode,
+                    row.UniversityName,
+                    row.UniversityLogoUrl,
+                    row.Bio,
+                    row.PhotoUrl,
+                    row.TotalPoints,
+                    level,
+                    row.BadgesCount,
+                    row.TopSkills);
+            })
+            .ToList();
     }
 
     public async Task<StudentPublicProfileDto> GetStudentPublicProfileByIdAsync(int studentId, CancellationToken ct = default)
@@ -207,6 +268,36 @@ public sealed class ProfileService(
             profile.PhotoUrl = req.PhotoUrl;
             profile.GitHubUrl = req.GitHubUrl;
             profile.LinkedInUrl = req.LinkedInUrl;
+        }
+
+        await db.SaveChangesAsync(ct);
+
+        return new StudentProfileDto(profile.Bio, profile.PhotoUrl, profile.GitHubUrl, profile.LinkedInUrl);
+    }
+
+    public async Task<StudentProfileDto> UpdateProfilePhotoAsync(int studentId, string photoUrl, CancellationToken ct = default)
+    {
+        if (!SafeUrlValidator.IsSafeAssetOrExternalUrl(photoUrl))
+            throw new BadRequestException("Photo URL must be a valid public relative asset path (/images/...) or HTTP/HTTPS URL.");
+
+        var studentExists = await db.Students.AnyAsync(s => s.StudentId == studentId, ct);
+        if (!studentExists)
+            throw new NotFoundException($"Student with ID {studentId} was not found.");
+
+        var normalizedUrl = photoUrl.Trim();
+        var profile = await db.StudentProfiles.FirstOrDefaultAsync(p => p.StudentId == studentId, ct);
+        if (profile is null)
+        {
+            profile = new StudentProfile
+            {
+                StudentId = studentId,
+                PhotoUrl = normalizedUrl,
+            };
+            db.StudentProfiles.Add(profile);
+        }
+        else
+        {
+            profile.PhotoUrl = normalizedUrl;
         }
 
         await db.SaveChangesAsync(ct);

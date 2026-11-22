@@ -74,6 +74,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IRequestContext, HttpRequestContext>();
+builder.Services.AddScoped<TeamUp.Application.Common.Interfaces.IProfilePhotoStorage, TeamUp.Api.Services.LocalProfilePhotoStorage>();
 
 builder.Services.AddControllers(options => options.Filters.Add<TeamUp.Api.Filters.ValidationFilter>())
     .AddJsonOptions(options =>
@@ -313,48 +314,87 @@ app.Use(async (context, next) =>
     context.Response.Headers["Referrer-Policy"] = "no-referrer";
     context.Response.Headers["X-Permitted-Cross-Domain-Policies"] = "none";
     var isReport = context.Request.Path.Value?.EndsWith("/report", StringComparison.OrdinalIgnoreCase) == true;
+    var isStaticAsset = context.Request.Path.StartsWithSegments("/images", StringComparison.OrdinalIgnoreCase)
+        || context.Request.Path.StartsWithSegments("/logos", StringComparison.OrdinalIgnoreCase);
     context.Response.Headers["Content-Security-Policy"] = isReport
         ? "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'"
-        : "default-src 'none'; frame-ancestors 'none'";
+        : isStaticAsset
+            ? "default-src 'none'; img-src 'self'; frame-ancestors 'none'"
+            : "default-src 'none'; frame-ancestors 'none'";
     await next();
 });
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-
-    if (app.Configuration.GetValue("Seed:Enabled", false))
-    {
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        if (db.Database.IsSqlite())
-        {
-            await db.Database.EnsureCreatedAsync();
-            try
-            {
-                await db.Database.ExecuteSqlRawAsync("ALTER TABLE University ADD COLUMN LogoUrl TEXT NULL;");
-            }
-            catch
-            {
-                // LogoUrl column already exists
-            }
-        }
-        else
-        {
-            await db.Database.MigrateAsync();
-        }
-        var password = app.Configuration["Seed:AdminPassword"];
-        if (string.IsNullOrWhiteSpace(password))
-            password = "DevelopmentSeedPassword2026!";
-        var hash = new PasswordHasher<Student>().HashPassword(null!, password);
-        await DbSeeder.SeedAsync(db, hash);
-    }
 }
 else
 {
     app.UseHsts();
-    app.UseHttpsRedirection();
+    if (app.Configuration.GetValue("Hosting:EnableHttpsRedirection", true))
+    {
+        app.UseHttpsRedirection();
+    }
 }
+
+var seedEnabled = app.Configuration.GetValue("Seed:Enabled", false);
+var autoMigrate = app.Configuration.GetValue("Database:AutoMigrate", app.Environment.IsDevelopment() && seedEnabled);
+
+if (autoMigrate || seedEnabled)
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (db.Database.IsSqlite())
+    {
+        await db.Database.EnsureCreatedAsync();
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync("ALTER TABLE University ADD COLUMN LogoUrl TEXT NULL;");
+        }
+        catch
+        {
+            // LogoUrl column already exists
+        }
+    }
+    else
+    {
+        await db.Database.MigrateAsync();
+    }
+
+    if (seedEnabled)
+    {
+        var password = app.Configuration["Seed:AdminPassword"];
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            if (app.Environment.IsDevelopment())
+            {
+                password = "DevelopmentSeedPassword2026!";
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "CRITICAL: Seed:AdminPassword must be explicitly configured (at least 12 characters) when Seed:Enabled is true outside Development.");
+            }
+        }
+        else if (!app.Environment.IsDevelopment() && password.Length < 12)
+        {
+            throw new InvalidOperationException(
+                "CRITICAL: Seed:AdminPassword must be explicitly configured (at least 12 characters) when Seed:Enabled is true outside Development.");
+        }
+
+        var hash = new PasswordHasher<Student>().HashPassword(null!, password);
+        await DbSeeder.SeedAsync(db, hash);
+    }
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.CacheControl = "public,max-age=86400";
+        ctx.Context.Response.Headers["Cross-Origin-Resource-Policy"] = "cross-origin";
+    }
+});
 
 app.UseCors("FrontendPolicy");
 app.UseAuthentication();

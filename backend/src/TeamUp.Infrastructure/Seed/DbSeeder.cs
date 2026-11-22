@@ -166,6 +166,86 @@ public static class DbSeeder
         ("Task Master", "Complete 25 tasks", BadgeCriteriaType.TaskCount, 25),
     ];
 
+    private static readonly (
+        string Email,
+        string FirstName,
+        string LastName,
+        int AcademicYear,
+        string FacultyCode,
+        int Points,
+        string PhotoUrl,
+        string Bio,
+        string[] Skills
+    )[] ShowcaseStudents =
+    [
+        (
+            "salma@cu.edu.eg",
+            "Salma",
+            "Khaled",
+            4,
+            "FCAI",
+            2840,
+            "/images/people/salma-khaled.jpg",
+            "Building cross-faculty AI & React squads at Cairo University FCAI.",
+            ["Python", "React", "Machine Learning"]
+        ),
+        (
+            "omar@capu.edu.eg",
+            "Omar",
+            "Mostafa",
+            3,
+            "ENG_CAPU",
+            2490,
+            "/images/people/omar-mostafa.jpg",
+            "Embedded systems & full-stack clubs lead at Capital University.",
+            ["TypeScript", "Docker", "C#"]
+        ),
+        (
+            "youssef@asu.edu.eg",
+            "Youssef",
+            "Adel",
+            3,
+            "CIS",
+            2310,
+            "/images/people/youssef-adel.jpg",
+            "Backend architect & campus workshop mentor at Ain Shams CIS.",
+            ["ASP.NET Core", "PostgreSQL", "Docker"]
+        ),
+        (
+            "hana@alexu.edu.eg",
+            "Hana",
+            "El-Sayed",
+            2,
+            "CDS_ALEX",
+            1920,
+            "/images/people/hana-el-sayed.jpg",
+            "Data science & computer vision researcher at Alexandria CDS.",
+            ["Python", "Data Analysis", "Figma"]
+        ),
+        (
+            "karim@guc.edu.eg",
+            "Karim",
+            "Mansour",
+            4,
+            "MET_GUC",
+            1780,
+            "/images/people/karim-mansour.jpg",
+            "Systems engineer & design-systems builder at GUC MET.",
+            ["React", "TypeScript", "UI/UX Design"]
+        ),
+        (
+            "mariam@mans.edu.eg",
+            "Mariam",
+            "Nabil",
+            2,
+            "FCI_MANS",
+            1540,
+            "/images/people/mariam-nabil.jpg",
+            "Applied ML & UX researcher at Mansoura University FCI.",
+            ["Machine Learning", "Python", "UI/UX Design"]
+        ),
+    ];
+
     public static async Task SeedAsync(AppDbContext db, string adminPasswordHash, CancellationToken ct = default)
     {
         var legacyHelwan = await db.Universities
@@ -181,6 +261,7 @@ public static class DbSeeder
 
         var existingUniversities = await db.Universities
             .IgnoreQueryFilters()
+            .Include(u => u.Faculties)
             .ToDictionaryAsync(u => u.Name, StringComparer.OrdinalIgnoreCase, ct);
 
         foreach (var uniDef in Universities)
@@ -189,6 +270,13 @@ public static class DbSeeder
             {
                 existingUni.LogoUrl = uniDef.LogoUrl;
                 existingUni.Website = uniDef.Website;
+                foreach (var (facName, facCode) in uniDef.Faculties)
+                {
+                    if (!existingUni.Faculties.Any(f => string.Equals(f.Code, facCode, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        existingUni.Faculties.Add(new Faculty { Name = facName, Code = facCode });
+                    }
+                }
                 continue;
             }
 
@@ -281,6 +369,143 @@ public static class DbSeeder
         else
         {
             existingOrgAdmin.PasswordHash = adminPasswordHash;
+            await db.SaveChangesAsync(ct);
+        }
+
+        await SeedShowcaseStudentsAsync(db, adminPasswordHash, ct);
+    }
+
+    private static async Task SeedShowcaseStudentsAsync(
+        AppDbContext db,
+        string defaultPasswordHash,
+        CancellationToken ct)
+    {
+        var facultiesByCode = await db.Faculties
+            .IgnoreQueryFilters()
+            .ToDictionaryAsync(f => f.Code, StringComparer.OrdinalIgnoreCase, ct);
+
+        var skillsByName = await db.Skills
+            .IgnoreQueryFilters()
+            .ToDictionaryAsync(s => s.Name, StringComparer.OrdinalIgnoreCase, ct);
+
+        var thresholdBadges = await db.Badges
+            .IgnoreQueryFilters()
+            .Where(b => b.CriteriaType == BadgeCriteriaType.PointsThreshold)
+            .ToListAsync(ct);
+
+        var fallbackFaculty = await db.Faculties.OrderBy(f => f.FacultyId).FirstAsync(ct);
+
+        foreach (var def in ShowcaseStudents)
+        {
+            var facultyId = facultiesByCode.TryGetValue(def.FacultyCode, out var faculty)
+                ? faculty.FacultyId
+                : fallbackFaculty.FacultyId;
+
+            var student = await db.Students
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(s => s.Email == def.Email, ct);
+
+            if (student is null)
+            {
+                student = new Student
+                {
+                    Email = def.Email,
+                    PasswordHash = defaultPasswordHash,
+                    FirstName = def.FirstName,
+                    LastName = def.LastName,
+                    AcademicYear = def.AcademicYear,
+                    Role = UserRole.Student,
+                    FacultyId = facultyId,
+                    SecurityStamp = Guid.NewGuid(),
+                };
+                db.Students.Add(student);
+                await db.SaveChangesAsync(ct);
+            }
+            else if (student.DeletedAt is null)
+            {
+                student.PasswordHash = defaultPasswordHash;
+                if (student.FacultyId != facultyId)
+                    student.FacultyId = facultyId;
+                await db.SaveChangesAsync(ct);
+            }
+
+            if (student.DeletedAt is not null)
+                continue;
+
+            var profile = await db.StudentProfiles
+                .FirstOrDefaultAsync(p => p.StudentId == student.StudentId, ct);
+
+            if (profile is null)
+            {
+                db.StudentProfiles.Add(new StudentProfile
+                {
+                    StudentId = student.StudentId,
+                    PhotoUrl = def.PhotoUrl,
+                    Bio = def.Bio,
+                });
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(profile.PhotoUrl))
+                    profile.PhotoUrl = def.PhotoUrl;
+                if (string.IsNullOrWhiteSpace(profile.Bio))
+                    profile.Bio = def.Bio;
+            }
+
+            var existingSkillIds = await db.StudentSkills
+                .IgnoreQueryFilters()
+                .Where(ss => ss.StudentId == student.StudentId)
+                .Select(ss => ss.SkillId)
+                .ToListAsync(ct);
+
+            foreach (var skillName in def.Skills)
+            {
+                if (skillsByName.TryGetValue(skillName, out var skill) && !existingSkillIds.Contains(skill.SkillId))
+                {
+                    db.StudentSkills.Add(new StudentSkill
+                    {
+                        StudentId = student.StudentId,
+                        SkillId = skill.SkillId,
+                        ProficiencyLevel = ProficiencyLevel.Advanced,
+                        YearsOfExperience = 2,
+                    });
+                }
+            }
+
+            var hasScoreHistory = await db.ScoreTransactions
+                .AnyAsync(t => t.StudentId == student.StudentId, ct);
+
+            if (!hasScoreHistory)
+            {
+                db.ScoreTransactions.Add(new ScoreTransaction
+                {
+                    StudentId = student.StudentId,
+                    Points = def.Points,
+                    Reason = "Verified campus collaboration & workshop contributions",
+                    SourceType = ScoreSourceType.Manual,
+                    CreatedAt = DateTime.UtcNow,
+                });
+            }
+
+            var existingBadgeIds = await db.StudentBadges
+                .IgnoreQueryFilters()
+                .Where(sb => sb.StudentId == student.StudentId)
+                .Select(sb => sb.BadgeId)
+                .ToListAsync(ct);
+
+            foreach (var badge in thresholdBadges)
+            {
+                if (def.Points >= badge.CriteriaValue && !existingBadgeIds.Contains(badge.BadgeId))
+                {
+                    db.StudentBadges.Add(new StudentBadge
+                    {
+                        StudentId = student.StudentId,
+                        BadgeId = badge.BadgeId,
+                        AwardedAt = DateTime.UtcNow,
+                    });
+                }
+            }
+
             await db.SaveChangesAsync(ct);
         }
     }

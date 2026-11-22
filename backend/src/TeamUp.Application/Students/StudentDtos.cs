@@ -51,7 +51,25 @@ public sealed record StudentCardDto(
     int FacultyId,
     string FacultyName,
     string UniversityName,
-    IReadOnlyList<string> Interests
+    IReadOnlyList<string> Interests,
+    string? PhotoUrl = null
+);
+
+public sealed record PublicStudentShowcaseDto(
+    int StudentId,
+    string FirstName,
+    string LastName,
+    int AcademicYear,
+    string FacultyName,
+    string FacultyCode,
+    string UniversityName,
+    string? UniversityLogoUrl,
+    string? Bio,
+    string PhotoUrl,
+    int TotalPoints,
+    int Level,
+    int BadgesCount,
+    IReadOnlyList<string> TopSkills
 );
 
 public sealed record StudentPublicProfileDto(
