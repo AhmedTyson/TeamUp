@@ -43,6 +43,42 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+/* 3-Layer Handshake ("Rosetta") Token Architecture */
+:root {
+  --hs-obsidian: #14151c;
+  --hs-obsidian-elevated: #1b1d26;
+  --hs-lime: #d3fb52;
+  --hs-lime-hover: #c5f03a;
+  --hs-alabaster: #f3f6f4;
+  --hs-white: #ffffff;
+  --hs-border-subtle: rgba(255, 255, 255, 0.09);
+  --hs-card-radius: 24px;
+}
+
+.hs-white-card {
+  background-color: var(--hs-white);
+  color: var(--hs-obsidian);
+  border-radius: var(--hs-card-radius);
+  box-shadow: 0 24px 48px rgba(12, 24, 18, 0.22);
+}
+
+.hs-photo-frame {
+  border-radius: 20px;
+  border: 1px solid var(--hs-border-subtle);
+  overflow: hidden;
+  box-shadow: 0 20px 44px -12px rgba(0, 0, 0, 0.5);
+}
+
+.hs-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
 html,
 body {
   background-color: var(--color-canvas);
@@ -83,7 +119,7 @@ body {
 /* Handshake / TeamUp Spotlight Card with mouse-tracked electric lime sheen */
 .service-card {
   position: relative;
-  background-color: #1b1d26;
+  background-color: #14151c;
   border: 1px solid rgba(255, 255, 255, 0.085);
   border-radius: 24px;
   overflow: hidden;
@@ -111,8 +147,8 @@ body {
 }
 
 .service-card:hover {
-  transform: translateY(-6px);
-  background-color: #1f222d;
+  transform: translateY(-7px);
+  background-color: #181a23;
   border-color: rgba(211, 251, 82, 0.38);
   box-shadow:
     0 24px 48px -12px rgba(0, 0, 0, 0.65),
@@ -166,14 +202,47 @@ body {
   }
 }
 
-@keyframes dropdownPop {
-  from {
+@keyframes navFoldIn {
+  0% {
     opacity: 0;
-    transform: translateY(-6px) scale(0.98);
+    transform: rotateX(-30deg) scale(0.9);
   }
-  to {
+  100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: rotateX(0deg) scale(1);
+  }
+}
+
+@keyframes navFoldOut {
+  0% {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotateX(-10deg) scale(0.95);
+  }
+}
+
+@keyframes navContentSwap {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--nav-swap-offset, 12px), 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes brandMorphIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.84);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -210,6 +279,46 @@ body {
   100% {
     opacity: 0;
   }
+}
+
+@keyframes simulatedClickPress {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.84);
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes clickRippleRing {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+.is-simulating-click {
+  animation: simulatedClickPress 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.click-ripple-effect::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid #539886;
+  animation: clickRippleRing 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
 }
 
 @keyframes marqueeRightToLeft {
@@ -267,13 +376,33 @@ body {
 }
 
 .animate-nav-item {
-  opacity: 0;
-  animation: navFadeDown 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 1;
 }
 
-.animate-dropdown {
-  animation: dropdownPop 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  transform-origin: top left;
+.nav-fold-viewport {
+  perspective: 2000px;
+}
+
+.animate-nav-fold-in {
+  transform-origin: top center;
+  animation: navFoldIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-nav-fold-out {
+  transform-origin: top center;
+  animation: navFoldOut 0.17s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-nav-content-swap {
+  animation: navContentSwap 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-brand-morph {
+  animation: brandMorphIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
 }
 
 .animate-hero-line-1 {
@@ -317,11 +446,11 @@ body {
 
 .nav-gliding-pill {
   transition:
-    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    height 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.22s ease,
-    background-color 0.25s ease;
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.18s ease,
+    background-color 0.22s ease;
   will-change: transform, width, height, opacity;
 }
 
@@ -451,6 +580,15 @@ body {
   transform: translate3d(0, 0, 0);
 }
 
+@media (max-width: 640px) {
+  .showcase-text-reveal-rtl {
+    transform: translate3d(28px, 0, 0);
+  }
+  .footer-left-reveal-ltr {
+    transform: translate3d(-28px, 0, 0);
+  }
+}
+
 .burst-letter {
   display: inline-block;
   opacity: 0;
@@ -481,7 +619,10 @@ body {
   }
 
   .animate-nav-item,
-  .animate-dropdown,
+  .animate-nav-fold-in,
+  .animate-nav-fold-out,
+  .animate-nav-content-swap,
+  .animate-brand-morph,
   .animate-hero-line-1,
   .animate-hero-line-2,
   .animate-hero-sub,
@@ -506,12 +647,14 @@ body {
     transition: none !important;
   }
 
+  .marquee-duplicate-copy {
+    display: none !important;
+  }
+
   .marquee-track-rtl {
     animation: none !important;
-    flex-wrap: wrap;
-    width: 100%;
-    justify-content: center;
-    gap: 1rem;
+    width: max-content;
+    margin-inline: auto;
   }
 
   .service-card,
