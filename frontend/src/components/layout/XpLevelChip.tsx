@@ -62,7 +62,7 @@ export function XpLevelChip() {
           ? `${score.pointsToNext} XP to Level ${score.level + 1} (${pct}%)`
           : "View XP & Badges"
       }
-      className="hidden items-center gap-2 rounded-full border border-[#d3fb52]/30 bg-[#d3fb52]/10 px-2.5 py-1 text-xs font-semibold text-[#d3fb52] transition-colors hover:bg-[#d3fb52]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:inline-flex"
+      className="hidden items-center gap-1.5 rounded-full border border-[#d3fb52]/30 bg-[#d3fb52]/10 px-2 py-1 text-[11px] font-semibold text-[#d3fb52] transition-colors hover:bg-[#d3fb52]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:inline-flex xl:gap-2 xl:px-2.5 xl:text-xs"
     >
       <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
       {score ? (

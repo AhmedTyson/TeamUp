@@ -39,9 +39,9 @@ export function AuthSplitLayout({
   const extraCount = Math.max(0, universities.length - visibleUniversities.length);
 
   return (
-    <section className="mx-auto grid w-full max-w-[1140px] items-stretch gap-6 py-2 lg:grid-cols-12 lg:gap-8">
+    <section className="mx-auto grid w-full max-w-[1140px] grid-cols-1 items-stretch gap-6 py-2 lg:grid-cols-12 lg:gap-8">
       {/* Elevated Form Panel (order-1 on mobile so inputs sit immediately above the fold) */}
-      <div className="order-1 flex flex-col justify-center rounded-[28px] border border-white/[0.09] bg-[#181a23] p-6 shadow-[0_32px_80px_-16px_rgba(0,0,0,0.6)] sm:p-9 lg:order-2 lg:col-span-7 lg:p-10">
+      <div className="order-1 flex min-w-0 flex-col justify-center rounded-[28px] border border-white/[0.09] bg-[#181a23] p-5 shadow-[0_32px_80px_-16px_rgba(0,0,0,0.6)] sm:p-9 lg:order-2 lg:col-span-7 lg:p-10">
         <div className="mb-6 space-y-1.5">
           {eyebrow && (
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#d3fb52]">
@@ -67,7 +67,7 @@ export function AuthSplitLayout({
       </div>
 
       {/* Editorial Full-Bleed Campus Photography Showcase Panel */}
-      <aside className="order-2 relative flex min-h-[360px] flex-col justify-between overflow-hidden rounded-[28px] border border-white/12 bg-[#14151c] p-6 shadow-[0_32px_70px_-18px_rgba(0,0,0,0.65)] sm:p-8 lg:order-1 lg:col-span-5 lg:min-h-[600px]">
+      <aside className="order-2 relative flex min-h-[360px] min-w-0 flex-col justify-between overflow-hidden rounded-[28px] border border-white/12 bg-[#14151c] p-5 shadow-[0_32px_70px_-18px_rgba(0,0,0,0.65)] sm:p-8 lg:order-1 lg:col-span-5 lg:min-h-[600px]">
         <img
           src={heroImageSrc}
           alt={heroImageAlt}

@@ -182,7 +182,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
     return (
       <div className="space-y-8">
         {/* Handshake /career-centers/ High-Contrast Lime Display Header */}
-        <section className="teamup-hero-bg overflow-hidden rounded-[28px] border border-white/12 px-6 py-10 text-center shadow-2xl sm:px-10 sm:py-12">
+        <section className="teamup-hero-bg overflow-hidden rounded-[28px] border border-white/12 px-4 py-8 text-center shadow-2xl sm:px-10 sm:py-12">
           <Badge variant="accent" size="sm">
             Verified Participation &amp; XP Ledger
           </Badge>
@@ -190,7 +190,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
             className="mt-4 font-bold uppercase text-[#d3fb52]"
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: "clamp(2.6rem, 6.2vw, 4.9rem)",
+              fontSize: "clamp(2.25rem, 6.2vw, 4.9rem)",
               lineHeight: 0.9,
               letterSpacing: "-0.025em",
             }}
@@ -203,14 +203,14 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
           </p>
 
           {/* Top 3 Rosetta Student Podium Cards */}
-          <div className="mx-auto mt-8 grid max-w-[820px] gap-4 sm:grid-cols-3">
+          <div className="mx-auto mt-8 grid max-w-[820px] grid-cols-1 gap-4 sm:grid-cols-3">
             {rankedBuilders.slice(0, 3).map((leader, idx) => {
               const fullName = `${leader.firstName} ${leader.lastName}`;
               return (
                 <div
                   key={leader.studentId}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl border bg-[#14151c]/88 p-4 text-left backdrop-blur-md",
+                    "flex min-w-0 items-center gap-3 rounded-2xl border bg-[#14151c]/88 p-4 text-left backdrop-blur-md",
                     idx === 0 ? "border-[#d3fb52]/60" : "border-white/12",
                   )}
                 >
@@ -236,11 +236,11 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
         </section>
 
         {mode === "gamification" && (
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {UNLOCKABLE_BADGES.map((badge) => (
               <div
                 key={badge.id}
-                className="flex flex-col justify-between gap-3 rounded-2xl border border-white/[0.085] bg-[#1b1d26] p-5"
+                className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-white/[0.085] bg-[#1b1d26] p-5"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -262,7 +262,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
           </section>
         )}
 
-        <section className="space-y-4 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-5 sm:p-7">
+        <section className="space-y-4 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-4 sm:p-7">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <h2
               className="text-lg font-bold text-white"
@@ -291,7 +291,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
 
   if (mode === "notifications") {
     return (
-      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-6 sm:p-8">
+      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-4 sm:p-8">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
             <h1
@@ -316,7 +316,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
               key={item.id}
               className="flex items-start justify-between gap-4 rounded-2xl border border-white/[0.08] bg-[#14151c] p-4"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex min-w-0 items-start gap-3">
                 <CheckCircle2
                   className={cn(
                     "mt-0.5 size-4 shrink-0",
@@ -324,7 +324,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
                   )}
                   aria-hidden="true"
                 />
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold text-white">{item.title}</p>
                   <p className="mt-0.5 text-xs text-[#9ca3af]">{item.body}</p>
                 </div>
@@ -341,9 +341,9 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
     const activePhotoUrl = uploadedPreviewUrl ?? user?.photoUrl ?? user?.profile?.photoUrl ?? null;
 
     return (
-      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-6 sm:p-8">
-        <div className="teamup-hero-bg flex flex-col justify-between gap-6 rounded-2xl border border-white/12 p-6 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-4">
+      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-4 sm:p-8">
+        <div className="teamup-hero-bg flex flex-col justify-between gap-6 rounded-2xl border border-white/12 p-4 sm:flex-row sm:items-center sm:p-6">
+          <div className="flex min-w-0 items-center gap-4">
             {isAuthenticated && user && (
               <Avatar
                 src={activePhotoUrl}
@@ -351,19 +351,19 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
                 size="lg"
               />
             )}
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <p className="text-xs font-bold uppercase tracking-wider text-[#d3fb52]">
                 Student Portfolio
               </p>
               <h1
-                className="text-3xl font-bold text-white sm:text-4xl"
+                className="break-words text-2xl font-bold text-white sm:text-4xl"
                 style={{ fontFamily: "var(--font-heading)" }}
               >
                 {isAuthenticated && user
                   ? `${user.firstName} ${user.lastName}`
                   : "Claim Your Verified Student Portfolio"}
               </h1>
-              <p className="text-sm text-white/80">
+              <p className="break-words text-sm text-white/80">
                 {isAuthenticated && user
                   ? `${user.universityName} · ${user.facultyName} · Year ${user.academicYear}`
                   : "Sign in with your university email to display your verified skills, squad history, and workshop badges."}
@@ -424,22 +424,22 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-white/[0.08] bg-[#14151c] p-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-[#14151c] p-5">
             <GraduationCap className="size-5 text-[#d3fb52]" aria-hidden="true" />
             <p className="mt-3 text-sm font-bold text-white">Verified Skills</p>
             <p className="mt-1 text-xs text-[#9ca3af]">
               Showcase endorsed stack skills for project leads recruiting across campus.
             </p>
           </div>
-          <div className="rounded-2xl border border-white/[0.08] bg-[#14151c] p-5">
+          <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-[#14151c] p-5">
             <Compass className="size-5 text-[#d3fb52]" aria-hidden="true" />
             <p className="mt-3 text-sm font-bold text-white">Squad Contributions</p>
             <p className="mt-1 text-xs text-[#9ca3af]">
               Every completed sprint task and project milestone links directly here.
             </p>
           </div>
-          <div className="rounded-2xl border border-white/[0.08] bg-[#14151c] p-5">
+          <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-[#14151c] p-5">
             <Award className="size-5 text-[#d3fb52]" aria-hidden="true" />
             <p className="mt-3 text-sm font-bold text-white">Earned Campus Badges</p>
             <p className="mt-1 text-xs text-[#9ca3af]">
@@ -454,8 +454,8 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
   /* Default: mode === "students" */
   return (
     <div className="space-y-8">
-      <section className="grid items-center gap-8 rounded-[28px] border border-white/12 bg-[#1b1d26] p-6 shadow-2xl sm:p-9 lg:grid-cols-12">
-        <div className="space-y-4 lg:col-span-6">
+      <section className="grid grid-cols-1 items-center gap-8 overflow-hidden rounded-[28px] border border-white/12 bg-[#1b1d26] p-5 shadow-2xl sm:p-9 lg:grid-cols-12">
+        <div className="min-w-0 space-y-4 lg:col-span-6">
           <Badge variant="accent" size="sm">
             Verified Student Directory
           </Badge>
@@ -463,7 +463,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
             className="font-bold uppercase text-white"
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: "clamp(2.5rem, 5.5vw, 4.4rem)",
+              fontSize: "clamp(2.25rem, 5.5vw, 4.4rem)",
               lineHeight: 0.9,
               letterSpacing: "-0.025em",
             }}
@@ -478,10 +478,10 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
           </p>
         </div>
 
-        <div className="relative lg:col-span-6">
+        <div className="relative min-w-0 lg:col-span-6">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -inset-1 translate-x-2 -translate-y-2 rounded-[24px] border-[1.5px] border-white/55"
+            className="pointer-events-none absolute -inset-1 translate-x-1.5 -translate-y-1.5 rounded-[24px] border-[1.5px] border-white/55 sm:translate-x-2 sm:-translate-y-2"
           />
           <div className="relative overflow-hidden rounded-[22px] border border-white/20 bg-[#14151c] shadow-2xl">
             <img
@@ -495,7 +495,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
         </div>
       </section>
 
-      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-5 sm:p-7">
+      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-4 sm:p-7">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2
@@ -519,30 +519,30 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
           />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {pagedBuilders.map((builder) => {
             const fullName = `${builder.firstName} ${builder.lastName}`;
             return (
               <article
                 key={builder.studentId}
-                className="flex flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 transition-colors hover:border-[#d3fb52]/40"
+                className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#14151c] p-4 transition-colors hover:border-[#d3fb52]/40 sm:p-5"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
                       <img
                         src={builder.photoUrl}
                         alt={fullName}
-                        className="size-12 rounded-2xl object-cover object-top"
+                        className="size-12 shrink-0 rounded-2xl object-cover object-top"
                       />
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <h3
-                          className="text-base font-bold text-white"
+                          className="truncate text-base font-bold text-white"
                           style={{ fontFamily: "var(--font-heading)" }}
                         >
                           {fullName}
                         </h3>
-                        <p className="font-mono text-xs text-[#9ca3af]">
+                        <p className="truncate font-mono text-xs text-[#9ca3af]">
                           {builder.facultyCode} · Year {builder.academicYear}
                         </p>
                       </div>
@@ -563,7 +563,7 @@ export function CommunityHubPage({ mode }: CommunityHubPageProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between border-t border-white/[0.08] pt-3 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] pt-3 text-xs">
                   <span className="font-mono font-semibold text-[#d3fb52]">
                     {builder.totalPoints} XP · {builder.badgesCount} badges
                   </span>

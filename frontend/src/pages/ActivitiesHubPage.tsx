@@ -138,7 +138,7 @@ export function ActivitiesHubPage({ mode = "directory" }: ActivitiesHubPageProps
   return (
     <div className="space-y-8">
       {/* Handshake /students/ Archetype: Full-Bleed Campus Photography + Lime Antonio Display Type */}
-      <section className="relative flex min-h-[340px] items-end overflow-hidden rounded-[28px] border border-white/12 bg-[#14151c] p-6 shadow-2xl sm:min-h-[400px] sm:p-10">
+      <section className="relative flex min-h-[340px] items-end overflow-hidden rounded-[28px] border border-white/12 bg-[#14151c] p-5 shadow-2xl sm:min-h-[400px] sm:p-10">
         <img
           src="/images/hero/hero-club-meetup.jpg"
           alt="Egyptian university club members brainstorming outdoors around laptops and robotics hardware"
@@ -152,7 +152,7 @@ export function ActivitiesHubPage({ mode = "directory" }: ActivitiesHubPageProps
         />
 
         <div className="relative z-10 flex w-full flex-col justify-between gap-6 lg:flex-row lg:items-end">
-          <div className="space-y-3">
+          <div className="min-w-0 space-y-3">
             <span className="inline-block rounded-full border border-white/20 bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
               {mode === "detail" ? "Featured Chapter Workspace" : "50+ Accredited Student Organizations"}
             </span>
@@ -160,7 +160,7 @@ export function ActivitiesHubPage({ mode = "directory" }: ActivitiesHubPageProps
               className="font-bold uppercase text-[#d3fb52]"
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: "clamp(2.75rem, 6.8vw, 5.25rem)",
+                fontSize: "clamp(2.4rem, 6.8vw, 5.25rem)",
                 lineHeight: 0.9,
                 letterSpacing: "-0.025em",
               }}
@@ -186,7 +186,7 @@ export function ActivitiesHubPage({ mode = "directory" }: ActivitiesHubPageProps
       </section>
 
       {/* Filterable Chapters Grid */}
-      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-5 sm:p-7">
+      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-4 sm:p-7">
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div className="flex flex-wrap items-center gap-2">
             {CHAPTER_CATEGORIES.map((cat) => {
@@ -223,30 +223,32 @@ export function ActivitiesHubPage({ mode = "directory" }: ActivitiesHubPageProps
           />
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {paged.map((chapter) => (
             <article
               key={chapter.id}
-              className="flex flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 transition-colors hover:border-[#d3fb52]/40"
+              className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#14151c] p-4 transition-colors hover:border-[#d3fb52]/40 sm:p-5"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
                     <UniversityLogo
                       name={chapter.university}
                       logoUrl={resolveLogo(chapter.university)}
                       size="md"
                     />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-semibold text-white">
                         {chapter.university}
                       </p>
                       <p className="text-[11px] text-[#9ca3af]">{chapter.category}</p>
                     </div>
                   </div>
-                  <Badge variant="success" size="sm">
-                    {chapter.openRoles} roles
-                  </Badge>
+                  <span className="shrink-0">
+                    <Badge variant="success" size="sm">
+                      {chapter.openRoles} roles
+                    </Badge>
+                  </span>
                 </div>
 
                 <h2
@@ -258,7 +260,7 @@ export function ActivitiesHubPage({ mode = "directory" }: ActivitiesHubPageProps
                 <p className="text-xs leading-relaxed text-[#9ca3af]">{chapter.summary}</p>
               </div>
 
-              <div className="flex items-center justify-between border-t border-white/[0.08] pt-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] pt-3">
                 <span className="inline-flex items-center gap-1.5 text-xs text-white/75">
                   <Users className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
                   {chapter.membersLabel}

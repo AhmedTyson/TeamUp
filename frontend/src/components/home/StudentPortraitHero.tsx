@@ -365,7 +365,7 @@ export function StudentPortraitCard({ card, logoUrl, index = 0 }: StudentPortrai
 
   return (
     <div
-      className="hero-portrait-entrance mx-auto w-full max-w-[260px] sm:max-w-none"
+      className="hero-portrait-entrance mx-auto w-full min-w-0 max-w-[260px] sm:max-w-none"
       style={{ "--card-delay": `${460 + index * 105}ms` } as CSSProperties}
     >
       <div
@@ -458,7 +458,7 @@ export function StudentPortraitHero({
             className="flex select-none flex-col items-center font-bold uppercase text-white"
             style={{
               fontFamily: "'Antonio', 'Barlow Condensed', sans-serif",
-              fontSize: "clamp(3.1rem, 6.4vw, 5.4rem)",
+              fontSize: "clamp(2.65rem, 6.4vw, 5.4rem)",
               lineHeight: 0.9,
               letterSpacing: "-0.025em",
             }}
@@ -473,7 +473,7 @@ export function StudentPortraitHero({
           </p>
 
           {/* Action Row + Right-Flanked Circular DB University Emblems */}
-          <div className="relative mt-6 flex w-full max-w-[900px] flex-col items-center justify-center gap-5 lg:flex-row">
+          <div className="relative mt-6 flex w-full max-w-[900px] flex-col items-center justify-center gap-5 xl:flex-row">
             <div className="animate-hero-cta flex flex-wrap items-center justify-center gap-3.5">
               <Link
                 to="/auth/register"
@@ -494,7 +494,7 @@ export function StudentPortraitHero({
               </Link>
             </div>
 
-            <div className="lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2">
+            <div className="xl:absolute xl:right-0 xl:top-1/2 xl:-translate-y-1/2">
               <CampusEmblemCluster
                 universities={universities}
                 label={`${universities.length} Partner Campuses`}

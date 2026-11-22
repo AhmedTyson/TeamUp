@@ -97,8 +97,8 @@ export function EventsHubPage({ mode = "events" }: EventsHubPageProps) {
   return (
     <div className="space-y-8">
       {/* Magazine Split Editorial Hero with Auditorium Photography */}
-      <section className="grid items-center gap-8 rounded-[28px] border border-white/12 bg-[#1b1d26] p-6 shadow-2xl sm:p-9 lg:grid-cols-12">
-        <div className="space-y-4 lg:col-span-6">
+      <section className="grid grid-cols-1 items-center gap-8 overflow-hidden rounded-[28px] border border-white/12 bg-[#1b1d26] p-5 shadow-2xl sm:p-9 lg:grid-cols-12">
+        <div className="min-w-0 space-y-4 lg:col-span-6">
           <Badge variant="accent" size="sm">
             {mode === "check-in" || mode === "attendance"
               ? "Verified Session Check-In"
@@ -109,7 +109,7 @@ export function EventsHubPage({ mode = "events" }: EventsHubPageProps) {
             className="font-bold uppercase text-white"
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: "clamp(2.5rem, 5.5vw, 4.4rem)",
+              fontSize: "clamp(2.25rem, 5.5vw, 4.4rem)",
               lineHeight: 0.9,
               letterSpacing: "-0.025em",
             }}
@@ -143,7 +143,7 @@ export function EventsHubPage({ mode = "events" }: EventsHubPageProps) {
                   setPinConfirmed(false);
                 }}
                 placeholder="Enter session code (e.g. CU-SYS-104)"
-                className="h-10 min-w-[220px] flex-1 rounded-xl border border-white/15 bg-[#14151c] px-3.5 text-sm text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+                className="h-10 w-full min-w-0 flex-1 rounded-xl border border-white/15 bg-[#14151c] px-3.5 text-sm text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:w-auto sm:min-w-[220px]"
               />
               <button
                 type="submit"
@@ -162,10 +162,10 @@ export function EventsHubPage({ mode = "events" }: EventsHubPageProps) {
           )}
         </div>
 
-        <div className="relative lg:col-span-6">
+        <div className="relative min-w-0 lg:col-span-6">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -inset-1 translate-x-2 -translate-y-2 rounded-[24px] border-[1.5px] border-white/55"
+            className="pointer-events-none absolute -inset-1 translate-x-1.5 -translate-y-1.5 rounded-[24px] border-[1.5px] border-white/55 sm:translate-x-2 sm:-translate-y-2"
           />
           <div className="relative overflow-hidden rounded-[22px] border border-white/20 bg-[#14151c] shadow-2xl">
             <img
@@ -180,7 +180,7 @@ export function EventsHubPage({ mode = "events" }: EventsHubPageProps) {
       </section>
 
       {/* Crisp High-Contrast White Handshake Event Cards */}
-      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-5 sm:p-7">
+      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-4 sm:p-7">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2
@@ -201,7 +201,7 @@ export function EventsHubPage({ mode = "events" }: EventsHubPageProps) {
           />
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {filtered.map((ev) => {
             const pct = Math.min(100, Math.round((ev.registered / ev.capacity) * 100));
             const qrOpen = activeQrId === ev.id;
@@ -209,7 +209,7 @@ export function EventsHubPage({ mode = "events" }: EventsHubPageProps) {
             return (
               <article
                 key={ev.id}
-                className="hs-white-card flex flex-col justify-between gap-4 p-6 transition-transform duration-200 hover:-translate-y-0.5"
+                className="hs-white-card flex min-w-0 flex-col justify-between gap-4 p-4 transition-transform duration-200 hover:-translate-y-0.5 sm:p-6"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
@@ -264,7 +264,7 @@ export function EventsHubPage({ mode = "events" }: EventsHubPageProps) {
                 </div>
 
                 {qrOpen && (
-                  <div className="flex items-center gap-4 rounded-2xl border border-black/10 bg-[#f3f6f4] p-3.5">
+                  <div className="flex flex-col items-start gap-3 rounded-2xl border border-black/10 bg-[#f3f6f4] p-3.5 sm:flex-row sm:items-center sm:gap-4">
                     <div className="shrink-0 rounded-xl bg-white p-2 shadow-sm">
                       <QRCodeSVG value={`teamup:checkin:${ev.sessionCode}`} size={72} />
                     </div>
@@ -280,7 +280,7 @@ export function EventsHubPage({ mode = "events" }: EventsHubPageProps) {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between gap-3 border-t border-black/10 pt-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/10 pt-3 sm:gap-3">
                   <span className="font-mono text-xs font-semibold text-[#4b5563]">
                     Session {ev.sessionCode}
                   </span>

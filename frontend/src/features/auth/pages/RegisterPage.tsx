@@ -186,7 +186,7 @@ export function RegisterPage() {
 
       <div className="mt-3.5 space-y-1.5 rounded-xl border border-white/[0.08] bg-[#1b1d26]/85 p-3 text-xs">
         <div className="flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[#9ca3af]">
+          <span className="inline-flex shrink-0 items-center gap-1.5 text-[#9ca3af]">
             {selectedUniversity ? (
               <UniversityLogo
                 name={selectedUniversity.name}
@@ -199,16 +199,16 @@ export function RegisterPage() {
             )}
             University
           </span>
-          <span className="truncate font-medium text-white">
+          <span className="min-w-0 truncate text-right font-medium text-white">
             {selectedUniversity ? selectedUniversity.name : "Select university"}
           </span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[#9ca3af]">
+          <span className="inline-flex shrink-0 items-center gap-1.5 text-[#9ca3af]">
             <GraduationCap className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
             Faculty
           </span>
-          <span className="truncate font-medium text-white">
+          <span className="min-w-0 truncate text-right font-medium text-white">
             {selectedFaculty ? `${selectedFaculty.code} · ${selectedFaculty.name}` : "Pending"}
           </span>
         </div>
@@ -259,7 +259,7 @@ export function RegisterPage() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input
             label="First Name"
             autoComplete="given-name"
@@ -290,7 +290,7 @@ export function RegisterPage() {
           {...register("email")}
         />
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Select
             label="University"
             required

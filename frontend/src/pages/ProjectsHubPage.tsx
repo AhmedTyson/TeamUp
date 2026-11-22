@@ -202,7 +202,7 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
   return (
     <div className="space-y-8">
       {/* Handshake Employers-Archetype Radial Stage Banner */}
-      <section className="teamup-hero-bg overflow-hidden rounded-[28px] border border-white/12 px-6 py-10 text-center shadow-2xl sm:px-10 sm:py-14">
+      <section className="teamup-hero-bg overflow-hidden rounded-[28px] border border-white/12 px-4 py-8 text-center shadow-2xl sm:px-10 sm:py-14">
         <div className="mx-auto max-w-[820px]">
           <p className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/25 px-3.5 py-1 text-xs font-semibold text-white/90">
             <Rocket className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
@@ -213,7 +213,7 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
             className="mt-4 font-bold uppercase text-white"
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: "clamp(2.5rem, 6vw, 4.75rem)",
+              fontSize: "clamp(2.25rem, 6vw, 4.75rem)",
               lineHeight: 0.92,
               letterSpacing: "-0.025em",
             }}
@@ -232,8 +232,8 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
           </p>
 
           {/* Dual Architectural Action Cards (Handshake /employers/ rhythm) */}
-          <div className="mx-auto mt-8 grid max-w-[780px] gap-4 text-left sm:grid-cols-2">
-            <div className="flex flex-col justify-between rounded-2xl border border-white/12 bg-[#14151c]/82 p-5 backdrop-blur-md">
+          <div className="mx-auto mt-8 grid max-w-[780px] grid-cols-1 gap-4 text-left sm:grid-cols-2">
+            <div className="flex min-w-0 flex-col justify-between rounded-2xl border border-white/12 bg-[#14151c]/82 p-5 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between gap-2">
                   <h2
@@ -259,7 +259,7 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
               </Link>
             </div>
 
-            <div className="flex flex-col justify-between rounded-2xl border border-white/12 bg-[#14151c]/82 p-5 backdrop-blur-md">
+            <div className="flex min-w-0 flex-col justify-between rounded-2xl border border-white/12 bg-[#14151c]/82 p-5 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between gap-2">
                   <h2
@@ -287,7 +287,7 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
       </section>
 
       {/* Filter & Search Bar */}
-      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-5 sm:p-7">
+      <section className="space-y-6 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-4 sm:p-7">
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div className="flex flex-wrap items-center gap-2">
             {TRACK_FILTERS.map((item) => {
@@ -329,11 +329,11 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
         </div>
 
         {isSkillsMode ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {filteredSkills.map((skill) => (
               <div
                 key={skill.id}
-                className="flex flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 transition-colors hover:border-[#d3fb52]/40"
+                className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#14151c] p-4 transition-colors hover:border-[#d3fb52]/40 sm:p-5"
               >
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
@@ -353,7 +353,7 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
                   <p className="text-xs text-[#9ca3af]">{skill.track}</p>
                 </div>
 
-                <div className="flex items-center justify-between border-t border-white/[0.08] pt-3 text-xs text-white/75">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] pt-3 text-xs text-white/75">
                   <span>{skill.openSquads} open squads</span>
                   <span className="font-semibold text-[#d3fb52]">{skill.verifiedBuilders} students</span>
                 </div>
@@ -361,11 +361,11 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
             ))}
           </div>
         ) : (
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {pagedSquads.map((squad) => (
               <article
                 key={squad.id}
-                className="flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.085] bg-[#14151c] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/45"
+                className="flex min-w-0 flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.085] bg-[#14151c] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/45"
               >
                 <div className="relative h-32 overflow-hidden bg-[#181a23]">
                   <img
@@ -388,7 +388,7 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
                   </div>
                 </div>
 
-                <div className="flex flex-1 flex-col justify-between space-y-4 p-5">
+                <div className="flex flex-1 flex-col justify-between space-y-4 p-4 sm:p-5">
                   <div className="space-y-2.5">
                     <div className="flex items-center gap-2.5">
                       <UniversityLogo
@@ -396,11 +396,11 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
                         logoUrl={resolveLogo(squad.university)}
                         size="sm"
                       />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="truncate text-xs font-semibold text-white">
                           {squad.university}
                         </p>
-                        <p className="font-mono text-[11px] text-[#9ca3af]">
+                        <p className="truncate font-mono text-[11px] text-[#9ca3af]">
                           {squad.facultyCode} · {squad.sprintStage}
                         </p>
                       </div>
@@ -423,7 +423,7 @@ export function ProjectsHubPage({ mode = "projects" }: ProjectsHubPageProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-white/[0.08] pt-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] pt-3">
                     <span className="inline-flex items-center gap-1.5 text-xs text-white/75">
                       <Users className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
                       {squad.seatsJoined}/{squad.seatsTotal} seats

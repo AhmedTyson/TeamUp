@@ -133,7 +133,7 @@ export function NotificationBell() {
         <div
           role="dialog"
           aria-label="Recent notifications"
-          className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-white/12 bg-[#1b1d26] shadow-2xl shadow-black/70 sm:w-96"
+          className="fixed inset-x-3 top-16 z-50 max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-2xl border border-white/12 bg-[#1b1d26] shadow-2xl shadow-black/70 sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96"
         >
           <div className="flex items-center justify-between border-b border-white/[0.085] px-4 py-3">
             <div className="flex items-center gap-2">

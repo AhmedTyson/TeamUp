@@ -438,7 +438,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <div id="top" className="min-h-screen w-full select-none overflow-x-hidden bg-[#14151c]">
+    <div id="top" className="min-h-screen w-full select-none overflow-x-clip bg-[#14151c]">
       {/* =====================================================================
            SECTION 1: HERO VIEWPORT (Handshake Rosetta Student Portrait Stage)
            ===================================================================== */}
@@ -523,7 +523,7 @@ export function HomePage() {
         {/* Single-Row Seamless Right-to-Left Infinite Marquee */}
         <div
           ref={marqueeSectionRef}
-          className={`no-scrollbar section-reveal-up marquee-edge-mask relative left-1/2 mt-16 w-screen -translate-x-1/2 overflow-x-auto overflow-y-hidden py-4 ${
+          className={`no-scrollbar section-reveal-up marquee-edge-mask -mx-4 mt-16 overflow-x-hidden overflow-y-hidden py-4 sm:-mx-6 md:-mx-12 ${
             marqueeVisible ? "is-visible" : ""
           }`}
         >
@@ -560,7 +560,7 @@ export function HomePage() {
         <div
           id="partner-universities"
           ref={partnerSectionRef}
-          className={`section-reveal-up mx-auto mt-16 max-w-[1280px] rounded-[28px] border border-white/[0.085] bg-[#1b1d26] p-6 sm:p-8 md:p-10 ${
+          className={`section-reveal-up mx-auto mt-16 max-w-[1280px] rounded-[28px] border border-white/[0.085] bg-[#1b1d26] p-4 sm:p-8 md:p-10 ${
             partnersVisible ? "is-visible" : ""
           }`}
         >
@@ -581,24 +581,24 @@ export function HomePage() {
             </div>
             <Link
               to="/auth/register"
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#d3fb52] px-4 py-2.5 text-xs font-bold text-[#14151c] transition-colors hover:bg-[#deff6e]"
+              className="inline-flex w-fit max-w-full shrink-0 items-center gap-2 rounded-xl bg-[#d3fb52] px-4 py-2.5 text-xs font-bold text-[#14151c] transition-colors hover:bg-[#deff6e]"
             >
               Join With Your Campus Email
               <ArrowUpRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {pagedUniversities.map((uni, index) => (
               <div
                 key={`${safeCampusPage}-${uni.universityId}`}
                 style={{ "--reveal-delay": `${index * 65}ms` } as CSSProperties}
-                className={partnersVisible ? "campus-card-enter" : "opacity-0"}
+                className={`min-w-0 ${partnersVisible ? "campus-card-enter" : "opacity-0"}`}
               >
-                <div className="flex h-full flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] bg-[#14151c] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/40">
-                  <div className="flex items-start gap-3.5">
+                <div className="flex h-full min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.08] bg-[#14151c] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/40 sm:p-5">
+                  <div className="flex min-w-0 items-start gap-3.5">
                     <UniversityLogo name={uni.name} logoUrl={uni.logoUrl} size="lg" />
-                    <div className="min-w-0 space-y-1">
+                    <div className="min-w-0 flex-1 space-y-1">
                       <h4 className="truncate text-base font-semibold text-white">{uni.name}</h4>
                       <p className="text-xs text-[#9ca3af]">
                         {uni.city}, {uni.country}
@@ -616,7 +616,7 @@ export function HomePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-3 text-xs">
                     <Link
                       to="/auth/register"
                       className="font-semibold text-[#d3fb52] hover:underline"
@@ -657,7 +657,7 @@ export function HomePage() {
 
         {/* Handshake Editorial Campus Gallery (High-Contrast White Inset Cards) */}
         <div ref={gallerySectionRef} className="mx-auto mt-14 max-w-[1280px]">
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             <div
               style={{ "--reveal-delay": "0ms" } as CSSProperties}
               className={`reveal-stagger-item ${galleryVisible ? "is-visible" : ""}`}
@@ -1093,7 +1093,7 @@ export function HomePage() {
                         </svg>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#16a34a] sm:text-[12.5px]">
                             <span className="relative flex size-2 shrink-0" aria-hidden="true">
                               <span className="live-status-ping absolute inline-flex h-full w-full rounded-full bg-[#16a34a]" />
@@ -1203,10 +1203,10 @@ export function HomePage() {
                     </div>
                   </div>
 
-                  <div className="my-1 grid grid-cols-2 gap-2 sm:my-2 sm:grid-cols-3 sm:gap-2.5">
+                  <div className="my-1 grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:my-2 sm:grid-cols-3 sm:gap-2.5">
                     <div
                       style={{ "--reveal-delay": "160ms" } as CSSProperties}
-                      className="showcase-mini-item flex items-center gap-2 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-2.5 sm:gap-2.5 sm:p-3"
+                      className="showcase-mini-item flex min-w-0 items-center gap-2 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-2.5 sm:gap-2.5 sm:p-3"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#d3fb52] text-[#14151c] sm:h-9 sm:w-9">
                         <svg
@@ -1237,7 +1237,7 @@ export function HomePage() {
 
                     <div
                       style={{ "--reveal-delay": "250ms" } as CSSProperties}
-                      className="showcase-mini-item flex items-center gap-2 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-2.5 sm:gap-2.5 sm:p-3"
+                      className="showcase-mini-item flex min-w-0 items-center gap-2 rounded-xl border border-gray-200/80 bg-[#f8faf9] p-2.5 sm:gap-2.5 sm:p-3"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#15733f] text-white sm:h-9 sm:w-9">
                         <svg
@@ -1498,7 +1498,7 @@ export function HomePage() {
             }`}
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: "clamp(3.1rem, 18.2vw, 18.2rem)",
+              fontSize: "clamp(2.85rem, 18.2vw, 18.2rem)",
             }}
           >
             <span
