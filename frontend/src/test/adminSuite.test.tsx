@@ -289,7 +289,7 @@ describe("M1 Phase 2 — PlatformAdmin Governance Suite", () => {
     fireEvent.change(screen.getByLabelText(/target role/i), {
       target: { value: USER_ROLES.PlatformAdmin },
     });
-    expect(screen.getByText(/thr-e-03 platformadmin elevation guard/i)).toBeInTheDocument();
+    expect(screen.getByText(/system administrator restriction/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /confirm role update/i }));
     await waitFor(() => {
@@ -388,8 +388,9 @@ describe("M1 Phase 2 — PlatformAdmin Governance Suite", () => {
 
     const inspectBtn = await screen.findByRole("button", { name: /inspect diff/i });
     fireEvent.click(inspectBtn);
-    expect(await screen.findByText(/previous state \(oldvalues\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/updated state \(newvalues\)/i)).toBeInTheDocument();
+    expect(await screen.findByText(/field-by-field comparison/i)).toBeInTheDocument();
+    expect(screen.getByText(/previous values/i)).toBeInTheDocument();
+    expect(screen.getByText(/updated values/i)).toBeInTheDocument();
     expect(screen.getByText(/"Role": "OrgAdmin"/)).toBeInTheDocument();
   });
 });

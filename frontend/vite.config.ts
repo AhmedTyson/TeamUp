@@ -11,6 +11,20 @@ import { defineConfig } from "vitest/config";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const proxyTarget = env.VITE_API_PROXY_TARGET || "http://localhost:5186";
+  const devProxy = {
+    "/api": {
+      target: proxyTarget,
+      changeOrigin: true,
+    },
+    "/health": {
+      target: proxyTarget,
+      changeOrigin: true,
+    },
+    "/openapi": {
+      target: proxyTarget,
+      changeOrigin: true,
+    },
+  };
 
   return {
     plugins: [react(), tailwindcss()],
@@ -21,25 +35,17 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
-      proxy: {
-        "/api": {
-          target: proxyTarget,
-          changeOrigin: true,
-        },
-        "/health": {
-          target: proxyTarget,
-          changeOrigin: true,
-        },
-        "/openapi": {
-          target: proxyTarget,
-          changeOrigin: true,
-        },
-      },
+      proxy: devProxy,
+    },
+    preview: {
+      port: 4173,
+      proxy: devProxy,
     },
     test: {
       environment: "happy-dom",
       globals: true,
       setupFiles: "./src/test/setup.ts",
+      exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**"],
     },
   };
 });

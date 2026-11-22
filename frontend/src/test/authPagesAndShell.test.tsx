@@ -394,4 +394,82 @@ describe("M1 Phase 1 — Auth Pages, Academic Catalog API & AppShell", () => {
     });
     expect(await screen.findByText("Signed Out Login")).toBeInTheDocument();
   });
+
+  it("mounts default XpLevelChip and NotificationBell in AppShell with live score, unread badge, and mark-all-read", async () => {
+    vi.spyOn(apiClient, "get").mockImplementation(async (url: string) => {
+      if (url.includes("/score")) {
+        return {
+          data: {
+            success: true,
+            message: "OK",
+            statusCode: 200,
+            data: {
+              studentId: 10,
+              totalPoints: 450,
+              level: 3,
+              currentLevelStart: 400,
+              nextLevelThreshold: 900,
+              pointsToNext: 450,
+              progress: 0.1,
+            },
+            timestamp: new Date().toISOString(),
+          },
+          status: 200,
+        } as never;
+      }
+      if (url.includes("/notifications")) {
+        return {
+          data: {
+            success: true,
+            message: "OK",
+            statusCode: 200,
+            data: [
+              {
+                notificationId: 101,
+                studentId: 10,
+                title: "Task Done +50 XP",
+                message: "Your Kanban task was completed.",
+                type: 1,
+                isRead: false,
+                createdAt: "2026-11-22T00:00:00Z",
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+          status: 200,
+        } as never;
+      }
+      return { data: { status: "Healthy" }, status: 200 } as never;
+    });
+
+    const patchSpy = vi.spyOn(apiClient, "patch").mockResolvedValue({
+      data: "",
+      status: 204,
+    } as never);
+
+    render(
+      <MemoryRouter initialEntries={["/projects"]}>
+        <AppCoreProviders initialUser={STUDENT_USER}>
+          <Routes>
+            <Route element={<AppShell />}>
+              <Route path="/projects" element={<h1>Projects Content</h1>} />
+            </Route>
+          </Routes>
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Lvl 3")).toBeInTheDocument();
+    expect(screen.getByText("450 XP")).toBeInTheDocument();
+
+    const bellBtn = await screen.findByRole("button", { name: /open notifications \(1 unread\)/i });
+    fireEvent.click(bellBtn);
+
+    expect(await screen.findByText("Task Done +50 XP")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /mark all read/i }));
+    await waitFor(() => {
+      expect(patchSpy).toHaveBeenCalledWith("/api/v1/notifications/mark-all-read");
+    });
+  });
 });

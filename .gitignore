@@ -7,6 +7,7 @@ obj/
 *.suo
 TestResults/
 appsettings.*.local.json
+*.dev.db*
 
 # Frontend (Node / Vite / React)
 node_modules/
@@ -21,3 +22,8 @@ frontend/.env.*.local
 __pycache__/
 *.pyc
 .termonster/
+
+# Playwright E2E artifacts
+/frontend/playwright-report/
+/frontend/test-results/
+/frontend/blob-report/

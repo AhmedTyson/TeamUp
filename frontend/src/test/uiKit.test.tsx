@@ -20,6 +20,7 @@ import {
   SpotlightCard,
   StatusPill,
   Tabs,
+  UniversityLogo,
 } from "@/components/ui";
 
 describe("Handshake UI primitive kit", () => {
@@ -174,5 +175,20 @@ describe("Handshake UI primitive kit", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent("Too many requests");
     expect(screen.getByRole("alert")).toHaveTextContent("45s");
+  });
+
+  it("renders database logoUrl image in UniversityLogo and falls back on unsafe URL", () => {
+    const officialUrl =
+      "https://upload.wikimedia.org/wikipedia/commons/3/3c/Cairo_University_new_logo.png";
+    const { rerender } = render(
+      <UniversityLogo name="Cairo University" logoUrl={officialUrl} />,
+    );
+
+    const logoImg = screen.getByAltText("Cairo University official logo");
+    expect(logoImg).toHaveAttribute("src", officialUrl);
+
+    rerender(<UniversityLogo name="Cairo University" logoUrl="javascript:alert(1)" />);
+    expect(screen.queryByAltText("Cairo University official logo")).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Cairo University crest" })).toBeInTheDocument();
   });
 });

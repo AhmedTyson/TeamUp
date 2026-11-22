@@ -5,6 +5,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { ApiClientError } from "@/api";
 import { mapApiErrorsToForm } from "@/lib/formErrors";
+import { computeJsonDiffEntries, formatDateTime } from "@/lib/formatters";
 import { decodeJwtPayload, isTokenExpired } from "@/lib/jwt";
 import { createAppQueryClient, shouldRetryApiError } from "@/lib/queryClient";
 import { invalidateGamification, queryKeys } from "@/lib/queryKeys";
@@ -115,5 +116,19 @@ describe("Form error mapping & query helpers", () => {
     expect(spy).toHaveBeenCalledWith({ queryKey: queryKeys.badges.all });
     expect(spy).toHaveBeenCalledWith({ queryKey: queryKeys.notifications.all });
     expect(spy).toHaveBeenCalledWith({ queryKey: queryKeys.gamification.score(42) });
+  });
+
+  it("formats timestamps consistently and computes structured JSON audit diffs", () => {
+    expect(formatDateTime(null)).toBe("—");
+    expect(formatDateTime("2026-11-22T01:05:00Z")).toMatch(/Nov \d{2}, 2026 · \d{2}:\d{2}/);
+
+    const diffs = computeJsonDiffEntries(
+      JSON.stringify({ Role: "Student", Email: "a@cu.edu.eg" }),
+      JSON.stringify({ Role: "OrgAdmin", Email: "a@cu.edu.eg" }),
+    );
+    expect(diffs).toEqual([
+      { field: "Role", before: "Student", after: "OrgAdmin", changed: true },
+      { field: "Email", before: "a@cu.edu.eg", after: "a@cu.edu.eg", changed: false },
+    ]);
   });
 });
