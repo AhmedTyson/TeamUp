@@ -52,6 +52,7 @@ export const API_ENDPOINTS = {
   skills: {
     list: `${V1}/skills`,
     byId: (id: number) => `${V1}/skills/${id}`,
+    create: `${V1}/skills`,
   },
 
   projects: {

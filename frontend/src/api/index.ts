@@ -53,6 +53,32 @@ export { authApi } from "./auth.api";
 export { universitiesApi } from "./universities.api";
 export { studentsApi } from "./students.api";
 export { adminApi } from "./admin.api";
+export { skillsApi } from "./skills.api";
+export type {
+  SkillDto,
+  StudentSkillDto,
+  SkillQueryParams,
+  SkillPayload,
+  StudentSkillPayload,
+} from "./skills.api";
+export { projectsApi } from "./projects.api";
+export type {
+  ProjectListItemDto,
+  ProjectMemberDto,
+  ProjectSkillDto,
+  ProjectDetailDto,
+  ProjectApplicationDto,
+  ProjectListParams,
+  CreateProjectPayload,
+  UpdateProjectPayload,
+  RequiredSkillPayload,
+} from "./projects.api";
+export { tasksApi } from "./tasks.api";
+export type {
+  ProjectTaskDto,
+  CreateProjectTaskPayload,
+  UpdateProjectTaskPayload,
+} from "./tasks.api";
 export type { PublicStudentShowcaseItem, StudentProfile } from "./students.api";
 export type { ApiResponse, ErrorDetail, PagedResult, HealthStatus } from "./types";
 export type {
