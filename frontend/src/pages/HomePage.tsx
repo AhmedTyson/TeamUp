@@ -1493,12 +1493,12 @@ export function HomePage() {
         <div className="footer-scroll-stage relative flex w-full items-center justify-center px-4 py-4 sm:px-8 sm:py-6 md:px-14 md:py-10">
           <div
             id="footer-brand-burst"
-            className={`relative inline-flex w-full items-baseline justify-center whitespace-nowrap pr-[0.08em] text-center font-black italic leading-[1.15] tracking-[0.01em] text-[#d3fb52] ${
+            className={`relative inline-flex origin-center scale-x-[1.14] items-baseline justify-center whitespace-nowrap pr-[0.08em] text-center font-black italic leading-[1.15] tracking-[0.02em] text-[#d3fb52] sm:scale-x-[1.24] sm:tracking-[0.03em] ${
               footerVisible ? "is-burst-visible is-footer-looping" : ""
             }`}
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: "clamp(2.25rem, 13vw, 12rem)",
+              fontSize: "clamp(2.85rem, 18.2vw, 18.2rem)",
             }}
           >
             <span
