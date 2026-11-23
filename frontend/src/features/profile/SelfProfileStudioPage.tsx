@@ -568,10 +568,7 @@ export function SelfProfileStudioPage() {
             </div>
           </section>
 
-          {/* SECTION 4: M2's Editable Skills Panel */}
-          <StudentSkillsPanel studentId={student.studentId} editable={true} />
-
-          {/* SECTION 5: Danger Zone */}
+          {/* SECTION 4: Danger Zone */}
           <section className="space-y-4 rounded-2xl border border-red-500/25 bg-red-500/[0.04] p-6">
             <div className="flex items-center gap-2 text-red-400">
               <AlertTriangle className="size-5" aria-hidden="true" />
@@ -601,6 +598,11 @@ export function SelfProfileStudioPage() {
             </Button>
           </section>
         </div>
+      </div>
+
+      {/* SECTION 5: M2's Editable Skills Panel (Full Width) */}
+      <div className="rounded-2xl border border-white/[0.085] bg-[#1b1d26]/60 p-6">
+        <StudentSkillsPanel studentId={student.studentId} editable={true} />
       </div>
 
       {/* Danger Zone Modal */}

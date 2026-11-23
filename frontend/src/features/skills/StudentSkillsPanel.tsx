@@ -46,14 +46,16 @@ function SkillClaimCard({
         )}
       </div>
       {editable && (
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
-          <Select
-            label="Proficiency"
-            value={level}
-            options={PROFICIENCY_OPTIONS}
-            onChange={(event) => setLevel(event.target.value as ProficiencyLevel)}
-          />
-          <label className="space-y-1.5 text-[13px] font-medium text-white/85">
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          <div className="min-w-[140px] flex-1">
+            <Select
+              label="Proficiency"
+              value={level}
+              options={PROFICIENCY_OPTIONS}
+              onChange={(event) => setLevel(event.target.value as ProficiencyLevel)}
+            />
+          </div>
+          <label className="min-w-[120px] flex-1 space-y-1.5 text-[13px] font-medium text-white/85">
             <span>Years of experience</span>
             <input
               type="number"
@@ -65,17 +67,19 @@ function SkillClaimCard({
               className="h-10 w-full rounded-xl border border-white/12 bg-[#14151c] px-3 text-sm text-white"
             />
           </label>
-          <Button
-            size="sm"
-            isLoading={isSaving}
-            disabled={!Number.isFinite(Number(years)) || Number(years) < 0}
-            onClick={() => onSave(skill.skillId, level, Number(years))}
-          >
-            Save
-          </Button>
-          <Button size="sm" variant="danger" disabled={isSaving} onClick={() => onRemove(skill.skillId)}>
-            Remove
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              size="sm"
+              isLoading={isSaving}
+              disabled={!Number.isFinite(Number(years)) || Number(years) < 0}
+              onClick={() => onSave(skill.skillId, level, Number(years))}
+            >
+              Save
+            </Button>
+            <Button size="sm" variant="danger" disabled={isSaving} onClick={() => onRemove(skill.skillId)}>
+              Remove
+            </Button>
+          </div>
         </div>
       )}
     </article>
@@ -137,7 +141,7 @@ export function StudentSkillsPanel({ studentId, editable = false }: StudentSkill
   };
 
   return (
-    <section className="space-y-4" aria-labelledby={`student-skills-${studentId}`}>
+    <section className="@container space-y-4" aria-labelledby={`student-skills-${studentId}`}>
       <div>
         <h2 id={`student-skills-${studentId}`} className="text-xl font-bold text-white">
           {editable ? "My Claimed Skills" : "Skills"}
@@ -155,24 +159,28 @@ export function StudentSkillsPanel({ studentId, editable = false }: StudentSkill
       )}
 
       {editable && availableSkills.length > 0 && (
-        <div className="grid gap-3 rounded-2xl border border-white/10 bg-[#1b1d26] p-4 md:grid-cols-[1.4fr_1fr_1fr_auto] md:items-end">
-          <Select
-            label="Add a skill"
-            value={selectedSkillId}
-            placeholder="Choose a skill"
-            options={availableSkills.map(({ skillId, name, category }) => ({
-              value: skillId,
-              label: `${name} · ${category}`,
-            }))}
-            onChange={(event) => setSelectedSkillId(event.target.value)}
-          />
-          <Select
-            label="Proficiency"
-            value={newLevel}
-            options={PROFICIENCY_OPTIONS}
-            onChange={(event) => setNewLevel(event.target.value as ProficiencyLevel)}
-          />
-          <label className="space-y-1.5 text-[13px] font-medium text-white/85">
+        <div className="grid gap-3 rounded-2xl border border-white/10 bg-[#1b1d26] p-4 @2xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto] @2xl:items-end">
+          <div className="min-w-0">
+            <Select
+              label="Add a skill"
+              value={selectedSkillId}
+              placeholder="Choose a skill"
+              options={availableSkills.map(({ skillId, name, category }) => ({
+                value: skillId,
+                label: `${name} · ${category}`,
+              }))}
+              onChange={(event) => setSelectedSkillId(event.target.value)}
+            />
+          </div>
+          <div className="min-w-0">
+            <Select
+              label="Proficiency"
+              value={newLevel}
+              options={PROFICIENCY_OPTIONS}
+              onChange={(event) => setNewLevel(event.target.value as ProficiencyLevel)}
+            />
+          </div>
+          <label className="min-w-0 space-y-1.5 text-[13px] font-medium text-white/85">
             <span>Years of experience</span>
             <input
               type="number"
@@ -194,7 +202,7 @@ export function StudentSkillsPanel({ studentId, editable = false }: StudentSkill
         </div>
       )}
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 @2xl:grid-cols-2">
         {(claimsQuery.data ?? []).map((skill) => (
           <SkillClaimCard
             key={skill.skillId}
