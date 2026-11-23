@@ -4,7 +4,17 @@
  */
 import type { RouteObject } from "react-router-dom";
 import { ProposedHeroDemo } from "@/components/home/ProposedHeroDemo";
-import { CommunityHubPage } from "@/pages/CommunityHubPage";
+import { ProtectedRoute } from "@/features/auth";
+import {
+  CampusLeaderboardPage,
+  GamificationHubPage,
+} from "@/features/gamification";
+import { NotificationsInboxPage } from "@/features/notifications";
+import {
+  SelfProfileStudioPage,
+  StudentDirectoryPage,
+  StudentPublicProfilePage,
+} from "@/features/profile";
 import { HomePage } from "@/pages/HomePage";
 
 export const communityRoutes: RouteObject[] = [
@@ -17,27 +27,32 @@ export const communityRoutes: RouteObject[] = [
     element: <ProposedHeroDemo />,
   },
   {
-    path: "students",
-    element: <CommunityHubPage mode="students" />,
-  },
-  {
-    path: "students/:id",
-    element: <CommunityHubPage mode="students" />,
-  },
-  {
-    path: "profile/me",
-    element: <CommunityHubPage mode="portfolio" />,
-  },
-  {
-    path: "leaderboard",
-    element: <CommunityHubPage mode="leaderboard" />,
-  },
-  {
-    path: "gamification",
-    element: <CommunityHubPage mode="gamification" />,
-  },
-  {
-    path: "notifications",
-    element: <CommunityHubPage mode="notifications" />,
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: "students",
+        element: <StudentDirectoryPage />,
+      },
+      {
+        path: "students/:id",
+        element: <StudentPublicProfilePage />,
+      },
+      {
+        path: "profile/me",
+        element: <SelfProfileStudioPage />,
+      },
+      {
+        path: "leaderboard",
+        element: <CampusLeaderboardPage />,
+      },
+      {
+        path: "gamification",
+        element: <GamificationHubPage />,
+      },
+      {
+        path: "notifications",
+        element: <NotificationsInboxPage />,
+      },
+    ],
   },
 ];
