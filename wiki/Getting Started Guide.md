@@ -68,13 +68,13 @@ dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:TeamUpDb" "Server=localhost,14333;Database=TeamUpDB;User Id=sa;Password=YourStrong@Passw0rd!;TrustServerCertificate=True;MultipleActiveResultSets=True;"
 
 # 3. Configure JWT Secret Key (min 32 characters)
-dotnet user-secrets set "Jwt:Key" "SuperSecretProductionGradeEncryptionKeyForTeamUpApplication2026!"
+dotnet user-secrets set "Jwt:Key" "<generate-a-random-64-byte-secret>"
 dotnet user-secrets set "Jwt:Issuer" "TeamUp"
 dotnet user-secrets set "Jwt:Audience" "TeamUp.Clients"
 
 # 4. Configure Development Seed Credentials
 dotnet user-secrets set "Seed:Enabled" "true"
-dotnet user-secrets set "Seed:AdminPassword" "Admin@TeamUp2026!"
+dotnet user-secrets set "Seed:AdminPassword" "<choose-a-unique-12+-char-password>"
 ```
 
 ---
@@ -94,9 +94,9 @@ When `Seed:Enabled` is activated, `DbSeeder.cs` idempotently provisions initial 
 
 | Account Role | Email | Default Password | Faculty Affiliation |
 |---|---|---|---|
-| **PlatformAdmin** | `admin@teamup.edu` | `Admin@TeamUp2026!` | Faculty of Computers & AI |
-| **Student (M1 Seed)** | `student1@cu.edu.eg` | `StudentPass123!` | Cairo University - Computer Science |
-| **Student (M2 Seed)** | `student2@cu.edu.eg` | `StudentPass123!` | Cairo University - Information Systems |
+| **PlatformAdmin** | `admin@teamup.local` | *(your `Seed:AdminPassword`)* | Faculty of Computers & AI |
+| **Student (M1 Seed)** | `student1@cu.edu.eg` | *(your `Seed:AdminPassword`, Development only)* | Cairo University - Computer Science |
+| **Student (M2 Seed)** | `student2@cu.edu.eg` | *(your `Seed:AdminPassword`, Development only)* | Cairo University - Information Systems |
 
 ---
 

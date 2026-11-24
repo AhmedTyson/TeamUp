@@ -121,7 +121,7 @@ dotnet user-secrets set "Jwt:Audience" "TeamUp.Clients"
 
 # Enable development seeder with admin password
 dotnet user-secrets set "Seed:Enabled" "true"
-dotnet user-secrets set "Seed:AdminPassword" "Admin@TeamUp2026!"
+dotnet user-secrets set "Seed:AdminPassword" "<choose-a-unique-12+-char-password>"
 ```
 
 ### 3. Run Migrations & Start the Web API
@@ -149,15 +149,13 @@ npm run dev
 
 - **Frontend Dev Server:** `http://localhost:5173` (automatically proxies `/api`, `/health`, and `/openapi` to `http://localhost:5186`)
 
-### 5. Default Seed Credentials
+### 5. Seeded Accounts
 
-When `Seed:Enabled = true`, `DbSeeder.cs` provisions initial seed accounts:
+When `Seed:Enabled = true`, `DbSeeder.cs` provisions reference data and a bootstrap `PlatformAdmin` (`admin@teamup.local`).
+The password is whatever you set in `Seed:AdminPassword`; no password is published in this repository.
 
-| Role | Email | Password | Access Scope |
-|---|---|---|---|
-| **PlatformAdmin** | `admin@teamup.edu` | `Admin@TeamUp2026!` | Super-admin access across universities, accounts & recovery |
-| **Student (Demo 1)** | `student1@cu.edu.eg` | `StudentPass123!` | Cairo University - Computer Science student profile |
-| **Student (Demo 2)** | `student2@cu.edu.eg` | `StudentPass123!` | Cairo University - Information Systems student profile |
+- **Development:** the seeder also creates demo accounts (an OrgAdmin and showcase students) that share your `Seed:AdminPassword`.
+- **Any other environment:** keep `Seed:Enabled=false` after the first bootstrap. If enabled, the app refuses to start when the admin password is shorter than 12 characters or is a previously documented sample value. Existing account passwords are never overwritten, and showcase profiles get an unusable random password.
 
 ---
 

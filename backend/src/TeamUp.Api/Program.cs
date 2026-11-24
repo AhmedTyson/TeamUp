@@ -389,14 +389,13 @@ if (autoMigrate || seedEnabled)
                     "CRITICAL: Seed:AdminPassword must be explicitly configured (at least 12 characters) when Seed:Enabled is true outside Development.");
             }
         }
-        else if (!app.Environment.IsDevelopment() && password.Length < 12)
+        else if (!app.Environment.IsDevelopment())
         {
-            throw new InvalidOperationException(
-                "CRITICAL: Seed:AdminPassword must be explicitly configured (at least 12 characters) when Seed:Enabled is true outside Development.");
+            SecurityStartupValidator.ValidateSeedAdminPassword(password);
         }
 
         var hash = new PasswordHasher<Student>().HashPassword(null!, password);
-        await DbSeeder.SeedAsync(db, hash);
+        await DbSeeder.SeedAsync(db, hash, app.Environment.IsDevelopment());
     }
 }
 

@@ -30,6 +30,26 @@ public static class SecurityStartupValidator
         "supersecretkey"
     ];
 
+    // Passwords that were published in repository docs/examples; never acceptable outside Development.
+    private static readonly string[] PubliclyKnownSeedPasswords =
+    [
+        "Admin@TeamUp2026!",
+        "StudentPass123!",
+        "DevelopmentSeedPassword2026!",
+        "Adm!0RK8zvFIO2BDTX"
+    ];
+
+    public static void ValidateSeedAdminPassword(string? password)
+    {
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 12 ||
+            password.StartsWith("REPLACE_", StringComparison.OrdinalIgnoreCase) ||
+            PubliclyKnownSeedPasswords.Contains(password, StringComparer.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "CRITICAL: Seed:AdminPassword must be a unique, privately generated secret (at least 12 characters, not a documented sample value) when Seed:Enabled is true outside Development.");
+        }
+    }
+
     public static void Validate(SecurityStartupSettings settings)
     {
         if (string.IsNullOrWhiteSpace(settings.JwtIssuer))

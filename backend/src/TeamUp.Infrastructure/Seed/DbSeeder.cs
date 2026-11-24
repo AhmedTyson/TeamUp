@@ -246,7 +246,14 @@ public static class DbSeeder
         ),
     ];
 
-    public static async Task SeedAsync(AppDbContext db, string adminPasswordHash, CancellationToken ct = default)
+    /// <summary>
+    /// Seeds reference data (universities, skills, badges) and a bootstrap platform admin.
+    /// Outside Development (<paramref name="isDevelopment"/> false) it never overwrites the password of an existing
+    /// account, does not create the OrgAdmin demo account, and gives showcase profiles an unusable random password so
+    /// they cannot be logged into.
+    /// </summary>
+    public static async Task SeedAsync(
+        AppDbContext db, string adminPasswordHash, bool isDevelopment = false, CancellationToken ct = default)
     {
         var legacyHelwan = await db.Universities
             .IgnoreQueryFilters()
@@ -344,10 +351,16 @@ public static class DbSeeder
             });
             await db.SaveChangesAsync(ct);
         }
-        else
+        else if (isDevelopment)
         {
             existingAdmin.PasswordHash = adminPasswordHash;
             await db.SaveChangesAsync(ct);
+        }
+
+        if (!isDevelopment)
+        {
+            await SeedShowcaseStudentsAsync(db, CreateUnusablePasswordHash(), resetExistingPasswords: false, ct);
+            return;
         }
 
         var existingOrgAdmin = await db.Students.FirstOrDefaultAsync(s => s.Email == "nour@cu.edu.eg", ct);
@@ -372,12 +385,17 @@ public static class DbSeeder
             await db.SaveChangesAsync(ct);
         }
 
-        await SeedShowcaseStudentsAsync(db, adminPasswordHash, ct);
+        await SeedShowcaseStudentsAsync(db, adminPasswordHash, resetExistingPasswords: true, ct);
     }
+
+    private static string CreateUnusablePasswordHash() =>
+        new Microsoft.AspNetCore.Identity.PasswordHasher<Student>().HashPassword(
+            null!, Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48)));
 
     private static async Task SeedShowcaseStudentsAsync(
         AppDbContext db,
         string defaultPasswordHash,
+        bool resetExistingPasswords,
         CancellationToken ct)
     {
         var facultiesByCode = await db.Faculties
@@ -423,7 +441,8 @@ public static class DbSeeder
             }
             else if (student.DeletedAt is null)
             {
-                student.PasswordHash = defaultPasswordHash;
+                if (resetExistingPasswords)
+                    student.PasswordHash = defaultPasswordHash;
                 if (student.FacultyId != facultyId)
                     student.FacultyId = facultyId;
                 await db.SaveChangesAsync(ct);

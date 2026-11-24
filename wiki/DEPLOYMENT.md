@@ -45,12 +45,12 @@ ASPNETCORE_ENVIRONMENT=Production
 ASPNETCORE_URLS=http://+:5186
 
 # Database Connection String
-ConnectionStrings__TeamUpDb="Server=sql.internal.teamup.edu;Database=TeamUpDB_Prod;User Id=teamup_app;Password=Prod_Strong_Password_2026!;TrustServerCertificate=False;Encrypt=True;"
+ConnectionStrings__TeamUpDb="Server=sql.internal.teamup.edu;Database=TeamUpDB_Prod;User Id=teamup_app;Password=<vault-managed-db-secret>;TrustServerCertificate=False;Encrypt=True;"
 
 # JWT Security Credentials (Min 32 random bytes; startup fails fast on fallback/short keys)
 Jwt__Issuer="TeamUp"
 Jwt__Audience="TeamUp.Clients"
-Jwt__Key="ProductionSuperSecretSecureKey64CharactersLongForHMACSHA256Encryption2026!"
+Jwt__Key="<vault-managed-random-64-byte-secret>"
 Jwt__AccessTokenMinutes=15
 Jwt__RefreshTokenDays=7
 Jwt__PasswordResetTokenMinutes=15
