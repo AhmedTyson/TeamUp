@@ -347,13 +347,24 @@ if (autoMigrate || seedEnabled)
     if (db.Database.IsSqlite())
     {
         await db.Database.EnsureCreatedAsync();
-        try
+        var sqlitePatchStatements = new[]
         {
-            await db.Database.ExecuteSqlRawAsync("ALTER TABLE University ADD COLUMN LogoUrl TEXT NULL;");
-        }
-        catch
+            "ALTER TABLE University ADD COLUMN LogoUrl TEXT NULL;",
+            "ALTER TABLE Student ADD COLUMN FailedLoginCount INTEGER NOT NULL DEFAULT 0;",
+            "ALTER TABLE Student ADD COLUMN LockoutEndUtc TEXT NULL;",
+            "ALTER TABLE Student ADD COLUMN PreviousRefreshToken TEXT NULL;",
+            "ALTER TABLE Student ADD COLUMN PreviousRefreshTokenRotatedAt TEXT NULL;"
+        };
+        foreach (var sql in sqlitePatchStatements)
         {
-            // LogoUrl column already exists
+            try
+            {
+                await db.Database.ExecuteSqlRawAsync(sql);
+            }
+            catch
+            {
+                // Column already exists in local SQLite dev database
+            }
         }
     }
     else

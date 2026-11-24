@@ -19,6 +19,11 @@ public class Student : BaseEntity
     public StudentProfile? Profile { get; set; }
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiresAt { get; set; }
+    /// <summary>Hash of the immediately preceding refresh token; presenting it again signals token theft/replay.</summary>
+    public string? PreviousRefreshToken { get; set; }
+    public DateTime? PreviousRefreshTokenRotatedAt { get; set; }
+    public int FailedLoginCount { get; set; }
+    public DateTime? LockoutEndUtc { get; set; }
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetTokenExpiresAt { get; set; }
     public ICollection<StudentInterest> Interests { get; set; } = [];
