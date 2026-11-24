@@ -47,6 +47,9 @@ public class StudentConfig : IEntityTypeConfiguration<Student>
         b.Property(x => x.Role).HasDefaultValue(Domain.Enums.UserRole.Student);
         b.Property(x => x.SecurityStamp).IsRequired();
         b.Property(x => x.ShowEmailInDirectory).HasDefaultValue(false);
+        b.Property(x => x.EmailNotificationsEnabled).HasDefaultValue(true);
+        b.Property(x => x.ReceiveLeaderboardDigests).HasDefaultValue(true);
+        b.Property(x => x.ReceiveProjectMatchEmails).HasDefaultValue(true);
         b.Property(x => x.RefreshToken).HasMaxLength(256);
         b.Property(x => x.PreviousRefreshToken).HasMaxLength(256);
         b.Property(x => x.PasswordResetToken).HasMaxLength(256);

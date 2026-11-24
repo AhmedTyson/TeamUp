@@ -14,6 +14,9 @@ public class Student : BaseEntity
     public UserRole Role { get; set; } = UserRole.Student;
     public Guid SecurityStamp { get; set; } = Guid.NewGuid();
     public bool ShowEmailInDirectory { get; set; }
+    public bool EmailNotificationsEnabled { get; set; } = true;
+    public bool ReceiveLeaderboardDigests { get; set; } = true;
+    public bool ReceiveProjectMatchEmails { get; set; } = true;
     public int FacultyId { get; set; }
     public Faculty Faculty { get; set; } = null!;
     public StudentProfile? Profile { get; set; }

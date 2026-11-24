@@ -845,6 +845,11 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<bool>("EmailNotificationsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<int>("FacultyId")
                         .HasColumnType("int");
 
@@ -882,6 +887,16 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("PreviousRefreshTokenRotatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("ReceiveLeaderboardDigests")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("ReceiveProjectMatchEmails")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("RefreshToken")
                         .HasMaxLength(256)
