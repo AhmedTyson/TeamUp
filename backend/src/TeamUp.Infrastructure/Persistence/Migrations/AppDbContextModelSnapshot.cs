@@ -726,6 +726,9 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("SourceReferenceId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SourceType")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -738,6 +741,10 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.HasKey("TransactionId");
 
                     b.HasIndex("StudentId", "CreatedAt");
+
+                    b.HasIndex("StudentId", "SourceType", "SourceReferenceId")
+                        .IsUnique()
+                        .HasFilter("[SourceReferenceId] IS NOT NULL");
 
                     b.ToTable("ScoreTransaction", t =>
                         {

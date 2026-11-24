@@ -353,7 +353,9 @@ if (autoMigrate || seedEnabled)
             "ALTER TABLE Student ADD COLUMN FailedLoginCount INTEGER NOT NULL DEFAULT 0;",
             "ALTER TABLE Student ADD COLUMN LockoutEndUtc TEXT NULL;",
             "ALTER TABLE Student ADD COLUMN PreviousRefreshToken TEXT NULL;",
-            "ALTER TABLE Student ADD COLUMN PreviousRefreshTokenRotatedAt TEXT NULL;"
+            "ALTER TABLE Student ADD COLUMN PreviousRefreshTokenRotatedAt TEXT NULL;",
+            "ALTER TABLE ScoreTransaction ADD COLUMN SourceReferenceId INTEGER NULL;",
+            "CREATE UNIQUE INDEX IF NOT EXISTS IX_ScoreTransaction_StudentId_SourceType_SourceReferenceId ON ScoreTransaction (StudentId, SourceType, SourceReferenceId) WHERE SourceReferenceId IS NOT NULL;"
         };
         foreach (var sql in sqlitePatchStatements)
         {
