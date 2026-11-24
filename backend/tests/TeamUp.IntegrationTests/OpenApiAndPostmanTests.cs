@@ -29,8 +29,8 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
         Assert.NotNull(paths);
         Assert.True(paths.Count > 10, "OpenAPI spec should expose multiple endpoint paths.");
 
-        // Export static openapi.json to docs/api/openapi.json
-        var outputPath = Path.Combine(ResolveRepoRoot(), "docs", "api", "openapi.json");
+        // Export static openapi.json to temp output (unless TEAMUP_EXPORT_API_DOCS=1)
+        var outputPath = Path.Combine(DocsApiRoot(), "openapi.json");
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
         var formattedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
@@ -42,7 +42,7 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
     [Fact]
     public async Task PostmanCollection_GeneratesAndExportsValidV2Collection()
     {
-        var postmanDir = Path.Combine(ResolveRepoRoot(), "docs", "api", "postman");
+        var postmanDir = Path.Combine(DocsApiRoot(), "postman");
         Directory.CreateDirectory(postmanDir);
 
         var collectionPath = Path.Combine(postmanDir, "TeamUp_Collection.json");
@@ -178,6 +178,15 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
             ["request"] = req
         };
     }
+
+    /// <summary>
+    /// Tests must not dirty the tracked source tree. Generated API docs go to a temp folder unless
+    /// TEAMUP_EXPORT_API_DOCS=1 is set explicitly to refresh docs/api.
+    /// </summary>
+    private static string DocsApiRoot() =>
+        Environment.GetEnvironmentVariable("TEAMUP_EXPORT_API_DOCS") == "1"
+            ? Path.Combine(ResolveRepoRoot(), "docs", "api")
+            : Path.Combine(Path.GetTempPath(), "teamup-api-docs");
 
     private static string ResolveRepoRoot()
     {

@@ -116,11 +116,14 @@ public class TeamUpApiFactory : WebApplicationFactory<Program>
         {
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
-                options.UseSqlite(_connection);
+                ConfigureSqlite(options);
                 options.AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>());
             });
         });
     }
+
+    /// <summary>In-memory single shared connection by default; subclasses may use a real file for true concurrency tests.</summary>
+    protected virtual void ConfigureSqlite(DbContextOptionsBuilder options) => options.UseSqlite(_connection);
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
@@ -165,5 +168,25 @@ public class TeamUpApiFactory : WebApplicationFactory<Program>
         base.Dispose(disposing);
         if (disposing)
             _connection.Dispose();
+    }
+}
+
+/// <summary>
+/// Backs the API with a real SQLite file (one connection per request, write locks serialized by the engine) so parallel
+/// HTTP requests exercise genuine transaction ordering instead of one shared in-memory connection.
+/// </summary>
+public sealed class FileDbApiFactory : TeamUpApiFactory
+{
+    private readonly string _path = Path.Combine(Path.GetTempPath(), $"teamup-it-{Guid.NewGuid():N}.db");
+
+    protected override void ConfigureSqlite(DbContextOptionsBuilder options) =>
+        options.UseSqlite($"Data Source={_path};Default Timeout=30;Pooling=False");
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (!disposing) return;
+        foreach (var f in new[] { _path, _path + "-wal", _path + "-shm", _path + "-journal" })
+            try { File.Delete(f); } catch { /* best effort */ }
     }
 }
