@@ -5,11 +5,12 @@
 import {
   ArrowRight,
   ArrowUpRight,
-  ChevronRight,
+  ChevronDown,
   Loader2,
   LogOut,
   Menu,
   Shield,
+  Sparkles,
   UserPlus,
   X,
 } from "lucide-react";
@@ -143,15 +144,69 @@ const NAV_OPTIONS: readonly NavOptionGroup[] = [
   },
 ];
 
-const MOBILE_NAV_LINKS = [
-  { to: "/projects", label: "Projects" },
-  { to: "/skills", label: "Skills" },
-  { to: "/organizations", label: "Organizations" },
-  { to: "/events", label: "Events" },
-  { to: "/students", label: "Students" },
-  { to: "/leaderboard", label: "Leaderboard" },
-  { to: "/gamification", label: "Gamification" },
-] as const;
+interface MobileNavModuleGroup {
+  id: string;
+  label: string;
+  highlightTag: string;
+  items: readonly NavSubOption[];
+}
+
+const MOBILE_NAV_MODULES: readonly MobileNavModuleGroup[] = [
+  {
+    id: "team-formation",
+    label: "Team Formation",
+    highlightTag: "Cross-Faculty Squads",
+    items: [
+      { label: "Explore Projects", to: "/projects" },
+      { label: "Create a Project", to: "/projects/new" },
+      { label: "Skills Catalog", to: "/skills" },
+      { label: "Search Teammates", to: "/students" },
+    ],
+  },
+  {
+    id: "profiles-scoring",
+    label: "Profiles & Scoring",
+    highlightTag: "Verified Identity",
+    items: [
+      { label: "Student Directory", to: "/students" },
+      { label: "Profile Studio", to: "/profile/me" },
+      { label: "Skills & Proficiency", to: "/skills" },
+      { label: "XP & Score Ledger", to: "/gamification" },
+    ],
+  },
+  {
+    id: "student-activities",
+    label: "Student Activities",
+    highlightTag: "50+ Campus Chapters",
+    items: [
+      { label: "Organizations Directory", to: "/organizations" },
+      { label: "Campus Events", to: "/events" },
+    ],
+  },
+  {
+    id: "events-workshops",
+    label: "Events & Workshops",
+    highlightTag: "Session Check-In",
+    items: [
+      { label: "Discover Events", to: "/events" },
+      { label: "Verify Check-In", to: "/check-in" },
+    ],
+  },
+  {
+    id: "gamification",
+    label: "Gamification",
+    highlightTag: "XP, Levels & Badges",
+    items: [
+      { label: "Points & Badges", to: "/gamification" },
+      { label: "Campus Leaderboard", to: "/leaderboard" },
+      { label: "Notifications Inbox", to: "/notifications" },
+    ],
+  },
+];
+
+function matchesMobilePath(pathname: string, target: string): boolean {
+  return pathname === target || pathname.startsWith(`${target}/`);
+}
 
 interface GlidingPillRect {
   left: number;
@@ -167,6 +222,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
   const location = useLocation();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedMobileGroupId, setExpandedMobileGroupId] = useState<string | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -310,6 +366,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setExpandedMobileGroupId(null);
     forceCloseImmediately();
   }, [location.pathname, location.search, forceCloseImmediately]);
 
@@ -332,6 +389,12 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
     };
 
     const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false);
+        setExpandedMobileGroupId(null);
+      } else {
+        forceCloseImmediately();
+      }
       syncGlidingPill(openMenuIdRef.current);
     };
 
@@ -340,11 +403,14 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
       menuPinnedByClickRef.current = null;
       setPinnedMenuId(null);
       setActiveMenuId(null);
+      setIsMobileMenuOpen(false);
+      setExpandedMobileGroupId(null);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsMobileMenuOpen(false);
+        setExpandedMobileGroupId(null);
         clearCloseTimer();
         menuPinnedByClickRef.current = null;
         setPinnedMenuId(null);
@@ -369,13 +435,14 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
       clearCloseTimer();
       clearExitTimer();
     };
-  }, [clearCloseTimer, clearExitTimer, syncGlidingPill]);
+  }, [clearCloseTimer, clearExitTimer, forceCloseImmediately, syncGlidingPill]);
 
   const handleLogout = async () => {
     setIsSigningOut(true);
     try {
       await logout();
       setIsMobileMenuOpen(false);
+      setExpandedMobileGroupId(null);
       void navigate("/auth/login");
     } finally {
       setIsSigningOut(false);
@@ -385,12 +452,12 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
   return (
     <header
       id="main-header"
-      className="pointer-events-none fixed inset-x-0 top-3 z-50 px-3 sm:top-6 sm:px-4 xl:px-6"
+      className="pointer-events-none fixed inset-x-0 top-3 z-50 px-2.5 sm:top-6 sm:px-4 xl:px-6"
     >
       <div
         id="header-inner"
         className={cn(
-          "pointer-events-auto mx-auto flex h-[56px] w-full items-center justify-between gap-2 rounded-[16px] border px-2.5 py-2 transition-[max-width,background-color,box-shadow,border-color] duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-3 xl:px-5",
+          "pointer-events-auto mx-auto flex h-[56px] w-full items-center justify-between gap-1.5 rounded-[16px] border px-2 py-2 transition-[max-width,background-color,box-shadow,border-color] duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-2 sm:px-3 xl:px-5",
           isScrolled
             ? cn(
                 isAuthenticated ? "max-w-[1200px]" : "max-w-[1040px]",
@@ -400,12 +467,23 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
         )}
       >
         {/* Left Zone: Smooth Folding Brand Wordmark <-> Lime Square Icon */}
-        <div className="flex shrink-0 items-center gap-2.5">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
           <button
             type="button"
             onClick={(event) => {
               event.stopPropagation();
-              setIsMobileMenuOpen((prev) => !prev);
+              setIsMobileMenuOpen((prev) => {
+                const next = !prev;
+                if (next) {
+                  const matchedGroup = MOBILE_NAV_MODULES.find((group) =>
+                    group.items.some((item) => matchesMobilePath(location.pathname, item.to)),
+                  );
+                  setExpandedMobileGroupId(matchedGroup?.id ?? null);
+                } else {
+                  setExpandedMobileGroupId(null);
+                }
+                return next;
+              });
             }}
             aria-label={isMobileMenuOpen ? "Close navigation menu" : "Toggle navigation menu"}
             aria-expanded={isMobileMenuOpen}
@@ -430,7 +508,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
             aria-label="TeamUp Home"
             className={cn(
               "inline-flex h-10 shrink-0 items-center overflow-hidden transition-[width] duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
-              isScrolled ? "w-10" : "w-[92px] sm:w-[98px] xl:w-[132px]",
+              isScrolled ? "w-10" : "w-[84px] sm:w-[98px] xl:w-[132px]",
             )}
           >
             {isScrolled ? (
@@ -445,7 +523,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
               <span
                 id="brand-wordmark"
                 style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-                className="animate-brand-morph inline-block shrink-0 cursor-pointer whitespace-nowrap text-[26px] font-black italic leading-none tracking-[-0.03em] text-[#d3fb52] transition-transform duration-200 hover:scale-[1.03] sm:text-[28px] xl:text-[36px]"
+                className="animate-brand-morph inline-block shrink-0 cursor-pointer whitespace-nowrap text-[24px] font-black italic leading-none tracking-[-0.03em] text-[#d3fb52] transition-transform duration-200 hover:scale-[1.03] sm:text-[28px] xl:text-[36px]"
               >
                 TeamUp
               </span>
@@ -693,7 +771,17 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                 {xpChipSlot ?? <XpLevelChip isScrolled={isScrolled} />}
               </div>
 
-              {notificationSlot ?? <NotificationBell />}
+              {notificationSlot ?? (
+                <NotificationBell
+                  isScrolled={isScrolled}
+                  onOpenChange={(open) => {
+                    if (open) {
+                      setIsMobileMenuOpen(false);
+                      setExpandedMobileGroupId(null);
+                    }
+                  }}
+                />
+              )}
 
               <Link
                 to="/profile/me"
@@ -764,77 +852,235 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
         </div>
       </div>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile Navigation Drawer & Click-to-Dismiss Backdrop */}
       {isMobileMenuOpen && (
-        <div
-          id="mobile-navigation-drawer"
-          onClick={(event) => event.stopPropagation()}
-          className="pointer-events-auto mt-2 max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-2xl border border-white/10 bg-[#14151c]/95 px-4 py-4 shadow-2xl backdrop-blur-md lg:hidden"
-        >
-          <nav aria-label="Mobile navigation" className="flex flex-col gap-1">
-            {MOBILE_NAV_LINKS.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `flex items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] ${
-                    isActive
-                      ? "bg-[#d3fb52] font-semibold text-[#14151c]"
-                      : "text-white/80 hover:bg-white/5 hover:text-white"
-                  }`
-                }
-              >
-                <span>{item.label}</span>
-                <ChevronRight className="size-4 opacity-50" aria-hidden="true" />
-              </NavLink>
-            ))}
+        <>
+          <div
+            aria-hidden="true"
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              setExpandedMobileGroupId(null);
+            }}
+            className="pointer-events-auto fixed inset-0 -z-10 bg-black/55 backdrop-blur-[2px] lg:hidden"
+          />
 
-            {isPlatformAdmin && (
-              <NavLink
-                to="/admin"
-                className={({ isActive }) =>
-                  `inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] ${
-                    isActive
-                      ? "bg-[#d3fb52] font-semibold text-[#14151c]"
-                      : "text-[#d3fb52] hover:bg-white/5"
-                  }`
-                }
-              >
-                <Shield className="size-4" aria-hidden="true" />
-                Admin Console
-              </NavLink>
+          <div
+            id="mobile-navigation-drawer"
+            onClick={(event) => event.stopPropagation()}
+            className={cn(
+              "animate-mobile-drawer-in pointer-events-auto mx-auto mt-2 w-full max-h-[calc(100dvh-5.5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/12 bg-[#14151c]/[0.98] p-3 shadow-[0_24px_64px_-12px_rgba(0,0,0,0.75)] backdrop-blur-xl sm:p-4 lg:hidden",
+              isScrolled
+                ? isAuthenticated
+                  ? "max-w-[1200px]"
+                  : "max-w-[1040px]"
+                : "max-w-[1392px]",
             )}
-          </nav>
-
-          <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-white/10 pt-3">
-            {isAuthenticated && user ? (
-              <div className="flex items-center gap-2">
+          >
+            {isAuthenticated && user && (
+              <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-[#1b1d26] p-2.5 sm:hidden">
                 <Link
                   to="/profile/me"
-                  className="text-xs font-medium text-white hover:text-[#d3fb52]"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex min-w-0 items-center gap-2.5"
                 >
-                  {user.firstName} {user.lastName}
+                  <Avatar
+                    src={user.photoUrl ?? user.profile?.photoUrl}
+                    name={`${user.firstName} ${user.lastName}`}
+                    size="xs"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold text-white">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="truncate text-[10px] text-white/60">Profile Studio</p>
+                  </div>
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void handleLogout();
-                  }}
-                  className="rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-200 hover:bg-red-500/20"
+                <Link
+                  to="/gamification"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#d3fb52]/35 bg-[#d3fb52]/10 px-2.5 py-1 text-[11px] font-semibold text-[#d3fb52]"
                 >
-                  Sign Out
-                </button>
+                  <Sparkles className="size-3" aria-hidden="true" />
+                  <span>XP &amp; Badges</span>
+                </Link>
               </div>
-            ) : (
-              <Link
-                to="/auth/register"
-                className="rounded-lg bg-[#d3fb52] px-3 py-1 text-xs font-semibold text-[#14151c]"
-              >
-                Create Account
-              </Link>
             )}
+
+            <nav aria-label="Mobile navigation" className="flex flex-col gap-2">
+              {MOBILE_NAV_MODULES.map((group) => {
+                const isExpanded = expandedMobileGroupId === group.id;
+                const hasActiveRoute = group.items.some((item) =>
+                  matchesMobilePath(location.pathname, item.to),
+                );
+                const panelId = `mobile-nav-panel-${group.id}`;
+
+                return (
+                  <div
+                    key={group.id}
+                    className={cn(
+                      "overflow-hidden rounded-xl border transition-colors",
+                      isExpanded || hasActiveRoute
+                        ? "border-[#d3fb52]/30 bg-white/[0.04]"
+                        : "border-white/[0.08] bg-white/[0.02]",
+                    )}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={isExpanded}
+                      aria-controls={panelId}
+                      onClick={() => {
+                        setExpandedMobileGroupId((prev) => (prev === group.id ? null : group.id));
+                      }}
+                      className="flex min-h-[46px] w-full cursor-pointer items-center justify-between gap-2 px-3.5 py-2.5 text-left transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#d3fb52]"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        {hasActiveRoute && (
+                          <span
+                            aria-hidden="true"
+                            className="size-1.5 shrink-0 rounded-full bg-[#d3fb52]"
+                          />
+                        )}
+                        <span className="truncate text-sm font-semibold text-white">
+                          {group.label}
+                        </span>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="hidden font-mono text-[10px] uppercase tracking-wider text-white/45 sm:inline">
+                          {group.highlightTag}
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            "size-4 text-white/65 transition-transform duration-200",
+                            isExpanded && "rotate-180 text-[#d3fb52]",
+                          )}
+                          aria-hidden="true"
+                        />
+                      </div>
+                    </button>
+
+                    {isExpanded && (
+                      <div
+                        id={panelId}
+                        className="grid grid-cols-1 gap-1 border-t border-white/[0.07] bg-[#101117]/60 p-2 sm:grid-cols-2"
+                      >
+                        {group.items.map((item) => (
+                          <NavLink
+                            key={`${group.id}:${item.to}:${item.label}`}
+                            to={item.to}
+                            end={item.to === "/projects" || item.to === "/events"}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className={({ isActive }) =>
+                              cn(
+                                "flex min-h-[40px] items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+                                isActive
+                                  ? "bg-[#d3fb52] font-semibold text-[#14151c]"
+                                  : "text-white/85 hover:bg-white/[0.07] hover:text-white",
+                              )
+                            }
+                          >
+                            <span className="truncate">{item.label}</span>
+                            <ArrowUpRight className="size-3.5 shrink-0 opacity-65" aria-hidden="true" />
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {isPlatformAdmin && (
+                <NavLink
+                  to="/admin"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex min-h-[44px] items-center justify-between gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+                      isActive
+                        ? "border-[#d3fb52] bg-[#d3fb52] text-[#14151c]"
+                        : "border-[#d3fb52]/30 bg-[#d3fb52]/[0.08] text-[#d3fb52] hover:bg-[#d3fb52]/15",
+                    )
+                  }
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Shield className="size-4" aria-hidden="true" />
+                    Admin Console
+                  </span>
+                  <ArrowUpRight className="size-4 opacity-70" aria-hidden="true" />
+                </NavLink>
+              )}
+            </nav>
+
+            <div className="mt-3 space-y-2.5 border-t border-white/10 pt-3">
+              {isAuthenticated && user ? (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Link
+                    to="/profile/me"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="inline-flex min-h-[40px] items-center gap-2 rounded-xl px-1.5 text-xs font-medium text-white hover:text-[#d3fb52]"
+                  >
+                    <Avatar
+                      src={user.photoUrl ?? user.profile?.photoUrl}
+                      name={`${user.firstName} ${user.lastName}`}
+                      size="xs"
+                    />
+                    <span>
+                      {user.firstName} {user.lastName}
+                    </span>
+                  </Link>
+
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to="/privacy"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="rounded-lg px-2 py-1.5 text-[11px] text-white/60 hover:text-[#d3fb52]"
+                    >
+                      Privacy &amp; Policy
+                    </Link>
+                    <button
+                      type="button"
+                      disabled={isSigningOut}
+                      onClick={() => {
+                        void handleLogout();
+                      }}
+                      className="min-h-[40px] cursor-pointer rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-200 hover:bg-red-500/20 disabled:opacity-50"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      to="/auth/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="inline-flex min-h-[42px] items-center justify-center rounded-xl border border-white/20 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/auth/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="inline-flex min-h-[42px] items-center justify-center rounded-xl bg-[#d3fb52] px-3 py-2 text-xs font-bold text-[#14151c] transition-colors hover:bg-[#deff6e]"
+                    >
+                      Create Account
+                    </Link>
+                  </div>
+                  <div className="flex justify-center">
+                    <Link
+                      to="/privacy"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-[11px] text-white/55 hover:text-[#d3fb52]"
+                    >
+                      Privacy &amp; Platform Policy
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </header>
   );

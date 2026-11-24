@@ -4,17 +4,21 @@
 using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Options;
 using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Common.Security;
+using TeamUp.Infrastructure.Templates;
 
 namespace TeamUp.Infrastructure.Services;
 
-public sealed class TemplateRenderer : ITemplateRenderer
+public sealed class TemplateRenderer(IOptions<EmailOptions>? emailOptions = null) : ITemplateRenderer
 {
     private const string EmailResourcePrefix = "TeamUp.Infrastructure.Templates.Emails.";
     private static readonly Assembly Assembly = typeof(TemplateRenderer).Assembly;
     private static readonly Regex TokenPattern = new(
         @"\{\{\{([A-Za-z0-9_]+)\}\}\}|\{\{([A-Za-z0-9_]+)\}\}",
         RegexOptions.Compiled);
+    private readonly EmailOptions? _emailOptions = emailOptions?.Value;
 
     public Task<string> RenderEmailAsync(
         string templateFileName,
@@ -44,6 +48,8 @@ public sealed class TemplateRenderer : ITemplateRenderer
                 var key = match.Groups[2].Value;
                 if (scalarValues.TryGetValue(key, out var value))
                     return WebUtility.HtmlEncode(value);
+                if (key == "BrandLogoUrl")
+                    return WebUtility.HtmlEncode(BrandAssets.BuildPublicEmailLogoUrl(_emailOptions?.FrontendBaseUrl));
                 return match.Value;
             }
 

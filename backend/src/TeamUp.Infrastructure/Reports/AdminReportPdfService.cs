@@ -14,6 +14,7 @@ using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Gamification;
 using TeamUp.Domain.Enums;
+using TeamUp.Infrastructure.Templates;
 
 namespace TeamUp.Infrastructure.Reports;
 
@@ -196,7 +197,7 @@ public sealed class AdminReportPdfService(
                     {
                         row.Spacing(8);
                         row.RelativeItem().Element(c => EditorialPdfTheme.ComposeKpiTile(c, "Master Skills", activeSkills.ToString("N0")));
-                        row.RelativeItem().Element(c => EditorialPdfTheme.ComposeKpiTile(c, "Audit Entries", totalAuditLogs.ToString("N0"), "Immutable STRIDE THR-R-01"));
+                        row.RelativeItem().Element(c => EditorialPdfTheme.ComposeKpiTile(c, "Audit Entries", totalAuditLogs.ToString("N0"), "Immutable governance ledger"));
                         row.RelativeItem().Element(c => EditorialPdfTheme.ComposeKpiTile(c, "Soft-Deleted Users", softDeletedStudents.ToString("N0"), "Recoverable via Admin Console"));
                         row.RelativeItem().Element(c => EditorialPdfTheme.ComposeKpiTile(c, "Governance Actor", actor?.FullName ?? "Platform Admin", actorEmail));
                     });
@@ -481,6 +482,7 @@ public sealed class AdminReportPdfService(
         {
             "PasswordReset.html" => await templateRenderer.RenderEmailAsync(canonical, new Dictionary<string, string>
             {
+                ["BrandLogoUrl"] = BrandAssets.EmailLogoDataUri,
                 ["Email"] = "salma@cu.edu.eg",
                 ["ResetUrl"] = $"{baseUrl}/auth/reset-password?email=salma%40cu.edu.eg&token=sample_token_preview",
                 ["ResetToken"] = "9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c",
@@ -489,6 +491,7 @@ public sealed class AdminReportPdfService(
 
             "EmailVerification.html" => await templateRenderer.RenderEmailAsync(canonical, new Dictionary<string, string>
             {
+                ["BrandLogoUrl"] = BrandAssets.EmailLogoDataUri,
                 ["FirstName"] = "Salma",
                 ["Email"] = "salma@cu.edu.eg",
                 ["UniversityName"] = "Cairo University",
@@ -500,6 +503,7 @@ public sealed class AdminReportPdfService(
 
             "EventNotification.html" => await templateRenderer.RenderEmailAsync(canonical, new Dictionary<string, string>
             {
+                ["BrandLogoUrl"] = BrandAssets.EmailLogoDataUri,
                 ["RecipientName"] = "Omar Mostafa",
                 ["StatusLabel"] = "CONFIRMED SEAT",
                 ["EventMonth"] = "DEC",
@@ -515,6 +519,7 @@ public sealed class AdminReportPdfService(
 
             "GeneralNotification.html" => await templateRenderer.RenderEmailAsync(canonical, new Dictionary<string, string>
             {
+                ["BrandLogoUrl"] = BrandAssets.EmailLogoDataUri,
                 ["RecipientName"] = "Hana El-Sayed",
                 ["CategoryLabel"] = "APPLICATION REVIEWED",
                 ["NotificationTitle"] = "You joined Autonomous Rover Telemetry",
@@ -531,6 +536,7 @@ public sealed class AdminReportPdfService(
                 canonical,
                 new Dictionary<string, string>
                 {
+                    ["BrandLogoUrl"] = BrandAssets.EmailLogoDataUri,
                     ["IssueNumber"] = $"ISSUE {DateTime.UtcNow:yyyyMMdd}",
                     ["PeriodLabel"] = "WEEKLY CAMPUS DIGEST · PREVIEW",
                     ["RecipientName"] = "Salma Khaled",
@@ -553,6 +559,7 @@ public sealed class AdminReportPdfService(
                 canonical,
                 new Dictionary<string, string>
                 {
+                    ["BrandLogoUrl"] = BrandAssets.EmailLogoDataUri,
                     ["RecipientName"] = "Salma Khaled",
                     ["MatchCount"] = "2",
                     ["StudentSkillsSummary"] = "Python · Machine Learning · React · TypeScript",
@@ -568,6 +575,7 @@ public sealed class AdminReportPdfService(
 
             "AdminReportEmail.html" => await templateRenderer.RenderEmailAsync(canonical, new Dictionary<string, string>
             {
+                ["BrandLogoUrl"] = BrandAssets.EmailLogoDataUri,
                 ["AdminName"] = "Platform Admin",
                 ["ReportPeriod"] = $"EXECUTIVE LEDGER · {DateTime.UtcNow:MMMM yyyy}".ToUpperInvariant(),
                 ["GeneratedAtUtc"] = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm 'UTC'"),

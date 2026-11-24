@@ -247,5 +247,7 @@ public class StrideSecurityUnitTests
         Assert.Contains("AI Summit", reportHtml);
         Assert.Contains("IEEE", reportHtml);
         Assert.Contains("Ada", reportHtml);
+        Assert.Contains("<svg", reportHtml, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("TeamUp", reportHtml);
     }
 }

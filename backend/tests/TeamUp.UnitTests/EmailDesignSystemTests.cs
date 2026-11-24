@@ -1,10 +1,13 @@
 // Date: 2026-11-24
 // Purpose: Unit tests for the Obsidian/Lime Editorial email template system, SafeHtmlFragment single-pass rendering, and PDF attachment dispatch.
 
+using System.Net.Mail;
+using System.Net.Mime;
 using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Infrastructure.Services;
+using TeamUp.Infrastructure.Templates;
 
 namespace TeamUp.UnitTests;
 
@@ -161,6 +164,9 @@ public class EmailDesignSystemTests
         var bannedTokens = new[] { "{{", "}}", "linear-gradient", "radial-gradient", "box-shadow", "🚀", "✨", "🎉", "🔥" };
         foreach (var html in renderedPages)
         {
+            Assert.Contains("<img", html, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("alt=\"TeamUp\"", html, StringComparison.Ordinal);
+            Assert.Contains("/images/brand/teamup-logo-email.png", html, StringComparison.Ordinal);
             Assert.Contains("#14151C", html);
             Assert.Contains("#D3FB52", html);
             Assert.Contains("#F3F5F2", html);
@@ -169,6 +175,43 @@ public class EmailDesignSystemTests
                 Assert.DoesNotContain(banned, html, StringComparison.OrdinalIgnoreCase);
             }
         }
+    }
+
+    [Fact]
+    public async Task BrandAssets_And_SmtpEmailSender_EmbedValidSvgPngAndCidLinkedLogo()
+    {
+        Assert.Contains("<svg", BrandAssets.LogoVectorSvg, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("#d3fb52", BrandAssets.LogoVectorSvg, StringComparison.OrdinalIgnoreCase);
+        Assert.True(BrandAssets.EmailLogoPngBytes.Length > 1000);
+        Assert.Equal([0x89, 0x50, 0x4E, 0x47], BrandAssets.EmailLogoPngBytes.Take(4).ToArray());
+
+        var renderer = new TemplateRenderer();
+        var html = await renderer.RenderEmailAsync("PasswordReset.html", new Dictionary<string, string>
+        {
+            ["Email"] = "salma@cu.edu.eg",
+            ["ResetUrl"] = "https://teamup-ieee.vercel.app/auth/reset-password?token=abc",
+            ["ResetToken"] = "tok_cid_check",
+            ["ExpiresMinutes"] = "15"
+        });
+
+        using var mail = SmtpEmailSender.BuildMailMessage(
+            "no-reply@teamup.edu",
+            "TeamUp Platform",
+            "salma@cu.edu.eg",
+            "Reset your TeamUp password",
+            html,
+            "Plain fallback",
+            attachments: null,
+            frontendBaseUrl: "https://teamup-ieee.vercel.app");
+
+        var htmlView = Assert.Single(mail.AlternateViews, v => v.ContentType?.MediaType == MediaTypeNames.Text.Html);
+        using var reader = new StreamReader(htmlView.ContentStream);
+        var mimeHtml = await reader.ReadToEndAsync();
+        Assert.Contains("cid:teamup-logo", mimeHtml, StringComparison.Ordinal);
+
+        var linkedLogo = Assert.Single(htmlView.LinkedResources);
+        Assert.Equal(BrandAssets.EmailLogoContentId, linkedLogo.ContentId);
+        Assert.Equal(MediaTypeNames.Image.Png, linkedLogo.ContentType?.MediaType);
     }
 
     [Fact]

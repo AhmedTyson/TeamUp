@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
+using TeamUp.Infrastructure.Templates;
 
 namespace TeamUp.Infrastructure.Services;
 
@@ -40,14 +41,17 @@ public sealed class SmtpEmailSender(
             },
             ct);
 
-        using var message = new MailMessage
-        {
-            From = new MailAddress(_email.FromAddress, _email.FromName),
-            Subject = "Reset your TeamUp password",
-            Body = htmlBody,
-            IsBodyHtml = true
-        };
-        message.To.Add(new MailAddress(toEmail));
+        var plainText = $"Reset your TeamUp password\nAccount: {toEmail}\nLink (valid for {_jwt.PasswordResetTokenMinutes} minutes): {resetUrl}\nFallback Token: {resetToken}";
+
+        using var message = BuildMailMessage(
+            _email.FromAddress,
+            _email.FromName,
+            toEmail,
+            "Reset your TeamUp password",
+            htmlBody,
+            plainText,
+            attachments: null,
+            _email.FrontendBaseUrl);
 
         using var client = new SmtpClient(_email.SmtpHost, _email.SmtpPort)
         {
@@ -69,34 +73,15 @@ public sealed class SmtpEmailSender(
         if (string.IsNullOrWhiteSpace(_email.SmtpHost))
             throw new InvalidOperationException("Email:SmtpHost must be configured when Email:Provider is Smtp.");
 
-        using var message = new MailMessage
-        {
-            From = new MailAddress(_email.FromAddress, _email.FromName),
-            Subject = request.Subject
-        };
-        message.To.Add(new MailAddress(request.ToEmail));
-
-        if (!string.IsNullOrWhiteSpace(request.PlainTextBody))
-        {
-            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(
-                request.PlainTextBody, Encoding.UTF8, MediaTypeNames.Text.Plain));
-            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(
-                request.HtmlBody, Encoding.UTF8, MediaTypeNames.Text.Html));
-        }
-        else
-        {
-            message.Body = request.HtmlBody;
-            message.IsBodyHtml = true;
-        }
-
-        if (request.Attachments is { Count: > 0 })
-        {
-            foreach (var attachment in request.Attachments)
-            {
-                var stream = new MemoryStream(attachment.Content, writable: false);
-                message.Attachments.Add(new Attachment(stream, attachment.FileName, attachment.ContentType));
-            }
-        }
+        using var message = BuildMailMessage(
+            _email.FromAddress,
+            _email.FromName,
+            request.ToEmail,
+            request.Subject,
+            request.HtmlBody,
+            request.PlainTextBody,
+            request.Attachments,
+            _email.FrontendBaseUrl);
 
         using var client = new SmtpClient(_email.SmtpHost, _email.SmtpPort)
         {
@@ -115,5 +100,63 @@ public sealed class SmtpEmailSender(
             request.Subject,
             request.Attachments?.Count ?? 0,
             request.ToEmail);
+    }
+
+    internal static MailMessage BuildMailMessage(
+        string fromAddress,
+        string fromName,
+        string toEmail,
+        string subject,
+        string htmlBody,
+        string? plainTextBody,
+        IReadOnlyList<EmailAttachment>? attachments,
+        string? frontendBaseUrl)
+    {
+        var message = new MailMessage
+        {
+            From = new MailAddress(fromAddress, fromName),
+            Subject = subject
+        };
+        message.To.Add(new MailAddress(toEmail));
+
+        if (!string.IsNullOrWhiteSpace(plainTextBody))
+        {
+            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(
+                plainTextBody, Encoding.UTF8, MediaTypeNames.Text.Plain));
+        }
+
+        var cidUrl = $"cid:{BrandAssets.EmailLogoContentId}";
+        var publicLogoUrl = BrandAssets.BuildPublicEmailLogoUrl(frontendBaseUrl);
+        var processedHtml = htmlBody
+            .Replace(publicLogoUrl, cidUrl, StringComparison.OrdinalIgnoreCase)
+            .Replace(BrandAssets.EmailLogoDataUri, cidUrl, StringComparison.Ordinal);
+
+        var htmlView = AlternateView.CreateAlternateViewFromString(
+            processedHtml, Encoding.UTF8, MediaTypeNames.Text.Html);
+
+        if (processedHtml.Contains(cidUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            var logoStream = new MemoryStream(BrandAssets.EmailLogoPngBytes, writable: false);
+            var inlineLogo = new LinkedResource(logoStream, MediaTypeNames.Image.Png)
+            {
+                ContentId = BrandAssets.EmailLogoContentId,
+                TransferEncoding = TransferEncoding.Base64
+            };
+            inlineLogo.ContentType.Name = "teamup-logo.png";
+            htmlView.LinkedResources.Add(inlineLogo);
+        }
+
+        message.AlternateViews.Add(htmlView);
+
+        if (attachments is { Count: > 0 })
+        {
+            foreach (var attachment in attachments)
+            {
+                var stream = new MemoryStream(attachment.Content, writable: false);
+                message.Attachments.Add(new Attachment(stream, attachment.FileName, attachment.ContentType));
+            }
+        }
+
+        return message;
     }
 }

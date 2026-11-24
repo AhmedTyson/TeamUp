@@ -93,6 +93,8 @@ public class AdminReportsAndCommsTests(TeamUpApiFactory factory) : IClassFixture
             var html = await previewRes.Content.ReadAsStringAsync();
             Assert.Contains("#14151C", html);
             Assert.Contains("#D3FB52", html);
+            Assert.Contains("data:image/png;base64,", html);
+            Assert.Contains("alt=\"TeamUp\"", html);
             Assert.DoesNotContain("{{", html);
             Assert.DoesNotContain("}}", html);
         }

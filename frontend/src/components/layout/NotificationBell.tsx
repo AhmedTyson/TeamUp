@@ -5,7 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Check, CheckCheck, ExternalLink } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import {
   API_ENDPOINTS,
@@ -20,6 +20,11 @@ import { useAuth } from "@/features/auth";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 
+export interface NotificationBellProps {
+  isScrolled?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+}
+
 export interface NavbarNotificationItem {
   notificationId: number;
   studentId: number;
@@ -30,9 +35,10 @@ export interface NavbarNotificationItem {
   createdAt: string;
 }
 
-export function NotificationBell() {
+export function NotificationBell({ isScrolled = false, onOpenChange }: NotificationBellProps) {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -77,6 +83,11 @@ export function NotificationBell() {
   });
 
   useEffect(() => {
+    setIsOpen(false);
+    onOpenChange?.(false);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
     if (!isOpen) {
       return;
     }
@@ -84,22 +95,24 @@ export function NotificationBell() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsOpen(false);
+        onOpenChange?.(false);
       }
     };
 
-    const handlePointerDown = (event: MouseEvent) => {
+    const handlePointerDown = (event: PointerEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        onOpenChange?.(false);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("pointerdown", handlePointerDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [isOpen]);
+  }, [isOpen, onOpenChange]);
 
   if (!isAuthenticated) {
     return null;
@@ -110,16 +123,28 @@ export function NotificationBell() {
   const recentItems = items.slice(0, 5);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative" onClick={(event) => event.stopPropagation()}>
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={(event) => {
+          event.stopPropagation();
+          setIsOpen((prev) => {
+            const next = !prev;
+            onOpenChange?.(next);
+            return next;
+          });
+        }}
         aria-label={
           unreadCount > 0 ? `Open notifications (${unreadCount} unread)` : "Open notifications"
         }
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        className="relative inline-flex size-8 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-[#1b1d26] text-white/75 transition-colors hover:border-[#d3fb52]/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+        className={cn(
+          "relative inline-flex size-9 cursor-pointer items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+          isScrolled
+            ? "border-black/15 bg-black/5 text-[#14151c] hover:border-black/30 hover:bg-black/10"
+            : "border-white/15 bg-[#1b1d26]/90 text-white/80 hover:border-[#d3fb52]/40 hover:text-white",
+        )}
       >
         <Bell className="size-4" aria-hidden="true" />
         {unreadCount > 0 && (
@@ -133,7 +158,7 @@ export function NotificationBell() {
         <div
           role="dialog"
           aria-label="Recent notifications"
-          className="fixed inset-x-3 top-16 z-50 max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-2xl border border-white/12 bg-[#1b1d26] shadow-2xl shadow-black/70 sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96"
+          className="fixed inset-x-3 top-[76px] z-50 mx-auto max-w-[min(24rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-white/12 bg-[#1b1d26] shadow-2xl shadow-black/70 sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-[min(24rem,calc(100vw-2rem))]"
         >
           <div className="flex items-center justify-between border-b border-white/[0.085] px-4 py-3">
             <div className="flex items-center gap-2">
@@ -156,7 +181,7 @@ export function NotificationBell() {
             )}
           </div>
 
-          <div className="max-h-80 divide-y divide-white/[0.07] overflow-y-auto">
+          <div className="max-h-[min(20rem,calc(100dvh-11.5rem))] divide-y divide-white/[0.07] overflow-y-auto overscroll-contain">
             {recentItems.length === 0 ? (
               <p className="px-4 py-8 text-center text-xs text-[#9ca3af]">
                 You are all caught up. No notifications yet.

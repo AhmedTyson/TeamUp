@@ -3,6 +3,7 @@
 
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
+using TeamUp.Infrastructure.Templates;
 
 namespace TeamUp.Infrastructure.Reports;
 
@@ -43,23 +44,16 @@ internal static class EditorialPdfTheme
         {
             col.Item()
                 .Background(Obsidian)
-                .PaddingVertical(14)
+                .PaddingVertical(12)
                 .PaddingHorizontal(18)
                 .Row(row =>
                 {
-                    row.AutoItem()
-                        .AlignMiddle()
-                        .PaddingRight(8)
-                        .Width(8)
-                        .Height(8)
-                        .Background(Lime);
-
                     row.RelativeItem()
                         .AlignMiddle()
-                        .Text("TeamUp")
-                        .FontSize(15)
-                        .Bold()
-                        .FontColor(Paper);
+                        .AlignLeft()
+                        .Height(28)
+                        .Width(70)
+                        .Svg(BrandAssets.LogoVectorSvg);
 
                     row.AutoItem()
                         .AlignMiddle()

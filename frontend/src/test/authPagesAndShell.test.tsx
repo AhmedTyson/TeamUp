@@ -2,7 +2,7 @@
  * @date 2026-11-22
  * @purpose Unit and integration tests for M1 Phase 1 (universitiesApi, Login, Register cascade, Forgot/Reset Password, Navbar & AppShell).
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -585,5 +585,71 @@ describe("M1 Phase 1 — Auth Pages, Academic Catalog API & AppShell", () => {
       "href",
       "/profile/me",
     );
+  });
+
+  it("expands and collapses mobile navbar module accordions, coordinates with NotificationBell, and dismisses on outside click", async () => {
+    vi.spyOn(apiClient, "get").mockResolvedValue({
+      data: {
+        success: true,
+        message: "OK",
+        statusCode: 200,
+        data: [],
+        timestamp: new Date().toISOString(),
+      },
+      status: 200,
+    } as never);
+
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AppCoreProviders initialUser={STUDENT_USER}>
+          <Routes>
+            <Route element={<AppShell />}>
+              <Route path="/" element={<div data-testid="outside-page">Landing</div>} />
+              <Route path="/projects" element={<h1>Projects Workspace</h1>} />
+            </Route>
+          </Routes>
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    const toggleBtn = screen.getByRole("button", { name: /toggle navigation menu/i });
+    fireEvent.click(toggleBtn);
+
+    const mobileNav = screen.getByRole("navigation", { name: /mobile navigation/i });
+    const teamGroupBtn = within(mobileNav).getByRole("button", { name: /team formation/i });
+    const eventsGroupBtn = within(mobileNav).getByRole("button", { name: /events & workshops/i });
+
+    expect(teamGroupBtn).toHaveAttribute("aria-expanded", "false");
+    expect(within(mobileNav).queryByRole("link", { name: /create a project/i })).not.toBeInTheDocument();
+
+    // Expanding Team Formation reveals sub-links
+    fireEvent.click(teamGroupBtn);
+    expect(teamGroupBtn).toHaveAttribute("aria-expanded", "true");
+    expect(within(mobileNav).getByRole("link", { name: /create a project/i })).toHaveAttribute(
+      "href",
+      "/projects/new",
+    );
+
+    // Expanding Events & Workshops collapses Team Formation cleanly (accordion behavior)
+    fireEvent.click(eventsGroupBtn);
+    expect(teamGroupBtn).toHaveAttribute("aria-expanded", "false");
+    expect(eventsGroupBtn).toHaveAttribute("aria-expanded", "true");
+    expect(within(mobileNav).getByRole("link", { name: /verify check-in/i })).toHaveAttribute(
+      "href",
+      "/check-in",
+    );
+
+    // Opening NotificationBell closes the mobile drawer so popovers never overlap
+    const bellBtn = screen.getByRole("button", { name: /open notifications/i });
+    fireEvent.click(bellBtn);
+    expect(screen.queryByRole("navigation", { name: /mobile navigation/i })).not.toBeInTheDocument();
+
+    // Re-open mobile drawer and verify clicking outside dismisses it cleanly
+    fireEvent.click(screen.getByRole("button", { name: /toggle navigation menu/i }));
+    expect(screen.getByRole("navigation", { name: /mobile navigation/i })).toBeInTheDocument();
+    fireEvent.click(document.body);
+    await waitFor(() => {
+      expect(screen.queryByRole("navigation", { name: /mobile navigation/i })).not.toBeInTheDocument();
+    });
   });
 });
