@@ -2,6 +2,7 @@
 // Purpose: Platform administration DTOs including immutable audit log response contract (STRIDE THR-R-01).
 
 using TeamUp.Application.Auth;
+using TeamUp.Application.Gamification;
 using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Admin;
@@ -38,4 +39,23 @@ public sealed record AuditLogDto(
     string? NewValues,
     string? ClientIp,
     DateTime OccurredAt
+);
+
+public sealed record SendAdminReportRequest(
+    string? RecipientEmail = null,
+    string? ReportPeriod = null
+);
+
+public sealed record AdminLeaderboardDigestCommand(
+    string Mode = "TestToMe",
+    string? PeriodLabel = null,
+    IReadOnlyList<CampusNewsItem>? NewsItems = null,
+    bool DryRun = false
+);
+
+public sealed record AdminProjectMatchDigestCommand(
+    string Mode = "TestToMe",
+    int MaxMatchesPerStudent = 4,
+    int MinMatchPercentage = 20,
+    bool DryRun = false
 );
