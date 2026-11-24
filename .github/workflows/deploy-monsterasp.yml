@@ -70,7 +70,8 @@ jobs:
           MONSTERASP_APPSETTINGS_JSON: ${{ secrets.MONSTERASP_APPSETTINGS_JSON }}
         run: |
           if (-not [string]::IsNullOrWhiteSpace($env:MONSTERASP_APPSETTINGS_JSON)) {
-            $cfg = $env:MONSTERASP_APPSETTINGS_JSON | ConvertFrom-Json
+            $rawJson = $env:MONSTERASP_APPSETTINGS_JSON.Trim().TrimStart([char]0xFEFF).Trim()
+            $cfg = $rawJson | ConvertFrom-Json
             if ($null -ne $cfg.Seed) {
               if ($cfg.Seed.Enabled -eq $true) {
                 Write-Warning "Forcing Seed.Enabled=false in published appsettings.Production.json for ongoing production deploy."
