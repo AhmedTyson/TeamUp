@@ -192,6 +192,10 @@ test.describe("M1 Authentication E2E Smoke Suite", () => {
     await expect(glidingPill).toHaveCSS("opacity", "1");
 
     await page.getByRole("menuitem", { name: "Campus Leaderboards" }).click();
+    await expect(page).toHaveURL(/\/auth\/login$/);
+
+    await page.getByRole("button", { name: /PlatformAdmin/i }).click();
+    await page.getByRole("button", { name: /Sign In/i }).click();
     await expect(page).toHaveURL(/\/leaderboard$/);
   });
 });

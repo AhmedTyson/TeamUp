@@ -235,4 +235,55 @@ describe("AuthContext and route guards", () => {
 
     expect(screen.getByText("Projects Hub")).toBeInTheDocument();
   });
+
+  it("preserves safe location.state.from on GuestOnlyRoute and rejects unsafe return paths", () => {
+    function CurrentLocation() {
+      const loc = useLocation();
+      return <span data-testid="dest">{`${loc.pathname}${loc.search}`}</span>;
+    }
+
+    const { unmount } = render(
+      <MemoryRouter
+        initialEntries={[
+          { pathname: "/auth/login", state: { from: { pathname: "/leaderboard", search: "?tab=top" } } },
+        ]}
+      >
+        <AppCoreProviders initialUser={STUDENT_USER}>
+          <CurrentLocation />
+          <Routes>
+            <Route element={<GuestOnlyRoute redirectTo="/projects" />}>
+              <Route path="/auth/login" element={<h1>Login Screen</h1>} />
+            </Route>
+            <Route path="/leaderboard" element={<h1>Leaderboard View</h1>} />
+            <Route path="/projects" element={<h1>Projects Hub</h1>} />
+          </Routes>
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Leaderboard View")).toBeInTheDocument();
+    expect(screen.getByTestId("dest")).toHaveTextContent("/leaderboard?tab=top");
+    unmount();
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          { pathname: "/auth/login", state: { from: { pathname: "//evil.example", search: "" } } },
+        ]}
+      >
+        <AppCoreProviders initialUser={STUDENT_USER}>
+          <CurrentLocation />
+          <Routes>
+            <Route element={<GuestOnlyRoute redirectTo="/projects" />}>
+              <Route path="/auth/login" element={<h1>Login Screen</h1>} />
+            </Route>
+            <Route path="/projects" element={<h1>Projects Hub</h1>} />
+          </Routes>
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Projects Hub")).toBeInTheDocument();
+    expect(screen.getByTestId("dest")).toHaveTextContent("/projects");
+  });
 });

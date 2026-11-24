@@ -188,6 +188,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
   const prevMenuIdxRef = useRef<number | null>(null);
   const openMenuIdRef = useRef<string | null>(null);
   const displayedMenuIdRef = useRef<string | null>(null);
+  const menuPinnedByClickRef = useRef<string | null>(null);
 
   const openMenuId = pinnedMenuId ?? activeMenuId;
   openMenuIdRef.current = openMenuId;
@@ -228,6 +229,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
   const forceCloseImmediately = useCallback(() => {
     clearCloseTimer();
     clearExitTimer();
+    menuPinnedByClickRef.current = null;
     setPinnedMenuId(null);
     setActiveMenuId(null);
     setDisplayedMenuId(null);
@@ -335,6 +337,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
 
     const handleDocumentClick = () => {
       clearCloseTimer();
+      menuPinnedByClickRef.current = null;
       setPinnedMenuId(null);
       setActiveMenuId(null);
     };
@@ -343,6 +346,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
       if (event.key === "Escape") {
         setIsMobileMenuOpen(false);
         clearCloseTimer();
+        menuPinnedByClickRef.current = null;
         setPinnedMenuId(null);
         setActiveMenuId(null);
       }
@@ -491,6 +495,9 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                 }}
                 onMouseEnter={() => {
                   clearCloseTimer();
+                  if (menuPinnedByClickRef.current !== option.id) {
+                    menuPinnedByClickRef.current = null;
+                  }
                   activateMenu(option.id, Boolean(pinnedMenuId));
                 }}
                 className="animate-nav-item relative z-10"
@@ -502,10 +509,12 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                   onClick={(event) => {
                     event.stopPropagation();
                     clearCloseTimer();
-                    if (pinnedMenuId === option.id) {
+                    if (menuPinnedByClickRef.current === option.id && pinnedMenuId === option.id) {
+                      menuPinnedByClickRef.current = null;
                       setPinnedMenuId(null);
                       setActiveMenuId(null);
                     } else {
+                      menuPinnedByClickRef.current = option.id;
                       activateMenu(option.id, true);
                     }
                   }}

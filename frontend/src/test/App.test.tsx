@@ -9,6 +9,7 @@ import { studentsApi, USER_ROLES, type AuthStudentSummary } from "@/api";
 import { App } from "@/App";
 import { AppCoreProviders } from "@/app/providers";
 import { ProposedHeroDemo } from "@/components/home/ProposedHeroDemo";
+import { Navbar } from "@/components/layout/Navbar";
 import { CommunityHubPage } from "@/pages/CommunityHubPage";
 
 describe("App shell and home route", () => {
@@ -250,5 +251,34 @@ describe("App shell and home route", () => {
       expect(uploadSpy).toHaveBeenCalledWith(validFile);
     });
     expect(await screen.findByText(/profile photo updated/i)).toBeInTheDocument();
+  });
+
+  it("keeps mega-panel open on pointer hover followed by click and toggles closed only on explicit second click", () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AppCoreProviders initialUser={null}>
+          <Navbar />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    const primaryNav = screen.getByRole("navigation", { name: /primary navigation/i });
+    const teamTrigger = within(primaryNav).getByRole("button", { name: "Team Formation" });
+    const eventsTrigger = within(primaryNav).getByRole("button", { name: "Events & Workshops" });
+
+    fireEvent.click(teamTrigger);
+    expect(within(primaryNav).getByRole("menu")).toHaveTextContent("Create a Project");
+
+    // Moving pointer onto sibling item auto-opens it while pinned, then clicking it must NOT immediately collapse it
+    fireEvent.mouseEnter(eventsTrigger);
+    fireEvent.click(eventsTrigger);
+
+    const eventsMenu = within(primaryNav).getByRole("menu");
+    expect(eventsMenu).toHaveTextContent("Discover University Events");
+    expect(eventsTrigger).toHaveAttribute("aria-expanded", "true");
+
+    // Second explicit click on the already-pinned item toggles it closed
+    fireEvent.click(eventsTrigger);
+    expect(eventsTrigger).toHaveAttribute("aria-expanded", "false");
   });
 });
