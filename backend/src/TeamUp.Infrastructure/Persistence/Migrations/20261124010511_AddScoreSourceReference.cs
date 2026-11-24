@@ -19,15 +19,18 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
             // Backfill the key from the legacy "...#<id>: title" reason text. Only the earliest row per
             // (student, source, id) gets the key so the unique index can be created; historical duplicate
             // awards are left untouched (never deleted) for the owner to review.
+            // Wrapped in EXEC(N'...') so idempotent (-i) T-SQL scripts defer column binding until after
+            // ALTER TABLE ADD [SourceReferenceId] runs in the same batch.
             migrationBuilder.Sql(@"
+EXEC(N'
 WITH Parsed AS (
     SELECT TransactionId, StudentId, SourceType,
-           TRY_CAST(SUBSTRING(Reason, CHARINDEX('#', Reason) + 1,
-                    CHARINDEX(':', Reason, CHARINDEX('#', Reason)) - CHARINDEX('#', Reason) - 1) AS int) AS RefId
+           TRY_CAST(SUBSTRING(Reason, CHARINDEX(''#'', Reason) + 1,
+                    CHARINDEX('':'', Reason, CHARINDEX(''#'', Reason)) - CHARINDEX(''#'', Reason) - 1) AS int) AS RefId
     FROM ScoreTransaction
-    WHERE SourceType IN ('TaskCompleted', 'EventAttendance', 'ProjectDelivered')
-      AND CHARINDEX('#', Reason) > 0
-      AND CHARINDEX(':', Reason, CHARINDEX('#', Reason)) > CHARINDEX('#', Reason) + 1
+    WHERE SourceType IN (''TaskCompleted'', ''EventAttendance'', ''ProjectDelivered'')
+      AND CHARINDEX(''#'', Reason) > 0
+      AND CHARINDEX('':'', Reason, CHARINDEX(''#'', Reason)) > CHARINDEX(''#'', Reason) + 1
 ), Ranked AS (
     SELECT TransactionId, RefId,
            ROW_NUMBER() OVER (PARTITION BY StudentId, SourceType, RefId ORDER BY TransactionId) AS rn
@@ -36,7 +39,8 @@ WITH Parsed AS (
 UPDATE t SET SourceReferenceId = r.RefId
 FROM ScoreTransaction t
 JOIN Ranked r ON r.TransactionId = t.TransactionId
-WHERE r.rn = 1;");
+WHERE r.rn = 1;
+');");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ScoreTransaction_StudentId_SourceType_SourceReferenceId",
