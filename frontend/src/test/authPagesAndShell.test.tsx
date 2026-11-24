@@ -576,7 +576,7 @@ describe("M1 Phase 1 — Auth Pages, Academic Catalog API & AppShell", () => {
 
     expect(screen.getByRole("heading", { name: /privacy & platform policy/i })).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /student directory email privacy \(thr-i-01 opt-in\)/i }),
+      screen.getByRole("heading", { name: /02\. student directory email privacy/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: /security architecture & technical safeguards/i }),

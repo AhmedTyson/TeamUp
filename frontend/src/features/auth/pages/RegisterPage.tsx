@@ -471,7 +471,7 @@ export function RegisterPage() {
         </div>
 
         <p className="text-[11px] leading-relaxed text-[#9ca3af]">
-          Your university email is private by default (THR-I-01) and never shown to other students
+          Your university email is private by default and never shown to other students
           unless you opt in. Read our{" "}
           <Link
             to="/privacy"

@@ -398,7 +398,7 @@ export function SelfProfileStudioPage() {
                       ) : (
                         <EyeOff className="size-3.5 text-[#9ca3af]" aria-hidden="true" />
                       )}
-                      Show my email in student directory (THR-I-01 Privacy Opt-In)
+                      Show my email in student directory
                     </span>
                     <p className="text-[11px] text-white/70 leading-relaxed">
                       By default, your email address is hidden from public and student directory

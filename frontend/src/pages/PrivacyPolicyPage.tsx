@@ -26,7 +26,7 @@ interface PolicySectionNavItem {
 
 const POLICY_SECTIONS: readonly PolicySectionNavItem[] = [
   { id: "data-collected", label: "Data & Verification", code: "01" },
-  { id: "directory-privacy", label: "Directory Privacy (THR-I-01)", code: "02" },
+  { id: "directory-privacy", label: "Directory Privacy", code: "02" },
   { id: "email-preferences", label: "Email & Digests", code: "03" },
   { id: "security-controls", label: "Security Architecture", code: "04" },
   { id: "campus-conduct", label: "Campus Code & Fair Play", code: "05" },
@@ -71,7 +71,7 @@ export function PrivacyPolicyPage() {
           <div className="flex flex-wrap gap-2 pt-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d3fb52]/30 bg-[#d3fb52]/10 px-3 py-1 text-xs font-medium text-[#d3fb52]">
               <EyeOff className="size-3.5" aria-hidden="true" />
-              Default-Private Emails (THR-I-01)
+              Default-Private Emails
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
               <Bell className="size-3.5" aria-hidden="true" />
@@ -185,7 +185,7 @@ export function PrivacyPolicyPage() {
                   className="text-lg font-bold tracking-tight text-white"
                   style={{ fontFamily: "var(--font-heading)" }}
                 >
-                  02. Student Directory Email Privacy (THR-I-01 Opt-In)
+                  02. Student Directory Email Privacy
                 </h2>
               </div>
               <Badge variant="accent" size="sm">
