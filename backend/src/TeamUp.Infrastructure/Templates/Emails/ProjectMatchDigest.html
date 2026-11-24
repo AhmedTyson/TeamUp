@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <title>TeamUp Portfolio-Matched Recruiting Squads</title>
+  <style>
+    @media only screen and (max-width: 620px) {
+      .email-shell { padding: 12px 8px !important; }
+      .masthead-pad { padding: 18px 20px !important; }
+      .email-pad { padding: 24px 20px !important; }
+      .stack-cell { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F3F5F2;color:#14151C;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-shell" style="background-color:#F3F5F2;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;margin:0 auto;background-color:#FFFFFF;border:1px solid #E2E6E0;">
+          <tr>
+            <td class="masthead-pad" style="background-color:#14151C;padding:20px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="left" style="vertical-align:middle;">
+                    <span style="display:inline-block;width:8px;height:8px;background-color:#D3FB52;vertical-align:middle;margin-right:10px;"></span>
+                    <span style="font-size:17px;font-weight:800;letter-spacing:-0.02em;color:#FFFFFF;vertical-align:middle;">TeamUp</span>
+                  </td>
+                  <td align="right" style="vertical-align:middle;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:10px;letter-spacing:0.14em;color:#A1A6B4;text-transform:uppercase;">
+                    SQUAD MATCH / PORTFOLIO
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#D3FB52;height:3px;line-height:3px;font-size:0;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td class="email-pad" style="padding:32px;">
+              <p style="margin:0 0 6px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:11px;letter-spacing:0.12em;color:#6B7280;text-transform:uppercase;">
+                CURATED FOR {{RecipientName}} &middot; {{GeneratedDate}}
+              </p>
+              <h1 style="margin:0 0 16px;font-size:24px;line-height:1.25;font-weight:700;letter-spacing:-0.02em;color:#14151C;">
+                <span style="font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-variant-numeric:tabular-nums;">{{MatchCount}}</span> recruiting squads fit your portfolio
+              </h1>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 24px;border:1px solid #E2E6E0;background-color:#F8F9F7;">
+                <tr>
+                  <td style="padding:12px 16px;">
+                    <p style="margin:0 0 4px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:10px;letter-spacing:0.1em;color:#6B7280;text-transform:uppercase;">
+                      YOUR VERIFIED STACK
+                    </p>
+                    <p style="margin:0;font-size:13px;line-height:1.5;font-weight:600;color:#14151C;">
+                      {{StudentSkillsSummary}}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              {{{MatchedProjectCardsHtml}}}
+
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:8px;">
+                <tr>
+                  <td style="border:1px solid #14151C;background-color:#FFFFFF;border-radius:2px;">
+                    <a href="{{ProjectsUrl}}" style="display:inline-block;padding:12px 22px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#14151C;text-decoration:none;">
+                      BROWSE ALL RECRUITING SQUADS
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 32px;border-top:1px solid #E2E6E0;background-color:#F8F9F7;">
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#6B7280;">
+                Subscribed to Portfolio Project Match Alerts &middot; <a href="{{PreferencesUrl}}" style="color:#14151C;font-weight:600;text-decoration:underline;">Unsubscribe or adjust preferences</a>.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
