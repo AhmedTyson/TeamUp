@@ -12,6 +12,7 @@ jobs:
   deploy-backend:
     name: Publish & WebDeploy .NET 10 API
     runs-on: windows-latest
+    environment: production
 
     steps:
       - name: Check MonsterASP.NET deployment secrets
@@ -52,6 +53,16 @@ jobs:
           Remove-Item -Path "${{ github.workspace }}\publish\appsettings.Development.json" -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "${{ github.workspace }}\publish\appsettings.Production.example.json" -Force -ErrorAction SilentlyContinue
           Get-ChildItem -Path "${{ github.workspace }}\publish" -Filter "*.dev.db*" -ErrorAction SilentlyContinue | Remove-Item -Force
+          $runtimesDir = "${{ github.workspace }}\publish\runtimes"
+          if (Test-Path $runtimesDir) {
+            $keepRuntimes = @("win", "win-x64", "win-x86")
+            $pruned = Get-ChildItem -Path $runtimesDir -Directory | Where-Object { $keepRuntimes -notcontains $_.Name }
+            foreach ($dir in $pruned) {
+              Remove-Item -Path $dir.FullName -Recurse -Force
+            }
+            $publishMB = [math]::Round(((Get-ChildItem -Path "${{ github.workspace }}\publish" -Recurse -File | Measure-Object Length -Sum).Sum / 1MB), 2)
+            Write-Host "Pruned $($pruned.Count) non-Windows runtime folders; publish payload size is ${publishMB} MB."
+          }
 
       - name: Write optional appsettings.Production.json from secret
         if: steps.secrets-check.outputs.configured == 'true'
@@ -59,9 +70,36 @@ jobs:
           MONSTERASP_APPSETTINGS_JSON: ${{ secrets.MONSTERASP_APPSETTINGS_JSON }}
         run: |
           if (-not [string]::IsNullOrWhiteSpace($env:MONSTERASP_APPSETTINGS_JSON)) {
+            $cfg = $env:MONSTERASP_APPSETTINGS_JSON | ConvertFrom-Json
+            if ($null -ne $cfg.Seed) {
+              if ($cfg.Seed.Enabled -eq $true) {
+                Write-Warning "Forcing Seed.Enabled=false in published appsettings.Production.json for ongoing production deploy."
+                $cfg.Seed.Enabled = $false
+              }
+              if ($cfg.Seed.PSObject.Properties['AdminPassword']) {
+                $cfg.Seed.PSObject.Properties.Remove('AdminPassword')
+              }
+            }
+            if ($null -ne $cfg.Email) {
+              $hasBase = $cfg.Email.PSObject.Properties['FrontendBaseUrl'] -and -not [string]::IsNullOrWhiteSpace($cfg.Email.FrontendBaseUrl)
+              if (-not $hasBase) {
+                $derivedOrigin = "https://teamup-ieee.vercel.app"
+                if ($cfg.Email.PSObject.Properties['ResetPasswordUrlBase'] -and -not [string]::IsNullOrWhiteSpace($cfg.Email.ResetPasswordUrlBase)) {
+                  try {
+                    $u = [Uri]$cfg.Email.ResetPasswordUrlBase
+                    if ($u.Scheme -eq 'https') {
+                      $derivedOrigin = "$($u.Scheme)://$($u.Authority)"
+                    }
+                  } catch {}
+                }
+                $cfg.Email | Add-Member -NotePropertyName 'FrontendBaseUrl' -NotePropertyValue $derivedOrigin -Force
+                Write-Host "Defaulted Email.FrontendBaseUrl to $derivedOrigin in published appsettings.Production.json."
+              }
+            }
+            $normalizedJson = $cfg | ConvertTo-Json -Depth 20
             $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
-            [System.IO.File]::WriteAllText("${{ github.workspace }}\publish\appsettings.Production.json", $env:MONSTERASP_APPSETTINGS_JSON, $utf8NoBom)
-            Write-Host "Wrote appsettings.Production.json from secret."
+            [System.IO.File]::WriteAllText("${{ github.workspace }}\publish\appsettings.Production.json", $normalizedJson, $utf8NoBom)
+            Write-Host "Wrote normalized appsettings.Production.json from secret."
           }
 
       - name: Deploy to MonsterASP.NET via WebDeploy

@@ -25,8 +25,15 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 EXEC(N'
 WITH Parsed AS (
     SELECT TransactionId, StudentId, SourceType,
-           TRY_CAST(SUBSTRING(Reason, CHARINDEX(''#'', Reason) + 1,
-                    CHARINDEX('':'', Reason, CHARINDEX(''#'', Reason)) - CHARINDEX(''#'', Reason) - 1) AS int) AS RefId
+           TRY_CAST(
+               CASE
+                   WHEN CHARINDEX(''#'', Reason) > 0
+                    AND CHARINDEX('':'', Reason, CHARINDEX(''#'', Reason)) > CHARINDEX(''#'', Reason) + 1
+                   THEN SUBSTRING(
+                       Reason,
+                       CHARINDEX(''#'', Reason) + 1,
+                       CHARINDEX('':'', Reason, CHARINDEX(''#'', Reason)) - CHARINDEX(''#'', Reason) - 1)
+               END AS int) AS RefId
     FROM ScoreTransaction
     WHERE SourceType IN (''TaskCompleted'', ''EventAttendance'', ''ProjectDelivered'')
       AND CHARINDEX(''#'', Reason) > 0
