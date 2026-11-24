@@ -1,15 +1,16 @@
 /**
  * @date 2026-11-24
- * @purpose Unified Ctrl+K / Cmd+K global command palette searching student activities, events, projects, and quick routes.
+ * @purpose Unified Ctrl+K / Cmd+K global command palette searching student activities, events, projects, role dashboards, and platform routes.
  */
 import {
   Building2,
   CalendarDays,
   Compass,
   FolderKanban,
-  Languages,
+  LayoutDashboard,
   QrCode,
   Search,
+  Shield,
   Trophy,
   UserCheck,
   X,
@@ -20,7 +21,6 @@ import { useNavigate } from "react-router-dom";
 import { eventsApi, organizationsApi, projectsApi } from "@/api";
 import { useAuth } from "@/features/auth/AuthContext";
 import { cn } from "@/lib/cn";
-import { useI18n } from "@/lib/i18n";
 
 export const OPEN_COMMAND_PALETTE_EVENT = "teamup:open-command-palette";
 
@@ -35,13 +35,13 @@ interface PaletteItem {
   subtitle?: string;
   to?: string;
   onSelect?: () => void;
-  icon: "org" | "event" | "project" | "route" | "lang";
+  icon: "org" | "event" | "project" | "route" | "dashboard" | "admin";
 }
 
 export function CommandPalette() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const { t, toggleLocale, locale } = useI18n();
+  const { isAuthenticated, isPlatformAdmin, isOrgAdmin, orgAdminIds } = useAuth();
+  const canLeadOrg = isPlatformAdmin || isOrgAdmin || orgAdminIds.length > 0;
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -109,7 +109,7 @@ export function CommandPalette() {
           for (const org of orgs.value.items) {
             next.push({
               id: `org-${org.organizationId}`,
-              section: t("cmd.organizations"),
+              section: "Student Activities",
               label: org.name,
               subtitle: org.universityName ?? org.city ?? org.category,
               to: `/organizations/${org.organizationId}`,
@@ -121,7 +121,7 @@ export function CommandPalette() {
           for (const ev of events.value.items) {
             next.push({
               id: `event-${ev.eventId}`,
-              section: t("cmd.events"),
+              section: "Events & Workshops",
               label: ev.title,
               subtitle: `${ev.organizationName} · ${ev.location}`,
               to: `/events/${ev.eventId}`,
@@ -133,7 +133,7 @@ export function CommandPalette() {
           for (const proj of projects.value.items) {
             next.push({
               id: `project-${proj.projectId}`,
-              section: t("cmd.projects"),
+              section: "Projects & Squads",
               label: proj.title,
               subtitle: proj.creatorName,
               to: `/projects/${proj.projectId}`,
@@ -153,65 +153,197 @@ export function CommandPalette() {
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [open, query, isAuthenticated, t]);
+  }, [open, query, isAuthenticated]);
 
   const quickActions = useMemo<PaletteItem[]>(() => {
     const base: PaletteItem[] = [
+      ...(isAuthenticated
+        ? [
+            {
+              id: "route-dashboard",
+              section: "Dashboards",
+              label: "My Role Dashboard",
+              subtitle: "/dashboard",
+              to: "/dashboard",
+              icon: "dashboard" as const,
+            },
+            {
+              id: "route-student-dash",
+              section: "Dashboards",
+              label: "Student Activity & XP Hub",
+              subtitle: "/dashboard/student",
+              to: "/dashboard/student",
+              icon: "dashboard" as const,
+            },
+          ]
+        : []),
+      ...(canLeadOrg
+        ? [
+            {
+              id: "route-org-dash",
+              section: "Dashboards",
+              label: "Org Leader Command Dashboard",
+              subtitle: "/dashboard/org",
+              to: "/dashboard/org",
+              icon: "dashboard" as const,
+            },
+          ]
+        : []),
+      ...(isPlatformAdmin
+        ? [
+            {
+              id: "route-admin",
+              section: "Platform Admin",
+              label: "Admin Overview Dashboard",
+              subtitle: "/admin",
+              to: "/admin",
+              icon: "admin" as const,
+            },
+            {
+              id: "route-admin-catalog",
+              section: "Platform Admin",
+              label: "Admin · Academic Catalog",
+              subtitle: "/admin/catalog",
+              to: "/admin/catalog",
+              icon: "admin" as const,
+            },
+            {
+              id: "route-admin-roles",
+              section: "Platform Admin",
+              label: "Admin · Role Governance",
+              subtitle: "/admin/roles",
+              to: "/admin/roles",
+              icon: "admin" as const,
+            },
+            {
+              id: "route-admin-restore",
+              section: "Platform Admin",
+              label: "Admin · Archive & Restore",
+              subtitle: "/admin/restore",
+              to: "/admin/restore",
+              icon: "admin" as const,
+            },
+            {
+              id: "route-admin-audit",
+              section: "Platform Admin",
+              label: "Admin · Audit Logs",
+              subtitle: "/admin/audit-logs",
+              to: "/admin/audit-logs",
+              icon: "admin" as const,
+            },
+            {
+              id: "route-admin-comms",
+              section: "Platform Admin",
+              label: "Admin · Reports & Comms",
+              subtitle: "/admin/communications",
+              to: "/admin/communications",
+              icon: "admin" as const,
+            },
+          ]
+        : []),
       {
         id: "route-orgs",
-        section: t("cmd.quickActions"),
-        label: t("nav.studentActivities"),
+        section: "Quick Navigation",
+        label: "Student Activities Hub",
         subtitle: "/organizations",
         to: "/organizations",
         icon: "org",
       },
       {
+        id: "route-orgs-indie",
+        section: "Quick Navigation",
+        label: "Open & Independent Communities",
+        subtitle: "/organizations?scope=Independent",
+        to: "/organizations?scope=Independent",
+        icon: "org",
+      },
+      {
         id: "route-events",
-        section: t("cmd.quickActions"),
-        label: t("nav.eventsWorkshops"),
+        section: "Quick Navigation",
+        label: "Events & Workshops",
         subtitle: "/events",
         to: "/events",
         icon: "event",
       },
       {
         id: "route-checkin",
-        section: t("cmd.quickActions"),
-        label: t("events.checkIn"),
+        section: "Quick Navigation",
+        label: "Self Check-In (QR / Camera)",
         subtitle: "/check-in",
         to: "/check-in",
         icon: "route",
       },
       {
         id: "route-projects",
-        section: t("cmd.quickActions"),
-        label: t("nav.teamFormation"),
+        section: "Quick Navigation",
+        label: "Explore Projects",
         subtitle: "/projects",
         to: "/projects",
         icon: "project",
       },
       {
-        id: "route-leaderboard",
-        section: t("cmd.quickActions"),
-        label: "Leaderboard",
-        subtitle: "/leaderboard",
-        to: "/leaderboard",
+        id: "route-project-new",
+        section: "Quick Navigation",
+        label: "Create a Project",
+        subtitle: "/projects/new",
+        to: "/projects/new",
+        icon: "project",
+      },
+      {
+        id: "route-skills",
+        section: "Quick Navigation",
+        label: "Skills Catalog",
+        subtitle: "/skills",
+        to: "/skills",
+        icon: "route",
+      },
+      {
+        id: "route-students",
+        section: "Quick Navigation",
+        label: "Student Directory",
+        subtitle: "/students",
+        to: "/students",
         icon: "route",
       },
       {
         id: "route-profile",
-        section: t("cmd.quickActions"),
+        section: "Quick Navigation",
         label: "Profile Studio",
         subtitle: "/profile/me",
         to: "/profile/me",
         icon: "route",
       },
       {
-        id: "action-lang",
-        section: t("cmd.quickActions"),
-        label: locale === "en" ? "Switch Language to Arabic (العربية RTL)" : "Switch Language to English (LTR)",
-        subtitle: locale === "en" ? "AR · RTL" : "EN · LTR",
-        onSelect: () => toggleLocale(),
-        icon: "lang",
+        id: "route-gamification",
+        section: "Quick Navigation",
+        label: "Points, Levels & Badges",
+        subtitle: "/gamification",
+        to: "/gamification",
+        icon: "route",
+      },
+      {
+        id: "route-leaderboard",
+        section: "Quick Navigation",
+        label: "Campus Leaderboards",
+        subtitle: "/leaderboard",
+        to: "/leaderboard",
+        icon: "route",
+      },
+      {
+        id: "route-notifications",
+        section: "Quick Navigation",
+        label: "Notifications Inbox",
+        subtitle: "/notifications",
+        to: "/notifications",
+        icon: "route",
+      },
+      {
+        id: "route-privacy",
+        section: "Quick Navigation",
+        label: "Privacy & Policy",
+        subtitle: "/privacy",
+        to: "/privacy",
+        icon: "route",
       },
     ];
     const trimmed = query.trim().toLowerCase();
@@ -221,9 +353,10 @@ export function CommandPalette() {
     return base.filter(
       (item) =>
         item.label.toLowerCase().includes(trimmed) ||
+        item.section.toLowerCase().includes(trimmed) ||
         (item.subtitle?.toLowerCase().includes(trimmed) ?? false),
     );
-  }, [query, t, locale, toggleLocale]);
+  }, [query, isAuthenticated, isPlatformAdmin, canLeadOrg]);
 
   const items = useMemo(
     () => [...remoteItems, ...quickActions],
@@ -247,6 +380,8 @@ export function CommandPalette() {
   if (!open || typeof document === "undefined") {
     return null;
   }
+
+  const placeholderText = "Search activities, events, projects, dashboards, or any page…";
 
   return createPortal(
     <div
@@ -287,8 +422,8 @@ export function CommandPalette() {
               setQuery(e.target.value);
               setActiveIndex(0);
             }}
-            placeholder={t("cmd.placeholder")}
-            aria-label={t("cmd.placeholder")}
+            placeholder={placeholderText}
+            aria-label={placeholderText}
             className="w-full bg-transparent text-sm text-white placeholder:text-white/45 focus:outline-none"
           />
           {loadingRemote && (
@@ -306,7 +441,9 @@ export function CommandPalette() {
 
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {items.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-white/55">{t("cmd.noResults")}</p>
+            <p className="px-4 py-8 text-center text-sm text-white/55">
+              No matching communities, events, projects, or pages found.
+            </p>
           ) : (
             items.map((item, idx) => {
               const Icon =
@@ -316,15 +453,17 @@ export function CommandPalette() {
                     ? CalendarDays
                     : item.icon === "project"
                       ? FolderKanban
-                      : item.icon === "lang"
-                        ? Languages
-                        : item.to === "/check-in"
-                          ? QrCode
-                          : item.to === "/leaderboard"
-                            ? Trophy
-                            : item.to === "/profile/me"
-                              ? UserCheck
-                              : Compass;
+                      : item.icon === "dashboard"
+                        ? LayoutDashboard
+                        : item.icon === "admin"
+                          ? Shield
+                          : item.to === "/check-in"
+                            ? QrCode
+                            : item.to === "/leaderboard"
+                              ? Trophy
+                              : item.to === "/profile/me"
+                                ? UserCheck
+                                : Compass;
 
               return (
                 <button

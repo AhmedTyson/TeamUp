@@ -35,6 +35,14 @@ test.describe("M4 Profiles, Directory & Gamification E2E", () => {
     await page.goto("/notifications");
     await expect(page.locator("h1").first()).toBeVisible();
 
+    await page.goto("/dashboard");
+    await expect(
+      page.getByRole("heading", { name: "Org Leadership Command Center" }),
+    ).toBeVisible();
+    await page.getByRole("link", { name: "Student Dashboard" }).click();
+    await expect(page).toHaveURL(/\/dashboard\/student$/);
+    await expect(page.getByRole("heading", { name: /Welcome back, Salma/i })).toBeVisible();
+
     expect(pageErrors).toEqual([]);
   });
 });

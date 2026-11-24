@@ -27,7 +27,6 @@ import {
 } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useOrganizations } from "@/features/organizations";
-import { useI18n } from "@/lib/i18n";
 import { EventFormModal } from "../components/EventFormModal";
 import { useEventMutations, useEvents } from "../hooks/useEventHooks";
 
@@ -40,7 +39,6 @@ const DELIVERY_OPTIONS = Object.values(EVENT_DELIVERY_MODES).map((value) => ({
 export function EventsDirectoryPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const { t } = useI18n();
 
   const searchParam = params.get("search") ?? "";
   const typeParam = (params.get("type") ?? "") as EventType | "";
@@ -114,20 +112,20 @@ export function EventsDirectoryPage() {
     <div className="space-y-7">
       <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(ellipse_at_80%_0%,rgba(83,152,134,0.35),transparent_50%),linear-gradient(135deg,#1b1d26,#14151c)] p-6 shadow-2xl sm:p-9">
         <div className="max-w-3xl space-y-3">
-          <Badge variant="accent">{t("events.eyebrow")}</Badge>
+          <Badge variant="accent">Workshops, Bootcamps &amp; Competitions</Badge>
           <h1
             className="text-4xl font-bold uppercase leading-[0.95] text-[#d3fb52] sm:text-6xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            {t("events.title")}
+            Show up. Level up.
           </h1>
           <p className="max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base">
-            {t("events.subtitle")}
+            Register for hands-on sessions, grab your Digital Pass, and scan QR codes to unlock verified XP.
           </p>
           <div className="flex flex-wrap gap-3 pt-1">
             {canCreate && (
               <Button onClick={() => setCreateOpen(true)} leftIcon={<Plus className="size-4" />}>
-                {t("events.create")}
+                Create event
               </Button>
             )}
             <Link
@@ -135,7 +133,7 @@ export function EventsDirectoryPage() {
               className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#d3fb52]/35 bg-[#d3fb52]/10 px-4 text-sm font-semibold text-[#d3fb52] transition-colors hover:bg-[#d3fb52]/20"
             >
               <QrCode className="size-4" aria-hidden="true" />
-              {t("events.checkIn")}
+              Student Check-In
             </Link>
           </div>
         </div>

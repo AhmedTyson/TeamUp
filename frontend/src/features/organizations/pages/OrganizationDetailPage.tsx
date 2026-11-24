@@ -13,7 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { organizationsApi } from "@/api";
 import {
@@ -28,7 +28,6 @@ import {
 } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
 import { triggerFileDownload } from "@/lib/downloadFile";
-import { useI18n } from "@/lib/i18n";
 import { isSafeHttpUrl } from "@/lib/urlValidation";
 import { OrganizationApplicationsTab } from "../components/OrganizationApplicationsTab";
 import { OrganizationFormModal } from "../components/OrganizationFormModal";
@@ -53,14 +52,37 @@ import {
   isOrganizationMember,
 } from "../utils/authorization";
 
+const VALID_ORG_TABS = new Set([
+  "overview",
+  "units",
+  "hierarchy",
+  "members",
+  "applications",
+  "participants",
+  "events",
+]);
+
 export function OrganizationDetailPage() {
   const { id: rawId } = useParams();
   const id = Number(rawId);
   const navigate = useNavigate();
-  const { t } = useI18n();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAuthenticated, isPlatformAdmin, isOrgAdminOf } = useAuth();
 
-  const [tab, setTab] = useState("overview");
+  const initialTab = searchParams.get("tab");
+  const [tab, setTabState] = useState(() =>
+    initialTab && VALID_ORG_TABS.has(initialTab) ? initialTab : "overview",
+  );
+  const setTab = (nextTab: string) => {
+    setTabState(nextTab);
+    const next = new URLSearchParams(searchParams);
+    if (nextTab === "overview") {
+      next.delete("tab");
+    } else {
+      next.set("tab", nextTab);
+    }
+    setSearchParams(next, { replace: true });
+  };
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -224,7 +246,7 @@ export function OrganizationDetailPage() {
           items={[
             {
               id: "overview",
-              label: t("orgs.tab.overview"),
+              label: "Overview",
               content: (
                 <div className="grid gap-4 pt-2 lg:grid-cols-2">
                   <Card className="space-y-4 p-5">
@@ -278,7 +300,7 @@ export function OrganizationDetailPage() {
             },
             {
               id: "units",
-              label: t("orgs.tab.units"),
+              label: "Chapters & Committees",
               badge: units.length,
               content: (
                 <OrganizationUnitsTab
@@ -300,7 +322,7 @@ export function OrganizationDetailPage() {
             },
             {
               id: "hierarchy",
-              label: t("orgs.tab.hierarchy"),
+              label: "Org Hierarchy",
               content: (
                 <OrganizationHierarchyTab
                   hierarchy={hierarchyQuery.data}
@@ -310,7 +332,7 @@ export function OrganizationDetailPage() {
             },
             {
               id: "members",
-              label: t("orgs.tab.members"),
+              label: "Members & Crew",
               badge: members.length,
               content: (
                 <OrganizationMembersTab
@@ -336,7 +358,7 @@ export function OrganizationDetailPage() {
             },
             {
               id: "applications",
-              label: t("orgs.tab.recruitment"),
+              label: "Recruitment Pipeline",
               badge: canReviewRecruitment ? pendingAdminAppsCount : undefined,
               content: (
                 <RecruitmentPipelineTab
@@ -372,7 +394,7 @@ export function OrganizationDetailPage() {
             },
             {
               id: "participants",
-              label: t("orgs.tab.participants"),
+              label: "Participants",
               content: (
                 <OrganizationParticipantsTab
                   organizationName={org.name}
@@ -384,7 +406,7 @@ export function OrganizationDetailPage() {
             },
             {
               id: "events",
-              label: t("orgs.tab.events"),
+              label: "Hosted Events",
               badge: org.events.length,
               content:
                 org.events.length > 0 ? (

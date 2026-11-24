@@ -21,7 +21,6 @@ import {
 import { useAuth } from "@/features/auth/AuthContext";
 import { canManageOrganization, useOrganization } from "@/features/organizations";
 import { triggerFileDownload } from "@/lib/downloadFile";
-import { useI18n } from "@/lib/i18n";
 import { ManualCheckInCard } from "../components/ManualCheckInCard";
 import { QrProjectorCard } from "../components/QrProjectorCard";
 import {
@@ -38,7 +37,6 @@ export function SessionAttendancePage() {
   const eventId = Number(rawEventId);
   const sessionId = Number(rawSessionId);
   const navigate = useNavigate();
-  const { t } = useI18n();
   const { user, isPlatformAdmin, isOrgAdminOf } = useAuth();
 
   const isValidIds =
@@ -231,7 +229,7 @@ export function SessionAttendancePage() {
             leftIcon={<Download className="size-3.5" />}
             onClick={() => void handleExportCsv()}
           >
-            {t("attendance.exportCsv")}
+            Export CSV
           </Button>
         </div>
 

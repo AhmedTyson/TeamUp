@@ -5,7 +5,6 @@
 import { RefreshCw } from "lucide-react";
 import { useApiHealthDetails } from "@/hooks/useApiHealth";
 import { cn } from "@/lib/cn";
-import { useI18n } from "@/lib/i18n";
 
 export interface ApiHealthPillProps {
   className?: string;
@@ -13,7 +12,6 @@ export interface ApiHealthPillProps {
 
 export function ApiHealthPill({ className }: ApiHealthPillProps) {
   const { state, database, refetch } = useApiHealthDetails();
-  const { t } = useI18n();
 
   const dotClass =
     state === "online"
@@ -26,12 +24,12 @@ export function ApiHealthPill({ className }: ApiHealthPillProps) {
 
   const label =
     state === "online"
-      ? t("health.online")
+      ? "API Live"
       : state === "checking"
-        ? t("health.checking")
+        ? "Checking API…"
         : state === "degraded"
-          ? t("health.degraded")
-          : t("health.offline");
+          ? "API Degraded"
+          : "API Offline";
 
   return (
     <button

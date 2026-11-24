@@ -113,7 +113,7 @@ test.describe("M3 Activities, Hierarchy, Recruitment & Events E2E", () => {
       "true",
     );
 
-    // Command Palette Ctrl+K
+    // Command Palette Ctrl+K (all pages reachable)
     await page.keyboard.press("Control+k");
     const cmdInput = page.getByPlaceholder(/Search activities, events, projects/i);
     await expect(cmdInput).toBeVisible();
@@ -121,13 +121,13 @@ test.describe("M3 Activities, Hierarchy, Recruitment & Events E2E", () => {
     await expect(page.getByRole("button", { name: /Auxilio/i }).first()).toBeVisible();
     await page.keyboard.press("Escape");
 
-    // Bilingual AR / RTL toggle
-    await page.getByRole("button", { name: "Switch language to Arabic" }).click();
-    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
-
-    await page.getByRole("button", { name: "Switch language to English" }).click();
-    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+    // English-only UI: no language switch toggle, and role-specific Org Leader Dashboard available
+    await expect(page.getByRole("button", { name: /Switch language/i })).toHaveCount(0);
+    await page.getByRole("link", { name: "Dashboard" }).click();
+    await expect(page).toHaveURL(/\/dashboard\/org$/);
+    await expect(
+      page.getByRole("heading", { name: "Org Leadership Command Center" }),
+    ).toBeVisible();
 
     expect(pageErrors).toEqual([]);
   });

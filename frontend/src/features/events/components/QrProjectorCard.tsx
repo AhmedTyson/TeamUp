@@ -8,7 +8,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { SessionAttendance, SessionCheckInCode } from "@/api";
 import { Badge, Button, Card } from "@/components/ui";
-import { useI18n } from "@/lib/i18n";
 import { nextCountdownTick, secondsUntilExpiry } from "../utils/attendance";
 import { StageProjectorOverlay } from "./StageProjectorOverlay";
 
@@ -39,7 +38,6 @@ export function QrProjectorCard({
   onGenerateCode,
   onOpenReport,
 }: QrProjectorCardProps) {
-  const { t } = useI18n();
   const [active, setActive] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
   const [codeData, setCodeData] = useState<SessionCheckInCode | null>(null);
@@ -135,7 +133,7 @@ export function QrProjectorCard({
               setStageOpen(true);
             }}
           >
-            {t("attendance.stageMode")}
+            Launch Stage Mode
           </Button>
           <Button size="sm" onClick={() => setActive((prev) => !prev)}>
             {active ? "Stop projector" : "Start projector"}

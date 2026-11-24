@@ -1,6 +1,6 @@
 /**
  * @date 2026-11-24
- * @purpose Vitest + React Testing Library suite covering the 20-Item Master Upgrade Plan (flexible onboarding, Arabic RTL i18n, Ctrl+K CommandPalette, 4-tier Hierarchy org-chart, Recruitment Kanban, Luma Digital Pass + .ics, Stage Projector, and ApiHealthPill).
+ * @purpose Vitest + React Testing Library suite covering English-only Navbar & complete CommandPalette, Role Dashboards (Student, OrgAdmin, PlatformAdmin), flexible onboarding, 4-tier Hierarchy, Recruitment Kanban, Digital Pass + .ics, Stage Projector, and ApiHealthPill.
  */
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -10,10 +10,13 @@ import {
   authApi,
   eventsApi,
   EVENT_TYPES,
+  gamificationApi,
   healthApi,
+  notificationsApi,
   organizationsApi,
   ORGANIZATION_SCOPES,
   ORGANIZATION_UNIT_TYPES,
+  projectsApi,
   RECRUITMENT_STAGES,
   universitiesApi,
   USER_ROLES,
@@ -25,13 +28,18 @@ import {
 import { AppCoreProviders } from "@/app/providers";
 import { ApiHealthPill } from "@/components/layout/ApiHealthPill";
 import { CommandPalette } from "@/components/layout/CommandPalette";
+import { Navbar } from "@/components/layout/Navbar";
 import { RegisterPage } from "@/features/auth/pages/RegisterPage";
+import {
+  OrgAdminDashboardPage,
+  RoleDashboardRouterPage,
+  StudentDashboardPage,
+} from "@/features/dashboard";
 import { EventDigitalPassCard } from "@/features/events/components/EventDigitalPassCard";
 import { StageProjectorOverlay } from "@/features/events/components/StageProjectorOverlay";
 import { OrganizationHierarchyTab } from "@/features/organizations/components/OrganizationHierarchyTab";
 import { RecruitmentPipelineTab } from "@/features/organizations/components/RecruitmentPipelineTab";
 import { buildEventIcsContent } from "@/lib/calendarExport";
-import { I18nProvider, useI18n } from "@/lib/i18n";
 
 function makeStudent(overrides: Partial<AuthStudentSummary> = {}): AuthStudentSummary {
   return {
@@ -51,23 +59,8 @@ function makeStudent(overrides: Partial<AuthStudentSummary> = {}): AuthStudentSu
   };
 }
 
-function I18nProbe() {
-  const { locale, dir, toggleLocale, t } = useI18n();
-  return (
-    <div>
-      <span data-testid="locale-info">{`${locale}:${dir}`}</span>
-      <span>{t("orgs.title")}</span>
-      <button type="button" onClick={toggleLocale}>
-        Switch Language
-      </button>
-    </div>
-  );
-}
-
-describe("20-Item Plan Upgrades Suite", () => {
+describe("20-Item Plan & Role Dashboards Suite", () => {
   afterEach(() => {
-    document.documentElement.lang = "en";
-    document.documentElement.dir = "ltr";
     window.localStorage.clear();
     vi.restoreAllMocks();
   });
@@ -127,21 +120,228 @@ describe("20-Item Plan Upgrades Suite", () => {
     expect(await screen.findByText("Projects Hub")).toBeInTheDocument();
   });
 
-  it("toggles bilingual AR/EN locale and synchronizes <html dir='rtl'> and lang='ar'", () => {
-    render(
-      <I18nProvider>
-        <I18nProbe />
-      </I18nProvider>,
+  it("renders English-only Navbar with role-specific Dashboard/Admin links and no language switcher", () => {
+    const studentView = render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AppCoreProviders
+          initialUser={makeStudent({
+            firstName: "Salma",
+            role: USER_ROLES.Student,
+          })}
+        >
+          <Navbar xpChipSlot={<span />} notificationSlot={<span />} />
+        </AppCoreProviders>
+      </MemoryRouter>,
     );
 
-    expect(screen.getByTestId("locale-info")).toHaveTextContent("en:ltr");
-    expect(document.documentElement.dir).toBe("ltr");
+    expect(screen.queryByRole("button", { name: /Switch language/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/dashboard");
+    studentView.unmount();
 
-    fireEvent.click(screen.getByRole("button", { name: "Switch Language" }));
+    const orgAdminView = render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AppCoreProviders
+          initialUser={makeStudent({
+            firstName: "Nour",
+            role: USER_ROLES.OrgAdmin,
+          })}
+        >
+          <Navbar xpChipSlot={<span />} notificationSlot={<span />} />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
 
-    expect(screen.getByTestId("locale-info")).toHaveTextContent("ar:rtl");
-    expect(document.documentElement.dir).toBe("rtl");
-    expect(document.documentElement.lang).toBe("ar");
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
+      "href",
+      "/dashboard/org",
+    );
+    orgAdminView.unmount();
+
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AppCoreProviders
+          initialUser={makeStudent({
+            firstName: "Admin",
+            role: USER_ROLES.PlatformAdmin,
+          })}
+        >
+          <Navbar xpChipSlot={<span />} notificationSlot={<span />} />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin");
+  });
+
+  it("renders StudentDashboardPage with live XP, event passes, and community applications", async () => {
+    vi.spyOn(gamificationApi, "getStudentScore").mockResolvedValueOnce({
+      studentId: 10,
+      totalPoints: 1250,
+      level: 4,
+      currentLevelStart: 900,
+      nextLevelThreshold: 1500,
+      pointsToNext: 250,
+      progress: 0.58,
+    });
+    vi.spyOn(eventsApi, "myRegistrations").mockResolvedValueOnce([
+      {
+        eventId: 1,
+        eventTitle: "Auxilio Engineering & AI Bootcamp 2026",
+        organizationId: 1,
+        organizationName: "IEEE Helwan Student Branch",
+        eventType: EVENT_TYPES.Workshop,
+        deliveryMode: "Hybrid",
+        location: "Helwan Main Hall",
+        startDate: "2026-12-01T09:00:00Z",
+        endDate: "2026-12-03T16:00:00Z",
+        status: "Confirmed",
+        registeredAt: "2026-11-20T10:00:00Z",
+        sessionsAttendedCount: 1,
+        totalSessionsCount: 3,
+      },
+    ]);
+    vi.spyOn(organizationsApi, "myApplications").mockResolvedValueOnce([]);
+    vi.spyOn(notificationsApi, "getNotifications").mockResolvedValueOnce([]);
+    vi.spyOn(projectsApi, "list").mockResolvedValueOnce({
+      items: [],
+      page: 1,
+      pageSize: 4,
+      totalCount: 0,
+      totalPages: 1,
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/dashboard/student"]}>
+        <AppCoreProviders
+          initialUser={makeStudent({
+            studentId: 10,
+            firstName: "Salma",
+            lastName: "Khaled",
+            universityName: "Cairo University",
+            facultyName: "FCAI",
+          })}
+        >
+          <StudentDashboardPage />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(/Welcome back, Salma/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Lvl 4 · 1250 XP/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Auxilio Engineering & AI Bootcamp 2026/i),
+    ).toBeInTheDocument();
+  });
+
+  it("renders OrgAdminDashboardPage with 4-stage recruitment funnel and hosted event QR links", async () => {
+    vi.spyOn(organizationsApi, "list").mockResolvedValue({
+      items: [
+        {
+          organizationId: 1,
+          name: "IEEE Helwan Student Branch",
+          description: "Engineering & AI community",
+          category: "Engineering",
+          scope: ORGANIZATION_SCOPES.UniversityBranch,
+          universityName: "Helwan University",
+          city: "Helwan, Cairo",
+          isRecruiting: true,
+          currentSeasonName: "Fall 2026",
+          logoUrl: null,
+          memberCount: 120,
+          unitCount: 9,
+        },
+      ],
+      totalCount: 1,
+      totalPages: 1,
+      page: 1,
+      pageSize: 50,
+    });
+    vi.spyOn(organizationsApi, "applications").mockResolvedValue([
+      {
+        applicationId: 1,
+        organizationId: 1,
+        studentId: 50,
+        studentFirstName: "Tarek",
+        studentLastName: "Nabil",
+        studentEmail: "tarek@indie.dev",
+        status: "Pending",
+        stage: RECRUITMENT_STAGES.HrScreening,
+        message: "Joining CS",
+        appliedAt: "2026-11-24T10:00:00Z",
+        reviewedAt: null,
+      },
+    ]);
+    vi.spyOn(eventsApi, "list").mockResolvedValue({
+      items: [
+        {
+          eventId: 1,
+          title: "Auxilio Bootcamp",
+          description: "Hands-on engineering bootcamp",
+          type: EVENT_TYPES.Workshop,
+          location: "Main Hall",
+          startDate: "2026-12-01T09:00:00Z",
+          endDate: "2026-12-03T16:00:00Z",
+          capacity: 120,
+          registeredCount: 8,
+          organizationId: 1,
+          organizationName: "IEEE Helwan Student Branch",
+          deliveryMode: "Hybrid",
+          sessions: [
+            {
+              sessionId: 11,
+              eventId: 1,
+              sessionNo: 1,
+              title: "Opening Keynote",
+              startTime: "2026-12-01T09:00:00Z",
+              endTime: "2026-12-01T12:00:00Z",
+              room: "A1",
+            },
+          ],
+        },
+      ],
+      totalCount: 1,
+      totalPages: 1,
+      page: 1,
+      pageSize: 6,
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <AppCoreProviders
+          initialUser={makeStudent({
+            studentId: 2,
+            firstName: "Nour",
+            role: USER_ROLES.OrgAdmin,
+          })}
+        >
+          <RoleDashboardRouterPage />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "Org Leadership Command Center" }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText(/2\. HR Screening/i)).toBeInTheDocument();
+    expect(await screen.findByText("Auxilio Bootcamp")).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /Session #1 QR/i })).toHaveAttribute(
+      "href",
+      "/events/1/sessions/11/attendance",
+    );
+  });
+
+  it("guards OrgAdminDashboardPage when viewed by a Student account", () => {
+    render(
+      <MemoryRouter initialEntries={["/dashboard/org"]}>
+        <AppCoreProviders initialUser={makeStudent({ role: USER_ROLES.Student })}>
+          <OrgAdminDashboardPage />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByText(/No organization leadership role assigned yet/i),
+    ).toBeInTheDocument();
   });
 
   it("opens CommandPalette with Ctrl+K, searches, and navigates to target route", async () => {
@@ -380,15 +580,13 @@ describe("20-Item Plan Upgrades Suite", () => {
     expect(ics).toContain("SUMMARY:Auxilio Engineering & AI Bootcamp 2026");
 
     render(
-      <I18nProvider>
-        <EventDigitalPassCard
-          event={sampleEvent}
-          studentName="Salma Khaled"
-          studentId={10}
-          status="Confirmed"
-          sessionsAttendedCount={2}
-        />
-      </I18nProvider>,
+      <EventDigitalPassCard
+        event={sampleEvent}
+        studentName="Salma Khaled"
+        studentId={10}
+        status="Confirmed"
+        sessionsAttendedCount={2}
+      />,
     );
 
     expect(screen.getByText("#TU-12")).toBeInTheDocument();

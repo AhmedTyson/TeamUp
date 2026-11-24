@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
+import { DashboardRoleSwitcher } from "@/features/dashboard/components/DashboardRoleSwitcher";
 import { cn } from "@/lib/cn";
 
 export interface AdminConsoleLayoutProps {
@@ -38,6 +39,8 @@ export function AdminConsoleLayout({
 }: AdminConsoleLayoutProps) {
   return (
     <div className="space-y-6">
+      <DashboardRoleSwitcher />
+
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1.5">
           <h1

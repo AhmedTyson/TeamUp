@@ -6,7 +6,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   ChevronDown,
-  Languages,
+  LayoutDashboard,
   Loader2,
   LogOut,
   Menu,
@@ -30,7 +30,6 @@ import { Avatar } from "@/components/ui";
 import { useAuth } from "@/features/auth";
 import { usePublicPeopleShowcase } from "@/features/catalog/usePublicPeopleShowcase";
 import { cn } from "@/lib/cn";
-import { useI18n } from "@/lib/i18n";
 import { dispatchOpenCommandPalette } from "./CommandPalette";
 import { NotificationBell } from "./NotificationBell";
 import { XpLevelChip } from "./XpLevelChip";
@@ -70,12 +69,12 @@ const NAV_OPTIONS: readonly NavOptionGroup[] = [
     imageAlt: "University students collaborating around laptops in a sunlit campus lab",
     imagePosition: "object-center",
     subOptions: [
+      { label: "Explore Projects", to: "/projects" },
       { label: "Create a Project", to: "/projects/new" },
       { label: "Publish Required Skills", to: "/skills" },
       { label: "Search for Teammates", to: "/students" },
-      { label: "Build Collaborative Teams", to: "/projects" },
-      { label: "Project Applications", to: "/projects" },
       { label: "Project Tasks Board", to: "/projects" },
+      { label: "My Role Dashboard", to: "/dashboard" },
     ],
   },
   {
@@ -88,11 +87,12 @@ const NAV_OPTIONS: readonly NavOptionGroup[] = [
     imageAlt: "Engineering student builder portrait representing verified student profiles",
     imagePosition: "object-top",
     subOptions: [
+      { label: "Student Directory", to: "/students" },
       { label: "Student Profile & Bio", to: "/profile/me" },
       { label: "Skills & Proficiency", to: "/skills" },
-      { label: "Achievements & Contributions", to: "/gamification" },
-      { label: "Verified Participation", to: "/events" },
       { label: "Score Transactions Ledger", to: "/gamification" },
+      { label: "Campus Leaderboards", to: "/leaderboard" },
+      { label: "Privacy & Policy", to: "/privacy" },
     ],
   },
   {
@@ -100,16 +100,17 @@ const NAV_OPTIONS: readonly NavOptionGroup[] = [
     label: "Student Activities",
     to: "/organizations",
     highlightTag: "50+ Campus Chapters",
-    highlightCopy: "Join IEEE, GDG, Enactus, and robotics labs from semester one.",
+    highlightCopy: "Join IEEE, GDG, Enactus, and open collectives across Egypt.",
     imageSrc: "/images/hero/hero-club-meetup.jpg",
     imageAlt: "Student club members brainstorming hardware and software ideas on campus",
     imagePosition: "object-center",
     subOptions: [
       { label: "Organizations Directory", to: "/organizations" },
-      { label: "Showcase Activities", to: "/organizations" },
-      { label: "Recruitment Opportunities", to: "/organizations" },
-      { label: "Membership Applications", to: "/organizations" },
-      { label: "Organization Members", to: "/organizations" },
+      { label: "University Branches (IEEE, Enactus)", to: "/organizations?scope=UniversityBranch" },
+      { label: "Open & Independent Communities", to: "/organizations?scope=Independent" },
+      { label: "Cross-University Initiatives", to: "/organizations?scope=CrossUniversity" },
+      { label: "Recruiting Open Now", to: "/organizations?scope=recruiting" },
+      { label: "Org Leader Dashboard", to: "/dashboard/org" },
     ],
   },
   {
@@ -117,15 +118,15 @@ const NAV_OPTIONS: readonly NavOptionGroup[] = [
     label: "Events & Workshops",
     to: "/events",
     highlightTag: "Instant Session Check-In",
-    highlightCopy: "Reserve workshop seats and check in via QR or campus pass.",
+    highlightCopy: "Reserve workshop seats and check in via QR or camera scanner.",
     imageSrc: "/images/hero/hero-workshop-hall.jpg",
     imageAlt: "Students attending a hands-on technical workshop in a university auditorium",
     imagePosition: "object-center",
     subOptions: [
       { label: "Discover University Events", to: "/events" },
-      { label: "Register for Workshops", to: "/events" },
-      { label: "Participate in Competitions", to: "/events" },
-      { label: "Event Sessions Schedule", to: "/events" },
+      { label: "Register for Workshops", to: "/events?type=Workshop" },
+      { label: "Participate in Competitions", to: "/events?type=Competition" },
+      { label: "Hybrid & Online Sessions", to: "/events?deliveryMode=Hybrid" },
       { label: "Verify Attendance Check-In", to: "/check-in" },
     ],
   },
@@ -142,8 +143,8 @@ const NAV_OPTIONS: readonly NavOptionGroup[] = [
       { label: "Points & Level System", to: "/gamification" },
       { label: "Badges & Achievements", to: "/gamification" },
       { label: "Campus Leaderboards", to: "/leaderboard" },
-      { label: "Badge Unlock Criteria", to: "/gamification" },
       { label: "Notifications Inbox", to: "/notifications" },
+      { label: "My Activity Dashboard", to: "/dashboard/student" },
     ],
   },
 ];
@@ -165,6 +166,7 @@ const MOBILE_NAV_MODULES: readonly MobileNavModuleGroup[] = [
       { label: "Create a Project", to: "/projects/new" },
       { label: "Skills Catalog", to: "/skills" },
       { label: "Search Teammates", to: "/students" },
+      { label: "My Role Dashboard", to: "/dashboard" },
     ],
   },
   {
@@ -176,6 +178,7 @@ const MOBILE_NAV_MODULES: readonly MobileNavModuleGroup[] = [
       { label: "Profile Studio", to: "/profile/me" },
       { label: "Skills & Proficiency", to: "/skills" },
       { label: "XP & Score Ledger", to: "/gamification" },
+      { label: "Privacy & Policy", to: "/privacy" },
     ],
   },
   {
@@ -184,7 +187,9 @@ const MOBILE_NAV_MODULES: readonly MobileNavModuleGroup[] = [
     highlightTag: "50+ Campus Chapters",
     items: [
       { label: "Organizations Directory", to: "/organizations" },
-      { label: "Campus Events", to: "/events" },
+      { label: "Open & Independent Communities", to: "/organizations?scope=Independent" },
+      { label: "Recruiting Now", to: "/organizations?scope=recruiting" },
+      { label: "Org Leader Dashboard", to: "/dashboard/org" },
     ],
   },
   {
@@ -193,6 +198,7 @@ const MOBILE_NAV_MODULES: readonly MobileNavModuleGroup[] = [
     highlightTag: "Session Check-In",
     items: [
       { label: "Discover Events", to: "/events" },
+      { label: "Workshops", to: "/events?type=Workshop" },
       { label: "Verify Check-In", to: "/check-in" },
     ],
   },
@@ -221,8 +227,7 @@ interface GlidingPillRect {
 }
 
 export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
-  const { user, isAuthenticated, isPlatformAdmin, logout } = useAuth();
-  const { locale, toggleLocale, t } = useI18n();
+  const { user, isAuthenticated, isPlatformAdmin, isOrgAdmin, orgAdminIds, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -618,7 +623,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
             );
           })}
 
-          {isPlatformAdmin && (
+          {isPlatformAdmin ? (
             <NavLink
               to="/admin"
               className={({ isActive }) =>
@@ -635,6 +640,25 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
               <Shield className="size-3.5 shrink-0" aria-hidden="true" />
               Admin
             </NavLink>
+          ) : (
+            isAuthenticated && (
+              <NavLink
+                to={isOrgAdmin || orgAdminIds.length > 0 ? "/dashboard/org" : "/dashboard"}
+                className={({ isActive }) =>
+                  cn(
+                    "relative z-10 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-[10px] px-1.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] xl:px-2.5 xl:text-[13.5px]",
+                    isActive
+                      ? "bg-[#d3fb52] font-semibold text-[#14151c]"
+                      : isScrolled
+                        ? "text-[#14151c] hover:bg-black/5"
+                        : "text-[#d3fb52]/90 hover:bg-white/10 hover:text-[#d3fb52]",
+                  )
+                }
+              >
+                <LayoutDashboard className="size-3.5 shrink-0" aria-hidden="true" />
+                Dashboard
+              </NavLink>
+            )
           )}
 
           {/* Shared Handshake 3D Perspective Fold-In / Fold-Out Photo Mega-Panel */}
@@ -768,12 +792,12 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
           )}
         </nav>
 
-        {/* Right Zone: Command Palette, Language Switch, Auth / User Controls */}
+        {/* Right Zone: Command Palette, Auth / User Controls */}
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => dispatchOpenCommandPalette()}
-            aria-label={t("nav.searchHint")}
+            aria-label="Quick search command palette"
             title="Ctrl+K"
             className={cn(
               "hidden h-9 cursor-pointer items-center gap-1.5 rounded-xl border px-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] md:inline-flex",
@@ -786,21 +810,6 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
             <kbd className="hidden rounded border border-current/20 px-1 font-mono text-[10px] opacity-75 xl:inline">
               Ctrl K
             </kbd>
-          </button>
-
-          <button
-            type="button"
-            onClick={toggleLocale}
-            aria-label={locale === "en" ? "Switch language to Arabic" : "Switch language to English"}
-            className={cn(
-              "inline-flex h-9 cursor-pointer items-center gap-1 rounded-xl border px-2 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
-              isScrolled
-                ? "border-black/15 bg-black/5 text-[#14151c] hover:border-black/30"
-                : "border-white/15 bg-[#1b1d26]/90 text-white/90 hover:border-[#d3fb52]/40",
-            )}
-          >
-            <Languages className="size-3.5 shrink-0" aria-hidden="true" />
-            <span>{locale === "en" ? "AR" : "EN"}</span>
           </button>
 
           {isAuthenticated && user ? (
@@ -1027,25 +1036,67 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                 );
               })}
 
-              {isPlatformAdmin && (
-                <NavLink
-                  to="/admin"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex min-h-[44px] items-center justify-between gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
-                      isActive
-                        ? "border-[#d3fb52] bg-[#d3fb52] text-[#14151c]"
-                        : "border-[#d3fb52]/30 bg-[#d3fb52]/[0.08] text-[#d3fb52] hover:bg-[#d3fb52]/15",
-                    )
-                  }
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <Shield className="size-4" aria-hidden="true" />
-                    Admin Console
-                  </span>
-                  <ArrowUpRight className="size-4 opacity-70" aria-hidden="true" />
-                </NavLink>
+              {isPlatformAdmin ? (
+                <div className="space-y-1.5 rounded-xl border border-[#d3fb52]/30 bg-[#d3fb52]/[0.06] p-2.5">
+                  <NavLink
+                    to="/admin"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex min-h-[42px] items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+                        isActive
+                          ? "bg-[#d3fb52] text-[#14151c]"
+                          : "text-[#d3fb52] hover:bg-[#d3fb52]/15",
+                      )
+                    }
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <Shield className="size-4" aria-hidden="true" />
+                      Admin Console
+                    </span>
+                    <ArrowUpRight className="size-4 opacity-70" aria-hidden="true" />
+                  </NavLink>
+                  <div className="grid grid-cols-2 gap-1">
+                    {[
+                      { label: "Catalog", to: "/admin/catalog" },
+                      { label: "Roles", to: "/admin/roles" },
+                      { label: "Archive", to: "/admin/restore" },
+                      { label: "Audit Logs", to: "/admin/audit-logs" },
+                      { label: "Comms & Reports", to: "/admin/communications" },
+                      { label: "Org Command", to: "/dashboard/org" },
+                    ].map((adminLink) => (
+                      <NavLink
+                        key={adminLink.to}
+                        to={adminLink.to}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-white/80 hover:bg-white/[0.07] hover:text-white"
+                      >
+                        {adminLink.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                isAuthenticated && (
+                  <NavLink
+                    to={isOrgAdmin || orgAdminIds.length > 0 ? "/dashboard/org" : "/dashboard"}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex min-h-[44px] items-center justify-between gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+                        isActive
+                          ? "border-[#d3fb52] bg-[#d3fb52] text-[#14151c]"
+                          : "border-[#d3fb52]/30 bg-[#d3fb52]/[0.08] text-[#d3fb52] hover:bg-[#d3fb52]/15",
+                      )
+                    }
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <LayoutDashboard className="size-4" aria-hidden="true" />
+                      My Role Dashboard
+                    </span>
+                    <ArrowUpRight className="size-4 opacity-70" aria-hidden="true" />
+                  </NavLink>
+                )
               )}
             </nav>
 

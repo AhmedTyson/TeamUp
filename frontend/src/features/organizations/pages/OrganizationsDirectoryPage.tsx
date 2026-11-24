@@ -20,24 +20,22 @@ import {
 } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useUniversityCatalog } from "@/features/catalog/useUniversityCatalogFallback";
-import { useI18n, type MessageKey } from "@/lib/i18n";
 import { OrganizationFormModal } from "../components/OrganizationFormModal";
 import { OrganizationMark } from "../components/OrganizationMark";
 import { useOrganizationMutations, useOrganizations } from "../hooks/useOrganizationHooks";
 import { ORGANIZATION_CATEGORIES } from "../schemas/organizationSchemas";
 
-const SCOPE_FILTERS: readonly { value: string; labelKey: MessageKey; scope?: OrganizationScope; recruitingOnly?: boolean }[] = [
-  { value: "", labelKey: "orgs.scope.all" },
-  { value: ORGANIZATION_SCOPES.UniversityBranch, labelKey: "orgs.scope.UniversityBranch", scope: ORGANIZATION_SCOPES.UniversityBranch },
-  { value: ORGANIZATION_SCOPES.CrossUniversity, labelKey: "orgs.scope.CrossUniversity", scope: ORGANIZATION_SCOPES.CrossUniversity },
-  { value: ORGANIZATION_SCOPES.Independent, labelKey: "orgs.scope.Independent", scope: ORGANIZATION_SCOPES.Independent },
-  { value: "recruiting", labelKey: "orgs.scope.recruiting", recruitingOnly: true },
+const SCOPE_FILTERS: readonly { value: string; label: string; scope?: OrganizationScope; recruitingOnly?: boolean }[] = [
+  { value: "", label: "All scopes" },
+  { value: ORGANIZATION_SCOPES.UniversityBranch, label: "University Branches", scope: ORGANIZATION_SCOPES.UniversityBranch },
+  { value: ORGANIZATION_SCOPES.CrossUniversity, label: "Cross-University", scope: ORGANIZATION_SCOPES.CrossUniversity },
+  { value: ORGANIZATION_SCOPES.Independent, label: "Open / Independent", scope: ORGANIZATION_SCOPES.Independent },
+  { value: "recruiting", label: "Recruiting Now", recruitingOnly: true },
 ];
 
 export function OrganizationsDirectoryPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const { t } = useI18n();
 
   const searchParam = params.get("search") ?? "";
   const category = params.get("category") ?? "";
@@ -94,15 +92,15 @@ export function OrganizationsDirectoryPage() {
     <div className="space-y-7">
       <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(ellipse_at_80%_0%,rgba(83,152,134,0.35),transparent_50%),linear-gradient(135deg,#1b1d26,#14151c)] p-6 shadow-2xl sm:p-9">
         <div className="max-w-3xl space-y-3">
-          <Badge variant="accent">{t("orgs.eyebrow")}</Badge>
+          <Badge variant="accent">Activities &amp; Open Communities</Badge>
           <h1
             className="text-4xl font-bold uppercase leading-[0.95] text-[#d3fb52] sm:text-6xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            {t("orgs.title")}
+            Find your people.
           </h1>
           <p className="max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base">
-            {t("orgs.subtitle")}
+            Explore university student branches, cross-campus initiatives, and open independent tech communities across Egypt.
           </p>
           {canCreate && (
             <div className="pt-1">
@@ -110,7 +108,7 @@ export function OrganizationsDirectoryPage() {
                 onClick={() => setCreateOpen(true)}
                 leftIcon={<Plus className="size-4" />}
               >
-                {t("orgs.create")}
+                Create organization
               </Button>
             </div>
           )}
@@ -128,7 +126,7 @@ export function OrganizationsDirectoryPage() {
             value={searchDraft}
             onChange={setSearchDraft}
             onDebouncedChange={(val) => updateFilter("search", val.trim())}
-            placeholder={t("orgs.searchPlaceholder")}
+            placeholder="Search communities, chapters, cities, or focus…"
             aria-label="Search organizations"
           />
 
@@ -158,7 +156,7 @@ export function OrganizationsDirectoryPage() {
                     : "cursor-pointer rounded-full border border-white/12 bg-[#14151c] px-3.5 py-1.5 text-xs font-semibold text-white/75 transition-colors hover:border-[#d3fb52]/40 hover:text-white"
                 }
               >
-                {t(item.labelKey)}
+                {item.label}
               </button>
             );
           })}

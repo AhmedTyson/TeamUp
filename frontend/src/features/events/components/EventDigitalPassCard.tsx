@@ -7,7 +7,6 @@ import { QRCodeSVG } from "qrcode.react";
 import type { EventSummary, RegistrationStatus } from "@/api";
 import { Badge, Button, StatusPill } from "@/components/ui";
 import { downloadEventIcs } from "@/lib/calendarExport";
-import { useI18n } from "@/lib/i18n";
 import { isSafeHttpUrl } from "@/lib/urlValidation";
 
 export interface EventDigitalPassCardProps {
@@ -25,7 +24,6 @@ export function EventDigitalPassCard({
   status,
   sessionsAttendedCount = 0,
 }: EventDigitalPassCardProps) {
-  const { t } = useI18n();
   const ticketPayload = JSON.stringify({
     eventId: event.eventId,
     studentId: studentId ?? 0,
@@ -43,7 +41,7 @@ export function EventDigitalPassCard({
         <div className="flex items-center gap-2">
           <Ticket className="size-4 text-[#d3fb52]" aria-hidden="true" />
           <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#d3fb52]">
-            {t("events.digitalPass")}
+            TeamUp Digital Pass
           </span>
         </div>
         {status ? (
@@ -101,7 +99,7 @@ export function EventDigitalPassCard({
             leftIcon={<CalendarPlus className="size-3.5" />}
             onClick={() => downloadEventIcs(event)}
           >
-            {t("events.downloadIcs")}
+            Add to Calendar (.ics)
           </Button>
 
           {showMeetingUrl && (

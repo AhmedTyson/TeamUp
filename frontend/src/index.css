@@ -965,7 +965,3 @@ body {
 .is-footer-looping .footer-ambient-glow {
   animation: footerGlowBreathe 4.2s ease-in-out infinite;
 }
-
-html[dir="rtl"] body {
-  font-family: "Cairo", "IBM Plex Sans Arabic", "Segoe UI", Tahoma, "DM Sans", sans-serif;
-}

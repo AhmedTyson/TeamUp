@@ -23,7 +23,6 @@ import {
   useOrganizations,
 } from "@/features/organizations";
 import { downloadEventIcs } from "@/lib/calendarExport";
-import { useI18n } from "@/lib/i18n";
 import { EventDigitalPassCard } from "../components/EventDigitalPassCard";
 import { EventFormModal } from "../components/EventFormModal";
 import { EventRegistrationsPanel } from "../components/EventRegistrationsPanel";
@@ -43,7 +42,6 @@ export function EventDetailPage() {
   const eventId = Number(rawId);
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useI18n();
   const { user, isAuthenticated, isPlatformAdmin, isOrgAdminOf, orgAdminIds } = useAuth();
 
   const isValidId = Number.isInteger(eventId) && eventId > 0;
@@ -299,7 +297,7 @@ export function EventDetailPage() {
               leftIcon={<CalendarPlus className="size-4" />}
               onClick={() => downloadEventIcs(event)}
             >
-              {t("events.downloadIcs")}
+              Add to Calendar (.ics)
             </Button>
 
             {isAuthenticated && (

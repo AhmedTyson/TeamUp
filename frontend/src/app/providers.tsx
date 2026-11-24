@@ -8,7 +8,6 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 import type { AuthStudentSummary } from "@/api";
 import { AuthProvider } from "@/features/auth";
-import { I18nProvider } from "@/lib/i18n";
 import { createAppQueryClient } from "@/lib/queryClient";
 
 export interface AppCoreProvidersProps {
@@ -29,26 +28,24 @@ export function AppCoreProviders({
   const client = providedClient ?? defaultClient;
 
   return (
-    <I18nProvider>
-      <QueryClientProvider client={client}>
-        <AuthProvider initialUser={initialUser}>
-          {children}
-          <Toaster
-            theme="dark"
-            position="bottom-right"
-            richColors
-            closeButton
-            toastOptions={{
-              style: {
-                background: "#1b1d26",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
-                color: "#ffffff",
-              },
-            }}
-          />
-        </AuthProvider>
-      </QueryClientProvider>
-    </I18nProvider>
+    <QueryClientProvider client={client}>
+      <AuthProvider initialUser={initialUser}>
+        {children}
+        <Toaster
+          theme="dark"
+          position="bottom-right"
+          richColors
+          closeButton
+          toastOptions={{
+            style: {
+              background: "#1b1d26",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              color: "#ffffff",
+            },
+          }}
+        />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

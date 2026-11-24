@@ -43,6 +43,21 @@ const NotificationsInboxPage = lazy(() =>
     default: m.NotificationsInboxPage,
   })),
 );
+const RoleDashboardRouterPage = lazy(() =>
+  import("@/features/dashboard").then((m) => ({
+    default: m.RoleDashboardRouterPage,
+  })),
+);
+const StudentDashboardPage = lazy(() =>
+  import("@/features/dashboard").then((m) => ({
+    default: m.StudentDashboardPage,
+  })),
+);
+const OrgAdminDashboardPage = lazy(() =>
+  import("@/features/dashboard").then((m) => ({
+    default: m.OrgAdminDashboardPage,
+  })),
+);
 
 export const communityRoutes: RouteObject[] = [
   {
@@ -87,6 +102,18 @@ export const communityRoutes: RouteObject[] = [
       {
         path: "notifications",
         element: <NotificationsInboxPage />,
+      },
+      {
+        path: "dashboard",
+        element: <RoleDashboardRouterPage />,
+      },
+      {
+        path: "dashboard/student",
+        element: <StudentDashboardPage />,
+      },
+      {
+        path: "dashboard/org",
+        element: <OrgAdminDashboardPage />,
       },
     ],
   },

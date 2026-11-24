@@ -15,12 +15,13 @@ import {
 import { useAuth } from "@/features/auth/AuthContext";
 import { invalidateGamification, queryKeys } from "@/lib/queryKeys";
 
-export function useEvents(params: EventListParams) {
+export function useEvents(params: EventListParams, enabled = true) {
   const { isAuthenticated } = useAuth();
   return useQuery({
     queryKey: [...queryKeys.events.list(params), isAuthenticated],
     queryFn: ({ signal }) =>
       isAuthenticated ? eventsApi.list(params, signal) : eventsApi.publicList(params, signal),
+    enabled,
   });
 }
 
