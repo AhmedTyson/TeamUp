@@ -2,11 +2,21 @@
  * @date 2026-11-24
  * @purpose Flexible Egyptian Activities & Open Tech Communities Hub with Scope filters, single category strip, university selector, zero-overlap SpotlightCards, and OrgAdmin create modal.
  */
-import { Building2, ExternalLink, Layers, MapPin, Plus, Sparkles, Users } from "lucide-react";
+import {
+  Building2,
+  ExternalLink,
+  Layers,
+  MapPin,
+  Plus,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ORGANIZATION_SCOPES, type OrganizationScope } from "@/api";
+import { APPLICATION_STATUSES, ORGANIZATION_SCOPES, type OrganizationScope } from "@/api";
 import {
   Badge,
   Button,
@@ -17,12 +27,19 @@ import {
   Select,
   SkeletonCard,
   SpotlightCard,
+  StatusPill,
 } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useUniversityCatalog } from "@/features/catalog/useUniversityCatalogFallback";
+import { formatDateTime } from "@/lib/formatters";
 import { OrganizationFormModal } from "../components/OrganizationFormModal";
 import { OrganizationMark } from "../components/OrganizationMark";
-import { useOrganizationMutations, useOrganizations } from "../hooks/useOrganizationHooks";
+import { OrganizationRequestModal } from "../components/OrganizationRequestModal";
+import {
+  useMyOrganizationCreationRequests,
+  useOrganizationMutations,
+  useOrganizations,
+} from "../hooks/useOrganizationHooks";
 import { ORGANIZATION_CATEGORIES } from "../schemas/organizationSchemas";
 
 const SCOPE_FILTERS: readonly { value: string; label: string; scope?: OrganizationScope; recruitingOnly?: boolean }[] = [
@@ -45,10 +62,13 @@ export function OrganizationsDirectoryPage() {
 
   const [searchDraft, setSearchDraft] = useState(searchParam);
   const [createOpen, setCreateOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(params.get("request") === "1");
 
-  const { isOrgAdmin, isPlatformAdmin } = useAuth();
-  const canCreate = isOrgAdmin || isPlatformAdmin;
+  const { isAuthenticated, isPlatformAdmin } = useAuth();
+  const canCreate = isPlatformAdmin;
+  const canRequest = isAuthenticated && !isPlatformAdmin;
   const { universities } = useUniversityCatalog();
+  const myRequestsQuery = useMyOrganizationCreationRequests(canRequest);
 
   const activeScopeSpec = SCOPE_FILTERS.find((s) => s.value === scopeFilter);
 
@@ -102,14 +122,32 @@ export function OrganizationsDirectoryPage() {
           <p className="max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base">
             Explore university student branches, cross-campus initiatives, and open independent tech communities across Egypt.
           </p>
-          {canCreate && (
-            <div className="pt-1">
-              <Button
-                onClick={() => setCreateOpen(true)}
-                leftIcon={<Plus className="size-4" />}
-              >
-                Create organization
-              </Button>
+          {(canCreate || canRequest) && (
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              {canCreate && (
+                <>
+                  <Button
+                    onClick={() => setCreateOpen(true)}
+                    leftIcon={<Plus className="size-4" />}
+                  >
+                    Create organization
+                  </Button>
+                  <Link
+                    to="/admin/organization-requests"
+                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:border-[#d3fb52]/40 hover:text-[#d3fb52]"
+                  >
+                    Review Org Requests
+                  </Link>
+                </>
+              )}
+              {canRequest && (
+                <Button
+                  onClick={() => setRequestOpen(true)}
+                  leftIcon={<Send className="size-4" />}
+                >
+                  Request new organization
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -290,6 +328,100 @@ export function OrganizationsDirectoryPage() {
           setCreateOpen(false);
           toast.success("Organization created.");
           navigate(`/organizations/${created.organizationId}`);
+        }}
+      />
+
+      {canRequest && myRequestsQuery.data && myRequestsQuery.data.length > 0 && (
+        <section
+          aria-label="My organization creation requests"
+          className="space-y-3 rounded-3xl border border-white/[0.085] bg-[#1b1d26] p-4 sm:p-6"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-bold text-white">My Organization Requests</h2>
+              <p className="text-xs text-[#9ca3af]">
+                Proposals reviewed by Platform Admins. Approved proposals promote you to Organization Admin.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {myRequestsQuery.data.map((req) => (
+              <div
+                key={req.requestId}
+                className="flex flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-[#14151c] p-4"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-semibold text-white">{req.name}</span>
+                    <StatusPill status={req.status} />
+                  </div>
+                  <p className="text-xs text-[#9ca3af]">
+                    {req.category} · {req.scope} · Submitted {formatDateTime(req.requestedAt)}
+                  </p>
+                  {req.reviewNotes && (
+                    <p className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-xs text-white/80">
+                      Admin note: {req.reviewNotes}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.07] pt-2.5">
+                  {req.status === APPLICATION_STATUSES.Pending && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      isLoading={mutations.withdrawCreationRequest.isPending}
+                      onClick={async () => {
+                        await mutations.withdrawCreationRequest.mutateAsync(req.requestId);
+                        toast.info("Organization request withdrawn.");
+                      }}
+                    >
+                      Withdraw request
+                    </Button>
+                  )}
+                  {req.status === APPLICATION_STATUSES.Accepted && req.createdOrganizationId && (
+                    <div className="flex w-full flex-wrap items-center justify-between gap-2">
+                      <Badge variant="success" size="sm">
+                        <ShieldCheck className="me-1 size-3" aria-hidden="true" />
+                        OrgAdmin Promoted
+                      </Badge>
+                      <Link
+                        to={`/organizations/${req.createdOrganizationId}`}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#d3fb52] hover:underline"
+                      >
+                        Open Organization <ExternalLink className="size-3" aria-hidden="true" />
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <OrganizationRequestModal
+        open={requestOpen}
+        onClose={() => {
+          setRequestOpen(false);
+          if (params.get("request")) {
+            const next = new URLSearchParams(params);
+            next.delete("request");
+            setParams(next, { replace: true });
+          }
+        }}
+        isSubmitting={mutations.submitCreationRequest.isPending}
+        onSubmitProposal={async (payload) => {
+          await mutations.submitCreationRequest.mutateAsync(payload);
+          setRequestOpen(false);
+          if (params.get("request")) {
+            const next = new URLSearchParams(params);
+            next.delete("request");
+            setParams(next, { replace: true });
+          }
+          toast.success(
+            "Organization request submitted! Once accepted by an admin, you will automatically become Organization Admin.",
+          );
         }}
       />
     </div>

@@ -175,6 +175,18 @@ export function CommandPalette() {
               to: "/dashboard/student",
               icon: "dashboard" as const,
             },
+            ...(!isPlatformAdmin
+              ? [
+                  {
+                    id: "route-request-org",
+                    section: "Student Activities",
+                    label: "Request New Organization",
+                    subtitle: "/organizations?request=1",
+                    to: "/organizations?request=1",
+                    icon: "org" as const,
+                  },
+                ]
+              : []),
           ]
         : []),
       ...(canLeadOrg
@@ -197,6 +209,14 @@ export function CommandPalette() {
               label: "Admin Overview Dashboard",
               subtitle: "/admin",
               to: "/admin",
+              icon: "admin" as const,
+            },
+            {
+              id: "route-admin-org-requests",
+              section: "Platform Admin",
+              label: "Admin · Organization Requests",
+              subtitle: "/admin/organization-requests",
+              to: "/admin/organization-requests",
               icon: "admin" as const,
             },
             {

@@ -169,3 +169,46 @@ public sealed record OrganizationParticipantDto(
     int SessionsAttendedCount,
     string? LastEventTitle,
     DateTime? LastActiveAt);
+
+public sealed record CreateOrganizationProposalRequest(
+    string Name,
+    string Description,
+    string Category,
+    string? LogoUrl,
+    OrganizationScope Scope = OrganizationScope.UniversityBranch,
+    int? UniversityId = null,
+    string? City = null,
+    string? CoverImageUrl = null,
+    string? WebsiteUrl = null,
+    string? CurrentSeasonName = null,
+    string? Justification = null);
+
+public sealed record ReviewOrganizationProposalRequest(
+    bool Approve,
+    string? ReviewNotes = null);
+
+public sealed record OrganizationCreationRequestDto(
+    int RequestId,
+    int RequesterStudentId,
+    string RequesterName,
+    string RequesterEmail,
+    string? RequesterUniversityName,
+    string Name,
+    string Description,
+    string Category,
+    string? LogoUrl,
+    OrganizationScope Scope,
+    int? UniversityId,
+    string? UniversityName,
+    string? City,
+    string? CoverImageUrl,
+    string? WebsiteUrl,
+    string? CurrentSeasonName,
+    string? Justification,
+    ApplicationStatus Status,
+    DateTime RequestedAt,
+    DateTime? ReviewedAt,
+    int? ReviewedByStudentId,
+    string? ReviewedByName,
+    string? ReviewNotes,
+    int? CreatedOrganizationId);

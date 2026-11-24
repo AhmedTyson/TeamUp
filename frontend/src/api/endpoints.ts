@@ -78,6 +78,9 @@ export const API_ENDPOINTS = {
     publicById: (id: number) => `${V1}/organizations/public/${id}`,
     publicHierarchy: (id: number) => `${V1}/organizations/public/${id}/hierarchy`,
     myApplications: `${V1}/organizations/my-applications`,
+    requests: `${V1}/organizations/requests`,
+    myRequests: `${V1}/organizations/requests/my`,
+    requestById: (id: number) => `${V1}/organizations/requests/${id}`,
     byId: (id: number) => `${V1}/organizations/${id}`,
     members: (id: number) => `${V1}/organizations/${id}/members`,
     member: (id: number, studentId: number) => `${V1}/organizations/${id}/members/${studentId}`,
@@ -136,5 +139,8 @@ export const API_ENDPOINTS = {
       `${V1}/admin/templates/preview/${encodeURIComponent(templateName)}`,
     leaderboardDigest: `${V1}/admin/communications/leaderboard-digest`,
     projectMatchDigest: `${V1}/admin/communications/project-matches`,
+    organizationRequests: `${V1}/admin/organization-requests`,
+    reviewOrganizationRequest: (requestId: number) =>
+      `${V1}/admin/organization-requests/${requestId}/review`,
   },
 } as const;

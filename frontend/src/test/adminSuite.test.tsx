@@ -9,6 +9,9 @@ import {
   adminApi,
   apiClient,
   ApiClientError,
+  APPLICATION_STATUSES,
+  ORGANIZATION_SCOPES,
+  organizationsApi,
   universitiesApi,
   USER_ROLES,
   type AuthStudentSummary,
@@ -19,9 +22,11 @@ import {
   AdminCatalogPage,
   AdminCommunicationsPage,
   AdminDashboardPage,
+  AdminOrganizationRequestsPage,
   AdminRestorePage,
   AdminRolesPage,
 } from "@/features/admin";
+import { OrganizationsDirectoryPage } from "@/features/organizations";
 
 const ADMIN_USER: AuthStudentSummary = {
   studentId: 1,
@@ -501,6 +506,166 @@ describe("M1 Phase 2 — PlatformAdmin Governance Suite", () => {
     fireEvent.click(screen.getByRole("button", { name: /send opt-in broadcast/i }));
     await waitFor(() => {
       expect(digestSpy).toHaveBeenCalledWith(expect.objectContaining({ mode: "Broadcast" }));
+    });
+  });
+
+  it("AdminOrganizationRequestsPage reviews pending organization requests to approve & promote to OrgAdmin or reject", async () => {
+    const pendingItem = {
+      requestId: 42,
+      requesterStudentId: 17,
+      requesterName: "Nourhan Ashraf",
+      requesterEmail: "nourhan@helwan.edu.eg",
+      requesterUniversityName: "Helwan University",
+      name: "Pixels Helwan Student Activity",
+      description: "Engineering design & embedded workshops for Helwan University.",
+      category: "Technology",
+      logoUrl: null,
+      scope: ORGANIZATION_SCOPES.UniversityBranch,
+      universityId: 13,
+      universityName: "Helwan University",
+      city: "Helwan, Cairo",
+      coverImageUrl: null,
+      websiteUrl: "https://pixels-helwan.org",
+      currentSeasonName: "Season 2026",
+      justification: "Sponsored by Helwan Engineering.",
+      status: APPLICATION_STATUSES.Pending,
+      requestedAt: "2026-11-24T12:00:00Z",
+      reviewedAt: null,
+      reviewedByStudentId: null,
+      reviewedByName: null,
+      reviewNotes: null,
+      createdOrganizationId: null,
+    };
+
+    vi.spyOn(adminApi, "getOrganizationRequests").mockResolvedValue({
+      items: [pendingItem],
+      page: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPages: 1,
+    });
+    const reviewSpy = vi.spyOn(adminApi, "reviewOrganizationRequest").mockResolvedValue({
+      ...pendingItem,
+      status: APPLICATION_STATUSES.Accepted,
+      createdOrganizationId: 77,
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/admin/organization-requests"]}>
+        <AppCoreProviders initialUser={ADMIN_USER}>
+          <AdminOrganizationRequestsPage />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Pixels Helwan Student Activity")).toBeInTheDocument();
+    expect(screen.getByText(/Nourhan Ashraf/i)).toBeInTheDocument();
+
+    const notesInput = screen.getByLabelText(/Admin review notes/i);
+    fireEvent.change(notesInput, { target: { value: "Approved charter." } });
+    fireEvent.click(screen.getByRole("button", { name: /Approve & Promote to OrgAdmin/i }));
+
+    await waitFor(() => {
+      expect(reviewSpy).toHaveBeenCalledWith(42, {
+        approve: true,
+        reviewNotes: "Approved charter.",
+      });
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /^Reject$/i }));
+    await waitFor(() => {
+      expect(reviewSpy).toHaveBeenCalledWith(42, {
+        approve: false,
+        reviewNotes: "Approved charter.",
+      });
+    });
+  });
+
+  it("OrganizationsDirectoryPage allows a Student to submit an organization creation request", async () => {
+    const studentUser: AuthStudentSummary = {
+      studentId: 88,
+      firstName: "Ziad",
+      lastName: "Hossam",
+      email: "ziad@bis.helwan.edu.eg",
+      academicYear: 3,
+      role: USER_ROLES.Student,
+      facultyId: 25,
+      facultyName: "Business Information Systems (BIS)",
+      universityName: "Helwan University",
+    };
+
+    vi.spyOn(organizationsApi, "list").mockResolvedValue({
+      items: [],
+      page: 1,
+      pageSize: 9,
+      totalCount: 0,
+      totalPages: 1,
+    });
+    vi.spyOn(organizationsApi, "myCreationRequests").mockResolvedValue([]);
+    vi.spyOn(universitiesApi, "getCatalog").mockResolvedValue([
+      {
+        universityId: 13,
+        name: "Helwan University",
+        city: "Cairo",
+        country: "Egypt",
+        website: "https://helwan.edu.eg",
+        logoUrl: null,
+        faculties: [{ facultyId: 25, name: "Business Information Systems (BIS)", code: "BIS_HU" }],
+      },
+    ]);
+    const submitSpy = vi.spyOn(organizationsApi, "submitCreationRequest").mockResolvedValue({
+      requestId: 51,
+      requesterStudentId: 88,
+      requesterName: "Ziad Hossam",
+      requesterEmail: "ziad@bis.helwan.edu.eg",
+      requesterUniversityName: "Helwan University",
+      name: "FinTech BIS Society",
+      description: "Financial systems & BI workshops at Helwan BIS.",
+      category: "Technology",
+      logoUrl: null,
+      scope: ORGANIZATION_SCOPES.UniversityBranch,
+      universityId: 13,
+      universityName: "Helwan University",
+      city: null,
+      coverImageUrl: null,
+      websiteUrl: null,
+      currentSeasonName: null,
+      justification: null,
+      status: APPLICATION_STATUSES.Pending,
+      requestedAt: "2026-11-25T00:00:00Z",
+      reviewedAt: null,
+      reviewedByStudentId: null,
+      reviewedByName: null,
+      reviewNotes: null,
+      createdOrganizationId: null,
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/organizations"]}>
+        <AppCoreProviders initialUser={studentUser}>
+          <OrganizationsDirectoryPage />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    const requestBtn = await screen.findByRole("button", { name: /Request new organization/i });
+    fireEvent.click(requestBtn);
+
+    fireEvent.change(screen.getByLabelText(/Proposed organization name/i), {
+      target: { value: "FinTech BIS Society" },
+    });
+    fireEvent.change(screen.getByLabelText(/Mission & chapters overview/i), {
+      target: { value: "Financial systems & BI workshops at Helwan BIS." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Submit request/i }));
+
+    await waitFor(() => {
+      expect(submitSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "FinTech BIS Society",
+          description: "Financial systems & BI workshops at Helwan BIS.",
+        }),
+      );
     });
   });
 });

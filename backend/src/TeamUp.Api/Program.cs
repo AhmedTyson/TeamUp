@@ -383,7 +383,11 @@ if (autoMigrate || seedEnabled || syncEcosystemCatalog)
             "ALTER TABLE Event ADD COLUMN DeliveryMode TEXT NOT NULL DEFAULT 'InPerson';",
             "ALTER TABLE Event ADD COLUMN IsPublic INTEGER NOT NULL DEFAULT 1;",
             "ALTER TABLE Event ADD COLUMN MeetingUrl TEXT NULL;",
-            "ALTER TABLE Event ADD COLUMN OrganizationUnitId INTEGER NULL;"
+            "ALTER TABLE Event ADD COLUMN OrganizationUnitId INTEGER NULL;",
+            "CREATE TABLE IF NOT EXISTS OrganizationCreationRequest (RequestId INTEGER PRIMARY KEY AUTOINCREMENT, RequesterStudentId INTEGER NOT NULL, Name TEXT NOT NULL, Description TEXT NOT NULL, Category TEXT NOT NULL, Scope TEXT NOT NULL DEFAULT 'UniversityBranch', UniversityId INTEGER NULL, City TEXT NULL, LogoUrl TEXT NULL, CoverImageUrl TEXT NULL, WebsiteUrl TEXT NULL, CurrentSeasonName TEXT NULL, Justification TEXT NULL, Status TEXT NOT NULL DEFAULT 'Pending', RequestedAt TEXT NOT NULL DEFAULT (datetime('now')), ReviewedAt TEXT NULL, ReviewedByStudentId INTEGER NULL, ReviewNotes TEXT NULL, CreatedOrganizationId INTEGER NULL, DeletedAt TEXT NULL, FOREIGN KEY (RequesterStudentId) REFERENCES Student (StudentId), FOREIGN KEY (UniversityId) REFERENCES University (UniversityId), FOREIGN KEY (ReviewedByStudentId) REFERENCES Student (StudentId), FOREIGN KEY (CreatedOrganizationId) REFERENCES Organization (OrganizationId));",
+            "CREATE UNIQUE INDEX IF NOT EXISTS IX_OrganizationCreationRequest_RequesterStudentId_Name ON OrganizationCreationRequest (RequesterStudentId, Name) WHERE DeletedAt IS NULL AND Status = 'Pending';",
+            "CREATE INDEX IF NOT EXISTS IX_OrganizationCreationRequest_Status_RequestedAt ON OrganizationCreationRequest (Status, RequestedAt) WHERE DeletedAt IS NULL;",
+            "CREATE INDEX IF NOT EXISTS IX_OrganizationCreationRequest_RequesterStudentId ON OrganizationCreationRequest (RequesterStudentId);"
         };
         foreach (var sql in sqlitePatchStatements)
         {

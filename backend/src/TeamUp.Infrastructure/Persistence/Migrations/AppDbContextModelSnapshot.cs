@@ -552,6 +552,121 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TeamUp.Domain.Entities.OrganizationCreationRequest", b =>
+                {
+                    b.Property<int>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("CreatedOrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CurrentSeasonName")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Justification")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("RequesterStudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReviewNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReviewedByStudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("UniversityBranch");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<int?>("UniversityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WebsiteUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("CreatedOrganizationId");
+
+                    b.HasIndex("RequesterStudentId");
+
+                    b.HasIndex("ReviewedByStudentId");
+
+                    b.HasIndex("UniversityId");
+
+                    b.HasIndex("RequesterStudentId", "Name")
+                        .IsUnique()
+                        .HasFilter("[DeletedAt] IS NULL AND [Status] = 'Pending'");
+
+                    b.HasIndex("Status", "RequestedAt")
+                        .HasFilter("[DeletedAt] IS NULL");
+
+                    b.ToTable("OrganizationCreationRequest", t =>
+                        {
+                            t.HasCheckConstraint("CK_OrganizationCreationRequest_Scope", "[Scope] IN ('UniversityBranch', 'FacultyChapter', 'CrossUniversity', 'Independent', 'NationalNetwork')");
+
+                            t.HasCheckConstraint("CK_OrganizationCreationRequest_Status", "[Status] IN ('Pending', 'Accepted', 'Rejected', 'Withdrawn')");
+                        });
+                });
+
             modelBuilder.Entity("TeamUp.Domain.Entities.OrganizationMember", b =>
                 {
                     b.Property<int>("OrganizationId")
@@ -1389,6 +1504,38 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UniversityId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("University");
+                });
+
+            modelBuilder.Entity("TeamUp.Domain.Entities.OrganizationCreationRequest", b =>
+                {
+                    b.HasOne("TeamUp.Domain.Entities.Organization", "CreatedOrganization")
+                        .WithMany()
+                        .HasForeignKey("CreatedOrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TeamUp.Domain.Entities.Student", "RequesterStudent")
+                        .WithMany()
+                        .HasForeignKey("RequesterStudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TeamUp.Domain.Entities.Student", "ReviewedByStudent")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByStudentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TeamUp.Domain.Entities.University", "University")
+                        .WithMany()
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedOrganization");
+
+                    b.Navigation("RequesterStudent");
+
+                    b.Navigation("ReviewedByStudent");
 
                     b.Navigation("University");
                 });

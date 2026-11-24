@@ -5,6 +5,7 @@
 import {
   Building2,
   ClipboardList,
+  Inbox,
   LayoutDashboard,
   Mail,
   RotateCcw,
@@ -24,6 +25,7 @@ export interface AdminConsoleLayoutProps {
 
 const ADMIN_TABS = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "/admin/organization-requests", label: "Org Requests", icon: Inbox, end: false },
   { to: "/admin/catalog", label: "Academic Catalog", icon: Building2, end: false },
   { to: "/admin/roles", label: "Role Governance", icon: UserCog, end: false },
   { to: "/admin/restore", label: "Archive", icon: RotateCcw, end: false },

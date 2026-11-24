@@ -5,7 +5,11 @@
 import type { AuthStudentSummary } from "./auth.api";
 import { apiClient, fetchApiHtml, unwrapApiResponse } from "./client";
 import { API_ENDPOINTS } from "./endpoints";
-import type { RestorableEntityType, UserRole } from "./enums";
+import type { ApplicationStatus, RestorableEntityType, UserRole } from "./enums";
+import type {
+  OrganizationCreationRequest,
+  ReviewOrganizationProposalPayload,
+} from "./organizations.api";
 import type { ApiResponse, PagedResult } from "./types";
 
 export interface AdminDashboardStats {
@@ -16,6 +20,14 @@ export interface AdminDashboardStats {
   softDeletedUniversitiesCount: number;
   softDeletedFacultiesCount: number;
   roleDistribution: Record<string, number>;
+  pendingOrganizationRequestsCount?: number;
+}
+
+export interface OrganizationRequestQueryParams extends Record<string, unknown> {
+  status?: ApplicationStatus;
+  search?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface UpdateUserRolePayload {
@@ -261,6 +273,28 @@ export const adminApi = {
   ): Promise<DigestDispatchResultDto> {
     const res = await apiClient.post<ApiResponse<DigestDispatchResultDto>>(
       API_ENDPOINTS.admin.projectMatchDigest,
+      payload,
+    );
+    return unwrapApiResponse(res);
+  },
+
+  async getOrganizationRequests(
+    params?: OrganizationRequestQueryParams,
+    signal?: AbortSignal,
+  ): Promise<PagedResult<OrganizationCreationRequest>> {
+    const res = await apiClient.get<ApiResponse<PagedResult<OrganizationCreationRequest>>>(
+      API_ENDPOINTS.admin.organizationRequests,
+      { params, signal },
+    );
+    return unwrapApiResponse(res);
+  },
+
+  async reviewOrganizationRequest(
+    requestId: number,
+    payload: ReviewOrganizationProposalPayload,
+  ): Promise<OrganizationCreationRequest> {
+    const res = await apiClient.patch<ApiResponse<OrganizationCreationRequest>>(
+      API_ENDPOINTS.admin.reviewOrganizationRequest(requestId),
       payload,
     );
     return unwrapApiResponse(res);

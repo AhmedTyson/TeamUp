@@ -5,6 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   organizationsApi,
+  type CreateOrganizationProposalPayload,
   type OrganizationApplicationPayload,
   type OrganizationListParams,
   type OrganizationPayload,
@@ -73,6 +74,15 @@ export function useMyOrganizationApplications(enabled = true) {
   return useQuery({
     queryKey: queryKeys.organizations.myApplications,
     queryFn: ({ signal }) => organizationsApi.myApplications(signal),
+    enabled: isAuthenticated && enabled,
+  });
+}
+
+export function useMyOrganizationCreationRequests(enabled = true) {
+  const { isAuthenticated } = useAuth();
+  return useQuery({
+    queryKey: queryKeys.organizations.myCreationRequests,
+    queryFn: ({ signal }) => organizationsApi.myCreationRequests(signal),
     enabled: isAuthenticated && enabled,
   });
 }
@@ -199,6 +209,23 @@ export function useOrganizationMutations(organizationId?: number) {
     onSuccess: invalidateOrg,
   });
 
+  const submitCreationRequest = useMutation({
+    mutationFn: (payload: CreateOrganizationProposalPayload) =>
+      organizationsApi.submitCreationRequest(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.organizations.myCreationRequests });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+  });
+
+  const withdrawCreationRequest = useMutation({
+    mutationFn: (requestId: number) => organizationsApi.withdrawCreationRequest(requestId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.organizations.myCreationRequests });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+  });
+
   return {
     create,
     update,
@@ -212,5 +239,7 @@ export function useOrganizationMutations(organizationId?: number) {
     createUnit,
     updateUnit,
     deleteUnit,
+    submitCreationRequest,
+    withdrawCreationRequest,
   };
 }

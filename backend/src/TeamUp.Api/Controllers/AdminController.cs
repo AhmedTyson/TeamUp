@@ -12,6 +12,8 @@ using TeamUp.Application.Common;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Gamification;
+using TeamUp.Application.Organizations;
+using TeamUp.Domain.Enums;
 
 namespace TeamUp.Api.Controllers;
 
@@ -23,6 +25,7 @@ namespace TeamUp.Api.Controllers;
 [ProducesForbidden]
 public class AdminController(
     IAdminService adminService,
+    IOrganizationService organizationService,
     IAdminReportService reportService,
     IDigestDispatchService digestService,
     ITemplateRenderer templateRenderer,
@@ -168,6 +171,35 @@ public class AdminController(
             ct: ct);
 
         return OkResponse(result, "Project match digest processed.");
+    }
+
+    [HttpGet("organization-requests")]
+    [ProducesOk<PagedResult<OrganizationCreationRequestDto>>]
+    public async Task<IActionResult> GetOrganizationRequests(
+        [FromQuery] ApplicationStatus? status = null,
+        [FromQuery] string? search = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var result = await organizationService.GetAdminOrganizationCreationRequestsAsync(
+            status, search, new PageRequest(page, pageSize), ct);
+        return OkResponse(result);
+    }
+
+    [HttpPatch("organization-requests/{requestId:int}/review")]
+    [ProducesOk<OrganizationCreationRequestDto>, ProducesNotFound, ProducesConflict]
+    public async Task<IActionResult> ReviewOrganizationRequest(
+        [FromRoute] int requestId,
+        [FromBody] ReviewOrganizationProposalRequest request,
+        CancellationToken ct = default)
+    {
+        var result = await organizationService.ReviewOrganizationCreationRequestAsync(
+            requestId, CurrentStudentId, request, ct);
+        var message = request.Approve
+            ? "Organization approved and requester promoted to Organization Admin."
+            : "Organization request rejected.";
+        return OkResponse(result, message);
     }
 
     private string ResolveActorEmail() =>

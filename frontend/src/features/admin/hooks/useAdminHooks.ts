@@ -12,7 +12,9 @@ import {
   type AuditLogQueryParams,
   type CreateFacultyPayload,
   type CreateUniversityPayload,
+  type OrganizationRequestQueryParams,
   type RestorableEntityType,
+  type ReviewOrganizationProposalPayload,
   type SendAdminReportPayload,
   type UniversityListParams,
   type UpdateFacultyPayload,
@@ -230,6 +232,33 @@ export function useDispatchProjectMatchDigestMutation() {
       adminApi.dispatchProjectMatchDigest(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+  });
+}
+
+export function useAdminOrganizationRequestsQuery(params: OrganizationRequestQueryParams) {
+  return useQuery({
+    queryKey: queryKeys.admin.organizationRequests(params),
+    queryFn: ({ signal }) => adminApi.getOrganizationRequests(params, signal),
+  });
+}
+
+export function useReviewOrganizationRequestMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      requestId,
+      payload,
+    }: {
+      requestId: number;
+      payload: ReviewOrganizationProposalPayload;
+    }) => adminApi.reviewOrganizationRequest(requestId, payload),
+    onSuccess: () => {
+      void Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.admin.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.organizations.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.students.all }),
+      ]);
     },
   });
 }

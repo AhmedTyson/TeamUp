@@ -26,6 +26,8 @@ export {
   useSendPlatformReportMutation,
   useDispatchLeaderboardDigestMutation,
   useDispatchProjectMatchDigestMutation,
+  useAdminOrganizationRequestsQuery,
+  useReviewOrganizationRequestMutation,
 } from "./hooks/useAdminHooks";
 export {
   universityFormSchema,
@@ -43,3 +45,4 @@ export { AdminRolesPage } from "./pages/AdminRolesPage";
 export { AdminRestorePage } from "./pages/AdminRestorePage";
 export { AdminAuditLogsPage } from "./pages/AdminAuditLogsPage";
 export { AdminCommunicationsPage } from "./pages/AdminCommunicationsPage";
+export { AdminOrganizationRequestsPage } from "./pages/AdminOrganizationRequestsPage";

@@ -247,4 +247,30 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
         var result = await organizationService.GetParticipantsAsync(id, ct);
         return OkResponse(result);
     }
+
+    [HttpPost("requests")]
+    [ProducesCreated<OrganizationCreationRequestDto>]
+    [ProducesConflict, ProducesNotFound]
+    public async Task<IActionResult> SubmitOrganizationCreationRequest(
+        [FromBody] CreateOrganizationProposalRequest request, CancellationToken ct)
+    {
+        var result = await organizationService.SubmitOrganizationCreationRequestAsync(CurrentStudentId, request, ct);
+        return CreatedResponse(result, "Organization creation request submitted for PlatformAdmin approval.");
+    }
+
+    [HttpGet("requests/my")]
+    [ProducesOk<IReadOnlyList<OrganizationCreationRequestDto>>]
+    public async Task<IActionResult> GetMyOrganizationCreationRequests(CancellationToken ct)
+    {
+        var result = await organizationService.GetMyOrganizationCreationRequestsAsync(CurrentStudentId, ct);
+        return OkResponse(result);
+    }
+
+    [HttpDelete("requests/{requestId:int}")]
+    [ProducesNoContent, ProducesForbidden, ProducesNotFound, ProducesConflict]
+    public async Task<IActionResult> WithdrawOrganizationCreationRequest([FromRoute] int requestId, CancellationToken ct)
+    {
+        await organizationService.WithdrawOrganizationCreationRequestAsync(requestId, CurrentStudentId, ct);
+        return NoContentResponse();
+    }
 }

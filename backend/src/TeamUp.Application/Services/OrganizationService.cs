@@ -3,6 +3,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
+using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
@@ -17,6 +18,7 @@ namespace TeamUp.Application.Services;
 public sealed class OrganizationService(
     IAppDbContext db,
     IOrganizationAuthorizationService orgAuth,
+    ISecurityStampValidator stampValidator,
     IAuditLogService auditLog) : IOrganizationService
 {
     public async Task<PagedResult<OrganizationSummaryDto>> GetOrganizationsAsync(
@@ -836,6 +838,309 @@ public sealed class OrganizationService(
             app.InterviewNotes,
             app.Organization.Name);
     }
+
+    public async Task<OrganizationCreationRequestDto> SubmitOrganizationCreationRequestAsync(
+        int requesterStudentId, CreateOrganizationProposalRequest request, CancellationToken ct = default)
+    {
+        var requester = await db.Students.AsNoTracking()
+            .FirstOrDefaultAsync(s => s.StudentId == requesterStudentId, ct)
+            ?? throw new NotFoundException($"Student with ID {requesterStudentId} was not found.");
+
+        var name = request.Name.Trim();
+        if (await db.Organizations.AnyAsync(o => o.Name == name, ct))
+            throw new ConflictException($"An organization named '{name}' already exists.");
+
+        var pendingCount = await db.OrganizationCreationRequests
+            .CountAsync(r => r.RequesterStudentId == requesterStudentId && r.Status == ApplicationStatus.Pending, ct);
+        if (pendingCount >= 5)
+            throw new ConflictException("You already have 5 pending organization creation requests. Wait for review or withdraw one.");
+
+        if (await db.OrganizationCreationRequests.AnyAsync(
+                r => r.RequesterStudentId == requesterStudentId && r.Name == name && r.Status == ApplicationStatus.Pending, ct))
+        {
+            throw new ConflictException($"You already have a pending request to create '{name}'.");
+        }
+
+        if (request.UniversityId is > 0
+            && !await db.Universities.AsNoTracking().AnyAsync(u => u.UniversityId == request.UniversityId.Value, ct))
+        {
+            throw new NotFoundException($"University with ID {request.UniversityId.Value} was not found.");
+        }
+
+        var proposal = new OrganizationCreationRequest
+        {
+            RequesterStudentId = requester.StudentId,
+            Name = name,
+            Description = request.Description.Trim(),
+            Category = request.Category.Trim(),
+            LogoUrl = NormalizeOptional(request.LogoUrl),
+            Scope = request.Scope,
+            UniversityId = request.UniversityId is > 0 ? request.UniversityId : null,
+            City = NormalizeOptional(request.City),
+            CoverImageUrl = NormalizeOptional(request.CoverImageUrl),
+            WebsiteUrl = NormalizeOptional(request.WebsiteUrl),
+            CurrentSeasonName = NormalizeOptional(request.CurrentSeasonName),
+            Justification = NormalizeOptional(request.Justification),
+            Status = ApplicationStatus.Pending,
+            RequestedAt = DateTime.UtcNow,
+        };
+
+        db.OrganizationCreationRequests.Add(proposal);
+        await db.SaveChangesAsync(ct);
+
+        await auditLog.RecordAsync(
+            "OrganizationRequestSubmitted",
+            "OrganizationCreationRequest",
+            proposal.RequestId.ToString(),
+            newValues: new { proposal.RequestId, proposal.Name, proposal.Category, Scope = proposal.Scope.ToString() },
+            actorStudentIdOverride: requesterStudentId,
+            ct: ct);
+
+        return await GetOrganizationCreationRequestDtoAsync(proposal.RequestId, ct);
+    }
+
+    public async Task<IReadOnlyList<OrganizationCreationRequestDto>> GetMyOrganizationCreationRequestsAsync(
+        int requesterStudentId, CancellationToken ct = default)
+    {
+        var items = await db.OrganizationCreationRequests.AsNoTracking()
+            .Include(x => x.RequesterStudent).ThenInclude(s => s.Faculty!).ThenInclude(f => f.University)
+            .Include(x => x.University)
+            .Include(x => x.ReviewedByStudent)
+            .Where(x => x.RequesterStudentId == requesterStudentId)
+            .OrderByDescending(x => x.RequestedAt)
+            .ToListAsync(ct);
+
+        return items.Select(MapCreationRequestDto).ToList();
+    }
+
+    public async Task WithdrawOrganizationCreationRequestAsync(
+        int requestId, int requesterStudentId, CancellationToken ct = default)
+    {
+        var proposal = await db.OrganizationCreationRequests
+            .FirstOrDefaultAsync(x => x.RequestId == requestId, ct)
+            ?? throw new NotFoundException($"Organization creation request #{requestId} was not found.");
+
+        if (proposal.RequesterStudentId != requesterStudentId)
+            throw new ForbiddenException("You can only withdraw your own organization creation requests.");
+
+        if (proposal.Status != ApplicationStatus.Pending)
+            throw new ConflictException("Only pending organization creation requests can be withdrawn.");
+
+        proposal.Status = ApplicationStatus.Withdrawn;
+        await db.SaveChangesAsync(ct);
+
+        await auditLog.RecordAsync(
+            "OrganizationRequestWithdrawn",
+            "OrganizationCreationRequest",
+            requestId.ToString(),
+            actorStudentIdOverride: requesterStudentId,
+            ct: ct);
+    }
+
+    public async Task<PagedResult<OrganizationCreationRequestDto>> GetAdminOrganizationCreationRequestsAsync(
+        ApplicationStatus? status, string? search, PageRequest page, CancellationToken ct = default)
+    {
+        var query = db.OrganizationCreationRequests.AsNoTracking()
+            .Include(x => x.RequesterStudent).ThenInclude(s => s.Faculty!).ThenInclude(f => f.University)
+            .Include(x => x.University)
+            .Include(x => x.ReviewedByStudent)
+            .AsQueryable();
+
+        if (status.HasValue)
+            query = query.Where(x => x.Status == status.Value);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(x =>
+                x.Name.Contains(term)
+                || x.Category.Contains(term)
+                || x.RequesterStudent.FirstName.Contains(term)
+                || x.RequesterStudent.LastName.Contains(term)
+                || x.RequesterStudent.Email.Contains(term));
+        }
+
+        var total = await query.CountAsync(ct);
+        var items = await query
+            .OrderBy(x => x.Status == ApplicationStatus.Pending ? 0 : 1)
+            .ThenByDescending(x => x.RequestedAt)
+            .Skip(page.Skip)
+            .Take(page.SafePageSize)
+            .ToListAsync(ct);
+
+        return new PagedResult<OrganizationCreationRequestDto>(
+            items.Select(MapCreationRequestDto).ToList(),
+            page.SafePage,
+            page.SafePageSize,
+            total);
+    }
+
+    public async Task<OrganizationCreationRequestDto> ReviewOrganizationCreationRequestAsync(
+        int requestId, int reviewerAdminId, ReviewOrganizationProposalRequest review, CancellationToken ct = default)
+    {
+        var proposal = await db.OrganizationCreationRequests
+            .Include(x => x.RequesterStudent)
+            .FirstOrDefaultAsync(x => x.RequestId == requestId, ct)
+            ?? throw new NotFoundException($"Organization creation request #{requestId} was not found.");
+
+        if (proposal.Status != ApplicationStatus.Pending)
+            throw new ConflictException($"Request #{requestId} has already been reviewed ({proposal.Status}).");
+
+        var promotedToOrgAdmin = false;
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+
+        if (review.Approve)
+        {
+            if (await db.Organizations.AnyAsync(o => o.Name == proposal.Name, ct))
+                throw new ConflictException($"An organization named '{proposal.Name}' already exists.");
+
+            var organization = new Organization
+            {
+                Name = proposal.Name,
+                Description = proposal.Description,
+                Category = proposal.Category,
+                LogoUrl = proposal.LogoUrl,
+                Scope = proposal.Scope,
+                UniversityId = proposal.UniversityId,
+                City = proposal.City,
+                CoverImageUrl = proposal.CoverImageUrl,
+                WebsiteUrl = proposal.WebsiteUrl,
+                IsRecruiting = true,
+                CurrentSeasonName = proposal.CurrentSeasonName ?? "Founding Season",
+            };
+            db.Organizations.Add(organization);
+            await db.SaveChangesAsync(ct);
+
+            db.OrganizationMembers.Add(new OrganizationMember
+            {
+                OrganizationId = organization.OrganizationId,
+                StudentId = proposal.RequesterStudentId,
+                Role = OrganizationRoles.President,
+                HierarchyTier = OrganizationHierarchyTier.HighBoard,
+                JoinedAt = DateTime.UtcNow,
+            });
+
+            if (proposal.RequesterStudent.Role == UserRole.Student)
+            {
+                proposal.RequesterStudent.Role = UserRole.OrgAdmin;
+                proposal.RequesterStudent.SecurityStamp = Guid.NewGuid();
+                proposal.RequesterStudent.RefreshToken = null;
+                proposal.RequesterStudent.RefreshTokenExpiresAt = null;
+                promotedToOrgAdmin = true;
+            }
+
+            proposal.Status = ApplicationStatus.Accepted;
+            proposal.ReviewedAt = DateTime.UtcNow;
+            proposal.ReviewedByStudentId = reviewerAdminId;
+            proposal.ReviewNotes = NormalizeOptional(review.ReviewNotes);
+            proposal.CreatedOrganizationId = organization.OrganizationId;
+
+            db.Notifications.Add(new Notification
+            {
+                StudentId = proposal.RequesterStudentId,
+                Title = "Organization Request Approved",
+                Message = $"Your request to launch '{proposal.Name}' was approved! You are now its President and have been promoted to Organization Admin.",
+                Type = NotificationType.ApplicationStatus,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow,
+            });
+
+            await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+
+            if (promotedToOrgAdmin)
+                stampValidator.Invalidate(proposal.RequesterStudentId);
+
+            await auditLog.RecordAsync(
+                "OrganizationRequestApproved",
+                "OrganizationCreationRequest",
+                proposal.RequestId.ToString(),
+                oldValues: new { Status = nameof(ApplicationStatus.Pending) },
+                newValues: new
+                {
+                    Status = nameof(ApplicationStatus.Accepted),
+                    CreatedOrganizationId = organization.OrganizationId,
+                    OrganizationName = organization.Name,
+                    proposal.RequesterStudentId,
+                    PromotedToOrgAdmin = promotedToOrgAdmin,
+                },
+                actorStudentIdOverride: reviewerAdminId > 0 ? reviewerAdminId : null,
+                ct: ct);
+        }
+        else
+        {
+            var notes = NormalizeOptional(review.ReviewNotes);
+            proposal.Status = ApplicationStatus.Rejected;
+            proposal.ReviewedAt = DateTime.UtcNow;
+            proposal.ReviewedByStudentId = reviewerAdminId;
+            proposal.ReviewNotes = notes;
+
+            db.Notifications.Add(new Notification
+            {
+                StudentId = proposal.RequesterStudentId,
+                Title = "Organization Request Reviewed",
+                Message = notes is null
+                    ? $"Your request to create '{proposal.Name}' was declined by an administrator."
+                    : $"Your request to create '{proposal.Name}' was declined: {notes}",
+                Type = NotificationType.ApplicationStatus,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow,
+            });
+
+            await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+
+            await auditLog.RecordAsync(
+                "OrganizationRequestRejected",
+                "OrganizationCreationRequest",
+                proposal.RequestId.ToString(),
+                oldValues: new { Status = nameof(ApplicationStatus.Pending) },
+                newValues: new { Status = nameof(ApplicationStatus.Rejected), ReviewNotes = notes },
+                actorStudentIdOverride: reviewerAdminId > 0 ? reviewerAdminId : null,
+                ct: ct);
+        }
+
+        return await GetOrganizationCreationRequestDtoAsync(proposal.RequestId, ct);
+    }
+
+    private async Task<OrganizationCreationRequestDto> GetOrganizationCreationRequestDtoAsync(int requestId, CancellationToken ct)
+    {
+        var entity = await db.OrganizationCreationRequests.AsNoTracking()
+            .Include(x => x.RequesterStudent).ThenInclude(s => s.Faculty!).ThenInclude(f => f.University)
+            .Include(x => x.University)
+            .Include(x => x.ReviewedByStudent)
+            .FirstOrDefaultAsync(x => x.RequestId == requestId, ct)
+            ?? throw new NotFoundException($"Organization creation request #{requestId} was not found.");
+
+        return MapCreationRequestDto(entity);
+    }
+
+    private static OrganizationCreationRequestDto MapCreationRequestDto(OrganizationCreationRequest x) =>
+        new(
+            x.RequestId,
+            x.RequesterStudentId,
+            $"{x.RequesterStudent.FirstName} {x.RequesterStudent.LastName}".Trim(),
+            x.RequesterStudent.Email,
+            x.RequesterStudent.Faculty?.University?.Name,
+            x.Name,
+            x.Description,
+            x.Category,
+            x.LogoUrl,
+            x.Scope,
+            x.UniversityId,
+            x.University?.Name,
+            x.City,
+            x.CoverImageUrl,
+            x.WebsiteUrl,
+            x.CurrentSeasonName,
+            x.Justification,
+            x.Status,
+            x.RequestedAt,
+            x.ReviewedAt,
+            x.ReviewedByStudentId,
+            x.ReviewedByStudent is null ? null : $"{x.ReviewedByStudent.FirstName} {x.ReviewedByStudent.LastName}".Trim(),
+            x.ReviewNotes,
+            x.CreatedOrganizationId);
 
     private static string? NormalizeOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

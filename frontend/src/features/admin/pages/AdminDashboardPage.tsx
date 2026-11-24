@@ -9,6 +9,7 @@ import {
   ClipboardList,
   ExternalLink,
   GraduationCap,
+  Inbox,
   Users,
 } from "lucide-react";
 import { useState } from "react";
@@ -157,8 +158,15 @@ export function AdminDashboardPage() {
 
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
-                    to="/admin/catalog"
+                    to="/admin/organization-requests"
                     className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#d3fb52] px-4 text-sm font-semibold text-[#14151c] transition-colors hover:bg-[#deff6e]"
+                  >
+                    <Inbox className="size-4" aria-hidden="true" />
+                    Org Requests ({stats.pendingOrganizationRequestsCount ?? 0})
+                  </Link>
+                  <Link
+                    to="/admin/catalog"
+                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/20 bg-black/25 px-4 text-sm font-semibold text-white transition-colors hover:border-[#d3fb52]/50 hover:text-[#d3fb52]"
                   >
                     Manage Universities
                     <ArrowRight className="size-4" aria-hidden="true" />
@@ -174,7 +182,34 @@ export function AdminDashboardPage() {
             </section>
 
             {/* Primary KPI Cards */}
-            <section aria-label="Active entity metrics" className="grid gap-4 sm:grid-cols-3">
+            <section aria-label="Active entity metrics" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <Card className="transition-colors hover:border-[#d3fb52]/35">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardDescription>Pending Org Requests</CardDescription>
+                    <div className="flex size-8 items-center justify-center rounded-xl bg-amber-500/15 text-amber-300">
+                      <Inbox className="size-4" aria-hidden="true" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-2 pt-1">
+                    <CardTitle className="text-3xl font-bold tabular-nums">
+                      {stats.pendingOrganizationRequestsCount ?? 0}
+                    </CardTitle>
+                    <Badge variant="warning" size="sm">
+                      Awaiting review
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Link
+                    to="/admin/organization-requests"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#d3fb52] hover:underline"
+                  >
+                    Review &amp; promote founders <ArrowRight className="size-3.5" aria-hidden="true" />
+                  </Link>
+                </CardContent>
+              </Card>
+
               <Card className="transition-colors hover:border-[#d3fb52]/35">
                 <CardHeader>
                   <div className="flex items-center justify-between">

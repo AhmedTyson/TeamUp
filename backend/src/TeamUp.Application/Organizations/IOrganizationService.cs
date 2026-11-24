@@ -42,4 +42,10 @@ public interface IOrganizationService
     Task<MembershipApplicationDto> UpdateApplicationStageAsync(int organizationId, int applicationId, int actorStudentId, string? actorRole, UpdateApplicationStageRequest request, CancellationToken ct = default);
     Task WithdrawApplicationAsync(int organizationId, int applicationId, int studentId, CancellationToken ct = default);
     Task<string> ExportApplicationsCsvAsync(int organizationId, int actorStudentId, string? actorRole, CancellationToken ct = default);
+
+    Task<OrganizationCreationRequestDto> SubmitOrganizationCreationRequestAsync(int requesterStudentId, CreateOrganizationProposalRequest request, CancellationToken ct = default);
+    Task<IReadOnlyList<OrganizationCreationRequestDto>> GetMyOrganizationCreationRequestsAsync(int requesterStudentId, CancellationToken ct = default);
+    Task WithdrawOrganizationCreationRequestAsync(int requestId, int requesterStudentId, CancellationToken ct = default);
+    Task<PagedResult<OrganizationCreationRequestDto>> GetAdminOrganizationCreationRequestsAsync(ApplicationStatus? status, string? search, PageRequest page, CancellationToken ct = default);
+    Task<OrganizationCreationRequestDto> ReviewOrganizationCreationRequestAsync(int requestId, int reviewerAdminId, ReviewOrganizationProposalRequest review, CancellationToken ct = default);
 }

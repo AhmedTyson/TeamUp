@@ -22,6 +22,7 @@ public interface IAppDbContext
     DbSet<ProjectTask> ProjectTasks { get; }
 
     DbSet<Organization> Organizations { get; }
+    DbSet<OrganizationCreationRequest> OrganizationCreationRequests { get; }
     DbSet<OrganizationUnit> OrganizationUnits { get; }
     DbSet<OrganizationMember> OrganizationMembers { get; }
     DbSet<MembershipApplication> MembershipApplications { get; }

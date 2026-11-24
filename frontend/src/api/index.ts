@@ -160,6 +160,7 @@ export type {
   AdminLeaderboardDigestPayload,
   AdminProjectMatchDigestPayload,
   DigestDispatchResultDto,
+  OrganizationRequestQueryParams,
 } from "./admin.api";
 export { organizationsApi } from "./organizations.api";
 export type {
@@ -177,6 +178,9 @@ export type {
   OrganizationApplicationPayload,
   UpdateMemberRolePayload,
   UpdateApplicationStagePayload,
+  OrganizationCreationRequest,
+  CreateOrganizationProposalPayload,
+  ReviewOrganizationProposalPayload,
 } from "./organizations.api";
 export { eventsApi } from "./events.api";
 export type {

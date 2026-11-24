@@ -123,3 +123,40 @@ public sealed class UpdateApplicationStageRequestValidator : AbstractValidator<U
         RuleFor(x => x.InterviewNotes).MaximumLength(1000);
     }
 }
+
+public sealed class CreateOrganizationProposalRequestValidator : AbstractValidator<CreateOrganizationProposalRequest>
+{
+    public CreateOrganizationProposalRequestValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(120);
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(4000);
+        RuleFor(x => x.Category).NotEmpty().MaximumLength(50);
+        RuleFor(x => x.LogoUrl)
+            .MaximumLength(300)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl)
+            .When(x => !string.IsNullOrWhiteSpace(x.LogoUrl))
+            .WithMessage("LogoUrl must be a valid public HTTP or HTTPS URL.");
+        RuleFor(x => x.Scope).IsInEnum();
+        RuleFor(x => x.City).MaximumLength(100).When(x => !string.IsNullOrWhiteSpace(x.City));
+        RuleFor(x => x.CurrentSeasonName).MaximumLength(80).When(x => !string.IsNullOrWhiteSpace(x.CurrentSeasonName));
+        RuleFor(x => x.CoverImageUrl)
+            .MaximumLength(500)
+            .Must(SafeUrlValidator.IsSafeAssetOrExternalUrl)
+            .When(x => !string.IsNullOrWhiteSpace(x.CoverImageUrl))
+            .WithMessage("CoverImageUrl must be a valid asset path or public HTTP/HTTPS URL.");
+        RuleFor(x => x.WebsiteUrl)
+            .MaximumLength(300)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl)
+            .When(x => !string.IsNullOrWhiteSpace(x.WebsiteUrl))
+            .WithMessage("WebsiteUrl must be a valid public HTTP or HTTPS URL.");
+        RuleFor(x => x.Justification).MaximumLength(1000).When(x => !string.IsNullOrWhiteSpace(x.Justification));
+    }
+}
+
+public sealed class ReviewOrganizationProposalRequestValidator : AbstractValidator<ReviewOrganizationProposalRequest>
+{
+    public ReviewOrganizationProposalRequestValidator()
+    {
+        RuleFor(x => x.ReviewNotes).MaximumLength(1000).When(x => !string.IsNullOrWhiteSpace(x.ReviewNotes));
+    }
+}

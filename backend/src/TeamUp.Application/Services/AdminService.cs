@@ -31,6 +31,7 @@ public sealed class AdminService(
         var deletedStudents = await db.Students.IgnoreQueryFilters().CountAsync(s => s.DeletedAt != null, ct);
         var deletedUnis = await db.Universities.IgnoreQueryFilters().CountAsync(u => u.DeletedAt != null, ct);
         var deletedFaculties = await db.Faculties.IgnoreQueryFilters().CountAsync(f => f.DeletedAt != null, ct);
+        var pendingOrgRequests = await db.OrganizationCreationRequests.CountAsync(r => r.Status == ApplicationStatus.Pending, ct);
 
         var roles = await db.Students
             .GroupBy(s => s.Role)
@@ -44,7 +45,8 @@ public sealed class AdminService(
             deletedStudents,
             deletedUnis,
             deletedFaculties,
-            roles);
+            roles,
+            pendingOrgRequests);
     }
 
     public async Task<StudentSummaryDto> UpdateStudentRoleAsync(

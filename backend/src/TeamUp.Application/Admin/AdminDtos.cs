@@ -14,7 +14,8 @@ public sealed record AdminDashboardDto(
     int SoftDeletedStudentsCount,
     int SoftDeletedUniversitiesCount,
     int SoftDeletedFacultiesCount,
-    IReadOnlyDictionary<string, int> RoleDistribution
+    IReadOnlyDictionary<string, int> RoleDistribution,
+    int PendingOrganizationRequestsCount = 0
 );
 
 public sealed record UpdateUserRoleRequest(

@@ -26,6 +26,7 @@ public class AppDbContext(
     public DbSet<ProjectTask> ProjectTasks => Set<ProjectTask>();
 
     public DbSet<Organization> Organizations => Set<Organization>();
+    public DbSet<OrganizationCreationRequest> OrganizationCreationRequests => Set<OrganizationCreationRequest>();
     public DbSet<OrganizationUnit> OrganizationUnits => Set<OrganizationUnit>();
     public DbSet<OrganizationMember> OrganizationMembers => Set<OrganizationMember>();
     public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();

@@ -152,3 +152,34 @@ public class SessionAttendanceConfig : IEntityTypeConfiguration<SessionAttendanc
         b.HasIndex(x => new { x.SessionId, x.CheckInTime }).HasFilter(Sql.NotDeleted);
     }
 }
+
+public class OrganizationCreationRequestConfig : IEntityTypeConfiguration<OrganizationCreationRequest>
+{
+    public void Configure(EntityTypeBuilder<OrganizationCreationRequest> b)
+    {
+        b.HasKey(x => x.RequestId);
+        b.Property(x => x.Name).HasMaxLength(120).IsRequired();
+        b.Property(x => x.Description).HasMaxLength(4000).IsRequired();
+        b.Property(x => x.Category).HasMaxLength(50).IsRequired();
+        b.Property(x => x.Scope).HasDefaultValue(OrganizationScope.UniversityBranch);
+        b.Property(x => x.City).HasMaxLength(100);
+        b.Property(x => x.LogoUrl).HasMaxLength(300);
+        b.Property(x => x.CoverImageUrl).HasMaxLength(500);
+        b.Property(x => x.WebsiteUrl).HasMaxLength(300);
+        b.Property(x => x.CurrentSeasonName).HasMaxLength(80);
+        b.Property(x => x.Justification).HasMaxLength(1000);
+        b.Property(x => x.Status).HasDefaultValue(ApplicationStatus.Pending);
+        b.Property(x => x.RequestedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        b.Property(x => x.ReviewNotes).HasMaxLength(1000);
+
+        b.HasOne(x => x.RequesterStudent).WithMany().HasForeignKey(x => x.RequesterStudentId);
+        b.HasOne(x => x.University).WithMany().HasForeignKey(x => x.UniversityId).IsRequired(false);
+        b.HasOne(x => x.ReviewedByStudent).WithMany().HasForeignKey(x => x.ReviewedByStudentId).IsRequired(false);
+        b.HasOne(x => x.CreatedOrganization).WithMany().HasForeignKey(x => x.CreatedOrganizationId).IsRequired(false);
+
+        b.HasIndex(x => new { x.RequesterStudentId, x.Name }).IsUnique()
+            .HasFilter("[DeletedAt] IS NULL AND [Status] = 'Pending'");
+        b.HasIndex(x => new { x.Status, x.RequestedAt }).HasFilter(Sql.NotDeleted);
+        b.HasIndex(x => x.RequesterStudentId);
+    }
+}

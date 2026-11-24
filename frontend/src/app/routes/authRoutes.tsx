@@ -46,6 +46,9 @@ const AdminAuditLogsPage = lazy(() =>
 const AdminCommunicationsPage = lazy(() =>
   import("@/features/admin").then((m) => ({ default: m.AdminCommunicationsPage })),
 );
+const AdminOrganizationRequestsPage = lazy(() =>
+  import("@/features/admin").then((m) => ({ default: m.AdminOrganizationRequestsPage })),
+);
 
 export const authRoutes: RouteObject[] = [
   {
@@ -103,6 +106,10 @@ export const authRoutes: RouteObject[] = [
           {
             path: "communications",
             element: <AdminCommunicationsPage />,
+          },
+          {
+            path: "organization-requests",
+            element: <AdminOrganizationRequestsPage />,
           },
         ],
       },

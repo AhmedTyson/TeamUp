@@ -182,6 +182,52 @@ export interface UpdateApplicationStagePayload {
   organizationUnitId?: number | null;
 }
 
+export interface CreateOrganizationProposalPayload {
+  name: string;
+  description: string;
+  category: string;
+  logoUrl: string | null;
+  scope?: OrganizationScope;
+  universityId?: number | null;
+  city?: string | null;
+  coverImageUrl?: string | null;
+  websiteUrl?: string | null;
+  currentSeasonName?: string | null;
+  justification?: string | null;
+}
+
+export interface ReviewOrganizationProposalPayload {
+  approve: boolean;
+  reviewNotes?: string | null;
+}
+
+export interface OrganizationCreationRequest {
+  requestId: number;
+  requesterStudentId: number;
+  requesterName: string;
+  requesterEmail: string;
+  requesterUniversityName: string | null;
+  name: string;
+  description: string;
+  category: string;
+  logoUrl: string | null;
+  scope: OrganizationScope;
+  universityId: number | null;
+  universityName: string | null;
+  city: string | null;
+  coverImageUrl: string | null;
+  websiteUrl: string | null;
+  currentSeasonName: string | null;
+  justification: string | null;
+  status: ApplicationStatus;
+  requestedAt: string;
+  reviewedAt: string | null;
+  reviewedByStudentId: number | null;
+  reviewedByName: string | null;
+  reviewNotes: string | null;
+  createdOrganizationId: number | null;
+}
+
 export const organizationsApi = {
   async list(
     params: OrganizationListParams = {},
@@ -383,5 +429,28 @@ export const organizationsApi = {
 
   async exportApplicationsCsv(id: number): Promise<string> {
     return fetchApiCsv(API_ENDPOINTS.organizations.applicationsCsv(id));
+  },
+
+  async submitCreationRequest(
+    payload: CreateOrganizationProposalPayload,
+  ): Promise<OrganizationCreationRequest> {
+    const response = await apiClient.post<ApiResponse<OrganizationCreationRequest>>(
+      API_ENDPOINTS.organizations.requests,
+      payload,
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async myCreationRequests(signal?: AbortSignal): Promise<OrganizationCreationRequest[]> {
+    const response = await apiClient.get<ApiResponse<OrganizationCreationRequest[]>>(
+      API_ENDPOINTS.organizations.myRequests,
+      { signal },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async withdrawCreationRequest(requestId: number): Promise<void> {
+    const response = await apiClient.delete(API_ENDPOINTS.organizations.requestById(requestId));
+    unwrapVoidResponse(response);
   },
 };

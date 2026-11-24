@@ -28,6 +28,8 @@ export const queryKeys = {
     auditLogs: (params?: QueryParams) => ["admin", "audit-logs", params ?? {}] as const,
     templates: ["admin", "templates"] as const,
     templatePreview: (name: string) => ["admin", "templates", "preview", name] as const,
+    organizationRequests: (params?: QueryParams) =>
+      ["admin", "organization-requests", params ?? {}] as const,
   },
 
   skills: {
@@ -61,6 +63,7 @@ export const queryKeys = {
     all: ["organizations"] as const,
     list: (params?: QueryParams) => ["organizations", "list", params ?? {}] as const,
     myApplications: ["organizations", "my-applications"] as const,
+    myCreationRequests: ["organizations", "my-creation-requests"] as const,
     detail: (id: number) => ["organizations", "detail", id] as const,
     members: (id: number) => ["organizations", id, "members"] as const,
     units: (id: number) => ["organizations", id, "units"] as const,

@@ -115,6 +115,13 @@ export function StudentDashboardPage() {
               New Project
             </Link>
             <Link
+              to="/organizations?request=1"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:border-[#d3fb52]/40 hover:text-[#d3fb52]"
+            >
+              <Building2 className="size-4" aria-hidden="true" />
+              Request Activity
+            </Link>
+            <Link
               to="/profile/me"
               className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:border-[#d3fb52]/40"
             >
