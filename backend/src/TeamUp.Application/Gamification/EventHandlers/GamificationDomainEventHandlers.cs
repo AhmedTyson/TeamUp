@@ -17,30 +17,20 @@ public sealed class TaskCompletedDomainEventHandler(IAppDbContext db, IBadgeServ
 
     public async Task HandleAsync(TaskCompletedDomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        var reason = $"Completed task #{domainEvent.TaskId}: {domainEvent.TaskTitle}";
-        if (reason.Length > 200)
-            reason = reason[..200];
-
-        var alreadyAwarded = await db.ScoreTransactions.AsNoTracking().AnyAsync(
-            t => t.StudentId == domainEvent.AssignedStudentId
-                && t.SourceType == ScoreSourceType.TaskCompleted
-                && t.Reason == reason,
+        // A task pays out once in its lifetime, whoever it is (re)assigned to afterwards.
+        var alreadyPaid = await db.ScoreTransactions.AsNoTracking().AnyAsync(
+            t => t.SourceType == ScoreSourceType.TaskCompleted && t.SourceReferenceId == domainEvent.TaskId,
             cancellationToken);
-
-        if (alreadyAwarded)
+        if (alreadyPaid)
             return;
 
-        db.ScoreTransactions.Add(new ScoreTransaction
-        {
-            StudentId = domainEvent.AssignedStudentId,
-            Points = PointsPerCompletedTask,
-            Reason = reason,
-            SourceType = ScoreSourceType.TaskCompleted,
-            CreatedAt = DateTime.UtcNow
-        });
-        await db.SaveChangesAsync(cancellationToken);
+        var awarded = await ScoreLedger.TryAwardAsync(
+            db, domainEvent.AssignedStudentId, PointsPerCompletedTask,
+            $"Completed task #{domainEvent.TaskId}: {domainEvent.TaskTitle}",
+            ScoreSourceType.TaskCompleted, domainEvent.TaskId, cancellationToken);
 
-        await badgeService.EvaluateStudentBadgesAsync(domainEvent.AssignedStudentId, cancellationToken);
+        if (awarded)
+            await badgeService.EvaluateStudentBadgesAsync(domainEvent.AssignedStudentId, cancellationToken);
     }
 }
 
@@ -51,30 +41,13 @@ public sealed class SessionAttendedDomainEventHandler(IAppDbContext db, IBadgeSe
 
     public async Task HandleAsync(SessionAttendedDomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        var reason = $"Attended session #{domainEvent.SessionId}: {domainEvent.SessionTitle}";
-        if (reason.Length > 200)
-            reason = reason[..200];
+        var awarded = await ScoreLedger.TryAwardAsync(
+            db, domainEvent.StudentId, PointsPerSession,
+            $"Attended session #{domainEvent.SessionId}: {domainEvent.SessionTitle}",
+            ScoreSourceType.EventAttendance, domainEvent.SessionId, cancellationToken);
 
-        var alreadyAwarded = await db.ScoreTransactions.AsNoTracking().AnyAsync(
-            t => t.StudentId == domainEvent.StudentId
-                && t.SourceType == ScoreSourceType.EventAttendance
-                && t.Reason == reason,
-            cancellationToken);
-
-        if (alreadyAwarded)
-            return;
-
-        db.ScoreTransactions.Add(new ScoreTransaction
-        {
-            StudentId = domainEvent.StudentId,
-            Points = PointsPerSession,
-            Reason = reason,
-            SourceType = ScoreSourceType.EventAttendance,
-            CreatedAt = DateTime.UtcNow
-        });
-        await db.SaveChangesAsync(cancellationToken);
-
-        await badgeService.EvaluateStudentBadgesAsync(domainEvent.StudentId, cancellationToken);
+        if (awarded)
+            await badgeService.EvaluateStudentBadgesAsync(domainEvent.StudentId, cancellationToken);
     }
 }
 
@@ -86,39 +59,14 @@ public sealed class ProjectCompletedDomainEventHandler(IAppDbContext db, IBadgeS
     public async Task HandleAsync(ProjectCompletedDomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
         var reason = $"Delivered project #{domainEvent.ProjectId}: {domainEvent.ProjectTitle}";
-        if (reason.Length > 200)
-            reason = reason[..200];
-
-        var awardedStudents = new List<int>();
         foreach (var studentId in domainEvent.MemberStudentIds.Distinct())
         {
-            var alreadyAwarded = await db.ScoreTransactions.AsNoTracking().AnyAsync(
-                t => t.StudentId == studentId
-                    && t.SourceType == ScoreSourceType.ProjectDelivered
-                    && t.Reason == reason,
-                cancellationToken);
+            var awarded = await ScoreLedger.TryAwardAsync(
+                db, studentId, PointsPerProjectDelivered, reason,
+                ScoreSourceType.ProjectDelivered, domainEvent.ProjectId, cancellationToken);
 
-            if (alreadyAwarded)
-                continue;
-
-            db.ScoreTransactions.Add(new ScoreTransaction
-            {
-                StudentId = studentId,
-                Points = PointsPerProjectDelivered,
-                Reason = reason,
-                SourceType = ScoreSourceType.ProjectDelivered,
-                CreatedAt = DateTime.UtcNow
-            });
-            awardedStudents.Add(studentId);
-        }
-
-        if (awardedStudents.Count > 0)
-        {
-            await db.SaveChangesAsync(cancellationToken);
-            foreach (var studentId in awardedStudents)
-            {
+            if (awarded)
                 await badgeService.EvaluateStudentBadgesAsync(studentId, cancellationToken);
-            }
         }
     }
 }
