@@ -52,6 +52,7 @@ public static class DependencyInjection
         services.AddScoped<IProjectSkillService>(sp => sp.GetRequiredService<ProjectService>());
         services.AddScoped<IProjectMemberService>(sp => sp.GetRequiredService<ProjectService>());
         services.AddScoped<IProjectTaskService>(sp => sp.GetRequiredService<ProjectService>());
+        services.AddScoped<IProjectRecommendationService, ProjectRecommendationService>();
         services.AddScoped<ISkillService, SkillService>();
 
         // Module 03: Organizations, Events, Registrations & Attendance
@@ -62,6 +63,7 @@ public static class DependencyInjection
         services.AddScoped<IGamificationService, GamificationService>();
         services.AddScoped<IBadgeService, BadgeService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IDigestDispatchService, DigestDispatchService>();
 
         // Domain event handlers (automatic XP awards, badge evaluation & notifications)
         services.AddScoped<IDomainEventHandler<TaskCompletedDomainEvent>, TaskCompletedDomainEventHandler>();
