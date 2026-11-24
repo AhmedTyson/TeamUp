@@ -17,8 +17,10 @@ public class Student : BaseEntity
     public bool EmailNotificationsEnabled { get; set; } = true;
     public bool ReceiveLeaderboardDigests { get; set; } = true;
     public bool ReceiveProjectMatchEmails { get; set; } = true;
-    public int FacultyId { get; set; }
-    public Faculty Faculty { get; set; } = null!;
+    public AffiliationType AffiliationType { get; set; } = AffiliationType.UniversityStudent;
+    public string? City { get; set; }
+    public int? FacultyId { get; set; }
+    public Faculty? Faculty { get; set; }
     public StudentProfile? Profile { get; set; }
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiresAt { get; set; }

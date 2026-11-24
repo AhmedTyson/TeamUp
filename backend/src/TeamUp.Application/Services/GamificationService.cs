@@ -131,8 +131,10 @@ public sealed class GamificationService(
                 s.StudentId,
                 s.FirstName,
                 s.LastName,
-                FacultyName = s.Faculty.Name,
-                UniversityName = s.Faculty.University.Name,
+                s.AffiliationType,
+                s.City,
+                FacultyName = s.Faculty != null ? s.Faculty.Name : null,
+                UniversityName = s.Faculty != null ? s.Faculty.University.Name : null,
                 PhotoUrl = s.Profile != null ? s.Profile.PhotoUrl : null,
                 TotalPoints = db.ScoreTransactions
                     .Where(t => t.StudentId == s.StudentId)
@@ -153,8 +155,8 @@ public sealed class GamificationService(
                     row.StudentId,
                     row.FirstName,
                     row.LastName,
-                    row.FacultyName,
-                    row.UniversityName,
+                    row.FacultyName ?? AffiliationFormatting.FormatAffiliationLabel(row.AffiliationType),
+                    row.UniversityName ?? (string.IsNullOrWhiteSpace(row.City) ? "Egypt Open Community" : $"{row.City} Community"),
                     row.TotalPoints,
                     metrics.Level,
                     row.PhotoUrl);

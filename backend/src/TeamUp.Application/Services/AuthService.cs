@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TeamUp.Application.Auth;
+using TeamUp.Application.Common;
 using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
@@ -45,12 +46,21 @@ public sealed class AuthService(
         if (await db.Students.AnyAsync(s => s.Email == email, ct))
             throw new ConflictException("A student with this email address already exists.");
 
-        var faculty = await db.Faculties
-            .AsNoTracking()
-            .Include(f => f.University)
-            .FirstOrDefaultAsync(f => f.FacultyId == req.FacultyId, ct)
-            ?? throw new NotFoundException($"Faculty with ID {req.FacultyId} was not found.");
+        Faculty? faculty = null;
+        if (req.FacultyId is > 0)
+        {
+            faculty = await db.Faculties
+                .AsNoTracking()
+                .Include(f => f.University)
+                .FirstOrDefaultAsync(f => f.FacultyId == req.FacultyId.Value, ct)
+                ?? throw new NotFoundException($"Faculty with ID {req.FacultyId} was not found.");
+        }
+        else if (req.AffiliationType == AffiliationType.UniversityStudent)
+        {
+            throw new BadRequestException("A valid Faculty ID is required for university students.");
+        }
 
+        var city = string.IsNullOrWhiteSpace(req.City) ? null : req.City.Trim();
         var rawRefreshToken = jwt.GenerateRefreshToken();
         var student = new Student
         {
@@ -59,7 +69,9 @@ public sealed class AuthService(
             FirstName = req.FirstName.Trim(),
             LastName = req.LastName.Trim(),
             AcademicYear = req.AcademicYear,
-            FacultyId = req.FacultyId,
+            FacultyId = faculty?.FacultyId,
+            AffiliationType = req.AffiliationType,
+            City = city,
             Role = UserRole.Student,
             EmailNotificationsEnabled = req.EmailNotificationsEnabled,
             ReceiveLeaderboardDigests = req.EmailNotificationsEnabled && req.ReceiveLeaderboardDigests,
@@ -72,6 +84,8 @@ public sealed class AuthService(
         db.Students.Add(student);
         await db.SaveChangesAsync(ct);
 
+        student.Faculty = faculty;
+
         var (accessToken, expiresAt) = jwt.GenerateAccessToken(
             student.StudentId,
             student.Email,
@@ -83,12 +97,16 @@ public sealed class AuthService(
         var summary = new StudentSummaryDto(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
-            faculty.FacultyId, faculty.Name, faculty.University.Name,
+            student.FacultyId,
+            AffiliationFormatting.GetFacultyDisplay(student),
+            AffiliationFormatting.GetUniversityDisplay(student),
             null,
             student.ShowEmailInDirectory,
             student.EmailNotificationsEnabled,
             student.ReceiveLeaderboardDigests,
-            student.ReceiveProjectMatchEmails);
+            student.ReceiveProjectMatchEmails,
+            student.AffiliationType,
+            student.City);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
@@ -101,7 +119,7 @@ public sealed class AuthService(
         var email = req.Email.Trim().ToLowerInvariant();
 
         var student = await db.Students
-            .Include(s => s.Faculty)
+            .Include(s => s.Faculty!)
             .ThenInclude(f => f.University)
             .Include(s => s.Profile)
             .FirstOrDefaultAsync(s => s.Email == email, ct)
@@ -156,12 +174,16 @@ public sealed class AuthService(
         var summary = new StudentSummaryDto(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
-            student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
+            student.FacultyId,
+            AffiliationFormatting.GetFacultyDisplay(student),
+            AffiliationFormatting.GetUniversityDisplay(student),
             student.Profile?.PhotoUrl,
             student.ShowEmailInDirectory,
             student.EmailNotificationsEnabled,
             student.ReceiveLeaderboardDigests,
-            student.ReceiveProjectMatchEmails);
+            student.ReceiveProjectMatchEmails,
+            student.AffiliationType,
+            student.City);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
@@ -174,7 +196,7 @@ public sealed class AuthService(
         var hashedToken = jwt.HashToken(req.RefreshToken.Trim());
 
         var student = await db.Students
-            .Include(s => s.Faculty)
+            .Include(s => s.Faculty!)
             .ThenInclude(f => f.University)
             .Include(s => s.Profile)
             .FirstOrDefaultAsync(s => s.RefreshToken == hashedToken, ct);
@@ -210,12 +232,16 @@ public sealed class AuthService(
         var summary = new StudentSummaryDto(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
-            student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
+            student.FacultyId,
+            AffiliationFormatting.GetFacultyDisplay(student),
+            AffiliationFormatting.GetUniversityDisplay(student),
             student.Profile?.PhotoUrl,
             student.ShowEmailInDirectory,
             student.EmailNotificationsEnabled,
             student.ReceiveLeaderboardDigests,
-            student.ReceiveProjectMatchEmails);
+            student.ReceiveProjectMatchEmails,
+            student.AffiliationType,
+            student.City);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }

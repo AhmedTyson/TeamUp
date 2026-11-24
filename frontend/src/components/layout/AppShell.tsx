@@ -4,6 +4,8 @@
  */
 import type { ReactNode } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { ApiHealthPill } from "./ApiHealthPill";
+import { CommandPalette } from "./CommandPalette";
 import { Navbar, type NavbarProps } from "./Navbar";
 
 export type AppShellProps = NavbarProps & {
@@ -24,6 +26,7 @@ export function AppShell({ xpChipSlot, notificationSlot, children }: AppShellPro
       </a>
 
       <Navbar xpChipSlot={xpChipSlot} notificationSlot={notificationSlot} />
+      <CommandPalette />
 
       {isLandingPage ? (
         <main id="main-content" className="w-full flex-1">
@@ -40,9 +43,12 @@ export function AppShell({ xpChipSlot, notificationSlot, children }: AppShellPro
 
           <footer className="border-t border-white/10 py-6 text-xs text-white/55">
             <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6">
-              <span className="text-center sm:text-left">
-                © 2026 TeamUp · The Collaboration Network for University Students
-              </span>
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
+                <span className="text-center sm:text-left">
+                  © 2026 TeamUp · The Collaboration Network for Egyptian Youth
+                </span>
+                <ApiHealthPill />
+              </div>
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                 <Link to="/projects" className="hover:text-[#d3fb52]">
                   Projects

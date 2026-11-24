@@ -276,6 +276,8 @@ describe("M1 Phase 1 — Auth Pages, Academic Catalog API & AppShell", () => {
         password: "CampusPass1",
         academicYear: 3,
         facultyId: 21,
+        affiliationType: "UniversityStudent",
+        city: null,
         emailNotificationsEnabled: true,
         receiveLeaderboardDigests: true,
         receiveProjectMatchEmails: true,

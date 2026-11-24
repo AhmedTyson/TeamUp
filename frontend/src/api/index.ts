@@ -10,6 +10,7 @@ export {
   unwrapApiResponse,
   unwrapVoidResponse,
   fetchApiHtml,
+  fetchApiCsv,
   parseRetryAfterSeconds,
 } from "./client";
 export type { CreateApiClientOptions, TeamUpRequestConfig } from "./client";
@@ -19,6 +20,13 @@ export {
   ORGANIZATION_ROLES,
   ORGANIZATION_ADMIN_ROLES,
   isOrganizationAdminRole,
+  isCommitteeLeaderRole,
+  AFFILIATION_TYPES,
+  ORGANIZATION_SCOPES,
+  ORGANIZATION_UNIT_TYPES,
+  ORGANIZATION_HIERARCHY_TIERS,
+  RECRUITMENT_STAGES,
+  EVENT_DELIVERY_MODES,
   PROFICIENCY_LEVELS,
   PROJECT_STATUSES,
   APPLICATION_STATUSES,
@@ -35,6 +43,12 @@ export {
 export type {
   UserRole,
   OrganizationRole,
+  AffiliationType,
+  OrganizationScope,
+  OrganizationUnitType,
+  OrganizationHierarchyTier,
+  RecruitmentStage,
+  EventDeliveryMode,
   ProficiencyLevel,
   ProjectStatus,
   ApplicationStatus,
@@ -147,3 +161,33 @@ export type {
   AdminProjectMatchDigestPayload,
   DigestDispatchResultDto,
 } from "./admin.api";
+export { organizationsApi } from "./organizations.api";
+export type {
+  OrganizationSummary,
+  OrganizationDetail,
+  OrganizationMember,
+  OrganizationUnit,
+  OrganizationEventSummary,
+  OrganizationHierarchy,
+  OrganizationParticipant,
+  MembershipApplication,
+  OrganizationListParams,
+  OrganizationPayload,
+  OrganizationUnitPayload,
+  OrganizationApplicationPayload,
+  UpdateMemberRolePayload,
+  UpdateApplicationStagePayload,
+} from "./organizations.api";
+export { eventsApi } from "./events.api";
+export type {
+  EventSummary,
+  EventSession,
+  EventRegistration,
+  MyEventRegistration,
+  EventListParams,
+  EventPayload,
+  SessionPayload,
+} from "./events.api";
+export { sessionsApi } from "./sessions.api";
+export { attendanceApi } from "./attendance.api";
+export type { SessionAttendance, SessionCheckInCode, ManualAttendancePayload } from "./attendance.api";

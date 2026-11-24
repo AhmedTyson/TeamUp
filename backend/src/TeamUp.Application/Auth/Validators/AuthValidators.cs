@@ -1,4 +1,5 @@
 using FluentValidation;
+using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Auth.Validators;
 
@@ -30,8 +31,16 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.AcademicYear)
             .InclusiveBetween(1, 7).WithMessage("Academic year must be between 1 and 7.");
 
+        RuleFor(x => x.AffiliationType)
+            .IsInEnum().WithMessage("A valid affiliation type is required.");
+
         RuleFor(x => x.FacultyId)
-            .GreaterThan(0).WithMessage("A valid Faculty ID is required.");
+            .NotNull().GreaterThan(0).WithMessage("A valid Faculty ID is required for university students.")
+            .When(x => x.AffiliationType == AffiliationType.UniversityStudent);
+
+        RuleFor(x => x.City)
+            .MaximumLength(100).WithMessage("City must not exceed 100 characters.")
+            .When(x => !string.IsNullOrWhiteSpace(x.City));
     }
 }
 

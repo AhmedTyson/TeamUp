@@ -39,3 +39,9 @@ public sealed record WaitlistPromotedDomainEvent(
     int EventId,
     int StudentId,
     string EventTitle) : IDomainEvent;
+
+public sealed record EventRegisteredDomainEvent(
+    int EventId,
+    int StudentId,
+    string EventTitle,
+    RegistrationStatus Status) : IDomainEvent;

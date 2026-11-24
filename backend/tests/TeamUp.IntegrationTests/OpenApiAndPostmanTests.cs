@@ -55,7 +55,7 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
             ["name"] = "TeamUp Local Environment",
             ["values"] = new JsonArray
             {
-                new JsonObject { ["key"] = "baseUrl", ["value"] = "http://localhost:5000", ["enabled"] = true },
+                new JsonObject { ["key"] = "baseUrl", ["value"] = "http://localhost:5186", ["enabled"] = true },
                 new JsonObject { ["key"] = "accessToken", ["value"] = "", ["enabled"] = true },
                 new JsonObject { ["key"] = "adminToken", ["value"] = "", ["enabled"] = true },
                 new JsonObject { ["key"] = "studentId", ["value"] = "1", ["enabled"] = true },
@@ -87,7 +87,9 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
                     CreateRequest("Register Student", "POST", "{{baseUrl}}/api/v1/auth/register", "{\"firstName\":\"Ahmed\",\"lastName\":\"Tyson\",\"email\":\"tyson@teamup.edu\",\"password\":\"P@ssword123!\",\"academicYear\":3,\"facultyId\":1}"),
                     CreateRequest("Login", "POST", "{{baseUrl}}/api/v1/auth/login", "{\"email\":\"tyson@teamup.edu\",\"password\":\"P@ssword123!\"}"),
                     CreateRequest("Refresh Token", "POST", "{{baseUrl}}/api/v1/auth/refresh", "{\"refreshToken\":\"sample_token\"}"),
-                    CreateRequest("Forgot Password", "POST", "{{baseUrl}}/api/v1/auth/forgot-password", "{\"email\":\"tyson@teamup.edu\"}")
+                    CreateRequest("Logout", "POST", "{{baseUrl}}/api/v1/auth/logout"),
+                    CreateRequest("Forgot Password", "POST", "{{baseUrl}}/api/v1/auth/forgot-password", "{\"email\":\"tyson@teamup.edu\"}"),
+                    CreateRequest("Reset Password", "POST", "{{baseUrl}}/api/v1/auth/reset-password", "{\"email\":\"tyson@teamup.edu\",\"token\":\"reset_token\",\"newPassword\":\"NewP@ssword123!\"}")
                 ]),
                 CreateFolder("02. Academic Catalog", [
                     CreateRequest("Public Catalog Lookup", "GET", "{{baseUrl}}/api/v1/universities/catalog"),
@@ -95,9 +97,11 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
                     CreateRequest("Get Faculties by University", "GET", "{{baseUrl}}/api/v1/universities/1/faculties")
                 ]),
                 CreateFolder("03. Student Profiles & Directory", [
+                    CreateRequest("Public Student Showcase", "GET", "{{baseUrl}}/api/v1/students/showcase?limit=6"),
                     CreateRequest("Directory Search", "GET", "{{baseUrl}}/api/v1/students?search=Ahmed"),
                     CreateRequest("Get Current Student", "GET", "{{baseUrl}}/api/v1/students/me"),
-                    CreateRequest("Upsert Profile", "PUT", "{{baseUrl}}/api/v1/students/me/profile", "{\"bio\":\"Full-stack AI developer\",\"githubUrl\":\"https://github.com/AhmedTyson\"}")
+                    CreateRequest("Upsert Profile", "PUT", "{{baseUrl}}/api/v1/students/me/profile", "{\"bio\":\"Full-stack AI developer\",\"githubUrl\":\"https://github.com/AhmedTyson\"}"),
+                    CreateRequest("Upload Profile Photo", "POST", "{{baseUrl}}/api/v1/students/me/profile/photo")
                 ]),
                 CreateFolder("04. Skills Catalog & Claims", [
                     CreateRequest("List Master Skills", "GET", "{{baseUrl}}/api/v1/skills"),
@@ -118,13 +122,29 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
                 CreateFolder("07. Events & Attendance", [
                     CreateRequest("List Events", "GET", "{{baseUrl}}/api/v1/events"),
                     CreateRequest("Register for Event", "POST", "{{baseUrl}}/api/v1/events/1/registrations"),
-                    CreateRequest("Verify Session Attendance", "POST", "{{baseUrl}}/api/v1/sessions/1/attendance", "{\"studentId\":1,\"verificationMethod\":\"QRCode\"}")
+                    CreateRequest("Generate Rotating Check-In Code", "POST", "{{baseUrl}}/api/v1/sessions/1/attendance/check-in-code"),
+                    CreateRequest("Student Self Check-In", "POST", "{{baseUrl}}/api/v1/sessions/1/attendance/self-check-in", "{\"verificationCode\":\"00000000.0000000000000000\"}"),
+                    CreateRequest("Verify Session Attendance", "POST", "{{baseUrl}}/api/v1/sessions/1/attendance", "{\"studentId\":1,\"verificationMethod\":\"QRCode\"}"),
+                    CreateRequest("Session Attendance Report (HTML)", "GET", "{{baseUrl}}/api/v1/sessions/1/attendance/report")
                 ]),
                 CreateFolder("08. Gamification & Badges", [
                     CreateRequest("Get Student Score", "GET", "{{baseUrl}}/api/v1/students/{{studentId}}/score"),
                     CreateRequest("Get Score Ledger", "GET", "{{baseUrl}}/api/v1/students/{{studentId}}/score-transactions"),
+                    CreateRequest("Campus Leaderboard", "GET", "{{baseUrl}}/api/v1/gamification/leaderboard"),
                     CreateRequest("Get Badge Catalog", "GET", "{{baseUrl}}/api/v1/badges"),
                     CreateRequest("Get My Notifications", "GET", "{{baseUrl}}/api/v1/notifications")
+                ]),
+                CreateFolder("09. Platform Admin & Governance", [
+                    CreateRequest("Admin Dashboard", "GET", "{{baseUrl}}/api/v1/admin/dashboard"),
+                    CreateRequest("Update Student Role", "PATCH", "{{baseUrl}}/api/v1/admin/students/1/role", "{\"role\":\"OrgAdmin\"}"),
+                    CreateRequest("List Audit Logs", "GET", "{{baseUrl}}/api/v1/admin/audit-logs?page=1&pageSize=20"),
+                    CreateRequest("List Soft-Deleted Records", "GET", "{{baseUrl}}/api/v1/admin/soft-deleted"),
+                    CreateRequest("Restore Entity", "POST", "{{baseUrl}}/api/v1/admin/restore/Student/1"),
+                    CreateRequest("Download Governance Summary PDF", "GET", "{{baseUrl}}/api/v1/admin/reports/platform-summary.pdf"),
+                    CreateRequest("List Email Templates", "GET", "{{baseUrl}}/api/v1/admin/templates"),
+                    CreateRequest("Preview Email Template", "GET", "{{baseUrl}}/api/v1/admin/templates/preview/LeaderboardDigest"),
+                    CreateRequest("Dispatch Leaderboard Digest", "POST", "{{baseUrl}}/api/v1/admin/communications/leaderboard-digest", "{\"mode\":\"TestToMe\",\"dryRun\":true}"),
+                    CreateRequest("Dispatch Project Match Digest", "POST", "{{baseUrl}}/api/v1/admin/communications/project-matches", "{\"mode\":\"TestToMe\",\"dryRun\":true}")
                 ])
             }
         };

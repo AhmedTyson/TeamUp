@@ -2,6 +2,7 @@
  * @date 2026-11-22
  * @purpose Zod validation schemas for Student Account and Extended Portfolio Studio (STRIDE THR-T-03 safe URLs).
  */
+import { AFFILIATION_TYPES } from "@/api";
 import { z } from "@/lib/zodCspConfig";
 import { isSafeAssetOrHttpUrl, isSafeHttpUrl } from "@/lib/urlValidation";
 
@@ -31,8 +32,17 @@ export const updateAccountSchema = z.object({
   academicYear: z
     .number({ message: "Academic year must be an integer." })
     .int("Academic year must be an integer.")
-    .min(1, "Academic year must be between 1 and 6.")
-    .max(6, "Academic year must be between 1 and 6."),
+    .min(1, "Academic year must be between 1 and 7.")
+    .max(7, "Academic year must be between 1 and 7."),
+  affiliationType: z
+    .enum([
+      AFFILIATION_TYPES.UniversityStudent,
+      AFFILIATION_TYPES.IndependentLearner,
+      AFFILIATION_TYPES.FreshGraduate,
+      AFFILIATION_TYPES.HighSchoolTech,
+    ])
+    .optional(),
+  city: z.string().trim().max(100, "City cannot exceed 100 characters.").optional().or(z.literal("")),
   showEmailInDirectory: z.boolean(),
   emailNotificationsEnabled: z.boolean(),
   receiveLeaderboardDigests: z.boolean(),

@@ -60,14 +60,19 @@ export const queryKeys = {
   organizations: {
     all: ["organizations"] as const,
     list: (params?: QueryParams) => ["organizations", "list", params ?? {}] as const,
+    myApplications: ["organizations", "my-applications"] as const,
     detail: (id: number) => ["organizations", "detail", id] as const,
     members: (id: number) => ["organizations", id, "members"] as const,
+    units: (id: number) => ["organizations", id, "units"] as const,
+    hierarchy: (id: number) => ["organizations", id, "hierarchy"] as const,
+    participants: (id: number) => ["organizations", id, "participants"] as const,
     applications: (id: number) => ["organizations", id, "applications"] as const,
   },
 
   events: {
     all: ["events"] as const,
     list: (params?: QueryParams) => ["events", "list", params ?? {}] as const,
+    myRegistrations: ["events", "my-registrations"] as const,
     detail: (id: number) => ["events", "detail", id] as const,
     sessions: (id: number) => ["events", id, "sessions"] as const,
     registrations: (id: number) => ["events", id, "registrations"] as const,

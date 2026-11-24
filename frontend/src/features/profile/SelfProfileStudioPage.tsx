@@ -21,6 +21,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
+  AFFILIATION_TYPES,
   studentsApi,
   type StudentDetailDto,
 } from "@/api";
@@ -68,6 +69,8 @@ export function SelfProfileStudioPage() {
       firstName: "",
       lastName: "",
       academicYear: 1,
+      affiliationType: AFFILIATION_TYPES.UniversityStudent,
+      city: "",
       showEmailInDirectory: false,
       emailNotificationsEnabled: true,
       receiveLeaderboardDigests: true,
@@ -93,6 +96,8 @@ export function SelfProfileStudioPage() {
         firstName: student.firstName,
         lastName: student.lastName,
         academicYear: student.academicYear,
+        affiliationType: student.affiliationType ?? AFFILIATION_TYPES.UniversityStudent,
+        city: student.city ?? "",
         showEmailInDirectory: Boolean(student.showEmailInDirectory),
         emailNotificationsEnabled: student.emailNotificationsEnabled ?? true,
         receiveLeaderboardDigests: student.receiveLeaderboardDigests ?? true,
@@ -347,15 +352,43 @@ export function SelfProfileStudioPage() {
                 />
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-white/90">University Email</label>
+                  <label className="text-xs font-semibold text-white/90">Account Email</label>
                   <input
                     type="text"
                     disabled
                     value={student.email}
                     className="w-full rounded-xl border border-white/10 bg-[#14151c]/60 px-3.5 py-2.5 text-xs text-white/60 cursor-not-allowed"
                   />
-                  <span className="text-[11px] text-[#9ca3af]">University email cannot be altered.</span>
+                  <span className="text-[11px] text-[#9ca3af]">Account email cannot be altered.</span>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Select
+                  name="affiliationType"
+                  label="Affiliation Pathway"
+                  value={accountForm.watch("affiliationType") ?? AFFILIATION_TYPES.UniversityStudent}
+                  onChange={(e) =>
+                    accountForm.setValue(
+                      "affiliationType",
+                      e.target.value as UpdateAccountFormValues["affiliationType"],
+                      { shouldValidate: true },
+                    )
+                  }
+                  options={[
+                    { value: AFFILIATION_TYPES.UniversityStudent, label: "University Student" },
+                    { value: AFFILIATION_TYPES.IndependentLearner, label: "Independent Learner" },
+                    { value: AFFILIATION_TYPES.FreshGraduate, label: "Fresh Graduate" },
+                    { value: AFFILIATION_TYPES.HighSchoolTech, label: "High School / STEM Tech" },
+                  ]}
+                  error={accountForm.formState.errors.affiliationType?.message}
+                />
+                <Input
+                  label="City / Local Hub"
+                  placeholder="e.g. Helwan, Cairo, Alexandria"
+                  {...accountForm.register("city")}
+                  error={accountForm.formState.errors.city?.message}
+                />
               </div>
 
               {/* Prominent Privacy Toggle (STRIDE THR-I-01) */}

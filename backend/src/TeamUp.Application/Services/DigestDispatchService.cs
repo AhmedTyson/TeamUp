@@ -46,8 +46,8 @@ public sealed class DigestDispatchService(
                 s.FirstName,
                 s.LastName,
                 s.Email,
-                FacultyCode = s.Faculty.Code,
-                UniversityName = s.Faculty.University.Name,
+                FacultyCode = s.Faculty != null ? s.Faculty.Code : "IND",
+                UniversityName = s.Faculty != null ? s.Faculty.University.Name : (s.City != null && s.City != "" ? s.City + " Community" : "Egypt Open Community"),
                 s.EmailNotificationsEnabled,
                 s.ReceiveLeaderboardDigests
             })
@@ -301,8 +301,8 @@ public sealed class DigestDispatchService(
                     p.MaxTeamSize,
                     Math.Max(p.MaxTeamSize - p.Members.Count(), 0),
                     p.Creator.FirstName + " " + p.Creator.LastName,
-                    p.Creator.Faculty.University.Name,
-                    p.Creator.Faculty.Code,
+                    p.Creator.Faculty != null ? p.Creator.Faculty.University.Name : (p.Creator.City != null && p.Creator.City != "" ? p.Creator.City + " Community" : "Egypt Open Community"),
+                    p.Creator.Faculty != null ? p.Creator.Faculty.Code : "IND",
                     new[] { "React", "TypeScript" },
                     Array.Empty<string>(),
                     Array.Empty<string>()))

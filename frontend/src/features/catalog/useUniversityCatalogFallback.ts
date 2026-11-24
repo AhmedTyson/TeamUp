@@ -133,6 +133,19 @@ export const FALLBACK_UNIVERSITIES: UniversityCatalogItem[] = [
     logoUrl: "https://upload.wikimedia.org/wikipedia/commons/1/1b/AUC_Arabic_Logo_2021.png",
     faculties: [{ facultyId: 21, name: "School of Sciences and Engineering", code: "SSE_AUC" }],
   },
+  {
+    universityId: 13,
+    name: "Helwan University",
+    city: "Cairo",
+    country: "Egypt",
+    website: "https://helwan.edu.eg",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/en/6/60/Helwan_University_logo.png",
+    faculties: [
+      { facultyId: 22, name: "Faculty of Engineering (Helwan)", code: "ENG_HU" },
+      { facultyId: 23, name: "Faculty of Computers and Artificial Intelligence", code: "FCAI_HU" },
+      { facultyId: 24, name: "Faculty of Commerce and Business Administration", code: "COM_HU" },
+    ],
+  },
 ];
 
 export function useUniversityCatalog(enabled = true) {

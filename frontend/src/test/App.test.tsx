@@ -191,7 +191,7 @@ describe("App shell and home route", () => {
     ).toBeInTheDocument();
     expect(screen.getAllByAltText(/Cairo University official logo/i).length).toBeGreaterThan(0);
     expect(screen.getAllByAltText(/Capital University official logo/i).length).toBeGreaterThan(0);
-    expect(screen.getByText("+6")).toBeInTheDocument();
+    expect(screen.getByText("+7")).toBeInTheDocument();
     expect(screen.getAllByAltText(/Salma Khaled/i).length).toBeGreaterThan(0);
     expect(screen.getAllByAltText(/Omar Mostafa/i).length).toBeGreaterThan(0);
     expect(screen.getAllByAltText(/hands-on engineering workshop/i).length).toBeGreaterThan(0);

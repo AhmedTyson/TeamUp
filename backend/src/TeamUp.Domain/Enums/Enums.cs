@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TeamUp.Domain.Enums;
 
 public enum UserRole { Student, OrgAdmin, PlatformAdmin }
@@ -23,3 +25,21 @@ public enum ScoreSourceType { EventAttendance, TaskCompleted, ProjectDelivered, 
 public enum BadgeCriteriaType { PointsThreshold, EventCount, TaskCount }
 
 public enum NotificationType { ApplicationStatus, TaskAssigned, BadgeEarned, EventReminder }
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum AffiliationType { UniversityStudent, IndependentLearner, FreshGraduate, HighSchoolTech }
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum OrganizationScope { UniversityBranch, FacultyChapter, CrossUniversity, Independent, NationalNetwork }
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum OrganizationUnitType { TechnicalChapter, OperationalCommittee, AffinityGroup, WorkingGroup }
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum OrganizationHierarchyTier { HighBoard, CommitteeLeadership, OrganizingCrew, Participant }
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum RecruitmentStage { Applied, HrScreening, CommitteeInterview, Accepted, Rejected, Withdrawn }
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum EventDeliveryMode { InPerson, Online, Hybrid }

@@ -1,5 +1,5 @@
-// Date: 2026-11-21
-// Purpose: Event, session, waitlist-locking registration, tenant-scoped attendance with RecordedByStudentId & rotating QR codes, and attendance report service (STRIDE THR-T-01, THR-T-02, THR-R-02, THR-D-02).
+// Date: 2026-11-24
+// Purpose: Event, session, waitlist-locking registration, student cross-device registration summary, public preview, CSV attendance export, and email dispatch events (STRIDE THR-T-01, THR-T-02, THR-R-02, THR-D-02).
 
 using System.Data;
 using System.Net;
@@ -23,16 +23,42 @@ public sealed class EventService(
     ITemplateRenderer templateRenderer,
     Microsoft.Extensions.Options.IOptions<AttendanceOptions> attendanceOptions) : IEventService
 {
-    public async Task<PagedResult<EventDto>> GetEventsAsync(
+    public Task<PagedResult<EventDto>> GetEventsAsync(
         string? search,
         int? organizationId,
         PageRequest page,
         EventType? type = null,
         DateTime? from = null,
         DateTime? to = null,
-        CancellationToken ct = default)
+        EventDeliveryMode? deliveryMode = null,
+        CancellationToken ct = default) =>
+        QueryEventsCoreAsync(search, organizationId, page, type, from, to, deliveryMode, publicOnly: false, ct);
+
+    public Task<PagedResult<EventDto>> GetPublicEventsAsync(
+        string? search,
+        int? organizationId,
+        PageRequest page,
+        EventType? type = null,
+        DateTime? from = null,
+        DateTime? to = null,
+        EventDeliveryMode? deliveryMode = null,
+        CancellationToken ct = default) =>
+        QueryEventsCoreAsync(search, organizationId, page, type, from, to, deliveryMode, publicOnly: true, ct);
+
+    private async Task<PagedResult<EventDto>> QueryEventsCoreAsync(
+        string? search,
+        int? organizationId,
+        PageRequest page,
+        EventType? type,
+        DateTime? from,
+        DateTime? to,
+        EventDeliveryMode? deliveryMode,
+        bool publicOnly,
+        CancellationToken ct)
     {
         var query = db.Events.AsNoTracking();
+        if (publicOnly)
+            query = query.Where(x => x.IsPublic);
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim();
@@ -42,6 +68,8 @@ public sealed class EventService(
             query = query.Where(x => x.OrganizationId == organizationId.Value);
         if (type.HasValue)
             query = query.Where(x => x.Type == type.Value);
+        if (deliveryMode.HasValue)
+            query = query.Where(x => x.DeliveryMode == deliveryMode.Value);
         if (from.HasValue)
             query = query.Where(x => x.EndDate >= from.Value);
         if (to.HasValue)
@@ -51,28 +79,67 @@ public sealed class EventService(
         var events = await query.OrderBy(x => x.StartDate).ThenBy(x => x.Title)
             .Skip(page.Skip).Take(page.SafePageSize)
             .Include(x => x.Organization)
+            .Include(x => x.Unit)
             .Include(x => x.Sessions)
             .ToListAsync(ct);
+
         var ids = events.Select(x => x.EventId).ToArray();
         var counts = await db.EventRegistrations.AsNoTracking()
             .Where(x => ids.Contains(x.EventId) && x.Status == RegistrationStatus.Confirmed)
             .GroupBy(x => x.EventId)
             .Select(x => new { EventId = x.Key, Count = x.Count() })
             .ToDictionaryAsync(x => x.EventId, x => x.Count, ct);
-        var items = events.Select(x => ToEventDto(x, counts.GetValueOrDefault(x.EventId))).ToList();
+
+        // Mask MeetingUrl in list responses to prevent unauthorized link scraping
+        var items = events.Select(x => ToEventDto(x, counts.GetValueOrDefault(x.EventId), exposeMeetingUrl: false)).ToList();
         return new PagedResult<EventDto>(items, page.SafePage, page.SafePageSize, total);
     }
 
-    public async Task<EventDto> GetEventByIdAsync(int id, CancellationToken ct = default)
+    public async Task<EventDto> GetEventByIdAsync(
+        int id, int actorStudentId = 0, string? actorRole = null, CancellationToken ct = default)
     {
         var entity = await db.Events.AsNoTracking()
             .Include(x => x.Organization)
+            .Include(x => x.Unit)
             .Include(x => x.Sessions)
             .FirstOrDefaultAsync(x => x.EventId == id, ct)
             ?? throw new NotFoundException($"Event with ID {id} was not found.");
+
         var count = await db.EventRegistrations.CountAsync(
             x => x.EventId == id && x.Status == RegistrationStatus.Confirmed, ct);
-        return ToEventDto(entity, count);
+
+        var exposeMeetingUrl = await CanAccessMeetingUrlAsync(entity, actorStudentId, actorRole, ct);
+        return ToEventDto(entity, count, exposeMeetingUrl);
+    }
+
+    public async Task<EventDto> GetPublicEventByIdAsync(int id, CancellationToken ct = default)
+    {
+        var entity = await db.Events.AsNoTracking()
+            .Include(x => x.Organization)
+            .Include(x => x.Unit)
+            .Include(x => x.Sessions)
+            .FirstOrDefaultAsync(x => x.EventId == id && x.IsPublic, ct)
+            ?? throw new NotFoundException($"Event with ID {id} was not found.");
+
+        var count = await db.EventRegistrations.CountAsync(
+            x => x.EventId == id && x.Status == RegistrationStatus.Confirmed, ct);
+
+        return ToEventDto(entity, count, exposeMeetingUrl: false);
+    }
+
+    private async Task<bool> CanAccessMeetingUrlAsync(
+        Event entity, int actorStudentId, string? actorRole, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(entity.MeetingUrl))
+            return false;
+        if (string.Equals(actorRole, nameof(UserRole.PlatformAdmin), StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (actorStudentId <= 0)
+            return false;
+        if (await orgAuth.IsOrgAdminAsync(entity.OrganizationId, actorStudentId, ct))
+            return true;
+        return await db.EventRegistrations.AsNoTracking().AnyAsync(
+            r => r.EventId == entity.EventId && r.StudentId == actorStudentId && r.Status == RegistrationStatus.Confirmed, ct);
     }
 
     public async Task<EventDto> CreateEventAsync(
@@ -84,8 +151,17 @@ public sealed class EventService(
             throw new BadRequestException("Event EndDate must be greater than or equal to StartDate.");
         if (request.Capacity < 1)
             throw new BadRequestException("Event capacity must be at least 1.");
+
         var organization = await db.Organizations.FirstOrDefaultAsync(x => x.OrganizationId == request.OrganizationId, ct)
             ?? throw new NotFoundException($"Organization with ID {request.OrganizationId} was not found.");
+
+        OrganizationUnit? unit = null;
+        if (request.OrganizationUnitId is > 0)
+        {
+            unit = await db.OrganizationUnits.FirstOrDefaultAsync(
+                u => u.OrganizationId == organization.OrganizationId && u.OrganizationUnitId == request.OrganizationUnitId.Value, ct)
+                ?? throw new NotFoundException($"Organization unit #{request.OrganizationUnitId.Value} was not found.");
+        }
 
         var entity = new Event
         {
@@ -96,12 +172,17 @@ public sealed class EventService(
             StartDate = request.StartDate,
             EndDate = request.EndDate,
             Capacity = request.Capacity,
-            OrganizationId = organization.OrganizationId
+            OrganizationId = organization.OrganizationId,
+            DeliveryMode = request.DeliveryMode,
+            IsPublic = request.IsPublic,
+            MeetingUrl = NormalizeOptional(request.MeetingUrl),
+            OrganizationUnitId = unit?.OrganizationUnitId
         };
         db.Events.Add(entity);
         await db.SaveChangesAsync(ct);
         entity.Organization = organization;
-        return ToEventDto(entity, 0);
+        entity.Unit = unit;
+        return ToEventDto(entity, 0, exposeMeetingUrl: true);
     }
 
     public async Task<EventDto> UpdateEventAsync(
@@ -120,6 +201,12 @@ public sealed class EventService(
         if (request.Capacity < confirmed)
             throw new ConflictException("Capacity cannot be lower than the current number of confirmed registrations.");
 
+        if (request.OrganizationUnitId is > 0 && !await db.OrganizationUnits.AnyAsync(
+            u => u.OrganizationId == entity.OrganizationId && u.OrganizationUnitId == request.OrganizationUnitId.Value, ct))
+        {
+            throw new NotFoundException($"Organization unit #{request.OrganizationUnitId.Value} was not found.");
+        }
+
         entity.Title = request.Title.Trim();
         entity.Description = request.Description.Trim();
         entity.Type = request.Type;
@@ -127,8 +214,13 @@ public sealed class EventService(
         entity.StartDate = request.StartDate;
         entity.EndDate = request.EndDate;
         entity.Capacity = request.Capacity;
+        entity.DeliveryMode = request.DeliveryMode;
+        entity.IsPublic = request.IsPublic;
+        entity.MeetingUrl = NormalizeOptional(request.MeetingUrl);
+        entity.OrganizationUnitId = request.OrganizationUnitId is > 0 ? request.OrganizationUnitId : null;
         await db.SaveChangesAsync(ct);
-        return await GetEventByIdAsync(id, ct);
+
+        return await GetEventByIdAsync(id, actorStudentId, actorRole, ct);
     }
 
     public async Task DeleteEventAsync(int id, int actorStudentId, string? actorRole, CancellationToken ct = default)
@@ -212,6 +304,55 @@ public sealed class EventService(
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task<IReadOnlyList<MyEventRegistrationDto>> GetMyRegistrationsAsync(
+        int studentId, CancellationToken ct = default)
+    {
+        var regs = await db.EventRegistrations.AsNoTracking()
+            .Where(r => r.StudentId == studentId && r.Status != RegistrationStatus.Cancelled)
+            .OrderByDescending(r => r.RegisteredAt)
+            .Select(r => new
+            {
+                r.EventId,
+                r.Event.Title,
+                r.Event.OrganizationId,
+                OrganizationName = r.Event.Organization.Name,
+                r.Event.Type,
+                r.Event.DeliveryMode,
+                r.Event.Location,
+                r.Event.StartDate,
+                r.Event.EndDate,
+                r.Status,
+                r.RegisteredAt,
+                TotalSessions = r.Event.Sessions.Count()
+            })
+            .ToListAsync(ct);
+
+        if (regs.Count == 0)
+            return [];
+
+        var eventIds = regs.Select(r => r.EventId).ToArray();
+        var attendedByEvent = await db.SessionAttendances.AsNoTracking()
+            .Where(a => a.StudentId == studentId && eventIds.Contains(a.Session.EventId))
+            .GroupBy(a => a.Session.EventId)
+            .Select(g => new { EventId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.EventId, x => x.Count, ct);
+
+        return regs.Select(r => new MyEventRegistrationDto(
+            r.EventId,
+            r.Title,
+            r.OrganizationId,
+            r.OrganizationName,
+            r.Type,
+            r.DeliveryMode,
+            r.Location,
+            r.StartDate,
+            r.EndDate,
+            r.Status,
+            r.RegisteredAt,
+            attendedByEvent.GetValueOrDefault(r.EventId),
+            r.TotalSessions)).ToList();
+    }
+
     public async Task<IReadOnlyList<EventRegistrationDto>> GetRegistrationsAsync(
         int eventId, int actorStudentId, string? actorRole, CancellationToken ct = default)
     {
@@ -261,6 +402,7 @@ public sealed class EventService(
             existing.Status = status;
         }
 
+        existing.AddDomainEvent(new EventRegisteredDomainEvent(eventId, studentId, eventEntity.Title, status));
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
         return new EventRegistrationDto(eventId, studentId, student.FirstName, student.LastName,
@@ -457,6 +599,23 @@ public sealed class EventService(
         return await templateRenderer.RenderReportAsync("SessionAttendanceReport.html", values, ct);
     }
 
+    public async Task<string> ExportAttendanceCsvAsync(
+        int sessionId, int actorStudentId, string? actorRole, CancellationToken ct = default)
+    {
+        var records = await GetAttendanceAsync(sessionId, actorStudentId, actorRole, ct);
+        var headers = new[] { "SessionId", "StudentId", "FullName", "CheckInTimeUtc", "VerificationMethod", "RecordedByStudentId" };
+        var rows = records.Select(r => new[]
+        {
+            r.SessionId.ToString(),
+            r.StudentId.ToString(),
+            $"{r.FirstName} {r.LastName}",
+            r.CheckInTime.ToString("yyyy-MM-dd HH:mm:ss"),
+            r.VerificationMethod.ToString(),
+            r.RecordedByStudentId?.ToString() ?? "Organizer"
+        });
+        return CsvExportHelper.BuildCsv(headers, rows);
+    }
+
     private async Task<SessionAttendanceDto> RecordAttendanceCoreAsync(
         int sessionId,
         int studentId,
@@ -523,11 +682,24 @@ public sealed class EventService(
             throw new BadRequestException("Session time must be within the parent event date range.");
     }
 
-    private static EventDto ToEventDto(Event entity, int registeredCount) => new(
-        entity.EventId, entity.Title, entity.Description, entity.Type, entity.Location,
-        entity.StartDate, entity.EndDate, entity.Capacity, entity.OrganizationId,
-        entity.Organization.Name, registeredCount,
-        entity.Sessions.OrderBy(x => x.SessionNo).Select(ToSessionDto).ToList());
+    private static EventDto ToEventDto(Event entity, int registeredCount, bool exposeMeetingUrl) => new(
+        entity.EventId,
+        entity.Title,
+        entity.Description,
+        entity.Type,
+        entity.Location,
+        entity.StartDate,
+        entity.EndDate,
+        entity.Capacity,
+        entity.OrganizationId,
+        entity.Organization.Name,
+        registeredCount,
+        entity.Sessions.OrderBy(x => x.SessionNo).Select(ToSessionDto).ToList(),
+        entity.DeliveryMode,
+        entity.IsPublic,
+        exposeMeetingUrl ? entity.MeetingUrl : null,
+        entity.OrganizationUnitId,
+        entity.Unit?.Name);
 
     private static EventSessionDto ToSessionDto(EventSession session) => new(
         session.SessionId, session.EventId, session.SessionNo, session.Title,

@@ -53,7 +53,9 @@ public class StudentConfig : IEntityTypeConfiguration<Student>
         b.Property(x => x.RefreshToken).HasMaxLength(256);
         b.Property(x => x.PreviousRefreshToken).HasMaxLength(256);
         b.Property(x => x.PasswordResetToken).HasMaxLength(256);
-        b.HasOne(x => x.Faculty).WithMany(f => f.Students).HasForeignKey(x => x.FacultyId);
+        b.Property(x => x.AffiliationType).HasDefaultValue(Domain.Enums.AffiliationType.UniversityStudent);
+        b.Property(x => x.City).HasMaxLength(100);
+        b.HasOne(x => x.Faculty).WithMany(f => f.Students).HasForeignKey(x => x.FacultyId).IsRequired(false);
         b.HasIndex(x => x.Email).IsUnique().HasFilter(Sql.NotDeleted);
         b.ToTable(t => t.HasCheckConstraint("CK_Student_AcademicYear", "[AcademicYear] BETWEEN 1 AND 7"));
     }

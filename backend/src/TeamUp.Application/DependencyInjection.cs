@@ -72,6 +72,7 @@ public static class DependencyInjection
         services.AddScoped<IDomainEventHandler<TaskAssignedDomainEvent>, TaskAssignedDomainEventHandler>();
         services.AddScoped<IDomainEventHandler<ApplicationReviewedDomainEvent>, ApplicationReviewedDomainEventHandler>();
         services.AddScoped<IDomainEventHandler<WaitlistPromotedDomainEvent>, WaitlistPromotedDomainEventHandler>();
+        services.AddScoped<IDomainEventHandler<EventRegisteredDomainEvent>, EventRegisteredEmailDomainEventHandler>();
 
         return services;
     }

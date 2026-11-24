@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Common.Models;
 using TeamUp.Application.Events;
@@ -66,5 +67,14 @@ public sealed class SessionAttendanceController(IEventService eventService) : Ba
     {
         var html = await eventService.RenderAttendanceReportHtmlAsync(id, CurrentStudentId, CurrentUserRole, ct);
         return Content(html, "text/html; charset=utf-8");
+    }
+
+    [HttpGet("export.csv")]
+    [Produces("text/csv")]
+    [ProducesForbidden, ProducesNotFound]
+    public async Task<IActionResult> ExportAttendanceCsv([FromRoute] int id, CancellationToken ct)
+    {
+        var csv = await eventService.ExportAttendanceCsvAsync(id, CurrentStudentId, CurrentUserRole, ct);
+        return File(Encoding.UTF8.GetBytes(csv), "text/csv; charset=utf-8", $"attendance-session-{id}.csv");
     }
 }

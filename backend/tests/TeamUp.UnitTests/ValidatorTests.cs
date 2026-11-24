@@ -3,6 +3,7 @@ using TeamUp.Application.Auth.Validators;
 using TeamUp.Application.Common.Validation;
 using TeamUp.Application.Students;
 using TeamUp.Application.Students.Validators;
+using TeamUp.Domain.Enums;
 
 namespace TeamUp.UnitTests;
 
@@ -16,6 +17,23 @@ public class ValidatorTests
     public void RegisterValidator_ValidRequest_PassesValidation()
     {
         var req = new RegisterRequest("Omar", "Kamal", "student@university.edu", "P@ssword123!", 2, 1);
+        var res = _registerValidator.Validate(req);
+        Assert.True(res.IsValid);
+        Assert.Empty(res.Errors);
+    }
+
+    [Fact]
+    public void RegisterValidator_IndependentLearnerWithoutFaculty_PassesValidation()
+    {
+        var req = new RegisterRequest(
+            "Ziad",
+            "Tarek",
+            "ziad@community.eg",
+            "P@ssword123!",
+            1,
+            null,
+            AffiliationType: AffiliationType.IndependentLearner,
+            City: "Helwan");
         var res = _registerValidator.Validate(req);
         Assert.True(res.IsValid);
         Assert.Empty(res.Errors);

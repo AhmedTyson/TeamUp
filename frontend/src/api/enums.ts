@@ -15,8 +15,18 @@ export const ORGANIZATION_ROLES = {
   OrgAdmin: "OrgAdmin",
   President: "President",
   VicePresident: "Vice President",
+  Chair: "Chair",
+  ViceChair: "Vice Chair",
+  Secretary: "Secretary",
+  Treasurer: "Treasurer",
+  Webmaster: "Webmaster",
   Executive: "Executive",
+  Head: "Head",
+  ViceHead: "Vice Head",
+  Instructor: "Instructor",
+  SeniorMember: "Senior Member",
   Member: "Member",
+  Participant: "Participant",
 } as const;
 export type OrganizationRole = (typeof ORGANIZATION_ROLES)[keyof typeof ORGANIZATION_ROLES];
 
@@ -25,6 +35,11 @@ export const ORGANIZATION_ADMIN_ROLES: readonly OrganizationRole[] = [
   ORGANIZATION_ROLES.OrgAdmin,
   ORGANIZATION_ROLES.President,
   ORGANIZATION_ROLES.VicePresident,
+  ORGANIZATION_ROLES.Chair,
+  ORGANIZATION_ROLES.ViceChair,
+  ORGANIZATION_ROLES.Secretary,
+  ORGANIZATION_ROLES.Treasurer,
+  ORGANIZATION_ROLES.Webmaster,
   ORGANIZATION_ROLES.Executive,
 ] as const;
 
@@ -35,6 +50,71 @@ export function isOrganizationAdminRole(role?: string | null): boolean {
   const normalized = role.trim().toLowerCase();
   return ORGANIZATION_ADMIN_ROLES.some((r) => r.toLowerCase() === normalized);
 }
+
+export function isCommitteeLeaderRole(role?: string | null): boolean {
+  if (!role || isOrganizationAdminRole(role)) {
+    return false;
+  }
+  const normalized = role.trim().toLowerCase();
+  return (
+    normalized === "head" ||
+    normalized === "vice head" ||
+    normalized.includes("head") ||
+    normalized.includes("lead")
+  );
+}
+
+export const AFFILIATION_TYPES = {
+  UniversityStudent: "UniversityStudent",
+  IndependentLearner: "IndependentLearner",
+  FreshGraduate: "FreshGraduate",
+  HighSchoolTech: "HighSchoolTech",
+} as const;
+export type AffiliationType = (typeof AFFILIATION_TYPES)[keyof typeof AFFILIATION_TYPES];
+
+export const ORGANIZATION_SCOPES = {
+  UniversityBranch: "UniversityBranch",
+  FacultyChapter: "FacultyChapter",
+  CrossUniversity: "CrossUniversity",
+  Independent: "Independent",
+  NationalNetwork: "NationalNetwork",
+} as const;
+export type OrganizationScope = (typeof ORGANIZATION_SCOPES)[keyof typeof ORGANIZATION_SCOPES];
+
+export const ORGANIZATION_UNIT_TYPES = {
+  TechnicalChapter: "TechnicalChapter",
+  OperationalCommittee: "OperationalCommittee",
+  AffinityGroup: "AffinityGroup",
+  WorkingGroup: "WorkingGroup",
+} as const;
+export type OrganizationUnitType =
+  (typeof ORGANIZATION_UNIT_TYPES)[keyof typeof ORGANIZATION_UNIT_TYPES];
+
+export const ORGANIZATION_HIERARCHY_TIERS = {
+  HighBoard: "HighBoard",
+  CommitteeLeadership: "CommitteeLeadership",
+  OrganizingCrew: "OrganizingCrew",
+  Participant: "Participant",
+} as const;
+export type OrganizationHierarchyTier =
+  (typeof ORGANIZATION_HIERARCHY_TIERS)[keyof typeof ORGANIZATION_HIERARCHY_TIERS];
+
+export const RECRUITMENT_STAGES = {
+  Applied: "Applied",
+  HrScreening: "HrScreening",
+  CommitteeInterview: "CommitteeInterview",
+  Accepted: "Accepted",
+  Rejected: "Rejected",
+  Withdrawn: "Withdrawn",
+} as const;
+export type RecruitmentStage = (typeof RECRUITMENT_STAGES)[keyof typeof RECRUITMENT_STAGES];
+
+export const EVENT_DELIVERY_MODES = {
+  InPerson: "InPerson",
+  Online: "Online",
+  Hybrid: "Hybrid",
+} as const;
+export type EventDeliveryMode = (typeof EVENT_DELIVERY_MODES)[keyof typeof EVENT_DELIVERY_MODES];
 
 export const PROFICIENCY_LEVELS = {
   Beginner: "Beginner",

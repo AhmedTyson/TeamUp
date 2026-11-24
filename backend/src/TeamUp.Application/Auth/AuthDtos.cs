@@ -1,3 +1,5 @@
+using TeamUp.Domain.Enums;
+
 namespace TeamUp.Application.Auth;
 
 public sealed record RegisterRequest(
@@ -6,10 +8,12 @@ public sealed record RegisterRequest(
     string Email,
     string Password,
     int AcademicYear,
-    int FacultyId,
+    int? FacultyId,
     bool EmailNotificationsEnabled = true,
     bool ReceiveLeaderboardDigests = true,
-    bool ReceiveProjectMatchEmails = true
+    bool ReceiveProjectMatchEmails = true,
+    AffiliationType AffiliationType = AffiliationType.UniversityStudent,
+    string? City = null
 );
 
 public sealed record LoginRequest(
@@ -42,14 +46,16 @@ public sealed record StudentSummaryDto(
     string Email,
     int AcademicYear,
     string Role,
-    int FacultyId,
+    int? FacultyId,
     string FacultyName,
     string UniversityName,
     string? PhotoUrl = null,
     bool ShowEmailInDirectory = false,
     bool EmailNotificationsEnabled = true,
     bool ReceiveLeaderboardDigests = true,
-    bool ReceiveProjectMatchEmails = true
+    bool ReceiveProjectMatchEmails = true,
+    AffiliationType AffiliationType = AffiliationType.UniversityStudent,
+    string? City = null
 );
 
 public sealed record AuthResponse(

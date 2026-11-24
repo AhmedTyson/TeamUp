@@ -1,18 +1,37 @@
+using TeamUp.Domain.Enums;
+
 namespace TeamUp.Application.Organizations;
 
 public sealed record CreateOrganizationRequest(
     string Name,
     string Description,
     string Category,
-    string? LogoUrl);
+    string? LogoUrl,
+    OrganizationScope Scope = OrganizationScope.UniversityBranch,
+    int? UniversityId = null,
+    string? City = null,
+    string? CoverImageUrl = null,
+    string? WebsiteUrl = null,
+    bool IsRecruiting = false,
+    string? CurrentSeasonName = null);
 
 public sealed record UpdateOrganizationRequest(
     string Name,
     string Description,
     string Category,
-    string? LogoUrl);
+    string? LogoUrl,
+    OrganizationScope Scope = OrganizationScope.UniversityBranch,
+    int? UniversityId = null,
+    string? City = null,
+    string? CoverImageUrl = null,
+    string? WebsiteUrl = null,
+    bool IsRecruiting = false,
+    string? CurrentSeasonName = null);
 
-public sealed record UpdateOrganizationMemberRequest(string Role);
+public sealed record UpdateOrganizationMemberRequest(
+    string Role,
+    int? OrganizationUnitId = null,
+    OrganizationHierarchyTier? HierarchyTier = null);
 
 public sealed record OrganizationMemberDto(
     int StudentId,
@@ -20,7 +39,38 @@ public sealed record OrganizationMemberDto(
     string LastName,
     string Email,
     string Role,
-    DateTime JoinedAt);
+    DateTime JoinedAt,
+    int? OrganizationUnitId = null,
+    string? UnitName = null,
+    string? UnitCode = null,
+    OrganizationHierarchyTier HierarchyTier = OrganizationHierarchyTier.OrganizingCrew);
+
+public sealed record OrganizationUnitDto(
+    int OrganizationUnitId,
+    int OrganizationId,
+    string Name,
+    string Code,
+    string? Description,
+    OrganizationUnitType UnitType,
+    bool IsRecruiting,
+    int? OpenSeats,
+    int MemberCount);
+
+public sealed record CreateOrganizationUnitRequest(
+    string Name,
+    string Code,
+    string? Description,
+    OrganizationUnitType UnitType = OrganizationUnitType.TechnicalChapter,
+    bool IsRecruiting = true,
+    int? OpenSeats = null);
+
+public sealed record UpdateOrganizationUnitRequest(
+    string Name,
+    string Code,
+    string? Description,
+    OrganizationUnitType UnitType = OrganizationUnitType.TechnicalChapter,
+    bool IsRecruiting = true,
+    int? OpenSeats = null);
 
 public sealed record OrganizationSummaryDto(
     int OrganizationId,
@@ -28,15 +78,26 @@ public sealed record OrganizationSummaryDto(
     string Description,
     string Category,
     string? LogoUrl,
-    int MemberCount);
+    int MemberCount,
+    OrganizationScope Scope = OrganizationScope.UniversityBranch,
+    int? UniversityId = null,
+    string? UniversityName = null,
+    string? City = null,
+    string? CoverImageUrl = null,
+    string? WebsiteUrl = null,
+    bool IsRecruiting = false,
+    string? CurrentSeasonName = null,
+    int UnitCount = 0);
 
 public sealed record OrganizationEventSummaryDto(
     int EventId,
     string Title,
-    TeamUp.Domain.Enums.EventType Type,
+    EventType Type,
     string Location,
     DateTime StartDate,
-    DateTime EndDate);
+    DateTime EndDate,
+    EventDeliveryMode DeliveryMode = EventDeliveryMode.InPerson,
+    bool IsPublic = true);
 
 public sealed record OrganizationDetailDto(
     int OrganizationId,
@@ -45,11 +106,29 @@ public sealed record OrganizationDetailDto(
     string Category,
     string? LogoUrl,
     IReadOnlyList<OrganizationMemberDto> Members,
-    IReadOnlyList<OrganizationEventSummaryDto> Events);
+    IReadOnlyList<OrganizationEventSummaryDto> Events,
+    OrganizationScope Scope = OrganizationScope.UniversityBranch,
+    int? UniversityId = null,
+    string? UniversityName = null,
+    string? City = null,
+    string? CoverImageUrl = null,
+    string? WebsiteUrl = null,
+    bool IsRecruiting = false,
+    string? CurrentSeasonName = null,
+    IReadOnlyList<OrganizationUnitDto>? Units = null);
 
-public sealed record CreateMembershipApplicationRequest(string? Message);
+public sealed record CreateMembershipApplicationRequest(
+    string? Message,
+    int? OrganizationUnitId = null,
+    string? SeasonName = null);
 
-public sealed record ReviewMembershipApplicationRequest(TeamUp.Domain.Enums.ApplicationStatus Status);
+public sealed record ReviewMembershipApplicationRequest(ApplicationStatus Status);
+
+public sealed record UpdateApplicationStageRequest(
+    RecruitmentStage Stage,
+    decimal? EvaluationScore = null,
+    string? InterviewNotes = null,
+    int? OrganizationUnitId = null);
 
 public sealed record MembershipApplicationDto(
     int ApplicationId,
@@ -59,6 +138,34 @@ public sealed record MembershipApplicationDto(
     string StudentLastName,
     string StudentEmail,
     string? Message,
-    TeamUp.Domain.Enums.ApplicationStatus Status,
+    ApplicationStatus Status,
     DateTime AppliedAt,
-    DateTime? ReviewedAt);
+    DateTime? ReviewedAt,
+    int? OrganizationUnitId = null,
+    string? UnitName = null,
+    string? UnitCode = null,
+    string? SeasonName = null,
+    RecruitmentStage Stage = RecruitmentStage.Applied,
+    decimal? EvaluationScore = null,
+    string? InterviewNotes = null,
+    string? OrganizationName = null);
+
+public sealed record OrganizationHierarchyDto(
+    int OrganizationId,
+    string OrganizationName,
+    OrganizationScope Scope,
+    IReadOnlyList<OrganizationMemberDto> HighBoard,
+    IReadOnlyList<OrganizationMemberDto> CommitteeLeadership,
+    IReadOnlyList<OrganizationMemberDto> OrganizingCrew,
+    IReadOnlyList<OrganizationUnitDto> Units,
+    int ParticipantsCount);
+
+public sealed record OrganizationParticipantDto(
+    int StudentId,
+    string FirstName,
+    string LastName,
+    string AffiliationLabel,
+    int EventsRegisteredCount,
+    int SessionsAttendedCount,
+    string? LastEventTitle,
+    DateTime? LastActiveAt);

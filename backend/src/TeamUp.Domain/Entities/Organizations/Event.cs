@@ -14,7 +14,12 @@ public class Event : BaseEntity
     public DateTime EndDate { get; set; }
     public int Capacity { get; set; }
     public int OrganizationId { get; set; }
+    public EventDeliveryMode DeliveryMode { get; set; } = EventDeliveryMode.InPerson;
+    public bool IsPublic { get; set; } = true;
+    public string? MeetingUrl { get; set; }
+    public int? OrganizationUnitId { get; set; }
     public Organization Organization { get; set; } = null!;
+    public OrganizationUnit? Unit { get; set; }
     public byte[] RowVersion { get; set; } = [];
     public ICollection<EventSession> Sessions { get; set; } = [];
 }

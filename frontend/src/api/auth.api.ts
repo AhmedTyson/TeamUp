@@ -4,7 +4,7 @@
  */
 import { apiClient, unwrapApiResponse, unwrapVoidResponse } from "./client";
 import { API_ENDPOINTS } from "./endpoints";
-import type { UserRole } from "./enums";
+import type { AffiliationType, UserRole } from "./enums";
 import type { ApiResponse } from "./types";
 
 export interface LoginPayload {
@@ -18,7 +18,9 @@ export interface RegisterPayload {
   email: string;
   password: string;
   academicYear: number;
-  facultyId: number;
+  facultyId: number | null;
+  affiliationType?: AffiliationType;
+  city?: string | null;
   emailNotificationsEnabled?: boolean;
   receiveLeaderboardDigests?: boolean;
   receiveProjectMatchEmails?: boolean;
@@ -52,9 +54,11 @@ export interface AuthStudentSummary {
   email: string;
   academicYear: number;
   role: UserRole;
-  facultyId: number;
+  facultyId: number | null;
   facultyName: string;
   universityName: string;
+  affiliationType?: AffiliationType;
+  city?: string | null;
   photoUrl?: string | null;
   profile?: AuthStudentProfileSummary | null;
   showEmailInDirectory?: boolean;

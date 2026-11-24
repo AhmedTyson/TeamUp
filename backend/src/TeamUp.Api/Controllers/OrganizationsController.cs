@@ -3,9 +3,11 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Common;
 using TeamUp.Application.Organizations;
+using TeamUp.Domain.Enums;
 
 namespace TeamUp.Api.Controllers;
 
@@ -13,13 +15,64 @@ namespace TeamUp.Api.Controllers;
 [Authorize]
 public sealed class OrganizationsController(IOrganizationService organizationService) : BaseApiController
 {
+    [HttpGet("public")]
+    [AllowAnonymous]
+    [ProducesOk<PagedResult<OrganizationSummaryDto>>]
+    public async Task<IActionResult> GetPublicOrganizations(
+        [FromQuery] string? search,
+        [FromQuery] string? category,
+        [FromQuery] OrganizationScope? scope = null,
+        [FromQuery] int? universityId = null,
+        [FromQuery] bool? recruitingOnly = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var result = await organizationService.GetOrganizationsAsync(
+            search, category, new PageRequest(page, pageSize), scope, universityId, recruitingOnly, ct);
+        return OkResponse(result);
+    }
+
+    [HttpGet("public/{id:int}")]
+    [AllowAnonymous]
+    [ProducesOk<OrganizationDetailDto>, ProducesNotFound]
+    public async Task<IActionResult> GetPublicOrganizationById([FromRoute] int id, CancellationToken ct)
+    {
+        var result = await organizationService.GetPublicOrganizationByIdAsync(id, ct);
+        return OkResponse(result);
+    }
+
+    [HttpGet("public/{id:int}/hierarchy")]
+    [AllowAnonymous]
+    [ProducesOk<OrganizationHierarchyDto>, ProducesNotFound]
+    public async Task<IActionResult> GetPublicHierarchy([FromRoute] int id, CancellationToken ct)
+    {
+        var result = await organizationService.GetHierarchyAsync(id, includeEmails: false, ct);
+        return OkResponse(result);
+    }
+
+    [HttpGet("my-applications")]
+    [ProducesOk<IReadOnlyList<MembershipApplicationDto>>]
+    public async Task<IActionResult> GetMyApplications(CancellationToken ct)
+    {
+        var result = await organizationService.GetMyApplicationsAsync(CurrentStudentId, ct);
+        return OkResponse(result);
+    }
+
     [HttpGet]
     [ProducesOk<PagedResult<OrganizationSummaryDto>>]
     public async Task<IActionResult> GetOrganizations(
-        [FromQuery] string? search, [FromQuery] string? category,
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
+        [FromQuery] string? search,
+        [FromQuery] string? category,
+        [FromQuery] OrganizationScope? scope = null,
+        [FromQuery] int? universityId = null,
+        [FromQuery] bool? recruitingOnly = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
-        var result = await organizationService.GetOrganizationsAsync(search, category, new PageRequest(page, pageSize), ct);
+        var result = await organizationService.GetOrganizationsAsync(
+            search, category, new PageRequest(page, pageSize), scope, universityId, recruitingOnly, ct);
         return OkResponse(result);
     }
 
@@ -121,5 +174,77 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     {
         await organizationService.WithdrawApplicationAsync(id, appId, CurrentStudentId, ct);
         return NoContentResponse();
+    }
+
+    [HttpPatch("{id:int}/applications/{appId:int}/stage")]
+    [ProducesOk<MembershipApplicationDto>]
+    [ProducesForbidden, ProducesNotFound, ProducesConflict]
+    public async Task<IActionResult> UpdateApplicationStage(
+        [FromRoute] int id, [FromRoute] int appId,
+        [FromBody] UpdateApplicationStageRequest request, CancellationToken ct)
+    {
+        var result = await organizationService.UpdateApplicationStageAsync(id, appId, CurrentStudentId, CurrentUserRole, request, ct);
+        return OkResponse(result, "Recruitment stage updated successfully.");
+    }
+
+    [HttpGet("{id:int}/applications/export.csv")]
+    [Produces("text/csv")]
+    [ProducesForbidden, ProducesNotFound]
+    public async Task<IActionResult> ExportApplicationsCsv([FromRoute] int id, CancellationToken ct)
+    {
+        var csv = await organizationService.ExportApplicationsCsvAsync(id, CurrentStudentId, CurrentUserRole, ct);
+        return File(Encoding.UTF8.GetBytes(csv), "text/csv; charset=utf-8", $"applications-org-{id}.csv");
+    }
+
+    [HttpGet("{id:int}/units")]
+    [ProducesOk<IReadOnlyList<OrganizationUnitDto>>, ProducesNotFound]
+    public async Task<IActionResult> GetUnits([FromRoute] int id, CancellationToken ct)
+    {
+        var result = await organizationService.GetUnitsAsync(id, ct);
+        return OkResponse(result);
+    }
+
+    [HttpPost("{id:int}/units")]
+    [ProducesCreated<OrganizationUnitDto>]
+    [ProducesForbidden, ProducesNotFound, ProducesConflict]
+    public async Task<IActionResult> CreateUnit(
+        [FromRoute] int id, [FromBody] CreateOrganizationUnitRequest request, CancellationToken ct)
+    {
+        var result = await organizationService.CreateUnitAsync(id, CurrentStudentId, CurrentUserRole, request, ct);
+        return CreatedResponse(result, "Organization unit created successfully.");
+    }
+
+    [HttpPatch("{id:int}/units/{unitId:int}")]
+    [ProducesOk<OrganizationUnitDto>]
+    [ProducesForbidden, ProducesNotFound, ProducesConflict]
+    public async Task<IActionResult> UpdateUnit(
+        [FromRoute] int id, [FromRoute] int unitId, [FromBody] UpdateOrganizationUnitRequest request, CancellationToken ct)
+    {
+        var result = await organizationService.UpdateUnitAsync(id, unitId, CurrentStudentId, CurrentUserRole, request, ct);
+        return OkResponse(result, "Organization unit updated successfully.");
+    }
+
+    [HttpDelete("{id:int}/units/{unitId:int}")]
+    [ProducesNoContent, ProducesForbidden, ProducesNotFound]
+    public async Task<IActionResult> DeleteUnit([FromRoute] int id, [FromRoute] int unitId, CancellationToken ct)
+    {
+        await organizationService.DeleteUnitAsync(id, unitId, CurrentStudentId, CurrentUserRole, ct);
+        return NoContentResponse();
+    }
+
+    [HttpGet("{id:int}/hierarchy")]
+    [ProducesOk<OrganizationHierarchyDto>, ProducesNotFound]
+    public async Task<IActionResult> GetHierarchy([FromRoute] int id, CancellationToken ct)
+    {
+        var result = await organizationService.GetHierarchyAsync(id, includeEmails: true, ct);
+        return OkResponse(result);
+    }
+
+    [HttpGet("{id:int}/participants")]
+    [ProducesOk<IReadOnlyList<OrganizationParticipantDto>>, ProducesNotFound]
+    public async Task<IActionResult> GetParticipants([FromRoute] int id, CancellationToken ct)
+    {
+        var result = await organizationService.GetParticipantsAsync(id, ct);
+        return OkResponse(result);
     }
 }

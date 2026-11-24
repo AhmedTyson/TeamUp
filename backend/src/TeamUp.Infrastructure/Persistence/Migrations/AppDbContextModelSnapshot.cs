@@ -139,6 +139,14 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DeliveryMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("InPerson");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -146,12 +154,24 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsPublic")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("MeetingUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrganizationUnitId")
                         .HasColumnType("int");
 
                     b.Property<byte[]>("RowVersion")
@@ -178,6 +198,8 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("OrganizationId");
 
+                    b.HasIndex("OrganizationUnitId");
+
                     b.HasIndex("StartDate");
 
                     b.HasIndex("OrganizationId", "StartDate")
@@ -191,6 +213,8 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_Event_Capacity", "[Capacity] >= 1");
 
                             t.HasCheckConstraint("CK_Event_Dates", "[EndDate] >= [StartDate]");
+
+                            t.HasCheckConstraint("CK_Event_DeliveryMode", "[DeliveryMode] IN ('InPerson', 'Online', 'Hybrid')");
 
                             t.HasCheckConstraint("CK_Event_Type", "[Type] IN ('Workshop', 'Hackathon', 'Session', 'Competition')");
                         });
@@ -325,6 +349,14 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal?>("EvaluationScore")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<string>("InterviewNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<string>("Message")
                         .HasMaxLength(600)
                         .HasColumnType("nvarchar(600)");
@@ -332,8 +364,26 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("OrganizationUnitId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("ReviewedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReviewerStudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SeasonName")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("Applied");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -348,9 +398,14 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasKey("ApplicationId");
 
+                    b.HasIndex("OrganizationUnitId");
+
                     b.HasIndex("StudentId");
 
                     b.HasIndex("OrganizationId", "AppliedAt")
+                        .HasFilter("[DeletedAt] IS NULL");
+
+                    b.HasIndex("OrganizationId", "Stage")
                         .HasFilter("[DeletedAt] IS NULL");
 
                     b.HasIndex("OrganizationId", "StudentId")
@@ -359,6 +414,8 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("MembershipApplication", t =>
                         {
+                            t.HasCheckConstraint("CK_MembershipApplication_Stage", "[Stage] IN ('Applied', 'HrScreening', 'CommitteeInterview', 'Accepted', 'Rejected', 'Withdrawn')");
+
                             t.HasCheckConstraint("CK_MembershipApplication_Status", "[Status] IN ('Pending', 'Accepted', 'Rejected', 'Withdrawn')");
                         });
                 });
@@ -426,12 +483,29 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("CurrentSeasonName")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsRecruiting")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("LogoUrl")
                         .HasMaxLength(300)
@@ -442,16 +516,40 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("UniversityBranch");
+
+                    b.Property<int?>("UniversityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WebsiteUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.HasKey("OrganizationId");
 
                     b.HasIndex("Name")
                         .IsUnique()
                         .HasFilter("[DeletedAt] IS NULL");
 
+                    b.HasIndex("UniversityId")
+                        .HasFilter("[DeletedAt] IS NULL");
+
                     b.HasIndex("Category", "Name")
                         .HasFilter("[DeletedAt] IS NULL");
 
-                    b.ToTable("Organization");
+                    b.HasIndex("Scope", "IsRecruiting")
+                        .HasFilter("[DeletedAt] IS NULL");
+
+                    b.ToTable("Organization", t =>
+                        {
+                            t.HasCheckConstraint("CK_Organization_Scope", "[Scope] IN ('UniversityBranch', 'FacultyChapter', 'CrossUniversity', 'Independent', 'NationalNetwork')");
+                        });
                 });
 
             modelBuilder.Entity("TeamUp.Domain.Entities.OrganizationMember", b =>
@@ -465,10 +563,21 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("HierarchyTier")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("OrganizingCrew");
+
                     b.Property<DateTime>("JoinedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int?>("OrganizationUnitId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -477,12 +586,73 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
 
                     b.HasKey("OrganizationId", "StudentId");
 
+                    b.HasIndex("OrganizationUnitId");
+
                     b.HasIndex("StudentId");
 
                     b.HasIndex("OrganizationId", "Role", "JoinedAt")
                         .HasFilter("[DeletedAt] IS NULL");
 
-                    b.ToTable("OrganizationMember");
+                    b.ToTable("OrganizationMember", t =>
+                        {
+                            t.HasCheckConstraint("CK_OrganizationMember_HierarchyTier", "[HierarchyTier] IN ('HighBoard', 'CommitteeLeadership', 'OrganizingCrew', 'Participant')");
+                        });
+                });
+
+            modelBuilder.Entity("TeamUp.Domain.Entities.OrganizationUnit", b =>
+                {
+                    b.Property<int>("OrganizationUnitId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrganizationUnitId"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(600)
+                        .HasColumnType("nvarchar(600)");
+
+                    b.Property<bool>("IsRecruiting")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("OpenSeats")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("TechnicalChapter");
+
+                    b.HasKey("OrganizationUnitId");
+
+                    b.HasIndex("OrganizationId", "Code")
+                        .IsUnique()
+                        .HasFilter("[DeletedAt] IS NULL");
+
+                    b.ToTable("OrganizationUnit", t =>
+                        {
+                            t.HasCheckConstraint("CK_OrganizationUnit_UnitType", "[UnitType] IN ('TechnicalChapter', 'OperationalCommittee', 'AffinityGroup', 'WorkingGroup')");
+                        });
                 });
 
             modelBuilder.Entity("TeamUp.Domain.Entities.Project", b =>
@@ -837,6 +1007,18 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Property<int>("AcademicYear")
                         .HasColumnType("int");
 
+                    b.Property<string>("AffiliationType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("UniversityStudent");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
@@ -850,7 +1032,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.Property<int>("FacultyId")
+                    b.Property<int?>("FacultyId")
                         .HasColumnType("int");
 
                     b.Property<int>("FailedLoginCount")
@@ -932,6 +1114,8 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.ToTable("Student", t =>
                         {
                             t.HasCheckConstraint("CK_Student_AcademicYear", "[AcademicYear] BETWEEN 1 AND 7");
+
+                            t.HasCheckConstraint("CK_Student_AffiliationType", "[AffiliationType] IN ('UniversityStudent', 'IndependentLearner', 'FreshGraduate', 'HighSchoolTech')");
 
                             t.HasCheckConstraint("CK_Student_Role", "[Role] IN ('Student', 'OrgAdmin', 'PlatformAdmin')");
                         });
@@ -1111,7 +1295,14 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("TeamUp.Domain.Entities.OrganizationUnit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("OrganizationUnitId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Organization");
+
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("TeamUp.Domain.Entities.EventRegistration", b =>
@@ -1163,6 +1354,11 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("TeamUp.Domain.Entities.OrganizationUnit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("OrganizationUnitId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("TeamUp.Domain.Entities.Student", "Student")
                         .WithMany()
                         .HasForeignKey("StudentId")
@@ -1172,6 +1368,8 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Navigation("Organization");
 
                     b.Navigation("Student");
+
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("TeamUp.Domain.Entities.Notification", b =>
@@ -1185,6 +1383,16 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("TeamUp.Domain.Entities.Organization", b =>
+                {
+                    b.HasOne("TeamUp.Domain.Entities.University", "University")
+                        .WithMany()
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("University");
+                });
+
             modelBuilder.Entity("TeamUp.Domain.Entities.OrganizationMember", b =>
                 {
                     b.HasOne("TeamUp.Domain.Entities.Organization", "Organization")
@@ -1192,6 +1400,11 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("TeamUp.Domain.Entities.OrganizationUnit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("OrganizationUnitId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TeamUp.Domain.Entities.Student", "Student")
                         .WithMany()
@@ -1202,6 +1415,19 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.Navigation("Organization");
 
                     b.Navigation("Student");
+
+                    b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("TeamUp.Domain.Entities.OrganizationUnit", b =>
+                {
+                    b.HasOne("TeamUp.Domain.Entities.Organization", "Organization")
+                        .WithMany("Units")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("TeamUp.Domain.Entities.Project", b =>
@@ -1332,8 +1558,7 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
                     b.HasOne("TeamUp.Domain.Entities.Faculty", "Faculty")
                         .WithMany("Students")
                         .HasForeignKey("FacultyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Faculty");
                 });
@@ -1406,6 +1631,11 @@ namespace TeamUp.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("TeamUp.Domain.Entities.Faculty", b =>
                 {
                     b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("TeamUp.Domain.Entities.Organization", b =>
+                {
+                    b.Navigation("Units");
                 });
 
             modelBuilder.Entity("TeamUp.Domain.Entities.Project", b =>

@@ -924,3 +924,492 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124005253_AddAuthAbuseProtection'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [FailedLoginCount] int NOT NULL DEFAULT 0;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124005253_AddAuthAbuseProtection'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [LockoutEndUtc] datetime2 NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124005253_AddAuthAbuseProtection'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [PreviousRefreshToken] nvarchar(256) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124005253_AddAuthAbuseProtection'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [PreviousRefreshTokenRotatedAt] datetime2 NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124005253_AddAuthAbuseProtection'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261124005253_AddAuthAbuseProtection', N'10.0.14');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124010511_AddScoreSourceReference'
+)
+BEGIN
+    ALTER TABLE [ScoreTransaction] ADD [SourceReferenceId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124010511_AddScoreSourceReference'
+)
+BEGIN
+
+    EXEC(N'
+    WITH Parsed AS (
+        SELECT TransactionId, StudentId, SourceType,
+               TRY_CAST(
+                   CASE
+                       WHEN CHARINDEX(''#'', Reason) > 0
+                        AND CHARINDEX('':'', Reason, CHARINDEX(''#'', Reason)) > CHARINDEX(''#'', Reason) + 1
+                       THEN SUBSTRING(
+                           Reason,
+                           CHARINDEX(''#'', Reason) + 1,
+                           CHARINDEX('':'', Reason, CHARINDEX(''#'', Reason)) - CHARINDEX(''#'', Reason) - 1)
+                   END AS int) AS RefId
+        FROM ScoreTransaction
+        WHERE SourceType IN (''TaskCompleted'', ''EventAttendance'', ''ProjectDelivered'')
+          AND CHARINDEX(''#'', Reason) > 0
+          AND CHARINDEX('':'', Reason, CHARINDEX(''#'', Reason)) > CHARINDEX(''#'', Reason) + 1
+    ), Ranked AS (
+        SELECT TransactionId, RefId,
+               ROW_NUMBER() OVER (PARTITION BY StudentId, SourceType, RefId ORDER BY TransactionId) AS rn
+        FROM Parsed WHERE RefId IS NOT NULL
+    )
+    UPDATE t SET SourceReferenceId = r.RefId
+    FROM ScoreTransaction t
+    JOIN Ranked r ON r.TransactionId = t.TransactionId
+    WHERE r.rn = 1;
+    ');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124010511_AddScoreSourceReference'
+)
+BEGIN
+    EXEC(N'CREATE UNIQUE INDEX [IX_ScoreTransaction_StudentId_SourceType_SourceReferenceId] ON [ScoreTransaction] ([StudentId], [SourceType], [SourceReferenceId]) WHERE [SourceReferenceId] IS NOT NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124010511_AddScoreSourceReference'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261124010511_AddScoreSourceReference', N'10.0.14');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124013710_AddStudentEmailPreferences'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [EmailNotificationsEnabled] bit NOT NULL DEFAULT CAST(1 AS bit);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124013710_AddStudentEmailPreferences'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [ReceiveLeaderboardDigests] bit NOT NULL DEFAULT CAST(1 AS bit);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124013710_AddStudentEmailPreferences'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [ReceiveProjectMatchEmails] bit NOT NULL DEFAULT CAST(1 AS bit);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124013710_AddStudentEmailPreferences'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261124013710_AddStudentEmailPreferences', N'10.0.14');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    DECLARE @var nvarchar(max);
+    SELECT @var = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Student]') AND [c].[name] = N'FacultyId');
+    IF @var IS NOT NULL EXEC(N'ALTER TABLE [Student] DROP CONSTRAINT ' + @var + ';');
+    ALTER TABLE [Student] ALTER COLUMN [FacultyId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [AffiliationType] varchar(30) NOT NULL DEFAULT 'UniversityStudent';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [City] nvarchar(100) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [OrganizationMember] ADD [HierarchyTier] varchar(30) NOT NULL DEFAULT 'OrganizingCrew';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [OrganizationMember] ADD [OrganizationUnitId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Organization] ADD [City] nvarchar(100) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Organization] ADD [CoverImageUrl] nvarchar(500) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Organization] ADD [CurrentSeasonName] nvarchar(80) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Organization] ADD [IsRecruiting] bit NOT NULL DEFAULT CAST(0 AS bit);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Organization] ADD [Scope] varchar(30) NOT NULL DEFAULT 'UniversityBranch';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Organization] ADD [UniversityId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Organization] ADD [WebsiteUrl] nvarchar(300) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [MembershipApplication] ADD [EvaluationScore] decimal(4,2) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [MembershipApplication] ADD [InterviewNotes] nvarchar(1000) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [MembershipApplication] ADD [OrganizationUnitId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [MembershipApplication] ADD [ReviewerStudentId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [MembershipApplication] ADD [SeasonName] nvarchar(80) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [MembershipApplication] ADD [Stage] varchar(30) NOT NULL DEFAULT 'Applied';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Event] ADD [DeliveryMode] varchar(30) NOT NULL DEFAULT 'InPerson';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Event] ADD [IsPublic] bit NOT NULL DEFAULT CAST(1 AS bit);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Event] ADD [MeetingUrl] nvarchar(500) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Event] ADD [OrganizationUnitId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    CREATE TABLE [OrganizationUnit] (
+        [OrganizationUnitId] int NOT NULL IDENTITY,
+        [OrganizationId] int NOT NULL,
+        [Name] nvarchar(100) NOT NULL,
+        [Code] nvarchar(20) NOT NULL,
+        [Description] nvarchar(600) NULL,
+        [UnitType] varchar(30) NOT NULL DEFAULT 'TechnicalChapter',
+        [IsRecruiting] bit NOT NULL DEFAULT CAST(0 AS bit),
+        [OpenSeats] int NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_OrganizationUnit] PRIMARY KEY ([OrganizationUnitId]),
+        CONSTRAINT [CK_OrganizationUnit_UnitType] CHECK ([UnitType] IN ('TechnicalChapter', 'OperationalCommittee', 'AffinityGroup', 'WorkingGroup')),
+        CONSTRAINT [FK_OrganizationUnit_Organization_OrganizationId] FOREIGN KEY ([OrganizationId]) REFERENCES [Organization] ([OrganizationId]) ON DELETE NO ACTION
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [Student] ADD CONSTRAINT [CK_Student_AffiliationType] CHECK ([AffiliationType] IN (''UniversityStudent'', ''IndependentLearner'', ''FreshGraduate'', ''HighSchoolTech''))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    CREATE INDEX [IX_OrganizationMember_OrganizationUnitId] ON [OrganizationMember] ([OrganizationUnitId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [OrganizationMember] ADD CONSTRAINT [CK_OrganizationMember_HierarchyTier] CHECK ([HierarchyTier] IN (''HighBoard'', ''CommitteeLeadership'', ''OrganizingCrew'', ''Participant''))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_Organization_Scope_IsRecruiting] ON [Organization] ([Scope], [IsRecruiting]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_Organization_UniversityId] ON [Organization] ([UniversityId]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [Organization] ADD CONSTRAINT [CK_Organization_Scope] CHECK ([Scope] IN (''UniversityBranch'', ''FacultyChapter'', ''CrossUniversity'', ''Independent'', ''NationalNetwork''))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_MembershipApplication_OrganizationId_Stage] ON [MembershipApplication] ([OrganizationId], [Stage]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    CREATE INDEX [IX_MembershipApplication_OrganizationUnitId] ON [MembershipApplication] ([OrganizationUnitId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [MembershipApplication] ADD CONSTRAINT [CK_MembershipApplication_Stage] CHECK ([Stage] IN (''Applied'', ''HrScreening'', ''CommitteeInterview'', ''Accepted'', ''Rejected'', ''Withdrawn''))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    CREATE INDEX [IX_Event_OrganizationUnitId] ON [Event] ([OrganizationUnitId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [Event] ADD CONSTRAINT [CK_Event_DeliveryMode] CHECK ([DeliveryMode] IN (''InPerson'', ''Online'', ''Hybrid''))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    EXEC(N'CREATE UNIQUE INDEX [IX_OrganizationUnit_OrganizationId_Code] ON [OrganizationUnit] ([OrganizationId], [Code]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Event] ADD CONSTRAINT [FK_Event_OrganizationUnit_OrganizationUnitId] FOREIGN KEY ([OrganizationUnitId]) REFERENCES [OrganizationUnit] ([OrganizationUnitId]) ON DELETE NO ACTION;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [MembershipApplication] ADD CONSTRAINT [FK_MembershipApplication_OrganizationUnit_OrganizationUnitId] FOREIGN KEY ([OrganizationUnitId]) REFERENCES [OrganizationUnit] ([OrganizationUnitId]) ON DELETE NO ACTION;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [Organization] ADD CONSTRAINT [FK_Organization_University_UniversityId] FOREIGN KEY ([UniversityId]) REFERENCES [University] ([UniversityId]) ON DELETE NO ACTION;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    ALTER TABLE [OrganizationMember] ADD CONSTRAINT [FK_OrganizationMember_OrganizationUnit_OrganizationUnitId] FOREIGN KEY ([OrganizationUnitId]) REFERENCES [OrganizationUnit] ([OrganizationUnitId]) ON DELETE NO ACTION;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124175844_AddFlexibleActivitiesAndHierarchy'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261124175844_AddFlexibleActivitiesAndHierarchy', N'10.0.14');
+END;
+
+COMMIT;
+GO
+

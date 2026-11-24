@@ -53,8 +53,8 @@ public sealed class ProjectRecommendationService(IAppDbContext db) : IProjectRec
                 p.MaxTeamSize,
                 CurrentMemberCount = p.Members.Count(),
                 CreatorName = p.Creator.FirstName + " " + p.Creator.LastName,
-                UniversityName = p.Creator.Faculty.University.Name,
-                FacultyCode = p.Creator.Faculty.Code,
+                UniversityName = p.Creator.Faculty != null ? p.Creator.Faculty.University.Name : (p.Creator.City != null && p.Creator.City != "" ? p.Creator.City + " Community" : "Egypt Open Community"),
+                FacultyCode = p.Creator.Faculty != null ? p.Creator.Faculty.Code : "IND",
                 p.CreatedAt
             })
             .ToListAsync(ct);

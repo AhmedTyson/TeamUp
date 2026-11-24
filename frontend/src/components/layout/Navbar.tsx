@@ -6,9 +6,11 @@ import {
   ArrowRight,
   ArrowUpRight,
   ChevronDown,
+  Languages,
   Loader2,
   LogOut,
   Menu,
+  Search,
   Shield,
   Sparkles,
   UserPlus,
@@ -28,6 +30,8 @@ import { Avatar } from "@/components/ui";
 import { useAuth } from "@/features/auth";
 import { usePublicPeopleShowcase } from "@/features/catalog/usePublicPeopleShowcase";
 import { cn } from "@/lib/cn";
+import { useI18n } from "@/lib/i18n";
+import { dispatchOpenCommandPalette } from "./CommandPalette";
 import { NotificationBell } from "./NotificationBell";
 import { XpLevelChip } from "./XpLevelChip";
 
@@ -218,6 +222,7 @@ interface GlidingPillRect {
 
 export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
   const { user, isAuthenticated, isPlatformAdmin, logout } = useAuth();
+  const { locale, toggleLocale, t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -763,8 +768,41 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
           )}
         </nav>
 
-        {/* Right Zone: Auth / User Controls */}
-        <div className="flex shrink-0 items-center gap-2">
+        {/* Right Zone: Command Palette, Language Switch, Auth / User Controls */}
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => dispatchOpenCommandPalette()}
+            aria-label={t("nav.searchHint")}
+            title="Ctrl+K"
+            className={cn(
+              "hidden h-9 cursor-pointer items-center gap-1.5 rounded-xl border px-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] md:inline-flex",
+              isScrolled
+                ? "border-black/15 bg-black/5 text-[#14151c] hover:border-black/30"
+                : "border-white/15 bg-[#1b1d26]/90 text-white/85 hover:border-[#d3fb52]/40 hover:text-white",
+            )}
+          >
+            <Search className="size-3.5 shrink-0" aria-hidden="true" />
+            <kbd className="hidden rounded border border-current/20 px-1 font-mono text-[10px] opacity-75 xl:inline">
+              Ctrl K
+            </kbd>
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleLocale}
+            aria-label={locale === "en" ? "Switch language to Arabic" : "Switch language to English"}
+            className={cn(
+              "inline-flex h-9 cursor-pointer items-center gap-1 rounded-xl border px-2 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+              isScrolled
+                ? "border-black/15 bg-black/5 text-[#14151c] hover:border-black/30"
+                : "border-white/15 bg-[#1b1d26]/90 text-white/90 hover:border-[#d3fb52]/40",
+            )}
+          >
+            <Languages className="size-3.5 shrink-0" aria-hidden="true" />
+            <span>{locale === "en" ? "AR" : "EN"}</span>
+          </button>
+
           {isAuthenticated && user ? (
             <div className="flex shrink-0 items-center gap-1.5">
               <div className="shrink-0 whitespace-nowrap">

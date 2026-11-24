@@ -4,6 +4,7 @@
  */
 import { apiClient, unwrapApiResponse, unwrapVoidResponse } from "./client";
 import { API_ENDPOINTS } from "./endpoints";
+import type { AffiliationType } from "./enums";
 import type { ApiResponse, PagedResult } from "./types";
 
 export interface PublicStudentShowcaseItem {
@@ -45,6 +46,9 @@ export interface UpdateStudentRequest {
   emailNotificationsEnabled?: boolean;
   receiveLeaderboardDigests?: boolean;
   receiveProjectMatchEmails?: boolean;
+  affiliationType?: AffiliationType;
+  facultyId?: number | null;
+  city?: string | null;
 }
 
 export interface StudentDetailDto {
@@ -54,7 +58,7 @@ export interface StudentDetailDto {
   email: string;
   academicYear: number;
   role: string;
-  facultyId: number;
+  facultyId: number | null;
   facultyName: string;
   universityName: string;
   profile: StudentProfileDto | null;
@@ -63,6 +67,8 @@ export interface StudentDetailDto {
   emailNotificationsEnabled?: boolean;
   receiveLeaderboardDigests?: boolean;
   receiveProjectMatchEmails?: boolean;
+  affiliationType?: AffiliationType;
+  city?: string | null;
 }
 
 export interface StudentCardDto {
@@ -72,11 +78,13 @@ export interface StudentCardDto {
   email: string | null;
   academicYear: number;
   role: string;
-  facultyId: number;
+  facultyId: number | null;
   facultyName: string;
   universityName: string;
   interests: string[];
   photoUrl?: string | null;
+  affiliationType?: AffiliationType;
+  city?: string | null;
 }
 
 export interface StudentPublicProfileDto {
@@ -89,6 +97,8 @@ export interface StudentPublicProfileDto {
   profile: StudentProfileDto | null;
   interests: string[];
   email?: string | null;
+  affiliationType?: AffiliationType;
+  city?: string | null;
 }
 
 export interface StudentDirectoryQueryParams {

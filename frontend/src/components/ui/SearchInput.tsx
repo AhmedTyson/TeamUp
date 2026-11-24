@@ -26,19 +26,16 @@ export function SearchInput({
   "aria-label": ariaLabel = "Search",
   ...props
 }: SearchInputProps) {
-  const isFirstRender = useRef(true);
+  const lastCommittedValue = useRef(value);
   const latestCallback = useRef(onDebouncedChange);
   latestCallback.current = onDebouncedChange;
 
   useEffect(() => {
-    if (!latestCallback.current) {
-      return;
-    }
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
+    if (!latestCallback.current || value === lastCommittedValue.current) {
       return;
     }
     const timer = window.setTimeout(() => {
+      lastCommittedValue.current = value;
       latestCallback.current?.(value);
     }, debounceMs);
 
@@ -50,6 +47,7 @@ export function SearchInput({
   };
 
   const handleClear = () => {
+    lastCommittedValue.current = "";
     onChange("");
     latestCallback.current?.("");
   };

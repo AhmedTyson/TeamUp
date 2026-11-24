@@ -67,6 +67,7 @@ builder.Services.AddCors(options =>
             policy.WithOrigins(allowedOrigins)
                 .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .WithHeaders("Authorization", "Content-Type", "Accept", "X-Requested-With")
+                .WithExposedHeaders("Content-Disposition")
                 .AllowCredentials();
         }
     });
@@ -358,7 +359,30 @@ if (autoMigrate || seedEnabled)
             "CREATE UNIQUE INDEX IF NOT EXISTS IX_ScoreTransaction_StudentId_SourceType_SourceReferenceId ON ScoreTransaction (StudentId, SourceType, SourceReferenceId) WHERE SourceReferenceId IS NOT NULL;",
             "ALTER TABLE Student ADD COLUMN EmailNotificationsEnabled INTEGER NOT NULL DEFAULT 1;",
             "ALTER TABLE Student ADD COLUMN ReceiveLeaderboardDigests INTEGER NOT NULL DEFAULT 1;",
-            "ALTER TABLE Student ADD COLUMN ReceiveProjectMatchEmails INTEGER NOT NULL DEFAULT 1;"
+            "ALTER TABLE Student ADD COLUMN ReceiveProjectMatchEmails INTEGER NOT NULL DEFAULT 1;",
+            "ALTER TABLE Student ADD COLUMN AffiliationType TEXT NOT NULL DEFAULT 'UniversityStudent';",
+            "ALTER TABLE Student ADD COLUMN City TEXT NULL;",
+            "CREATE TABLE IF NOT EXISTS OrganizationUnit (OrganizationUnitId INTEGER PRIMARY KEY AUTOINCREMENT, OrganizationId INTEGER NOT NULL, Name TEXT NOT NULL, Code TEXT NOT NULL, Description TEXT NULL, UnitType TEXT NOT NULL DEFAULT 'TechnicalChapter', IsRecruiting INTEGER NOT NULL DEFAULT 0, OpenSeats INTEGER NULL, DeletedAt TEXT NULL, FOREIGN KEY (OrganizationId) REFERENCES Organization (OrganizationId));",
+            "CREATE UNIQUE INDEX IF NOT EXISTS IX_OrganizationUnit_OrganizationId_Code ON OrganizationUnit (OrganizationId, Code) WHERE DeletedAt IS NULL;",
+            "ALTER TABLE Organization ADD COLUMN Scope TEXT NOT NULL DEFAULT 'UniversityBranch';",
+            "ALTER TABLE Organization ADD COLUMN UniversityId INTEGER NULL;",
+            "ALTER TABLE Organization ADD COLUMN City TEXT NULL;",
+            "ALTER TABLE Organization ADD COLUMN CoverImageUrl TEXT NULL;",
+            "ALTER TABLE Organization ADD COLUMN WebsiteUrl TEXT NULL;",
+            "ALTER TABLE Organization ADD COLUMN IsRecruiting INTEGER NOT NULL DEFAULT 0;",
+            "ALTER TABLE Organization ADD COLUMN CurrentSeasonName TEXT NULL;",
+            "ALTER TABLE OrganizationMember ADD COLUMN OrganizationUnitId INTEGER NULL;",
+            "ALTER TABLE OrganizationMember ADD COLUMN HierarchyTier TEXT NOT NULL DEFAULT 'OrganizingCrew';",
+            "ALTER TABLE MembershipApplication ADD COLUMN OrganizationUnitId INTEGER NULL;",
+            "ALTER TABLE MembershipApplication ADD COLUMN SeasonName TEXT NULL;",
+            "ALTER TABLE MembershipApplication ADD COLUMN Stage TEXT NOT NULL DEFAULT 'Applied';",
+            "ALTER TABLE MembershipApplication ADD COLUMN ReviewerStudentId INTEGER NULL;",
+            "ALTER TABLE MembershipApplication ADD COLUMN EvaluationScore REAL NULL;",
+            "ALTER TABLE MembershipApplication ADD COLUMN InterviewNotes TEXT NULL;",
+            "ALTER TABLE Event ADD COLUMN DeliveryMode TEXT NOT NULL DEFAULT 'InPerson';",
+            "ALTER TABLE Event ADD COLUMN IsPublic INTEGER NOT NULL DEFAULT 1;",
+            "ALTER TABLE Event ADD COLUMN MeetingUrl TEXT NULL;",
+            "ALTER TABLE Event ADD COLUMN OrganizationUnitId INTEGER NULL;"
         };
         foreach (var sql in sqlitePatchStatements)
         {

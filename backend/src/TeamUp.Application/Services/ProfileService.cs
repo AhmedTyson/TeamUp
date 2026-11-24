@@ -24,7 +24,7 @@ public sealed class ProfileService(
     {
         var student = await db.Students
             .AsNoTracking()
-            .Include(s => s.Faculty)
+            .Include(s => s.Faculty!)
             .ThenInclude(f => f.University)
             .Include(s => s.Profile)
             .Include(s => s.Interests)
@@ -39,9 +39,12 @@ public sealed class ProfileService(
         return new StudentDetailDto(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
-            student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
+            student.FacultyId,
+            AffiliationFormatting.GetFacultyDisplay(student),
+            AffiliationFormatting.GetUniversityDisplay(student),
             profileDto, interests, student.ShowEmailInDirectory,
-            student.EmailNotificationsEnabled, student.ReceiveLeaderboardDigests, student.ReceiveProjectMatchEmails);
+            student.EmailNotificationsEnabled, student.ReceiveLeaderboardDigests, student.ReceiveProjectMatchEmails,
+            student.AffiliationType, student.City);
     }
 
     public async Task<StudentDetailDto> UpdateMyAccountAsync(int studentId, UpdateStudentRequest req, CancellationToken ct = default)
@@ -69,6 +72,32 @@ public sealed class ProfileService(
 
         if (req.ReceiveProjectMatchEmails.HasValue)
             student.ReceiveProjectMatchEmails = req.ReceiveProjectMatchEmails.Value;
+
+        if (req.AffiliationType.HasValue)
+        {
+            student.AffiliationType = req.AffiliationType.Value;
+            if (req.AffiliationType.Value != AffiliationType.UniversityStudent && !req.FacultyId.HasValue)
+                student.FacultyId = null;
+        }
+
+        if (req.FacultyId.HasValue)
+        {
+            if (req.FacultyId.Value <= 0)
+            {
+                if (student.AffiliationType == AffiliationType.UniversityStudent)
+                    throw new BadRequestException("A valid Faculty ID is required for university students.");
+                student.FacultyId = null;
+            }
+            else
+            {
+                if (!await db.Faculties.AsNoTracking().AnyAsync(f => f.FacultyId == req.FacultyId.Value, ct))
+                    throw new NotFoundException($"Faculty with ID {req.FacultyId.Value} was not found.");
+                student.FacultyId = req.FacultyId.Value;
+            }
+        }
+
+        if (req.City is not null)
+            student.City = string.IsNullOrWhiteSpace(req.City) ? null : req.City.Trim();
 
         await db.SaveChangesAsync(ct);
 
@@ -102,24 +131,43 @@ public sealed class ProfileService(
 
         var total = await dbQuery.CountAsync(ct);
 
-        var items = await dbQuery
+        var rows = await dbQuery
             .OrderBy(s => s.FirstName)
             .ThenBy(s => s.LastName)
             .Skip(page.Skip)
             .Take(page.SafePageSize)
-            .Select(s => new StudentCardDto(
+            .Select(s => new
+            {
                 s.StudentId,
                 s.FirstName,
                 s.LastName,
-                isAdmin || s.StudentId == viewerStudentId || s.ShowEmailInDirectory ? s.Email : null,
+                Email = isAdmin || s.StudentId == viewerStudentId || s.ShowEmailInDirectory ? s.Email : null,
                 s.AcademicYear,
-                s.Role.ToString(),
-                s.Faculty.FacultyId,
-                s.Faculty.Name,
-                s.Faculty.University.Name,
-                s.Interests.Select(i => i.Interest).ToList(),
-                s.Profile != null ? s.Profile.PhotoUrl : null))
+                Role = s.Role.ToString(),
+                s.FacultyId,
+                s.AffiliationType,
+                s.City,
+                FacultyName = s.Faculty != null ? s.Faculty.Name : null,
+                UniversityName = s.Faculty != null ? s.Faculty.University.Name : null,
+                Interests = s.Interests.Select(i => i.Interest).ToList(),
+                PhotoUrl = s.Profile != null ? s.Profile.PhotoUrl : null
+            })
             .ToListAsync(ct);
+
+        var items = rows.Select(r => new StudentCardDto(
+            r.StudentId,
+            r.FirstName,
+            r.LastName,
+            r.Email,
+            r.AcademicYear,
+            r.Role,
+            r.FacultyId,
+            r.FacultyName ?? AffiliationFormatting.FormatAffiliationLabel(r.AffiliationType),
+            r.UniversityName ?? (string.IsNullOrWhiteSpace(r.City) ? "Egypt Open Community" : $"{r.City} Community"),
+            r.Interests,
+            r.PhotoUrl,
+            r.AffiliationType,
+            r.City)).ToList();
 
         return new PagedResult<StudentCardDto>(items, page.SafePage, page.SafePageSize, total);
     }
@@ -139,10 +187,12 @@ public sealed class ProfileService(
                 s.FirstName,
                 s.LastName,
                 s.AcademicYear,
-                FacultyName = s.Faculty.Name,
-                FacultyCode = s.Faculty.Code,
-                UniversityName = s.Faculty.University.Name,
-                UniversityLogoUrl = s.Faculty.University.LogoUrl,
+                s.AffiliationType,
+                s.City,
+                FacultyName = s.Faculty != null ? s.Faculty.Name : null,
+                FacultyCode = s.Faculty != null ? s.Faculty.Code : null,
+                UniversityName = s.Faculty != null ? s.Faculty.University.Name : null,
+                UniversityLogoUrl = s.Faculty != null ? s.Faculty.University.LogoUrl : null,
                 Bio = s.Profile!.Bio,
                 PhotoUrl = s.Profile!.PhotoUrl!,
                 TotalPoints = db.ScoreTransactions
@@ -169,9 +219,9 @@ public sealed class ProfileService(
                     row.FirstName,
                     row.LastName,
                     row.AcademicYear,
-                    row.FacultyName,
-                    row.FacultyCode,
-                    row.UniversityName,
+                    row.FacultyName ?? AffiliationFormatting.FormatAffiliationLabel(row.AffiliationType),
+                    row.FacultyCode ?? "IND",
+                    row.UniversityName ?? (string.IsNullOrWhiteSpace(row.City) ? "Egypt Open Community" : $"{row.City} Community"),
                     row.UniversityLogoUrl,
                     row.Bio,
                     row.PhotoUrl,
@@ -191,7 +241,7 @@ public sealed class ProfileService(
     {
         var student = await db.Students
             .AsNoTracking()
-            .Include(s => s.Faculty)
+            .Include(s => s.Faculty!)
             .ThenInclude(f => f.University)
             .Include(s => s.Profile)
             .Include(s => s.Interests)
@@ -213,11 +263,13 @@ public sealed class ProfileService(
             student.FirstName,
             student.LastName,
             student.AcademicYear,
-            student.Faculty.Name,
-            student.Faculty.University.Name,
+            AffiliationFormatting.GetFacultyDisplay(student),
+            AffiliationFormatting.GetUniversityDisplay(student),
             profileDto,
             interests,
-            visibleEmail);
+            visibleEmail,
+            student.AffiliationType,
+            student.City);
     }
 
     public async Task DeleteStudentAccountAsync(int studentId, CancellationToken ct = default)

@@ -13,7 +13,11 @@ public sealed record CreateEventRequest(
     DateTime StartDate,
     DateTime EndDate,
     int Capacity,
-    int OrganizationId);
+    int OrganizationId,
+    EventDeliveryMode DeliveryMode = EventDeliveryMode.InPerson,
+    bool IsPublic = true,
+    string? MeetingUrl = null,
+    int? OrganizationUnitId = null);
 
 public sealed record UpdateEventRequest(
     string Title,
@@ -22,7 +26,11 @@ public sealed record UpdateEventRequest(
     string Location,
     DateTime StartDate,
     DateTime EndDate,
-    int Capacity);
+    int Capacity,
+    EventDeliveryMode DeliveryMode = EventDeliveryMode.InPerson,
+    bool IsPublic = true,
+    string? MeetingUrl = null,
+    int? OrganizationUnitId = null);
 
 public sealed record EventDto(
     int EventId,
@@ -36,7 +44,27 @@ public sealed record EventDto(
     int OrganizationId,
     string OrganizationName,
     int RegisteredCount,
-    IReadOnlyList<EventSessionDto> Sessions);
+    IReadOnlyList<EventSessionDto> Sessions,
+    EventDeliveryMode DeliveryMode = EventDeliveryMode.InPerson,
+    bool IsPublic = true,
+    string? MeetingUrl = null,
+    int? OrganizationUnitId = null,
+    string? OrganizationUnitName = null);
+
+public sealed record MyEventRegistrationDto(
+    int EventId,
+    string EventTitle,
+    int OrganizationId,
+    string OrganizationName,
+    EventType EventType,
+    EventDeliveryMode DeliveryMode,
+    string Location,
+    DateTime StartDate,
+    DateTime EndDate,
+    RegistrationStatus Status,
+    DateTime RegisteredAt,
+    int SessionsAttendedCount,
+    int TotalSessionsCount);
 
 public sealed record CreateEventSessionRequest(
     int SessionNo,

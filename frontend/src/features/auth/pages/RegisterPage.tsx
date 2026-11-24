@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ApiClientError } from "@/api";
+import { ApiClientError, AFFILIATION_TYPES, type AffiliationType } from "@/api";
 import { Avatar, Badge, Button, ErrorBanner, Input, Select, UniversityLogo, type SelectOption } from "@/components/ui";
 import { mapApiErrorsToForm } from "@/lib/formErrors";
 import { AuthSplitLayout } from "../components/AuthSplitLayout";
@@ -16,6 +16,13 @@ import { PasswordStrengthHints } from "../components/PasswordStrengthHints";
 import { useAuth } from "../AuthContext";
 import { useAcademicCatalogQuery } from "../hooks/useAcademicCatalog";
 import { registerSchema, type RegisterFormValues } from "../schemas/authSchemas";
+
+const AFFILIATION_OPTIONS: readonly SelectOption[] = [
+  { value: AFFILIATION_TYPES.UniversityStudent, label: "University Student — Campus & Faculty Network" },
+  { value: AFFILIATION_TYPES.IndependentLearner, label: "Independent Learner — Self-Taught / Bootcamp" },
+  { value: AFFILIATION_TYPES.FreshGraduate, label: "Fresh Graduate — Alumni & Early Career" },
+  { value: AFFILIATION_TYPES.HighSchoolTech, label: "High School / STEM Tech Builder" },
+];
 
 const ACADEMIC_YEAR_OPTIONS: readonly SelectOption[] = [
   { value: "1", label: "Year 1 — Freshman" },
@@ -52,8 +59,10 @@ export function RegisterPage() {
       lastName: "",
       email: "",
       password: "",
+      affiliationType: AFFILIATION_TYPES.UniversityStudent,
       universityId: "",
       facultyId: "",
+      city: "",
       academicYear: "1",
       emailNotificationsEnabled: true,
       receiveLeaderboardDigests: true,
@@ -64,9 +73,14 @@ export function RegisterPage() {
   const watchedFirstName = useWatch({ control, name: "firstName" }) ?? "";
   const watchedLastName = useWatch({ control, name: "lastName" }) ?? "";
   const watchedEmail = useWatch({ control, name: "email" }) ?? "";
+  const selectedAffiliationType =
+    (useWatch({ control, name: "affiliationType" }) as AffiliationType | undefined) ??
+    AFFILIATION_TYPES.UniversityStudent;
   const selectedUniversityId = useWatch({ control, name: "universityId" }) ?? "";
   const selectedFacultyId = useWatch({ control, name: "facultyId" }) ?? "";
+  const watchedCity = useWatch({ control, name: "city" }) ?? "";
   const watchedAcademicYear = useWatch({ control, name: "academicYear" }) ?? "1";
+  const isUniversityStudent = selectedAffiliationType === AFFILIATION_TYPES.UniversityStudent;
   const watchedPassword = useWatch({ control, name: "password" }) ?? "";
   const watchedEmailNotificationsEnabled =
     useWatch({
@@ -146,13 +160,17 @@ export function RegisterPage() {
     setSubmitError(null);
 
     try {
+      const parsedFaculty = Number.parseInt(values.facultyId, 10);
+      const isUni = values.affiliationType === AFFILIATION_TYPES.UniversityStudent;
       const result = await registerStudent({
         firstName: values.firstName.trim(),
         lastName: values.lastName.trim(),
         email: values.email.trim(),
         password: values.password,
         academicYear: Number.parseInt(values.academicYear, 10),
-        facultyId: Number.parseInt(values.facultyId, 10),
+        affiliationType: values.affiliationType,
+        facultyId: isUni && Number.isInteger(parsedFaculty) && parsedFaculty > 0 ? parsedFaculty : null,
+        city: values.city?.trim() ? values.city.trim() : null,
         emailNotificationsEnabled: values.emailNotificationsEnabled,
         receiveLeaderboardDigests:
           values.emailNotificationsEnabled && values.receiveLeaderboardDigests,
@@ -170,6 +188,7 @@ export function RegisterPage() {
         "password",
         "academicYear",
         "facultyId",
+        "city",
       ]);
       if (error instanceof ApiClientError && error.isRateLimited) {
         setCooldownSeconds(error.retryAfterSeconds ?? 30);
@@ -192,7 +211,13 @@ export function RegisterPage() {
           Campus Pass Preview
         </span>
         <Badge variant="accent" size="sm">
-          Student · Yr {watchedAcademicYear}
+          {isUniversityStudent
+            ? `Student · Yr ${watchedAcademicYear}`
+            : selectedAffiliationType === AFFILIATION_TYPES.FreshGraduate
+              ? "Fresh Graduate"
+              : selectedAffiliationType === AFFILIATION_TYPES.HighSchoolTech
+                ? "STEM High School"
+                : "Independent Learner"}
         </Badge>
       </div>
 
@@ -206,7 +231,7 @@ export function RegisterPage() {
             </p>
           </div>
         </div>
-        {selectedUniversity && (
+        {isUniversityStudent && selectedUniversity && (
           <UniversityLogo
             name={selectedUniversity.name}
             logoUrl={selectedUniversity.logoUrl}
@@ -217,33 +242,47 @@ export function RegisterPage() {
       </div>
 
       <div className="mt-3.5 space-y-1.5 rounded-xl border border-white/[0.08] bg-[#1b1d26]/85 p-3 text-xs">
-        <div className="flex items-center justify-between gap-2">
-          <span className="inline-flex shrink-0 items-center gap-1.5 text-[#9ca3af]">
-            {selectedUniversity ? (
-              <UniversityLogo
-                name={selectedUniversity.name}
-                logoUrl={selectedUniversity.logoUrl}
-                size="sm"
-                className="size-5 rounded-md"
-              />
-            ) : (
-              <Building2 className="size-3.5 text-emerald-400" aria-hidden="true" />
-            )}
-            University
-          </span>
-          <span className="min-w-0 truncate text-right font-medium text-white">
-            {selectedUniversity ? selectedUniversity.name : "Select university"}
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          <span className="inline-flex shrink-0 items-center gap-1.5 text-[#9ca3af]">
-            <GraduationCap className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
-            Faculty
-          </span>
-          <span className="min-w-0 truncate text-right font-medium text-white">
-            {selectedFaculty ? `${selectedFaculty.code} · ${selectedFaculty.name}` : "Pending"}
-          </span>
-        </div>
+        {isUniversityStudent ? (
+          <>
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex shrink-0 items-center gap-1.5 text-[#9ca3af]">
+                {selectedUniversity ? (
+                  <UniversityLogo
+                    name={selectedUniversity.name}
+                    logoUrl={selectedUniversity.logoUrl}
+                    size="sm"
+                    className="size-5 rounded-md"
+                  />
+                ) : (
+                  <Building2 className="size-3.5 text-emerald-400" aria-hidden="true" />
+                )}
+                University
+              </span>
+              <span className="min-w-0 truncate text-right font-medium text-white">
+                {selectedUniversity ? selectedUniversity.name : "Select university"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex shrink-0 items-center gap-1.5 text-[#9ca3af]">
+                <GraduationCap className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
+                Faculty
+              </span>
+              <span className="min-w-0 truncate text-right font-medium text-white">
+                {selectedFaculty ? `${selectedFaculty.code} · ${selectedFaculty.name}` : "Pending"}
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center justify-between gap-2">
+            <span className="inline-flex shrink-0 items-center gap-1.5 text-[#9ca3af]">
+              <Building2 className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
+              Community Hub
+            </span>
+            <span className="min-w-0 truncate text-right font-medium text-white">
+              {watchedCity.trim() ? `${watchedCity.trim()} · Egypt Open Tech` : "Egypt Open Community"}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -322,35 +361,53 @@ export function RegisterPage() {
           {...register("email")}
         />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Select
-            label="University"
-            required
-            placeholder={
-              catalogQuery.isPending ? "Loading universities…" : "Select your university"
-            }
-            disabled={catalogQuery.isPending || universityOptions.length === 0}
-            options={universityOptions}
-            error={errors.universityId?.message}
-            {...universityRegistration}
-          />
+        <Select
+          label="Pathway / Affiliation"
+          required
+          options={AFFILIATION_OPTIONS}
+          error={errors.affiliationType?.message}
+          {...register("affiliationType")}
+        />
 
-          <Select
-            label="Faculty"
-            required
-            placeholder={
-              selectedUniversity
-                ? facultyOptions.length > 0
-                  ? "Select your faculty"
-                  : "No faculties listed"
-                : "Select university first"
-            }
-            disabled={!selectedUniversity || facultyOptions.length === 0}
-            options={facultyOptions}
-            error={errors.facultyId?.message}
-            {...register("facultyId")}
+        {isUniversityStudent ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Select
+              label="University"
+              required
+              placeholder={
+                catalogQuery.isPending ? "Loading universities…" : "Select your university"
+              }
+              disabled={catalogQuery.isPending || universityOptions.length === 0}
+              options={universityOptions}
+              error={errors.universityId?.message}
+              {...universityRegistration}
+            />
+
+            <Select
+              label="Faculty"
+              required
+              placeholder={
+                selectedUniversity
+                  ? facultyOptions.length > 0
+                    ? "Select your faculty"
+                    : "No faculties listed"
+                  : "Select university first"
+              }
+              disabled={!selectedUniversity || facultyOptions.length === 0}
+              options={facultyOptions}
+              error={errors.facultyId?.message}
+              {...register("facultyId")}
+            />
+          </div>
+        ) : (
+          <Input
+            label="City / Hub"
+            placeholder="e.g. Helwan, Maadi, Cairo, Alexandria"
+            hint="Helps local GDG & open-community chapters recommend nearby meetups."
+            error={errors.city?.message}
+            {...register("city")}
           />
-        </div>
+        )}
 
         <Select
           label="Academic Year"

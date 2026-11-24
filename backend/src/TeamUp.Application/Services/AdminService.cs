@@ -51,7 +51,7 @@ public sealed class AdminService(
         int studentId, UserRole newRole, int actorStudentId = 0, CancellationToken ct = default)
     {
         var student = await db.Students
-            .Include(s => s.Faculty)
+            .Include(s => s.Faculty!)
             .ThenInclude(f => f.University)
             .Include(s => s.Profile)
             .FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
@@ -105,10 +105,16 @@ public sealed class AdminService(
             student.Email,
             student.AcademicYear,
             student.Role.ToString(),
-            student.Faculty.FacultyId,
-            student.Faculty.Name,
-            student.Faculty.University.Name,
-            student.Profile?.PhotoUrl);
+            student.FacultyId,
+            AffiliationFormatting.GetFacultyDisplay(student),
+            AffiliationFormatting.GetUniversityDisplay(student),
+            student.Profile?.PhotoUrl,
+            student.ShowEmailInDirectory,
+            student.EmailNotificationsEnabled,
+            student.ReceiveLeaderboardDigests,
+            student.ReceiveProjectMatchEmails,
+            student.AffiliationType,
+            student.City);
     }
 
     public async Task<IReadOnlyList<SoftDeletedItemDto>> GetSoftDeletedRecordsAsync(string? entityType, CancellationToken ct = default)

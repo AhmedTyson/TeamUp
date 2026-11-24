@@ -391,3 +391,22 @@ export async function fetchApiHtml(
   });
   return typeof response.data === "string" ? response.data : String(response.data ?? "");
 }
+
+/**
+ * Fetches an authenticated CSV export document as UTF-8 text.
+ */
+export async function fetchApiCsv(
+  url: string,
+  config?: TeamUpRequestConfig,
+  client: AxiosInstance = apiClient,
+): Promise<string> {
+  const response = await client.get<string>(url, {
+    ...config,
+    responseType: "text",
+    headers: {
+      ...config?.headers,
+      Accept: "text/csv",
+    },
+  });
+  return typeof response.data === "string" ? response.data : String(response.data ?? "");
+}

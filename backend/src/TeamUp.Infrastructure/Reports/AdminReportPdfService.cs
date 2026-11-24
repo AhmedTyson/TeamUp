@@ -93,7 +93,7 @@ public sealed class AdminReportPdfService(
             {
                 s.StudentId,
                 FullName = s.FirstName + " " + s.LastName,
-                FacultyCode = s.Faculty.Code
+                FacultyCode = s.Faculty != null ? s.Faculty.Code : "IND"
             })
             .ToListAsync(ct);
 

@@ -1,4 +1,5 @@
 using FluentValidation;
+using TeamUp.Application.Common.Validation;
 
 namespace TeamUp.Application.Events.Validators;
 
@@ -13,6 +14,12 @@ public sealed class CreateEventRequestValidator : AbstractValidator<CreateEventR
         RuleFor(x => x.Capacity).GreaterThanOrEqualTo(1);
         RuleFor(x => x.EndDate).GreaterThanOrEqualTo(x => x.StartDate);
         RuleFor(x => x.Type).IsInEnum();
+        RuleFor(x => x.DeliveryMode).IsInEnum();
+        RuleFor(x => x.MeetingUrl)
+            .MaximumLength(500)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl)
+            .When(x => !string.IsNullOrWhiteSpace(x.MeetingUrl))
+            .WithMessage("MeetingUrl must be a valid public HTTP or HTTPS URL.");
     }
 }
 
@@ -26,6 +33,12 @@ public sealed class UpdateEventRequestValidator : AbstractValidator<UpdateEventR
         RuleFor(x => x.Capacity).GreaterThanOrEqualTo(1);
         RuleFor(x => x.EndDate).GreaterThanOrEqualTo(x => x.StartDate);
         RuleFor(x => x.Type).IsInEnum();
+        RuleFor(x => x.DeliveryMode).IsInEnum();
+        RuleFor(x => x.MeetingUrl)
+            .MaximumLength(500)
+            .Must(SafeUrlValidator.IsSafeExternalHttpUrl)
+            .When(x => !string.IsNullOrWhiteSpace(x.MeetingUrl))
+            .WithMessage("MeetingUrl must be a valid public HTTP or HTTPS URL.");
     }
 }
 

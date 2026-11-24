@@ -21,6 +21,14 @@ public class UpdateStudentRequestValidator : AbstractValidator<UpdateStudentRequ
         RuleFor(x => x.AcademicYear)
             .InclusiveBetween(1, 7).WithMessage("Academic year must be between 1 and 7.")
             .When(x => x.AcademicYear.HasValue);
+
+        RuleFor(x => x.AffiliationType)
+            .IsInEnum().WithMessage("Affiliation type is invalid.")
+            .When(x => x.AffiliationType.HasValue);
+
+        RuleFor(x => x.City)
+            .MaximumLength(100).WithMessage("City must not exceed 100 characters.")
+            .When(x => !string.IsNullOrWhiteSpace(x.City));
     }
 }
 

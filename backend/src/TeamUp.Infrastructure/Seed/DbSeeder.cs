@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
 using TeamUp.Infrastructure.Persistence;
@@ -143,6 +144,18 @@ public static class DbSeeder
                 ("School of Business", "BUS_AUC"),
             ]
         ),
+        (
+            "Helwan University",
+            "Cairo",
+            "Egypt",
+            "https://helwan.edu.eg",
+            "https://upload.wikimedia.org/wikipedia/en/6/60/Helwan_University_logo.png",
+            [
+                ("Faculty of Engineering (Helwan)", "ENG_HU"),
+                ("Faculty of Computers and Artificial Intelligence", "FCAI_HU"),
+                ("Faculty of Commerce and Business Administration", "COM_HU"),
+            ]
+        ),
     ];
 
     private static readonly (string Name, string Category)[] Skills =
@@ -255,17 +268,6 @@ public static class DbSeeder
     public static async Task SeedAsync(
         AppDbContext db, string adminPasswordHash, bool isDevelopment = false, CancellationToken ct = default)
     {
-        var legacyHelwan = await db.Universities
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Name == "Helwan University", ct);
-        if (legacyHelwan is not null)
-        {
-            legacyHelwan.Name = "Capital University";
-            legacyHelwan.Website = "https://capu.edu.eg";
-            legacyHelwan.LogoUrl = "https://upload.wikimedia.org/wikipedia/commons/c/c1/Capital_University_Logo.png";
-            await db.SaveChangesAsync(ct);
-        }
-
         var existingUniversities = await db.Universities
             .IgnoreQueryFilters()
             .Include(u => u.Faculties)
@@ -386,6 +388,412 @@ public static class DbSeeder
         }
 
         await SeedShowcaseStudentsAsync(db, adminPasswordHash, resetExistingPasswords: true, ct);
+        await SeedEgyptianActivitiesEcosystemAsync(db, ct);
+    }
+
+    private static async Task SeedEgyptianActivitiesEcosystemAsync(AppDbContext db, CancellationToken ct)
+    {
+        var unisByName = await db.Universities
+            .IgnoreQueryFilters()
+            .ToDictionaryAsync(u => u.Name, StringComparer.OrdinalIgnoreCase, ct);
+
+        var studentsByEmail = await db.Students
+            .IgnoreQueryFilters()
+            .ToDictionaryAsync(s => s.Email, StringComparer.OrdinalIgnoreCase, ct);
+
+        var specs = new (
+            string Name,
+            string Description,
+            string Category,
+            OrganizationScope Scope,
+            string? UniversityName,
+            string? City,
+            string? WebsiteUrl,
+            bool IsRecruiting,
+            string? SeasonName,
+            (string Name, string Code, string Description, OrganizationUnitType UnitType, bool IsRecruiting, int OpenSeats)[] Units
+        )[]
+        {
+            (
+                "IEEE Helwan Student Branch",
+                "Pioneer engineering & computing student branch at Helwan University empowering students with technical workshops, robotics competitions, research bootcamps, and career readiness.",
+                "Engineering",
+                OrganizationScope.UniversityBranch,
+                "Helwan University",
+                "Helwan, Cairo",
+                "https://ieee-helwan.org",
+                true,
+                "Season 2026 — Fall Recruitment",
+                [
+                    ("Computer Society", "CS", "Full-stack web, AI, algorithms, and competitive programming tracks.", OrganizationUnitType.TechnicalChapter, true, 25),
+                    ("Robotics & Automation", "RAS", "Autonomous robots, ROS2, embedded firmware, and Arduino hardware.", OrganizationUnitType.TechnicalChapter, true, 18),
+                    ("Power & Energy Society", "PES", "Smart grids, renewable energy systems, and power electronics.", OrganizationUnitType.TechnicalChapter, true, 15),
+                    ("Communications Society", "ComSoc", "5G networks, IoT telemetry, RF hardware, and SDR labs.", OrganizationUnitType.TechnicalChapter, false, 10),
+                    ("Women in Engineering", "WIE", "Empowering women engineers through mentorship and leadership labs.", OrganizationUnitType.AffinityGroup, true, 20),
+                    ("Human Resources", "HR", "Recruitment screening, member experience, and season evaluations.", OrganizationUnitType.OperationalCommittee, true, 8),
+                    ("PR & Fundraising", "PR", "Corporate sponsorships, partner outreach, and speaker invitations.", OrganizationUnitType.OperationalCommittee, true, 10),
+                    ("Marketing & Media", "MEDIA", "Visual identity, photography, social campaigns, and event branding.", OrganizationUnitType.OperationalCommittee, true, 12),
+                    ("Logistics & OC", "OC", "Venue operations, stage tech, registration desks, and event execution.", OrganizationUnitType.OperationalCommittee, true, 14),
+                ]
+            ),
+            (
+                "IEEE Cairo University SB",
+                "Student branch at Cairo University advancing electrical engineering, AI systems, and cross-faculty innovation projects.",
+                "Engineering",
+                OrganizationScope.UniversityBranch,
+                "Cairo University",
+                "Giza",
+                "https://ieeecusb.org",
+                true,
+                "2026 Technical Track",
+                [
+                    ("Computer Society", "CS", "Systems engineering, distributed backends, and cloud labs.", OrganizationUnitType.TechnicalChapter, true, 20),
+                    ("Robotics & Automation", "RAS", "Mechatronics, computer vision, and UAV flight stacks.", OrganizationUnitType.TechnicalChapter, true, 15),
+                    ("Human Resources", "HR", "Member onboarding, KPI tracking, and technical committee pairing.", OrganizationUnitType.OperationalCommittee, true, 6),
+                ]
+            ),
+            (
+                "Enactus Helwan",
+                "Entrepreneurship action community turning student innovation into sustainable social enterprises across Helwan.",
+                "Entrepreneurship",
+                OrganizationScope.UniversityBranch,
+                "Helwan University",
+                "Helwan, Cairo",
+                "https://enactus-helwan.org",
+                true,
+                "Social Impact 2026",
+                [
+                    ("Project Development", "PD", "Business modeling, field validation, and green impact ventures.", OrganizationUnitType.TechnicalChapter, true, 20),
+                    ("Human Resources", "HR", "Talent sourcing, interview panels, and crew engagement.", OrganizationUnitType.OperationalCommittee, true, 8),
+                    ("PR & Partnerships", "PR", "NGO alliances, incubator pitch days, and community sponsors.", OrganizationUnitType.OperationalCommittee, true, 8),
+                ]
+            ),
+            (
+                "GDG Helwan",
+                "Independent Google Developer Group serving Helwan, Maadi, and South Cairo with Android, Flutter, Cloud, and Gemini AI study jams.",
+                "Technology",
+                OrganizationScope.Independent,
+                null,
+                "Helwan & Maadi, Cairo",
+                "https://gdg.community.dev/gdg-helwan/",
+                true,
+                "DevFest Crew 2026",
+                [
+                    ("Cloud & AI Study Jam", "AI", "Hands-on Google Cloud and applied LLM engineering sessions.", OrganizationUnitType.WorkingGroup, true, 30),
+                    ("Flutter Mobile Builders", "FLT", "Cross-platform mobile apps for local startups and open source.", OrganizationUnitType.WorkingGroup, true, 20),
+                ]
+            ),
+            (
+                "GDG Cairo",
+                "Greater Cairo's flagship developer community uniting engineers, founders, and university builders around modern web and AI tools.",
+                "Technology",
+                OrganizationScope.Independent,
+                null,
+                "Greater Cairo",
+                "https://gdg.community.dev/gdg-cairo/",
+                false,
+                null,
+                [
+                    ("Web Platform Chapter", "WEB", "Modern TypeScript, performance, and design systems talks.", OrganizationUnitType.WorkingGroup, false, 0),
+                    ("Applied AI Circle", "GENAI", "Open-weights inference, RAG architectures, and agents.", OrganizationUnitType.WorkingGroup, false, 0),
+                ]
+            ),
+            (
+                "STP Egypt",
+                "Cross-university leadership, academic coaching, and career development organization preparing Egyptian students for tech and management careers.",
+                "Leadership",
+                OrganizationScope.CrossUniversity,
+                null,
+                "Cairo, Egypt",
+                "https://stp-egypt.org",
+                true,
+                "Season 21",
+                [
+                    ("Technical Track", "TECH", "Software engineering and problem-solving workshops.", OrganizationUnitType.TechnicalChapter, true, 24),
+                    ("Academic & Juniors", "AC", "Career guidance and STEM readiness camps for freshmen.", OrganizationUnitType.AffinityGroup, true, 16),
+                    ("Human Resources", "HR", "Structured evaluation rubrics and mentoring follow-ups.", OrganizationUnitType.OperationalCommittee, true, 8),
+                ]
+            ),
+            (
+                "Egypt AI & Robotics Collective",
+                "Open independent builder collective uniting university students, fresh graduates, and self-taught researchers on open-source AI and robotics.",
+                "AI & Robotics",
+                OrganizationScope.Independent,
+                null,
+                "Cairo & Remote",
+                "https://egypt-ai.org",
+                true,
+                "Open Research Cohort",
+                [
+                    ("Open LLM Lab", "LLM", "Arabic & bilingual fine-tuning, evaluation, and tooling.", OrganizationUnitType.WorkingGroup, true, 15),
+                    ("Edge Robotics Guild", "EDGE", "On-device vision and embedded ROS navigation.", OrganizationUnitType.WorkingGroup, true, 12),
+                ]
+            ),
+        };
+
+        var seededOrgs = new Dictionary<string, Organization>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var spec in specs)
+        {
+            var uniId = spec.UniversityName is not null && unisByName.TryGetValue(spec.UniversityName, out var u)
+                ? u.UniversityId
+                : (int?)null;
+
+            var org = await db.Organizations.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(o => o.Name == spec.Name, ct);
+
+            if (org is null)
+            {
+                org = new Organization
+                {
+                    Name = spec.Name,
+                    Description = spec.Description,
+                    Category = spec.Category,
+                    Scope = spec.Scope,
+                    UniversityId = uniId,
+                    City = spec.City,
+                    WebsiteUrl = spec.WebsiteUrl,
+                    IsRecruiting = spec.IsRecruiting,
+                    CurrentSeasonName = spec.SeasonName,
+                };
+                db.Organizations.Add(org);
+                await db.SaveChangesAsync(ct);
+            }
+            else if (org.DeletedAt is null)
+            {
+                org.Scope = spec.Scope;
+                org.UniversityId = uniId;
+                org.City = spec.City;
+                org.WebsiteUrl = spec.WebsiteUrl;
+                org.IsRecruiting = spec.IsRecruiting;
+                org.CurrentSeasonName = spec.SeasonName;
+                await db.SaveChangesAsync(ct);
+            }
+
+            if (org.DeletedAt is null)
+            {
+                seededOrgs[org.Name] = org;
+
+                var existingCodes = await db.OrganizationUnits.IgnoreQueryFilters()
+                    .Where(unit => unit.OrganizationId == org.OrganizationId)
+                    .Select(unit => unit.Code)
+                    .ToListAsync(ct);
+
+                foreach (var unitDef in spec.Units)
+                {
+                    if (!existingCodes.Contains(unitDef.Code, StringComparer.OrdinalIgnoreCase))
+                    {
+                        db.OrganizationUnits.Add(new OrganizationUnit
+                        {
+                            OrganizationId = org.OrganizationId,
+                            Name = unitDef.Name,
+                            Code = unitDef.Code,
+                            Description = unitDef.Description,
+                            UnitType = unitDef.UnitType,
+                            IsRecruiting = unitDef.IsRecruiting,
+                            OpenSeats = unitDef.OpenSeats,
+                        });
+                    }
+                }
+                await db.SaveChangesAsync(ct);
+            }
+        }
+
+        // Wire authentic 4-tier hierarchy and flagship events for IEEE Helwan Student Branch + Open Collective
+        if (seededOrgs.TryGetValue("IEEE Helwan Student Branch", out var ieeeHelwan))
+        {
+            var unitsByCode = await db.OrganizationUnits
+                .Where(u => u.OrganizationId == ieeeHelwan.OrganizationId)
+                .ToDictionaryAsync(u => u.Code, StringComparer.OrdinalIgnoreCase, ct);
+
+            var memberSpecs = new (string Email, string Role, string? UnitCode, OrganizationHierarchyTier Tier)[]
+            {
+                ("nour@cu.edu.eg", OrganizationRoles.Chair, null, OrganizationHierarchyTier.HighBoard),
+                ("salma@cu.edu.eg", OrganizationRoles.ViceChair, null, OrganizationHierarchyTier.HighBoard),
+                ("omar@capu.edu.eg", "Head of HR", "HR", OrganizationHierarchyTier.CommitteeLeadership),
+                ("youssef@asu.edu.eg", "CS Chapter Chair", "CS", OrganizationHierarchyTier.CommitteeLeadership),
+                ("karim@guc.edu.eg", "RAS Chapter Head", "RAS", OrganizationHierarchyTier.CommitteeLeadership),
+                ("hana@alexu.edu.eg", "Media & Marketing Lead", "MEDIA", OrganizationHierarchyTier.CommitteeLeadership),
+                ("mariam@mans.edu.eg", OrganizationRoles.Member, "OC", OrganizationHierarchyTier.OrganizingCrew),
+            };
+
+            foreach (var mSpec in memberSpecs)
+            {
+                if (!studentsByEmail.TryGetValue(mSpec.Email, out var stu) || stu.DeletedAt is not null)
+                    continue;
+
+                int? unitId = mSpec.UnitCode is not null && unitsByCode.TryGetValue(mSpec.UnitCode, out var unit)
+                    ? unit.OrganizationUnitId
+                    : null;
+
+                var existingMember = await db.OrganizationMembers.IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(m => m.OrganizationId == ieeeHelwan.OrganizationId && m.StudentId == stu.StudentId, ct);
+
+                if (existingMember is null)
+                {
+                    db.OrganizationMembers.Add(new OrganizationMember
+                    {
+                        OrganizationId = ieeeHelwan.OrganizationId,
+                        StudentId = stu.StudentId,
+                        Role = mSpec.Role,
+                        OrganizationUnitId = unitId,
+                        HierarchyTier = mSpec.Tier,
+                        JoinedAt = DateTime.UtcNow.AddDays(-30)
+                    });
+                }
+            }
+            await db.SaveChangesAsync(ct);
+
+            var bootcamp = await db.Events.FirstOrDefaultAsync(
+                e => e.OrganizationId == ieeeHelwan.OrganizationId && e.Title == "Auxilio Engineering & AI Bootcamp 2026", ct);
+
+            if (bootcamp is null)
+            {
+                var start = DateTime.UtcNow.Date.AddDays(5).AddHours(10);
+                bootcamp = new Event
+                {
+                    OrganizationId = ieeeHelwan.OrganizationId,
+                    OrganizationUnitId = unitsByCode.TryGetValue("CS", out var csUnit) ? csUnit.OrganizationUnitId : null,
+                    Title = "Auxilio Engineering & AI Bootcamp 2026",
+                    Description = "Three-day flagship hands-on engineering & AI bootcamp hosted by IEEE Helwan Student Branch covering clean backends, ROS robotics, and applied machine learning.",
+                    Type = EventType.Workshop,
+                    DeliveryMode = EventDeliveryMode.Hybrid,
+                    IsPublic = true,
+                    MeetingUrl = "https://meet.teamup.eg/ieee-helwan-auxilio",
+                    Location = "Helwan Faculty of Engineering Main Hall · Cairo",
+                    StartDate = start,
+                    EndDate = start.AddDays(2).AddHours(8),
+                    Capacity = 120
+                };
+                db.Events.Add(bootcamp);
+                await db.SaveChangesAsync(ct);
+
+                var s1 = new EventSession
+                {
+                    EventId = bootcamp.EventId,
+                    SessionNo = 1,
+                    Title = "Opening Keynote & System Architecture",
+                    StartTime = start,
+                    EndTime = start.AddHours(3),
+                    Room = "Auditorium A1"
+                };
+                var s2 = new EventSession
+                {
+                    EventId = bootcamp.EventId,
+                    SessionNo = 2,
+                    Title = "Computer Society: Full-Stack AI Lab",
+                    StartTime = start.AddDays(1),
+                    EndTime = start.AddDays(1).AddHours(3),
+                    Room = "Lab 3B / Stream"
+                };
+                var s3 = new EventSession
+                {
+                    EventId = bootcamp.EventId,
+                    SessionNo = 3,
+                    Title = "RAS & PES Prototype Demo Day",
+                    StartTime = start.AddDays(2),
+                    EndTime = start.AddDays(2).AddHours(4),
+                    Room = "Main Hall"
+                };
+                db.EventSessions.AddRange(s1, s2, s3);
+                await db.SaveChangesAsync(ct);
+
+                // Register Salma & Karim and check in one participant so Participants tab & Digital Pass work out-of-the-box
+                if (studentsByEmail.TryGetValue("salma@cu.edu.eg", out var salma))
+                {
+                    db.EventRegistrations.Add(new EventRegistration
+                    {
+                        EventId = bootcamp.EventId,
+                        StudentId = salma.StudentId,
+                        Status = RegistrationStatus.Confirmed,
+                        RegisteredAt = DateTime.UtcNow.AddDays(-2)
+                    });
+                    db.SessionAttendances.Add(new SessionAttendance
+                    {
+                        SessionId = s1.SessionId,
+                        StudentId = salma.StudentId,
+                        VerificationMethod = VerificationMethod.QRCode,
+                        CheckInTime = DateTime.UtcNow.AddHours(-3),
+                        RecordedByStudentId = salma.StudentId
+                    });
+                }
+
+                if (studentsByEmail.TryGetValue("mariam@mans.edu.eg", out var mariam))
+                {
+                    db.EventRegistrations.Add(new EventRegistration
+                    {
+                        EventId = bootcamp.EventId,
+                        StudentId = mariam.StudentId,
+                        Status = RegistrationStatus.Confirmed,
+                        RegisteredAt = DateTime.UtcNow.AddDays(-1)
+                    });
+                }
+                await db.SaveChangesAsync(ct);
+            }
+        }
+
+        if (seededOrgs.TryGetValue("GDG Helwan", out var gdgHelwan)
+            && !await db.Events.AnyAsync(e => e.OrganizationId == gdgHelwan.OrganizationId, ct))
+        {
+            var start = DateTime.UtcNow.Date.AddDays(10).AddHours(14);
+            var gdgEvt = new Event
+            {
+                OrganizationId = gdgHelwan.OrganizationId,
+                Title = "DevFest Helwan Prep Workshop",
+                Description = "Community meetup in Helwan & Maadi exploring Kotlin Multiplatform, Gemini APIs, and Cloud Run deployments.",
+                Type = EventType.Session,
+                DeliveryMode = EventDeliveryMode.InPerson,
+                IsPublic = true,
+                Location = "Creativa Innovation Hub · Helwan",
+                StartDate = start,
+                EndDate = start.AddHours(4),
+                Capacity = 80
+            };
+            db.Events.Add(gdgEvt);
+            await db.SaveChangesAsync(ct);
+            db.EventSessions.Add(new EventSession
+            {
+                EventId = gdgEvt.EventId,
+                SessionNo = 1,
+                Title = "Gemini Agents & Cloud Run Workshop",
+                StartTime = start,
+                EndTime = start.AddHours(3),
+                Room = "Hub Stage"
+            });
+            await db.SaveChangesAsync(ct);
+        }
+
+        if (seededOrgs.TryGetValue("Egypt AI & Robotics Collective", out var aiCollective)
+            && !await db.Events.AnyAsync(e => e.OrganizationId == aiCollective.OrganizationId, ct))
+        {
+            var start = DateTime.UtcNow.Date.AddDays(14).AddHours(18);
+            var aiEvt = new Event
+            {
+                OrganizationId = aiCollective.OrganizationId,
+                Title = "Egypt Open LLM & Embedded AI Summit",
+                Description = "Open national hackathon and speaker series bringing university students and independent learners together.",
+                Type = EventType.Hackathon,
+                DeliveryMode = EventDeliveryMode.Online,
+                IsPublic = true,
+                MeetingUrl = "https://meet.teamup.eg/ai-summit",
+                Location = "Online Live Stage · Cairo Time (EET)",
+                StartDate = start,
+                EndDate = start.AddDays(1).AddHours(4),
+                Capacity = 250
+            };
+            db.Events.Add(aiEvt);
+            await db.SaveChangesAsync(ct);
+            db.EventSessions.Add(new EventSession
+            {
+                EventId = aiEvt.EventId,
+                SessionNo = 1,
+                Title = "Arabic Evaluation Benchmarks Keynote",
+                StartTime = start,
+                EndTime = start.AddHours(2),
+                Room = "Main Stream"
+            });
+            await db.SaveChangesAsync(ct);
+        }
     }
 
     private static string CreateUnusablePasswordHash() =>

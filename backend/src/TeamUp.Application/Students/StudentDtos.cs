@@ -2,6 +2,7 @@
 // Purpose: Student account, profile, directory query (max 20 page size), and privacy-aware card DTOs (STRIDE THR-I-01).
 
 using TeamUp.Application.Common;
+using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Students;
 
@@ -26,7 +27,10 @@ public sealed record UpdateStudentRequest(
     bool? ShowEmailInDirectory = null,
     bool? EmailNotificationsEnabled = null,
     bool? ReceiveLeaderboardDigests = null,
-    bool? ReceiveProjectMatchEmails = null
+    bool? ReceiveProjectMatchEmails = null,
+    AffiliationType? AffiliationType = null,
+    int? FacultyId = null,
+    string? City = null
 );
 
 public sealed record StudentDetailDto(
@@ -36,7 +40,7 @@ public sealed record StudentDetailDto(
     string Email,
     int AcademicYear,
     string Role,
-    int FacultyId,
+    int? FacultyId,
     string FacultyName,
     string UniversityName,
     StudentProfileDto? Profile,
@@ -44,7 +48,9 @@ public sealed record StudentDetailDto(
     bool ShowEmailInDirectory = false,
     bool EmailNotificationsEnabled = true,
     bool ReceiveLeaderboardDigests = true,
-    bool ReceiveProjectMatchEmails = true
+    bool ReceiveProjectMatchEmails = true,
+    AffiliationType AffiliationType = AffiliationType.UniversityStudent,
+    string? City = null
 );
 
 public sealed record StudentCardDto(
@@ -54,11 +60,13 @@ public sealed record StudentCardDto(
     string? Email,
     int AcademicYear,
     string Role,
-    int FacultyId,
+    int? FacultyId,
     string FacultyName,
     string UniversityName,
     IReadOnlyList<string> Interests,
-    string? PhotoUrl = null
+    string? PhotoUrl = null,
+    AffiliationType AffiliationType = AffiliationType.UniversityStudent,
+    string? City = null
 );
 
 public sealed record PublicStudentShowcaseDto(
@@ -87,7 +95,9 @@ public sealed record StudentPublicProfileDto(
     string UniversityName,
     StudentProfileDto? Profile,
     IReadOnlyList<string> Interests,
-    string? Email = null
+    string? Email = null,
+    AffiliationType AffiliationType = AffiliationType.UniversityStudent,
+    string? City = null
 );
 
 public sealed record StudentDirectoryQuery(

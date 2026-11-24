@@ -15,6 +15,42 @@ namespace TeamUp.Api.Controllers;
 [Authorize]
 public sealed class EventsController(IEventService eventService) : BaseApiController
 {
+    [HttpGet("public")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(BaseResponse<PagedResult<EventDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPublicEvents(
+        [FromQuery] string? search,
+        [FromQuery] int? organizationId,
+        [FromQuery] EventType? type = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null,
+        [FromQuery] EventDeliveryMode? deliveryMode = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var result = await eventService.GetPublicEventsAsync(
+            search, organizationId, new PageRequest(page, pageSize), type, from, to, deliveryMode, ct);
+        return OkResponse(result);
+    }
+
+    [HttpGet("public/{id:int}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(BaseResponse<EventDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPublicEventById([FromRoute] int id, CancellationToken ct)
+    {
+        var result = await eventService.GetPublicEventByIdAsync(id, ct);
+        return OkResponse(result);
+    }
+
+    [HttpGet("my-registrations")]
+    [ProducesResponseType(typeof(BaseResponse<IReadOnlyList<MyEventRegistrationDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMyRegistrations(CancellationToken ct)
+    {
+        var result = await eventService.GetMyRegistrationsAsync(CurrentStudentId, ct);
+        return OkResponse(result);
+    }
+
     [HttpGet]
     [ProducesResponseType(typeof(BaseResponse<PagedResult<EventDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetEvents(
@@ -23,11 +59,13 @@ public sealed class EventsController(IEventService eventService) : BaseApiContro
         [FromQuery] EventType? type = null,
         [FromQuery] DateTime? from = null,
         [FromQuery] DateTime? to = null,
+        [FromQuery] EventDeliveryMode? deliveryMode = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
-        var result = await eventService.GetEventsAsync(search, organizationId, new PageRequest(page, pageSize), type, from, to, ct);
+        var result = await eventService.GetEventsAsync(
+            search, organizationId, new PageRequest(page, pageSize), type, from, to, deliveryMode, ct);
         return OkResponse(result);
     }
 
@@ -45,7 +83,7 @@ public sealed class EventsController(IEventService eventService) : BaseApiContro
     [ProducesResponseType(typeof(BaseResponse<EventDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetEventById([FromRoute] int id, CancellationToken ct)
     {
-        var result = await eventService.GetEventByIdAsync(id, ct);
+        var result = await eventService.GetEventByIdAsync(id, CurrentStudentId, CurrentUserRole, ct);
         return OkResponse(result);
     }
 

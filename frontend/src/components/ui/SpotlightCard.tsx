@@ -35,7 +35,7 @@ export function SpotlightCard({
       {showCornerArrow && (
         <span
           aria-hidden="true"
-          className="absolute right-5 top-5 inline-flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-all duration-300 group-hover:border-[#d3fb52] group-hover:bg-[#d3fb52] group-hover:text-[#14151c]"
+          className="pointer-events-none absolute end-5 top-5 inline-flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-all duration-300 group-hover:border-[#d3fb52] group-hover:bg-[#d3fb52] group-hover:text-[#14151c]"
         >
           <ArrowUpRight className="size-4" />
         </span>
