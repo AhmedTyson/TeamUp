@@ -20,7 +20,8 @@ public sealed class EventService(
     IAppDbContext db,
     IOrganizationAuthorizationService orgAuth,
     IAttendanceCodeService attendanceCodes,
-    ITemplateRenderer templateRenderer) : IEventService
+    ITemplateRenderer templateRenderer,
+    Microsoft.Extensions.Options.IOptions<AttendanceOptions> attendanceOptions) : IEventService
 {
     public async Task<PagedResult<EventDto>> GetEventsAsync(
         string? search,
@@ -345,10 +346,15 @@ public sealed class EventService(
             throw new BadRequestException("Invalid or expired session QR check-in code.");
         }
 
+        // An organizer "QR" check-in without a code proves nothing; record it truthfully as a manual check-in (TU-SEC-010).
+        var method = request.VerificationMethod == VerificationMethod.QRCode && string.IsNullOrWhiteSpace(request.VerificationCode)
+            ? VerificationMethod.ManualByOrganizer
+            : request.VerificationMethod;
+
         return await RecordAttendanceCoreAsync(
             sessionId,
             request.StudentId,
-            request.VerificationMethod,
+            method,
             recordedByStudentId: actorStudentId > 0 ? actorStudentId : null,
             ct);
     }
@@ -361,6 +367,13 @@ public sealed class EventService(
 
         if (!attendanceCodes.ValidateCode(sessionId, verificationCode))
             throw new BadRequestException("Invalid or expired session check-in code.");
+
+        // Detective control for a relayed code: cap self check-ins per code window (revoked rows still count).
+        var windowStart = DateTime.UtcNow.AddSeconds(-AttendanceCodeService.WindowSeconds);
+        var recentSelfCheckIns = await db.SessionAttendances.IgnoreQueryFilters().CountAsync(
+            a => a.SessionId == sessionId && a.RecordedByStudentId == a.StudentId && a.CheckInTime >= windowStart, ct);
+        if (recentSelfCheckIns >= attendanceOptions.Value.MaxSelfCheckInsPerWindow)
+            throw new ConflictException("Too many check-ins for this session right now. Ask the organizer to verify you manually.");
 
         return await RecordAttendanceCoreAsync(
             sessionId,

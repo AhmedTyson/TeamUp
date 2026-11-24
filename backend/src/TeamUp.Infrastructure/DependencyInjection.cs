@@ -22,6 +22,7 @@ public static class DependencyInjection
     {
         services.Configure<JwtOptions>(config.GetSection(JwtOptions.SectionName));
         services.Configure<EmailOptions>(config.GetSection(EmailOptions.SectionName));
+        services.Configure<AttendanceOptions>(config.GetSection(AttendanceOptions.SectionName));
         services.Configure<AdminOptions>(config.GetSection(AdminOptions.SectionName));
         services.Configure<RateLimitingOptions>(config.GetSection(RateLimitingOptions.SectionName));
 
