@@ -43,6 +43,9 @@ const AdminRestorePage = lazy(() =>
 const AdminAuditLogsPage = lazy(() =>
   import("@/features/admin").then((m) => ({ default: m.AdminAuditLogsPage })),
 );
+const AdminCommunicationsPage = lazy(() =>
+  import("@/features/admin").then((m) => ({ default: m.AdminCommunicationsPage })),
+);
 
 export const authRoutes: RouteObject[] = [
   {
@@ -96,6 +99,10 @@ export const authRoutes: RouteObject[] = [
           {
             path: "audit-logs",
             element: <AdminAuditLogsPage />,
+          },
+          {
+            path: "communications",
+            element: <AdminCommunicationsPage />,
           },
         ],
       },

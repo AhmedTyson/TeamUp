@@ -26,6 +26,8 @@ export const queryKeys = {
     dashboard: ["admin", "dashboard"] as const,
     softDeleted: (entityType?: string) => ["admin", "soft-deleted", entityType ?? "all"] as const,
     auditLogs: (params?: QueryParams) => ["admin", "audit-logs", params ?? {}] as const,
+    templates: ["admin", "templates"] as const,
+    templatePreview: (name: string) => ["admin", "templates", "preview", name] as const,
   },
 
   skills: {

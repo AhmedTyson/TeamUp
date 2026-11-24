@@ -6,6 +6,7 @@ import {
   Building2,
   ClipboardList,
   LayoutDashboard,
+  Mail,
   RotateCcw,
   UserCog,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const ADMIN_TABS = [
   { to: "/admin/roles", label: "Role Governance", icon: UserCog, end: false },
   { to: "/admin/restore", label: "Archive", icon: RotateCcw, end: false },
   { to: "/admin/audit-logs", label: "Activity Log", icon: ClipboardList, end: false },
+  { to: "/admin/communications", label: "Reports & Comms", icon: Mail, end: false },
 ] as const;
 
 export function AdminConsoleLayout({

@@ -21,6 +21,11 @@ export {
   useSoftDeletedQuery,
   useRestoreEntityMutation,
   useAuditLogsQuery,
+  useAdminEmailTemplatesQuery,
+  useAdminTemplatePreviewQuery,
+  useSendPlatformReportMutation,
+  useDispatchLeaderboardDigestMutation,
+  useDispatchProjectMatchDigestMutation,
 } from "./hooks/useAdminHooks";
 export {
   universityFormSchema,
@@ -37,3 +42,4 @@ export { AdminCatalogPage } from "./pages/AdminCatalogPage";
 export { AdminRolesPage } from "./pages/AdminRolesPage";
 export { AdminRestorePage } from "./pages/AdminRestorePage";
 export { AdminAuditLogsPage } from "./pages/AdminAuditLogsPage";
+export { AdminCommunicationsPage } from "./pages/AdminCommunicationsPage";

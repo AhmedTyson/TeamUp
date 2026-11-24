@@ -6,11 +6,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   adminApi,
   universitiesApi,
+  type AdminLeaderboardDigestPayload,
+  type AdminProjectMatchDigestPayload,
   type AdminStudentSearchParams,
   type AuditLogQueryParams,
   type CreateFacultyPayload,
   type CreateUniversityPayload,
   type RestorableEntityType,
+  type SendAdminReportPayload,
   type UniversityListParams,
   type UpdateFacultyPayload,
   type UpdateUniversityPayload,
@@ -181,5 +184,52 @@ export function useAuditLogsQuery(params: AuditLogQueryParams) {
   return useQuery({
     queryKey: queryKeys.admin.auditLogs(params as Record<string, unknown>),
     queryFn: ({ signal }) => adminApi.getAuditLogs(params, signal),
+  });
+}
+
+export function useAdminEmailTemplatesQuery() {
+  return useQuery({
+    queryKey: queryKeys.admin.templates,
+    queryFn: ({ signal }) => adminApi.getEmailTemplates(signal),
+  });
+}
+
+export function useAdminTemplatePreviewQuery(templateName: string | null) {
+  return useQuery({
+    queryKey: queryKeys.admin.templatePreview(templateName ?? ""),
+    queryFn: ({ signal }) => adminApi.getEmailTemplatePreview(templateName!, signal),
+    enabled: Boolean(templateName),
+  });
+}
+
+export function useSendPlatformReportMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload?: SendAdminReportPayload) => adminApi.sendPlatformSummaryReport(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+  });
+}
+
+export function useDispatchLeaderboardDigestMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: AdminLeaderboardDigestPayload) =>
+      adminApi.dispatchLeaderboardDigest(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+  });
+}
+
+export function useDispatchProjectMatchDigestMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: AdminProjectMatchDigestPayload) =>
+      adminApi.dispatchProjectMatchDigest(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
   });
 }

@@ -138,4 +138,12 @@ export type {
   AuditLogQueryParams,
   AdminStudentDirectoryItem,
   AdminStudentSearchParams,
+  CampusNewsItem,
+  AdminReportSummaryDto,
+  AdminReportEmailResultDto,
+  SendAdminReportPayload,
+  DigestDispatchMode,
+  AdminLeaderboardDigestPayload,
+  AdminProjectMatchDigestPayload,
+  DigestDispatchResultDto,
 } from "./admin.api";

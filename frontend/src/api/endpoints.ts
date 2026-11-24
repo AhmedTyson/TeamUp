@@ -114,5 +114,12 @@ export const API_ENDPOINTS = {
     restore: (entityType: RestorableEntityType | string, id: number) =>
       `${V1}/admin/restore/${entityType}/${id}`,
     auditLogs: `${V1}/admin/audit-logs`,
+    platformSummaryPdf: `${V1}/admin/reports/platform-summary.pdf`,
+    sendSummaryReport: `${V1}/admin/reports/send-summary`,
+    emailTemplates: `${V1}/admin/templates`,
+    emailTemplatePreview: (templateName: string) =>
+      `${V1}/admin/templates/preview/${encodeURIComponent(templateName)}`,
+    leaderboardDigest: `${V1}/admin/communications/leaderboard-digest`,
+    projectMatchDigest: `${V1}/admin/communications/project-matches`,
   },
 } as const;

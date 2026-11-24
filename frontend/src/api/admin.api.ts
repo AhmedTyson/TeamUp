@@ -3,7 +3,7 @@
  * @purpose PlatformAdmin governance API client covering dashboard KPIs, role management, 8-entity restore, immutable audit logs, and directory lookup.
  */
 import type { AuthStudentSummary } from "./auth.api";
-import { apiClient, unwrapApiResponse } from "./client";
+import { apiClient, fetchApiHtml, unwrapApiResponse } from "./client";
 import { API_ENDPOINTS } from "./endpoints";
 import type { RestorableEntityType, UserRole } from "./enums";
 import type { ApiResponse, PagedResult } from "./types";
@@ -69,6 +69,67 @@ export interface AdminStudentSearchParams {
   academicYear?: number;
   page?: number;
   pageSize?: number;
+}
+
+export interface CampusNewsItem {
+  category: string;
+  headline: string;
+  summary: string;
+}
+
+export interface AdminReportSummaryDto {
+  reportPeriod: string;
+  generatedAtUtc: string;
+  generatedByEmail: string;
+  activeStudents: number;
+  softDeletedStudents: number;
+  activeUniversities: number;
+  activeFaculties: number;
+  activeProjects: number;
+  recruitingProjects: number;
+  activeSkills: number;
+  activeOrganizations: number;
+  activeEvents: number;
+  totalAuditLogs: number;
+  fileName: string;
+}
+
+export interface AdminReportEmailResultDto {
+  recipientEmail: string;
+  fileName: string;
+  pdfSizeBytes: number;
+  summary: AdminReportSummaryDto;
+}
+
+export interface SendAdminReportPayload {
+  recipientEmail?: string;
+  reportPeriod?: string;
+}
+
+export type DigestDispatchMode = "TestToMe" | "Broadcast";
+
+export interface AdminLeaderboardDigestPayload {
+  mode: DigestDispatchMode;
+  periodLabel?: string;
+  newsItems?: CampusNewsItem[];
+  dryRun?: boolean;
+}
+
+export interface AdminProjectMatchDigestPayload {
+  mode: DigestDispatchMode;
+  maxMatchesPerStudent?: number;
+  minMatchPercentage?: number;
+  dryRun?: boolean;
+}
+
+export interface DigestDispatchResultDto {
+  digestType: string;
+  dryRun: boolean;
+  isTestMode: boolean;
+  eligibleRecipientsCount: number;
+  sentCount: number;
+  skippedCount: number;
+  previewHtml: string | null;
 }
 
 export const adminApi = {
@@ -138,6 +199,69 @@ export const adminApi = {
         },
         signal,
       },
+    );
+    return unwrapApiResponse(res);
+  },
+
+  async downloadPlatformSummaryPdf(
+    reportPeriod?: string,
+    signal?: AbortSignal,
+  ): Promise<{ blob: Blob; fileName: string }> {
+    const res = await apiClient.get<Blob>(API_ENDPOINTS.admin.platformSummaryPdf, {
+      params: reportPeriod ? { reportPeriod } : undefined,
+      responseType: "blob",
+      headers: { Accept: "application/pdf" },
+      signal,
+    });
+
+    const disposition = String(res.headers?.["content-disposition"] ?? "");
+    const match = disposition.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i);
+    const fileName = match?.[1]?.trim() || "TeamUp_Platform_Governance.pdf";
+
+    return { blob: res.data, fileName };
+  },
+
+  async sendPlatformSummaryReport(
+    payload?: SendAdminReportPayload,
+  ): Promise<AdminReportEmailResultDto> {
+    const res = await apiClient.post<ApiResponse<AdminReportEmailResultDto>>(
+      API_ENDPOINTS.admin.sendSummaryReport,
+      payload ?? {},
+    );
+    return unwrapApiResponse(res);
+  },
+
+  async getEmailTemplates(signal?: AbortSignal): Promise<string[]> {
+    const res = await apiClient.get<ApiResponse<string[]>>(
+      API_ENDPOINTS.admin.emailTemplates,
+      { signal },
+    );
+    return unwrapApiResponse(res);
+  },
+
+  async getEmailTemplatePreview(
+    templateName: string,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    return fetchApiHtml(API_ENDPOINTS.admin.emailTemplatePreview(templateName), { signal });
+  },
+
+  async dispatchLeaderboardDigest(
+    payload: AdminLeaderboardDigestPayload,
+  ): Promise<DigestDispatchResultDto> {
+    const res = await apiClient.post<ApiResponse<DigestDispatchResultDto>>(
+      API_ENDPOINTS.admin.leaderboardDigest,
+      payload,
+    );
+    return unwrapApiResponse(res);
+  },
+
+  async dispatchProjectMatchDigest(
+    payload: AdminProjectMatchDigestPayload,
+  ): Promise<DigestDispatchResultDto> {
+    const res = await apiClient.post<ApiResponse<DigestDispatchResultDto>>(
+      API_ENDPOINTS.admin.projectMatchDigest,
+      payload,
     );
     return unwrapApiResponse(res);
   },

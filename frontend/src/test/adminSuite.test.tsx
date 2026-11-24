@@ -17,6 +17,7 @@ import { AppCoreProviders } from "@/app/providers";
 import {
   AdminAuditLogsPage,
   AdminCatalogPage,
+  AdminCommunicationsPage,
   AdminDashboardPage,
   AdminRestorePage,
   AdminRolesPage,
@@ -392,5 +393,114 @@ describe("M1 Phase 2 — PlatformAdmin Governance Suite", () => {
     expect(screen.getByText(/previous values/i)).toBeInTheDocument();
     expect(screen.getByText(/updated values/i)).toBeInTheDocument();
     expect(screen.getByText(/"Role": "OrgAdmin"/)).toBeInTheDocument();
+  });
+
+  it("renders AdminCommunicationsPage template gallery, PDF download/email, and confirmed digest broadcast", async () => {
+    vi.spyOn(adminApi, "getEmailTemplates").mockResolvedValue([
+      "AdminReportEmail.html",
+      "EmailVerification.html",
+      "EventNotification.html",
+      "GeneralNotification.html",
+      "LeaderboardDigest.html",
+      "PasswordReset.html",
+      "ProjectMatchDigest.html",
+    ]);
+    vi.spyOn(adminApi, "getEmailTemplatePreview").mockImplementation(
+      async (name) => `<html><body><h1>Preview: ${name}</h1></body></html>`,
+    );
+    const downloadSpy = vi.spyOn(adminApi, "downloadPlatformSummaryPdf").mockResolvedValue({
+      blob: new Blob(["%PDF-1.7"], { type: "application/pdf" }),
+      fileName: "TeamUp_Platform_Governance_2026-11-24.pdf",
+    });
+    const emailReportSpy = vi.spyOn(adminApi, "sendPlatformSummaryReport").mockResolvedValue({
+      recipientEmail: "admin@teamup.edu",
+      fileName: "TeamUp_Platform_Governance_2026-11-24.pdf",
+      pdfSizeBytes: 14200,
+      summary: {
+        reportPeriod: "NOVEMBER 2026",
+        generatedAtUtc: "2026-11-24T04:00:00Z",
+        generatedByEmail: "admin@teamup.edu",
+        activeStudents: 100,
+        softDeletedStudents: 1,
+        activeUniversities: 12,
+        activeFaculties: 24,
+        activeProjects: 10,
+        recruitingProjects: 5,
+        activeSkills: 30,
+        activeOrganizations: 4,
+        activeEvents: 6,
+        totalAuditLogs: 25,
+        fileName: "TeamUp_Platform_Governance_2026-11-24.pdf",
+      },
+    });
+    const digestSpy = vi.spyOn(adminApi, "dispatchLeaderboardDigest").mockResolvedValue({
+      digestType: "LeaderboardDigest",
+      dryRun: false,
+      isTestMode: true,
+      eligibleRecipientsCount: 1,
+      sentCount: 1,
+      skippedCount: 0,
+      previewHtml: "<html></html>",
+    });
+
+    if (typeof URL.createObjectURL !== "function") {
+      Object.defineProperty(URL, "createObjectURL", {
+        writable: true,
+        configurable: true,
+        value: vi.fn(() => "blob:mock-pdf"),
+      });
+    } else {
+      vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-pdf");
+    }
+    if (typeof URL.revokeObjectURL !== "function") {
+      Object.defineProperty(URL, "revokeObjectURL", {
+        writable: true,
+        configurable: true,
+        value: vi.fn(),
+      });
+    } else {
+      vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/admin/communications"]}>
+        <AppCoreProviders initialUser={ADMIN_USER}>
+          <AdminCommunicationsPage />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(/Email Template Gallery \(7\)/i)).toBeInTheDocument();
+
+    const iframe = await screen.findByTitle("Email template preview");
+    await waitFor(() => {
+      expect(iframe.getAttribute("srcdoc")).toContain("Preview: AdminReportEmail.html");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /mobile \(375px\)/i }));
+    expect(iframe.className).toContain("w-[375px]");
+
+    fireEvent.click(screen.getByRole("button", { name: /download pdf report/i }));
+    await waitFor(() => {
+      expect(downloadSpy).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /email report to me/i }));
+    await waitFor(() => {
+      expect(emailReportSpy).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /send test to my email/i }));
+    await waitFor(() => {
+      expect(digestSpy).toHaveBeenCalledWith(expect.objectContaining({ mode: "TestToMe" }));
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /broadcast leaderboard digest/i }));
+    expect(await screen.findByText(/confirm opt-in broadcast dispatch/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /send opt-in broadcast/i }));
+    await waitFor(() => {
+      expect(digestSpy).toHaveBeenCalledWith(expect.objectContaining({ mode: "Broadcast" }));
+    });
   });
 });
