@@ -106,14 +106,15 @@ export function OrganizationHierarchyTab({
           </Badge>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Select
             aria-label="Filter hierarchy by chapter or committee"
             placeholder="All chapters & committees"
             options={unitOptions}
             value={unitFilter}
             onChange={(e) => setUnitFilter(e.target.value)}
-            className="h-9 min-w-[200px] bg-[#1b1d26] text-xs"
+            containerClassName="w-full sm:w-auto"
+            className="h-9 w-full bg-[#1b1d26] text-xs sm:min-w-[200px]"
           />
           <div className="inline-flex items-center rounded-xl border border-white/15 bg-[#1b1d26] p-0.5">
             <button
@@ -140,6 +141,10 @@ export function OrganizationHierarchyTab({
           </div>
         </div>
       </div>
+
+      <p className="text-[11px] text-white/50 md:hidden">
+        Swipe horizontally to inspect the full organization tree.
+      </p>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#14151c] p-5">

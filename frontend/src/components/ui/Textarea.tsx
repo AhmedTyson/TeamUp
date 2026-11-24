@@ -32,7 +32,7 @@ export function Textarea({
   const describedBy = [errorId, hintId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className={cn("space-y-1.5", containerClassName)}>
+    <div className={cn("min-w-0 space-y-1.5", containerClassName)}>
       {label && (
         <label htmlFor={textareaId} className="block text-[13px] font-medium text-white/85">
           {label}
@@ -52,7 +52,7 @@ export function Textarea({
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cn(
-          "w-full rounded-xl border bg-[#14151c] px-3.5 py-2.5 text-sm text-white placeholder:text-white/40 transition-colors",
+          "w-full rounded-xl border bg-[#14151c] px-3.5 py-2.5 text-base text-white placeholder:text-white/40 transition-colors sm:text-sm",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] focus-visible:ring-offset-2 focus-visible:ring-offset-[#14151c]",
           "disabled:cursor-not-allowed disabled:opacity-50",
           error

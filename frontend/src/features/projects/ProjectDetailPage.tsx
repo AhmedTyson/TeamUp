@@ -394,7 +394,7 @@ export function ProjectDetailPage() {
         )}
       </header>
 
-      <nav className="flex gap-2 overflow-x-auto border-b border-white/10" aria-label="Project sections">
+      <nav className="no-scrollbar flex items-center gap-1.5 overflow-x-auto border-b border-white/10" aria-label="Project sections">
         {TABS.map((item) => (
           <button
             key={item.value}

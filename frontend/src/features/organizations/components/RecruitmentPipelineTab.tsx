@@ -183,7 +183,7 @@ export function RecruitmentPipelineTab({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Filter className="size-3.5 text-white/50" aria-hidden="true" />
           <Select
             aria-label="Filter candidates by unit"
@@ -191,7 +191,8 @@ export function RecruitmentPipelineTab({
             options={unitOptions}
             value={unitFilter}
             onChange={(e) => setUnitFilter(e.target.value)}
-            className="h-9 min-w-[190px] bg-[#1b1d26] text-xs"
+            containerClassName="min-w-0 flex-1 sm:w-auto sm:flex-initial"
+            className="h-9 w-full bg-[#1b1d26] text-xs sm:min-w-[190px]"
           />
           <Button
             size="sm"

@@ -258,7 +258,7 @@ export function AdminCommunicationsPage() {
             </h2>
           </div>
 
-          <div className="inline-flex rounded-xl border border-white/10 bg-[#14151c] p-1">
+          <div className="inline-flex flex-wrap rounded-xl border border-white/10 bg-[#14151c] p-1">
             <button
               type="button"
               onClick={() => setPreviewViewport("desktop")}
@@ -328,7 +328,7 @@ export function AdminCommunicationsPage() {
                 srcDoc={previewQuery.data ?? ""}
                 sandbox="allow-same-origin"
                 className={`min-h-[620px] border border-[#E2E6E0] bg-white transition-all ${
-                  previewViewport === "mobile" ? "w-[375px]" : "w-full max-w-[660px]"
+                  previewViewport === "mobile" ? "w-full max-w-[375px]" : "w-full max-w-[660px]"
                 }`}
               />
             )}
@@ -349,7 +349,7 @@ export function AdminCommunicationsPage() {
             </h2>
           </div>
 
-          <div className="inline-flex rounded-xl border border-white/10 bg-[#14151c] p-1">
+          <div className="inline-flex flex-wrap rounded-xl border border-white/10 bg-[#14151c] p-1">
             <button
               type="button"
               onClick={() => setActiveDigestTab("leaderboard")}

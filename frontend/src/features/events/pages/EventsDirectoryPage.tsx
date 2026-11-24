@@ -114,7 +114,7 @@ export function EventsDirectoryPage() {
         <div className="max-w-3xl space-y-3">
           <Badge variant="accent">Workshops, Bootcamps &amp; Competitions</Badge>
           <h1
-            className="text-4xl font-bold uppercase leading-[0.95] text-[#d3fb52] sm:text-6xl"
+            className="break-words text-3xl font-bold uppercase leading-[0.95] text-[#d3fb52] sm:text-5xl lg:text-6xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Show up. Level up.
@@ -266,12 +266,12 @@ export function EventsDirectoryPage() {
                     <p className="line-clamp-2 text-sm text-white/65">{ev.description}</p>
                   </div>
 
-                  <div className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs text-white/60">
-                    <p className="inline-flex items-center gap-1.5">
+                  <div className="mt-4 min-w-0 space-y-2 border-t border-white/10 pt-3 text-xs text-white/60">
+                    <p className="flex min-w-0 items-center gap-1.5">
                       <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
-                      <span className="truncate">{ev.location}</span>
+                      <span className="min-w-0 truncate">{ev.location}</span>
                     </p>
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="inline-flex items-center gap-1.5">
                         <Users className="size-3.5" aria-hidden="true" />
                         {ev.registeredCount}/{ev.capacity} ·{" "}

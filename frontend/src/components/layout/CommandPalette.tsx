@@ -408,7 +408,7 @@ export function CommandPalette() {
       role="dialog"
       aria-modal="true"
       aria-label="Global command palette"
-      className="fixed inset-0 z-[90] flex items-start justify-center bg-black/70 px-4 pt-20 backdrop-blur-sm sm:pt-28"
+      className="fixed inset-0 z-[90] flex items-start justify-center bg-black/70 px-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-sm sm:px-4 sm:pt-20 md:pt-24"
       onClick={() => setOpen(false)}
     >
       <div
@@ -444,7 +444,7 @@ export function CommandPalette() {
             }}
             placeholder={placeholderText}
             aria-label={placeholderText}
-            className="w-full bg-transparent text-sm text-white placeholder:text-white/45 focus:outline-none"
+            className="w-full bg-transparent text-base text-white placeholder:text-white/45 focus:outline-none sm:text-sm"
           />
           {loadingRemote && (
             <span className="shrink-0 font-mono text-[10px] text-[#d3fb52]">SYNC</span>
@@ -453,13 +453,13 @@ export function CommandPalette() {
             type="button"
             onClick={() => setOpen(false)}
             aria-label="Close command palette"
-            className="inline-flex size-7 cursor-pointer items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white"
+            className="inline-flex size-9 cursor-pointer items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white sm:size-8"
           >
             <X className="size-4" aria-hidden="true" />
           </button>
         </div>
 
-        <div className="max-h-[60vh] overflow-y-auto p-2">
+        <div className="max-h-[min(65dvh,460px)] overflow-y-auto p-2">
           {items.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-white/55">
               No matching communities, events, projects, or pages found.
@@ -522,7 +522,7 @@ export function CommandPalette() {
                   </div>
                   <span
                     className={cn(
-                      "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                      "hidden shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:inline-flex",
                       idx === activeIndex
                         ? "bg-[#14151c]/15 text-[#14151c]"
                         : "bg-white/[0.06] text-white/60",
@@ -536,9 +536,9 @@ export function CommandPalette() {
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-white/10 bg-[#14151c]/70 px-4 py-2 text-[11px] text-white/50">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 bg-[#14151c]/70 px-4 py-2 text-[11px] text-white/50">
           <span>↑↓ Navigate · ↵ Open · Esc Close</span>
-          <span className="font-mono">Ctrl + K</span>
+          <span className="hidden font-mono sm:inline">Ctrl + K</span>
         </div>
       </div>
     </div>,

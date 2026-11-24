@@ -61,7 +61,7 @@ export function SearchInput({
   };
 
   return (
-    <div className={cn("relative flex items-center", containerClassName)}>
+    <div className={cn("relative flex min-w-0 items-center", containerClassName)}>
       <Search
         className="pointer-events-none absolute left-3.5 size-4 text-white/45"
         aria-hidden="true"
@@ -74,7 +74,7 @@ export function SearchInput({
         placeholder={placeholder}
         aria-label={ariaLabel}
         className={cn(
-          "h-10 w-full rounded-xl border border-white/12 bg-[#14151c] pl-10 pr-9 text-sm text-white placeholder:text-white/40 transition-colors",
+          "min-h-[42px] w-full rounded-xl border border-white/12 bg-[#14151c] py-2 pl-10 pr-10 text-base text-white placeholder:text-white/40 transition-colors sm:min-h-[40px] sm:text-sm",
           "hover:border-white/25 focus-visible:border-[#d3fb52]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] focus-visible:ring-offset-2 focus-visible:ring-offset-[#14151c]",
           "[&::-webkit-search-cancel-button]:hidden",
           className,
@@ -86,7 +86,7 @@ export function SearchInput({
           type="button"
           onClick={handleClear}
           aria-label="Clear search"
-          className="absolute right-2.5 inline-flex size-6 cursor-pointer items-center justify-center rounded-md text-white/50 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+          className="absolute right-2 inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-white/50 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
         >
           <X className="size-3.5" aria-hidden="true" />
         </button>

@@ -68,7 +68,7 @@ export function XpLevelChip({ isScrolled = false }: XpLevelChipProps) {
           : "View XP & Badges"
       }
       className={cn(
-        "hidden items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:inline-flex xl:gap-2 xl:px-2.5 xl:text-xs",
+        "hidden min-h-[36px] items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:inline-flex xl:gap-2 xl:text-xs",
         isScrolled
           ? "border-[#14151c] bg-[#14151c] text-white shadow-sm hover:bg-[#222532]"
           : "border-[#d3fb52]/30 bg-[#d3fb52]/10 text-[#d3fb52] hover:bg-[#d3fb52]/20",
@@ -81,15 +81,25 @@ export function XpLevelChip({ isScrolled = false }: XpLevelChipProps) {
       {score ? (
         <span className="inline-flex items-center gap-1.5 tabular-nums">
           <span>Lvl {score.level}</span>
-          <span className="text-white/40" aria-hidden="true">
+          <span
+            className="hidden text-white/40 sm:inline lg:hidden xl:inline"
+            aria-hidden="true"
+          >
             ·
           </span>
-          <span className={cn("font-mono", isScrolled && "text-[#d3fb52]")}>
+          <span
+            className={cn(
+              "hidden font-mono sm:inline lg:hidden xl:inline",
+              isScrolled && "text-[#d3fb52]",
+            )}
+          >
             {score.totalPoints} XP
           </span>
         </span>
       ) : (
-        <span className={isScrolled ? "text-[#d3fb52]" : undefined}>XP &amp; Badges</span>
+        <span className={isScrolled ? "text-[#d3fb52]" : undefined}>
+          XP<span className="hidden sm:inline lg:hidden xl:inline"> &amp; Badges</span>
+        </span>
       )}
     </Link>
   );

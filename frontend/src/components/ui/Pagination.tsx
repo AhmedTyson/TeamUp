@@ -69,7 +69,7 @@ export function Pagination({
         className,
       )}
     >
-      <div className="flex items-center gap-3 text-xs text-[#9ca3af] tabular-nums">
+      <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-[#9ca3af] tabular-nums sm:justify-start sm:gap-3">
         {totalCount !== undefined && pageSize !== undefined ? (
           <span>
             Showing <strong className="text-white">{rangeStart}</strong>–
@@ -102,7 +102,7 @@ export function Pagination({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-1">
+      <div className="flex flex-wrap items-center justify-center gap-1">
         {safeTotalPages > 3 && (
           <Button
             variant="secondary"
@@ -139,7 +139,7 @@ export function Pagination({
               onClick={() => onPageChange(item)}
               aria-current={item === safePage ? "page" : undefined}
               className={cn(
-                "inline-flex size-8 cursor-pointer items-center justify-center rounded-lg text-xs font-semibold tabular-nums transition-all duration-150",
+                "inline-flex min-h-9 min-w-8 cursor-pointer items-center justify-center rounded-lg px-2 text-xs font-semibold tabular-nums transition-all duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
                 item === safePage
                   ? "bg-[#d3fb52] text-[#14151c] shadow-[0_4px_14px_rgba(211,251,82,0.35)]"

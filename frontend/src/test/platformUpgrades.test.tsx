@@ -2,7 +2,7 @@
  * @date 2026-11-24
  * @purpose Vitest + React Testing Library suite covering English-only Navbar & complete CommandPalette, Role Dashboards (Student, OrgAdmin, PlatformAdmin), flexible onboarding, 4-tier Hierarchy, Recruitment Kanban, Digital Pass + .ics, Stage Projector, and ApiHealthPill.
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
@@ -661,5 +661,43 @@ describe("20-Item Plan & Role Dashboards Suite", () => {
 
     expect(screen.queryByText(/API Live/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/API status:/i)).not.toBeInTheDocument();
+  });
+
+  it("renders icon-only Quick Search button opening CommandPalette and exposes Org Requests in PlatformAdmin mobile drawer", async () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AppCoreProviders
+          initialUser={makeStudent({
+            firstName: "Amina",
+            role: USER_ROLES.PlatformAdmin,
+          })}
+        >
+          <Navbar xpChipSlot={<span />} notificationSlot={<span />} />
+          <CommandPalette />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    const searchTrigger = screen.getByRole("button", { name: "Quick search command palette" });
+    expect(searchTrigger).toBeInTheDocument();
+    expect(searchTrigger.textContent?.trim()).toBe("");
+    expect(screen.queryByText("Ctrl K")).not.toBeInTheDocument();
+
+    fireEvent.click(searchTrigger);
+    expect(
+      await screen.findByRole("dialog", { name: "Global command palette" }),
+    ).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole("button", { name: "Close command palette" }), {
+      key: "Escape",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Toggle navigation menu" }));
+    const drawer = document.getElementById("mobile-navigation-drawer");
+    expect(drawer).not.toBeNull();
+    expect(within(drawer!).getByRole("button", { name: /Quick Search/i })).toBeInTheDocument();
+    expect(within(drawer!).getByRole("link", { name: "Org Requests" })).toHaveAttribute(
+      "href",
+      "/admin/organization-requests",
+    );
   });
 });

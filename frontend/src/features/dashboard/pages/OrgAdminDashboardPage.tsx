@@ -207,25 +207,25 @@ export function OrgAdminDashboardPage() {
           <Skeleton className="h-24 rounded-2xl" />
         ) : (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div className="rounded-2xl border border-white/10 bg-[#14151c] p-4">
+            <div className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4">
               <p className="text-xs font-medium text-[#9ca3af]">1. Applied</p>
-              <p className="mt-1 font-mono text-2xl font-bold text-white">{funnelCounts.Applied}</p>
+              <p className="mt-1 font-mono text-xl font-bold text-white sm:text-2xl">{funnelCounts.Applied}</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-[#14151c] p-4">
+            <div className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4">
               <p className="text-xs font-medium text-[#9ca3af]">2. HR Screening</p>
-              <p className="mt-1 font-mono text-2xl font-bold text-amber-300">
+              <p className="mt-1 font-mono text-xl font-bold text-amber-300 sm:text-2xl">
                 {funnelCounts.HrScreening}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-[#14151c] p-4">
+            <div className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4">
               <p className="text-xs font-medium text-[#9ca3af]">3. Committee Interview</p>
-              <p className="mt-1 font-mono text-2xl font-bold text-sky-300">
+              <p className="mt-1 font-mono text-xl font-bold text-sky-300 sm:text-2xl">
                 {funnelCounts.CommitteeInterview}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-[#14151c] p-4">
+            <div className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4">
               <p className="text-xs font-medium text-[#9ca3af]">4. Accepted</p>
-              <p className="mt-1 font-mono text-2xl font-bold text-[#d3fb52]">
+              <p className="mt-1 font-mono text-xl font-bold text-[#d3fb52] sm:text-2xl">
                 {funnelCounts.Accepted}
               </p>
             </div>

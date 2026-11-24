@@ -79,24 +79,24 @@ export function ProjectsDiscoveryPage() {
             onChange={(value) => updateParams({ keyword: value, page: "" })}
             placeholder="Search project ideas…"
           />
-          <label className="space-y-1.5 text-[13px] font-medium text-white/80">
+          <label className="min-w-0 space-y-1.5 text-[13px] font-medium text-white/80">
             Status
             <select
               value={status}
               onChange={(event) => updateParams({ status: event.target.value, page: "" })}
-              className="h-10 w-full rounded-xl border border-white/12 bg-[#14151c] px-3 text-sm text-white"
+              className="min-h-[42px] w-full rounded-xl border border-white/12 bg-[#14151c] px-3 py-2 text-base text-white sm:min-h-[40px] sm:text-sm"
             >
               {PROJECT_STATUS_OPTIONS.map((item) => (
                 <option key={item || "all"} value={item}>{item || "All statuses"}</option>
               ))}
             </select>
           </label>
-          <label className="space-y-1.5 text-[13px] font-medium text-white/80">
+          <label className="min-w-0 space-y-1.5 text-[13px] font-medium text-white/80">
             Skill
             <select
               value={skillIdParam}
               onChange={(event) => updateParams({ skillId: event.target.value, page: "" })}
-              className="h-10 w-full rounded-xl border border-white/12 bg-[#14151c] px-3 text-sm text-white"
+              className="min-h-[42px] w-full rounded-xl border border-white/12 bg-[#14151c] px-3 py-2 text-base text-white sm:min-h-[40px] sm:text-sm"
             >
               <option value="">All skills</option>
               {(skillsQuery.data ?? []).map((skill) => (

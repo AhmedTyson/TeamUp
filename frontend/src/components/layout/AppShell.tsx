@@ -35,12 +35,12 @@ export function AppShell({ xpChipSlot, notificationSlot, children }: AppShellPro
         <>
           <main
             id="main-content"
-            className="mx-auto w-full max-w-6xl flex-1 px-4 pb-10 pt-24 sm:px-6 sm:pt-28"
+            className="mx-auto w-full max-w-6xl flex-1 px-3.5 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-[calc(5.5rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(6.75rem+env(safe-area-inset-top))]"
           >
             {children ?? <Outlet />}
           </main>
 
-          <footer className="border-t border-white/10 py-6 text-xs text-white/55">
+          <footer className="border-t border-white/10 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6 text-xs text-white/55">
             <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6">
               <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
                 <span className="text-center sm:text-left">

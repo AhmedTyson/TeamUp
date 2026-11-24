@@ -446,7 +446,7 @@ export function StudentPortraitHero({
   return (
     <section
       aria-label="TeamUp Campus Student Hero"
-      className="teamup-hero-bg relative z-10 flex min-h-screen w-full flex-col justify-between overflow-hidden px-4 pb-8 pt-28 sm:px-8"
+      className="teamup-hero-bg relative z-10 flex min-h-[100dvh] w-full flex-col justify-between overflow-hidden px-4 pb-8 pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-8 sm:pt-28"
     >
       <div aria-hidden="true" className="hero-aurora-layer" />
       <HeroCampusIcons />
@@ -458,7 +458,7 @@ export function StudentPortraitHero({
             className="flex select-none flex-col items-center font-bold uppercase text-white"
             style={{
               fontFamily: "'Antonio', 'Barlow Condensed', sans-serif",
-              fontSize: "clamp(2.65rem, 6.4vw, 5.4rem)",
+              fontSize: "clamp(2.25rem, 8.2vw, 5.4rem)",
               lineHeight: 0.9,
               letterSpacing: "-0.025em",
             }}

@@ -114,7 +114,7 @@ export function OrganizationsDirectoryPage() {
         <div className="max-w-3xl space-y-3">
           <Badge variant="accent">Activities &amp; Open Communities</Badge>
           <h1
-            className="text-4xl font-bold uppercase leading-[0.95] text-[#d3fb52] sm:text-6xl"
+            className="break-words text-3xl font-bold uppercase leading-[0.95] text-[#d3fb52] sm:text-5xl lg:text-6xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Find your people.
@@ -254,24 +254,24 @@ export function OrganizationsDirectoryPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex-1 space-y-2">
-                  <h2 className="text-lg font-semibold leading-snug text-white">
-                    <Link
-                      to={`/organizations/${org.organizationId}`}
-                      className="transition-colors hover:text-[#d3fb52]"
-                    >
-                      {org.name}
-                    </Link>
-                  </h2>
-                  {(org.universityName || org.city || org.scope) && (
-                    <p className="inline-flex flex-wrap items-center gap-1.5 text-xs font-medium text-[#539886]">
-                      <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
-                      <span>
-                        {org.universityName ?? org.city ?? "Egypt Open Community"}
-                        {org.scope ? ` · ${org.scope}` : ""}
-                      </span>
-                    </p>
-                  )}
+            <div className="mt-4 min-w-0 flex-1 space-y-2">
+              <h2 className="break-words text-lg font-semibold leading-snug text-white">
+                <Link
+                  to={`/organizations/${org.organizationId}`}
+                  className="transition-colors hover:text-[#d3fb52]"
+                >
+                  {org.name}
+                </Link>
+              </h2>
+              {(org.universityName || org.city || org.scope) && (
+                <p className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs font-medium text-[#539886]">
+                  <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 break-words">
+                    {org.universityName ?? org.city ?? "Egypt Open Community"}
+                    {org.scope ? ` · ${org.scope}` : ""}
+                  </span>
+                </p>
+              )}
                   <p className="line-clamp-3 text-sm leading-relaxed text-white/65">
                     {org.description}
                   </p>
@@ -348,14 +348,14 @@ export function OrganizationsDirectoryPage() {
             {myRequestsQuery.data.map((req) => (
               <div
                 key={req.requestId}
-                className="flex flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-[#14151c] p-4"
+                className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-[#14151c] p-4"
               >
-                <div className="space-y-1.5">
+                <div className="min-w-0 space-y-1.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-semibold text-white">{req.name}</span>
+                    <span className="min-w-0 break-words font-semibold text-white">{req.name}</span>
                     <StatusPill status={req.status} />
                   </div>
-                  <p className="text-xs text-[#9ca3af]">
+                  <p className="break-words text-xs text-[#9ca3af]">
                     {req.category} · {req.scope} · Submitted {formatDateTime(req.requestedAt)}
                   </p>
                   {req.reviewNotes && (

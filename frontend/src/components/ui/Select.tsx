@@ -43,7 +43,7 @@ export function Select({
   const describedBy = [errorId, hintId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className={cn("space-y-1.5", containerClassName)}>
+    <div className={cn("min-w-0 space-y-1.5", containerClassName)}>
       {label && (
         <label htmlFor={selectId} className="block text-[13px] font-medium text-white/85">
           {label}
@@ -63,7 +63,7 @@ export function Select({
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={cn(
-            "h-10 w-full appearance-none rounded-xl border bg-[#14151c] pl-3.5 pr-10 text-sm text-white transition-colors",
+            "min-h-[42px] w-full appearance-none rounded-xl border bg-[#14151c] py-2 pl-3.5 pr-10 text-base text-white transition-colors sm:min-h-[40px] sm:text-sm",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] focus-visible:ring-offset-2 focus-visible:ring-offset-[#14151c]",
             "disabled:cursor-not-allowed disabled:opacity-50",
             error

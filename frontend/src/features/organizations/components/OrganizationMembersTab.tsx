@@ -124,7 +124,8 @@ export function OrganizationMembersTab({
                     options={roleOptions}
                     value={member.role}
                     disabled={isBusy}
-                    className="h-9 min-w-[140px] bg-[#1b1d26] text-xs"
+                    containerClassName="w-full sm:w-auto"
+                    className="h-9 w-full bg-[#1b1d26] text-xs sm:min-w-[140px]"
                     onChange={async (e) => {
                       const nextRole = e.target.value;
                       try {
@@ -144,7 +145,8 @@ export function OrganizationMembersTab({
                       options={unitOptions}
                       value={member.organizationUnitId ? String(member.organizationUnitId) : "0"}
                       disabled={isBusy}
-                      className="h-9 min-w-[155px] bg-[#1b1d26] text-xs"
+                      containerClassName="w-full sm:w-auto"
+                      className="h-9 w-full bg-[#1b1d26] text-xs sm:min-w-[155px]"
                       onChange={async (e) => {
                         const val = Number(e.target.value);
                         try {

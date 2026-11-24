@@ -240,40 +240,42 @@ export function AdminAuditLogsPage() {
                 <div className="border-b border-white/[0.08] px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-[#9ca3af]">
                   Field-by-Field Comparison
                 </div>
-                <table className="w-full border-collapse text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-white/[0.08] text-[#9ca3af]">
-                      <th className="px-3.5 py-2 font-medium">Property</th>
-                      <th className="px-3.5 py-2 font-medium">Before</th>
-                      <th className="px-3.5 py-2 font-medium">After</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/[0.06]">
-                    {structuredEntries.map((entry) => (
-                      <tr key={entry.field}>
-                        <td className="px-3.5 py-2 font-mono font-semibold text-white">
-                          {entry.field}
-                        </td>
-                        <td
-                          className={cn(
-                            "px-3.5 py-2 font-mono",
-                            entry.changed ? "text-red-300" : "text-[#9ca3af]",
-                          )}
-                        >
-                          {entry.before}
-                        </td>
-                        <td
-                          className={cn(
-                            "px-3.5 py-2 font-mono",
-                            entry.changed ? "text-emerald-300" : "text-[#9ca3af]",
-                          )}
-                        >
-                          {entry.after}
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-white/[0.08] text-[#9ca3af]">
+                        <th className="px-3.5 py-2 font-medium">Property</th>
+                        <th className="px-3.5 py-2 font-medium">Before</th>
+                        <th className="px-3.5 py-2 font-medium">After</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.06]">
+                      {structuredEntries.map((entry) => (
+                        <tr key={entry.field}>
+                          <td className="px-3.5 py-2 font-mono font-semibold text-white">
+                            {entry.field}
+                          </td>
+                          <td
+                            className={cn(
+                              "break-words px-3.5 py-2 font-mono",
+                              entry.changed ? "text-red-300" : "text-[#9ca3af]",
+                            )}
+                          >
+                            {entry.before}
+                          </td>
+                          <td
+                            className={cn(
+                              "break-words px-3.5 py-2 font-mono",
+                              entry.changed ? "text-emerald-300" : "text-[#9ca3af]",
+                            )}
+                          >
+                            {entry.after}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

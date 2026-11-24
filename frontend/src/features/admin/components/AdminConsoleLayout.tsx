@@ -44,9 +44,9 @@ export function AdminConsoleLayout({
       <DashboardRoleSwitcher />
 
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div className="space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <h1
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
+            className="break-words text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl"
             style={{ fontFamily: "var(--font-heading)" }}
           >
             {title}
@@ -54,7 +54,7 @@ export function AdminConsoleLayout({
           <p className="max-w-2xl text-sm text-[#9ca3af]">{description}</p>
         </div>
 
-        {actions && <div className="flex shrink-0 items-center gap-2.5">{actions}</div>}
+        {actions && <div className="flex flex-wrap shrink-0 items-center gap-2.5">{actions}</div>}
       </div>
 
       <nav

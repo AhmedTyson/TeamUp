@@ -29,7 +29,7 @@ export function SpotlightCard({
   return (
     <div
       onMouseMove={handleMouseMove}
-      className={cn("service-card group p-6 text-white", className)}
+      className={cn("service-card group min-w-0 p-5 text-white sm:p-6", className)}
       {...props}
     >
       {showCornerArrow && (
@@ -40,7 +40,7 @@ export function SpotlightCard({
           <ArrowUpRight className="size-4" />
         </span>
       )}
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-10 min-w-0">{children}</div>
     </div>
   );
 }

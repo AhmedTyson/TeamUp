@@ -110,6 +110,7 @@ const NAV_OPTIONS: readonly NavOptionGroup[] = [
       { label: "Open & Independent Communities", to: "/organizations?scope=Independent" },
       { label: "Cross-University Initiatives", to: "/organizations?scope=CrossUniversity" },
       { label: "Recruiting Open Now", to: "/organizations?scope=recruiting" },
+      { label: "Request New Organization", to: "/organizations?request=1" },
       { label: "Org Leader Dashboard", to: "/dashboard/org" },
     ],
   },
@@ -189,6 +190,7 @@ const MOBILE_NAV_MODULES: readonly MobileNavModuleGroup[] = [
       { label: "Organizations Directory", to: "/organizations" },
       { label: "Open & Independent Communities", to: "/organizations?scope=Independent" },
       { label: "Recruiting Now", to: "/organizations?scope=recruiting" },
+      { label: "Request New Organization", to: "/organizations?request=1" },
       { label: "Org Leader Dashboard", to: "/dashboard/org" },
     ],
   },
@@ -462,22 +464,22 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
   return (
     <header
       id="main-header"
-      className="pointer-events-none fixed inset-x-0 top-3 z-50 px-2.5 sm:top-6 sm:px-4 xl:px-6"
+      className="pointer-events-none fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-50 px-[max(0.625rem,env(safe-area-inset-left))] sm:top-[max(1.25rem,env(safe-area-inset-top))] sm:px-4 xl:px-6"
     >
       <div
         id="header-inner"
         className={cn(
-          "pointer-events-auto mx-auto flex h-[56px] w-full items-center justify-between gap-1.5 rounded-[16px] border px-2 py-2 transition-[max-width,background-color,box-shadow,border-color] duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-2 sm:px-3 xl:px-5",
+          "pointer-events-auto mx-auto flex min-h-[56px] w-full items-center justify-between gap-1.5 rounded-[16px] border px-2 py-1.5 transition-[max-width,background-color,box-shadow,border-color] duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-2 sm:px-3 sm:py-2 xl:px-5",
           isScrolled
             ? cn(
-                isAuthenticated ? "max-w-[1200px]" : "max-w-[1040px]",
+                isAuthenticated ? "max-w-[1240px]" : "max-w-[1040px]",
                 "border-black/[0.06] bg-white/[0.985] shadow-[0_18px_46px_-8px_rgba(8,18,20,0.42)]",
               )
             : "max-w-[1392px] border-transparent bg-white/0 shadow-none",
         )}
       >
         {/* Left Zone: Smooth Folding Brand Wordmark <-> Lime Square Icon */}
-        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
           <button
             type="button"
             onClick={(event) => {
@@ -499,7 +501,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-navigation-drawer"
             className={cn(
-              "inline-flex size-9 cursor-pointer items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] lg:hidden",
+              "inline-flex min-h-[36px] min-w-[36px] shrink-0 cursor-pointer items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:min-h-[40px] sm:min-w-[40px] lg:hidden",
               isScrolled
                 ? "border-black/15 bg-black/5 text-[#14151c] hover:bg-black/10"
                 : "border-white/15 bg-[#1b1d26]/90 text-white/85 hover:border-[#d3fb52]/40 hover:text-white",
@@ -517,15 +519,15 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
             title="TeamUp"
             aria-label="TeamUp Home"
             className={cn(
-              "inline-flex h-10 shrink-0 items-center overflow-hidden transition-[width] duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
-              isScrolled ? "w-10" : "w-[84px] sm:w-[98px] xl:w-[132px]",
+              "inline-flex min-h-[40px] shrink-0 items-center overflow-hidden transition-[width] duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+              isScrolled ? "w-9 sm:w-10" : "w-[74px] sm:w-[92px] lg:w-[86px] xl:w-[126px]",
             )}
           >
             {isScrolled ? (
               <span
                 id="brand-icon-scrolled"
                 style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-                className="animate-brand-morph flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[#d3fb52] text-[24px] font-black italic leading-none tracking-tighter text-[#14151c] transition-transform duration-200 hover:scale-105"
+                className="animate-brand-morph flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[#d3fb52] text-[22px] font-black italic leading-none tracking-tighter text-[#14151c] transition-transform duration-200 hover:scale-105 sm:h-10 sm:w-10 sm:text-[24px]"
               >
                 T
               </span>
@@ -533,7 +535,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
               <span
                 id="brand-wordmark"
                 style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-                className="animate-brand-morph inline-block shrink-0 cursor-pointer whitespace-nowrap text-[24px] font-black italic leading-none tracking-[-0.03em] text-[#d3fb52] transition-transform duration-200 hover:scale-[1.03] sm:text-[28px] xl:text-[36px]"
+                className="animate-brand-morph inline-block shrink-0 cursor-pointer whitespace-nowrap text-[22px] font-black italic leading-none tracking-[-0.03em] text-[#d3fb52] transition-transform duration-200 hover:scale-[1.03] sm:text-[26px] lg:text-[24px] xl:text-[34px]"
               >
                 TeamUp
               </span>
@@ -553,7 +555,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
               setActiveMenuId(null);
             }, 180);
           }}
-          className="relative hidden items-center justify-center gap-0 lg:flex xl:gap-1"
+          className="relative hidden min-w-0 items-center justify-center gap-0.5 lg:flex xl:gap-1"
         >
           <div
             id="nav-gliding-pill"
@@ -607,7 +609,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                     }
                   }}
                   className={cn(
-                    "nav-option-btn cursor-pointer whitespace-nowrap rounded-[10px] px-1.5 py-2 text-[12px] font-medium tracking-[-0.01em] transition-colors duration-150 xl:px-3 xl:text-[13.5px]",
+                    "nav-option-btn inline-flex min-h-[38px] cursor-pointer items-center whitespace-nowrap rounded-[10px] px-1.5 py-2 text-[12px] font-medium tracking-[-0.015em] transition-colors duration-150 xl:px-2.5 xl:text-[13.5px]",
                     isScrolled
                       ? isOpen
                         ? "font-semibold text-[#14151c]"
@@ -628,7 +630,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
               to="/admin"
               className={({ isActive }) =>
                 cn(
-                  "relative z-10 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-[10px] px-1.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] xl:px-2.5 xl:text-[13.5px]",
+                  "relative z-10 inline-flex min-h-[38px] shrink-0 items-center gap-1 whitespace-nowrap rounded-[10px] px-1.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] xl:px-2.5 xl:text-[13.5px]",
                   isActive
                     ? "bg-[#d3fb52] font-semibold text-[#14151c]"
                     : isScrolled
@@ -646,7 +648,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                 to={isOrgAdmin || orgAdminIds.length > 0 ? "/dashboard/org" : "/dashboard"}
                 className={({ isActive }) =>
                   cn(
-                    "relative z-10 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-[10px] px-1.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] xl:px-2.5 xl:text-[13.5px]",
+                    "relative z-10 inline-flex min-h-[38px] shrink-0 items-center gap-1 whitespace-nowrap rounded-[10px] px-1.5 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] xl:px-2.5 xl:text-[13.5px]",
                     isActive
                       ? "bg-[#d3fb52] font-semibold text-[#14151c]"
                       : isScrolled
@@ -792,28 +794,25 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
           )}
         </nav>
 
-        {/* Right Zone: Command Palette, Auth / User Controls */}
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        {/* Right Zone: Icon-Only Command Palette, Auth / User Controls */}
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
           <button
             type="button"
             onClick={() => dispatchOpenCommandPalette()}
             aria-label="Quick search command palette"
-            title="Ctrl+K"
+            title="Quick search (Ctrl+K)"
             className={cn(
-              "hidden h-9 cursor-pointer items-center gap-1.5 rounded-xl border px-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] md:inline-flex",
+              "inline-flex min-h-[36px] min-w-[36px] shrink-0 cursor-pointer items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:min-h-[40px] sm:min-w-[40px]",
               isScrolled
-                ? "border-black/15 bg-black/5 text-[#14151c] hover:border-black/30"
+                ? "border-black/15 bg-black/5 text-[#14151c] hover:border-black/30 hover:bg-black/10"
                 : "border-white/15 bg-[#1b1d26]/90 text-white/85 hover:border-[#d3fb52]/40 hover:text-white",
             )}
           >
-            <Search className="size-3.5 shrink-0" aria-hidden="true" />
-            <kbd className="hidden rounded border border-current/20 px-1 font-mono text-[10px] opacity-75 xl:inline">
-              Ctrl K
-            </kbd>
+            <Search className="size-4 shrink-0" aria-hidden="true" />
           </button>
 
           {isAuthenticated && user ? (
-            <div className="flex shrink-0 items-center gap-1.5">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
               <div className="shrink-0 whitespace-nowrap">
                 {xpChipSlot ?? <XpLevelChip isScrolled={isScrolled} />}
               </div>
@@ -834,7 +833,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                 to="/profile/me"
                 title={`${user.firstName} ${user.lastName} · ${user.role}`}
                 className={cn(
-                  "inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:px-2.5 lg:px-1.5 xl:px-2.5",
+                  "inline-flex min-h-[36px] min-w-[36px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border px-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:min-h-[40px] sm:px-2.5 lg:size-10 lg:px-0 xl:w-auto xl:px-2.5",
                   isScrolled
                     ? "border-black/15 bg-black/5 text-[#14151c] hover:border-black/30"
                     : "border-white/15 bg-[#1b1d26]/90 text-white hover:border-[#d3fb52]/40",
@@ -845,7 +844,9 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                   name={`${user.firstName} ${user.lastName}`}
                   size="xs"
                 />
-                <span className="hidden sm:inline lg:hidden xl:inline">{user.firstName}</span>
+                <span className="hidden max-w-[92px] truncate sm:inline lg:hidden xl:inline">
+                  {user.firstName}
+                </span>
               </Link>
 
               <button
@@ -856,7 +857,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                 }}
                 aria-label="Sign out"
                 className={cn(
-                  "inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] disabled:opacity-50",
+                  "inline-flex min-h-[36px] min-w-[36px] shrink-0 cursor-pointer items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] disabled:opacity-50 sm:min-h-[40px] sm:min-w-[40px]",
                   isScrolled
                     ? "border-black/15 bg-black/5 text-[#14151c] hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-600"
                     : "border-white/15 bg-white/10 text-white/80 hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-300",
@@ -870,11 +871,11 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
               </button>
             </div>
           ) : (
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
               <Link
                 to="/auth/register"
                 className={cn(
-                  "hidden h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[10px] border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:inline-flex sm:h-10 xl:px-3.5 xl:text-sm",
+                  "hidden min-h-[38px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[10px] border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:inline-flex sm:min-h-[40px] xl:px-3.5 xl:text-sm",
                   isScrolled
                     ? "border-[#14151c]/75 bg-white text-[#14151c] hover:bg-black/[0.04]"
                     : "border-white/80 bg-transparent text-white hover:bg-white/10",
@@ -886,7 +887,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
               <Link
                 to="/auth/login"
                 className={cn(
-                  "inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-[10px] px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:h-10 sm:px-3.5 sm:text-sm xl:px-4",
+                  "inline-flex min-h-[36px] shrink-0 items-center whitespace-nowrap rounded-[10px] px-2.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:min-h-[40px] sm:px-3.5 sm:text-sm xl:px-4",
                   isScrolled
                     ? "bg-[#14151c] text-white hover:bg-[#232634]"
                     : "bg-[#d3fb52] text-[#14151c] hover:bg-[#deff6e]",
@@ -915,14 +916,28 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
             id="mobile-navigation-drawer"
             onClick={(event) => event.stopPropagation()}
             className={cn(
-              "animate-mobile-drawer-in pointer-events-auto mx-auto mt-2 w-full max-h-[calc(100dvh-5.5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/12 bg-[#14151c]/[0.98] p-3 shadow-[0_24px_64px_-12px_rgba(0,0,0,0.75)] backdrop-blur-xl sm:p-4 lg:hidden",
+              "animate-mobile-drawer-in pointer-events-auto mx-auto mt-2 w-full max-h-[calc(100dvh-5.5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/12 bg-[#14151c]/[0.98] p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_24px_64px_-12px_rgba(0,0,0,0.75)] backdrop-blur-xl sm:p-4 lg:hidden",
               isScrolled
                 ? isAuthenticated
-                  ? "max-w-[1200px]"
+                  ? "max-w-[1240px]"
                   : "max-w-[1040px]"
                 : "max-w-[1392px]",
             )}
           >
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                dispatchOpenCommandPalette();
+              }}
+              className="mb-3 flex min-h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-white/12 bg-[#1b1d26] px-3.5 py-2 text-left text-xs font-medium text-white/80 transition-colors hover:border-[#d3fb52]/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Search className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
+                <span>Quick Search…</span>
+              </span>
+              <span className="text-[11px] text-white/45">Pages · Clubs · Events</span>
+            </button>
             {isAuthenticated && user && (
               <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-[#1b1d26] p-2.5 sm:hidden">
                 <Link
@@ -1058,6 +1073,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                   </NavLink>
                   <div className="grid grid-cols-2 gap-1">
                     {[
+                      { label: "Org Requests", to: "/admin/organization-requests" },
                       { label: "Catalog", to: "/admin/catalog" },
                       { label: "Roles", to: "/admin/roles" },
                       { label: "Archive", to: "/admin/restore" },
@@ -1069,7 +1085,7 @@ export function Navbar({ xpChipSlot, notificationSlot }: NavbarProps) {
                         key={adminLink.to}
                         to={adminLink.to}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-white/80 hover:bg-white/[0.07] hover:text-white"
+                        className="inline-flex min-h-[38px] items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-white/80 hover:bg-white/[0.07] hover:text-white"
                       >
                         {adminLink.label}
                       </NavLink>

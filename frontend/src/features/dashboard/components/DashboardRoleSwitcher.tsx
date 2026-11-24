@@ -24,7 +24,7 @@ export function DashboardRoleSwitcher() {
         : "Student Member";
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.085] bg-[#1b1d26]/90 px-4 py-3">
+    <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.085] bg-[#1b1d26]/90 px-4 py-3">
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
           Assigned Workspace
@@ -45,7 +45,7 @@ export function DashboardRoleSwitcher() {
           to="/dashboard/student"
           className={({ isActive }) =>
             cn(
-              "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+              "inline-flex min-h-[38px] items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
               isActive
                 ? "bg-[#d3fb52] text-[#14151c]"
                 : "border border-white/10 bg-[#14151c] text-white/80 hover:border-[#d3fb52]/40 hover:text-white",
@@ -61,7 +61,7 @@ export function DashboardRoleSwitcher() {
             to="/dashboard/org"
             className={({ isActive }) =>
               cn(
-                "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+                "inline-flex min-h-[38px] items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
                 isActive
                   ? "bg-[#d3fb52] text-[#14151c]"
                   : "border border-white/10 bg-[#14151c] text-white/80 hover:border-[#d3fb52]/40 hover:text-white",
@@ -78,7 +78,7 @@ export function DashboardRoleSwitcher() {
             to="/admin"
             className={({ isActive }) =>
               cn(
-                "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+                "inline-flex min-h-[38px] items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
                 isActive
                   ? "bg-[#d3fb52] text-[#14151c]"
                   : "border border-white/10 bg-[#14151c] text-white/80 hover:border-[#d3fb52]/40 hover:text-white",

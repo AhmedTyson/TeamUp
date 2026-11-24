@@ -134,10 +134,10 @@ export function StudentDashboardPage() {
         <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Link
             to="/gamification"
-            className="rounded-2xl border border-white/10 bg-[#14151c]/85 p-4 transition-colors hover:border-[#d3fb52]/40"
+            className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c]/85 p-4 transition-colors hover:border-[#d3fb52]/40"
           >
             <p className="text-xs font-medium text-[#9ca3af]">Level &amp; Verified XP</p>
-            <p className="mt-1.5 font-mono text-2xl font-bold text-[#d3fb52]">
+            <p className="mt-1.5 break-words font-mono text-lg font-bold text-[#d3fb52] sm:text-2xl">
               {scoreQuery.isLoading
                 ? "…"
                 : `Lvl ${scoreQuery.data?.level ?? 1} · ${scoreQuery.data?.totalPoints ?? 0} XP`}
@@ -146,30 +146,30 @@ export function StudentDashboardPage() {
 
           <Link
             to="/events"
-            className="rounded-2xl border border-white/10 bg-[#14151c]/85 p-4 transition-colors hover:border-[#d3fb52]/40"
+            className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c]/85 p-4 transition-colors hover:border-[#d3fb52]/40"
           >
             <p className="text-xs font-medium text-[#9ca3af]">My Event Passes</p>
-            <p className="mt-1.5 font-mono text-2xl font-bold text-white">
+            <p className="mt-1.5 font-mono text-lg font-bold text-white sm:text-2xl">
               {myEventsQuery.isLoading ? "…" : registrations.length}
             </p>
           </Link>
 
           <Link
             to="/organizations"
-            className="rounded-2xl border border-white/10 bg-[#14151c]/85 p-4 transition-colors hover:border-[#d3fb52]/40"
+            className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c]/85 p-4 transition-colors hover:border-[#d3fb52]/40"
           >
             <p className="text-xs font-medium text-[#9ca3af]">Club Applications</p>
-            <p className="mt-1.5 font-mono text-2xl font-bold text-white">
+            <p className="mt-1.5 font-mono text-lg font-bold text-white sm:text-2xl">
               {myAppsQuery.isLoading ? "…" : applications.length}
             </p>
           </Link>
 
           <Link
             to="/notifications"
-            className="rounded-2xl border border-white/10 bg-[#14151c]/85 p-4 transition-colors hover:border-[#d3fb52]/40"
+            className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c]/85 p-4 transition-colors hover:border-[#d3fb52]/40"
           >
             <p className="text-xs font-medium text-[#9ca3af]">Unread Alerts</p>
-            <p className="mt-1.5 font-mono text-2xl font-bold text-sky-300">
+            <p className="mt-1.5 font-mono text-lg font-bold text-sky-300 sm:text-2xl">
               {notificationsQuery.isLoading ? "…" : unreadNotifications.length}
             </p>
           </Link>

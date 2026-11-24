@@ -130,10 +130,10 @@ export function CampusLeaderboardPage() {
           Campus Merit &amp; Achievement
         </Badge>
         <h1
-          className="mt-3 font-bold uppercase text-[#d3fb52]"
+          className="mt-3 break-words font-bold uppercase text-[#d3fb52]"
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: "clamp(2.5rem, 6.5vw, 5rem)",
+            fontSize: "clamp(2rem, 6.5vw, 5rem)",
             lineHeight: 0.9,
             letterSpacing: "-0.025em",
           }}
@@ -150,7 +150,7 @@ export function CampusLeaderboardPage() {
           <div className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3">
             {/* Rank 2 (Silver / Emerald) */}
             {top3[1] && (
-              <div className="order-2 flex flex-col items-center justify-between rounded-2xl border border-white/10 bg-[#1b1d26]/90 p-5 text-center shadow-lg backdrop-blur-md sm:order-1 sm:translate-y-3">
+              <div className="order-2 flex min-w-0 flex-col items-center justify-between rounded-2xl border border-white/10 bg-[#1b1d26]/90 p-5 text-center shadow-lg backdrop-blur-md sm:order-1 sm:translate-y-3">
                 <div className="relative">
                   <Avatar
                     src={top3[1].photoUrl ?? undefined}
@@ -184,7 +184,7 @@ export function CampusLeaderboardPage() {
 
             {/* Rank 1 (Gold / Lime) */}
             {top3[0] && (
-              <div className="order-1 flex flex-col items-center justify-between rounded-2xl border-2 border-[#d3fb52] bg-[#1b1d26] p-6 text-center shadow-[0_0_36px_rgba(211,251,82,0.18)] sm:order-2 sm:-translate-y-2">
+              <div className="order-1 flex min-w-0 flex-col items-center justify-between rounded-2xl border-2 border-[#d3fb52] bg-[#1b1d26] p-6 text-center shadow-[0_0_36px_rgba(211,251,82,0.18)] sm:order-2 sm:-translate-y-2">
                 <div className="relative">
                   <Avatar
                     src={top3[0].photoUrl ?? undefined}
@@ -219,7 +219,7 @@ export function CampusLeaderboardPage() {
 
             {/* Rank 3 (Bronze / Forest) */}
             {top3[2] && (
-              <div className="order-3 flex flex-col items-center justify-between rounded-2xl border border-white/10 bg-[#1b1d26]/90 p-5 text-center shadow-lg backdrop-blur-md sm:translate-y-5">
+              <div className="order-3 flex min-w-0 flex-col items-center justify-between rounded-2xl border border-white/10 bg-[#1b1d26]/90 p-5 text-center shadow-lg backdrop-blur-md sm:translate-y-5">
                 <div className="relative">
                   <Avatar
                     src={top3[2].photoUrl ?? undefined}

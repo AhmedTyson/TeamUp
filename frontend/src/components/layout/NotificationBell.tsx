@@ -140,7 +140,7 @@ export function NotificationBell({ isScrolled = false, onOpenChange }: Notificat
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         className={cn(
-          "relative inline-flex size-9 cursor-pointer items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]",
+          "relative inline-flex min-h-[36px] min-w-[36px] cursor-pointer items-center justify-center rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] sm:min-h-[40px] sm:min-w-[40px]",
           isScrolled
             ? "border-black/15 bg-black/5 text-[#14151c] hover:border-black/30 hover:bg-black/10"
             : "border-white/15 bg-[#1b1d26]/90 text-white/80 hover:border-[#d3fb52]/40 hover:text-white",
@@ -158,7 +158,7 @@ export function NotificationBell({ isScrolled = false, onOpenChange }: Notificat
         <div
           role="dialog"
           aria-label="Recent notifications"
-          className="fixed inset-x-3 top-[76px] z-50 mx-auto max-w-[min(24rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-white/12 bg-[#1b1d26] shadow-2xl shadow-black/70 sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-[min(24rem,calc(100vw-2rem))]"
+          className="fixed inset-x-3 top-[calc(4.75rem+env(safe-area-inset-top))] z-50 mx-auto max-h-[calc(100dvh-6rem)] max-w-[min(24rem,calc(100vw-1.5rem))] overflow-y-auto rounded-2xl border border-white/12 bg-[#1b1d26] shadow-2xl shadow-black/70 sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-[min(24rem,calc(100vw-2rem))]"
         >
           <div className="flex items-center justify-between border-b border-white/[0.085] px-4 py-3">
             <div className="flex items-center gap-2">
