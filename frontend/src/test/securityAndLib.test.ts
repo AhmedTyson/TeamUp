@@ -2,6 +2,8 @@
  * @date 2026-11-21
  * @purpose Unit tests for JWT claim decoding (.NET WS-Fed + standard claims), safe URL validation, form error mapping, and query invalidation.
  */
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ApiClientError } from "@/api";
 import { mapApiErrorsToForm } from "@/lib/formErrors";
@@ -149,5 +151,59 @@ describe("Form error mapping & query helpers", () => {
       { field: "Role", before: "Student", after: "OrgAdmin", changed: true },
       { field: "Email", before: "a@cu.edu.eg", after: "a@cu.edu.eg", changed: false },
     ]);
+  });
+});
+
+describe("Deployment security headers & CSP hygiene", () => {
+  it("enforces matching strict CSP and security headers across Vercel and Netlify without inline scripts in index.html", () => {
+    const frontendRoot = path.resolve(import.meta.dirname, "../..");
+    const repoRoot = path.resolve(frontendRoot, "..");
+
+    const vercelRaw = fs.readFileSync(path.join(frontendRoot, "vercel.json"), "utf-8");
+    const vercelJson = JSON.parse(vercelRaw) as {
+      headers?: Array<{
+        source: string;
+        headers: Array<{ key: string; value: string }>;
+      }>;
+    };
+
+    const catchAllRule = vercelJson.headers?.find((entry) => entry.source === "/(.*)");
+    expect(catchAllRule).toBeDefined();
+
+    const headerMap = new Map(catchAllRule?.headers.map((h) => [h.key, h.value]));
+    const requiredHeaders = [
+      "Content-Security-Policy",
+      "X-Content-Type-Options",
+      "X-Frame-Options",
+      "Referrer-Policy",
+      "Permissions-Policy",
+      "Strict-Transport-Security",
+    ];
+    for (const key of requiredHeaders) {
+      expect(headerMap.get(key)).toBeTruthy();
+    }
+
+    const csp = headerMap.get("Content-Security-Policy")!;
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).toContain("script-src 'self'");
+    expect(csp).not.toMatch(/script-src[^;]*'unsafe-inline'/);
+    expect(csp).not.toMatch(/script-src[^;]*'unsafe-eval'/);
+    expect(csp).toContain("object-src 'none'");
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).toContain("frame-src 'self' blob:");
+    expect(csp).toContain("https://teamup-api.runasp.net");
+
+    const netlifyToml = fs.readFileSync(path.join(repoRoot, "netlify.toml"), "utf-8");
+    expect(netlifyToml).toContain(`Content-Security-Policy = "${csp}"`);
+    expect(netlifyToml).toContain('Permissions-Policy = "camera=(self), microphone=(), geolocation=(), payment=()"');
+    expect(netlifyToml).toContain('Strict-Transport-Security = "max-age=31536000; includeSubDomains"');
+
+    const indexHtml = fs.readFileSync(path.join(frontendRoot, "index.html"), "utf-8");
+    const scriptTags = [...indexHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+    expect(scriptTags.length).toBeGreaterThan(0);
+    for (const [, attrs, body] of scriptTags) {
+      expect(attrs).toMatch(/\bsrc\s*=/i);
+      expect(body.trim()).toBe("");
+    }
   });
 });

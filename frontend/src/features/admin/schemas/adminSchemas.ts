@@ -2,7 +2,7 @@
  * @date 2026-11-22
  * @purpose Zod schemas for PlatformAdmin catalog CRUD and role governance forms mirroring backend FluentValidation + STRIDE THR-T-03 rules.
  */
-import { z } from "zod";
+import { z } from "@/lib/zodCspConfig";
 import { USER_ROLES } from "@/api";
 import { isSafeAssetOrHttpUrl, isSafeHttpUrl } from "@/lib/urlValidation";
 

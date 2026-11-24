@@ -2,7 +2,7 @@
  * @date 2026-11-22
  * @purpose Zod validation schemas and password strength evaluator matching backend FluentValidation rules.
  */
-import { z } from "zod";
+import { z } from "@/lib/zodCspConfig";
 
 export const loginSchema = z.object({
   email: z

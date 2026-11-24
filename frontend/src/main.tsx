@@ -2,6 +2,7 @@
  * @date 2026-11-21
  * @purpose React 19 application bootstrap mounting into #root.
  */
+import "./lib/zodCspConfig";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";

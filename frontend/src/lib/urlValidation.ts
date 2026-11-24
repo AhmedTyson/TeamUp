@@ -2,7 +2,7 @@
  * @date 2026-11-21
  * @purpose Client-side safe external URL validator mirroring backend SafeUrlValidator (STRIDE THR-T-03).
  */
-import { z } from "zod";
+import { z } from "@/lib/zodCspConfig";
 import { env } from "@/lib/env";
 
 const BLOCKED_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1", "[::1]"]);

@@ -2,7 +2,7 @@
  * @date 2026-11-22
  * @purpose Zod validation schemas for Student Account and Extended Portfolio Studio (STRIDE THR-T-03 safe URLs).
  */
-import { z } from "zod";
+import { z } from "@/lib/zodCspConfig";
 import { isSafeAssetOrHttpUrl, isSafeHttpUrl } from "@/lib/urlValidation";
 
 const safeHttpUrlSchema = z
