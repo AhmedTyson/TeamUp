@@ -2,9 +2,15 @@
  * @date 2026-11-22
  * @purpose M3 (Ibrahim) route fragment owning Student Organizations, Multi-Session Events, and Live QR Attendance routes.
  */
+import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
-import { ActivitiesHubPage } from "@/pages/ActivitiesHubPage";
-import { EventsHubPage } from "@/pages/EventsHubPage";
+
+const ActivitiesHubPage = lazy(() =>
+  import("@/pages/ActivitiesHubPage").then((m) => ({ default: m.ActivitiesHubPage })),
+);
+const EventsHubPage = lazy(() =>
+  import("@/pages/EventsHubPage").then((m) => ({ default: m.EventsHubPage })),
+);
 
 export const orgEventRoutes: RouteObject[] = [
   {

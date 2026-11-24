@@ -2,20 +2,44 @@
  * @date 2026-11-22
  * @purpose M4 (Youssef) route fragment owning Landing, Student Directory, Profiles, Leaderboard, Gamification, and Notifications routes.
  */
+import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
-import { ProposedHeroDemo } from "@/components/home/ProposedHeroDemo";
 import { ProtectedRoute } from "@/features/auth";
-import {
-  CampusLeaderboardPage,
-  GamificationHubPage,
-} from "@/features/gamification";
-import { NotificationsInboxPage } from "@/features/notifications";
-import {
-  SelfProfileStudioPage,
-  StudentDirectoryPage,
-  StudentPublicProfilePage,
-} from "@/features/profile";
 import { HomePage } from "@/pages/HomePage";
+
+const ProposedHeroDemo = lazy(() =>
+  import("@/components/home/ProposedHeroDemo").then((m) => ({ default: m.ProposedHeroDemo })),
+);
+const StudentDirectoryPage = lazy(() =>
+  import("@/features/profile/StudentDirectoryPage").then((m) => ({
+    default: m.StudentDirectoryPage,
+  })),
+);
+const StudentPublicProfilePage = lazy(() =>
+  import("@/features/profile/StudentPublicProfilePage").then((m) => ({
+    default: m.StudentPublicProfilePage,
+  })),
+);
+const SelfProfileStudioPage = lazy(() =>
+  import("@/features/profile/SelfProfileStudioPage").then((m) => ({
+    default: m.SelfProfileStudioPage,
+  })),
+);
+const CampusLeaderboardPage = lazy(() =>
+  import("@/features/gamification/CampusLeaderboardPage").then((m) => ({
+    default: m.CampusLeaderboardPage,
+  })),
+);
+const GamificationHubPage = lazy(() =>
+  import("@/features/gamification/GamificationHubPage").then((m) => ({
+    default: m.GamificationHubPage,
+  })),
+);
+const NotificationsInboxPage = lazy(() =>
+  import("@/features/notifications/NotificationsInboxPage").then((m) => ({
+    default: m.NotificationsInboxPage,
+  })),
+);
 
 export const communityRoutes: RouteObject[] = [
   {

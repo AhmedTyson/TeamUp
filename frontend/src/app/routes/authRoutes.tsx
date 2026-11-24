@@ -6,14 +6,27 @@ import { lazy } from "react";
 import { Navigate, type RouteObject } from "react-router-dom";
 import { USER_ROLES } from "@/api";
 import {
-  ForgotPasswordPage,
   GuestOnlyRoute,
-  LoginPage,
   ProtectedRoute,
-  RegisterPage,
-  ResetPasswordPage,
   RoleGuard,
 } from "@/features/auth";
+
+const LoginPage = lazy(() =>
+  import("@/features/auth/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
+);
+const RegisterPage = lazy(() =>
+  import("@/features/auth/pages/RegisterPage").then((m) => ({ default: m.RegisterPage })),
+);
+const ForgotPasswordPage = lazy(() =>
+  import("@/features/auth/pages/ForgotPasswordPage").then((m) => ({
+    default: m.ForgotPasswordPage,
+  })),
+);
+const ResetPasswordPage = lazy(() =>
+  import("@/features/auth/pages/ResetPasswordPage").then((m) => ({
+    default: m.ResetPasswordPage,
+  })),
+);
 
 const AdminDashboardPage = lazy(() =>
   import("@/features/admin").then((m) => ({ default: m.AdminDashboardPage })),

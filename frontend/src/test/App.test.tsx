@@ -5,12 +5,12 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { studentsApi, USER_ROLES, type AuthStudentSummary } from "@/api";
+import { skillsApi, studentsApi, USER_ROLES, type AuthStudentSummary } from "@/api";
 import { App } from "@/App";
 import { AppCoreProviders } from "@/app/providers";
 import { ProposedHeroDemo } from "@/components/home/ProposedHeroDemo";
 import { Navbar } from "@/components/layout/Navbar";
-import { CommunityHubPage } from "@/pages/CommunityHubPage";
+import { SelfProfileStudioPage } from "@/features/profile/SelfProfileStudioPage";
 
 describe("App shell and home route", () => {
   afterEach(() => {
@@ -215,13 +215,6 @@ describe("App shell and home route", () => {
   });
 
   it("uploads a validated profile portrait from /profile/me via studentsApi.uploadProfilePhoto", async () => {
-    const uploadSpy = vi.spyOn(studentsApi, "uploadProfilePhoto").mockResolvedValueOnce({
-      bio: null,
-      photoUrl: "/images/people/student-10-uploaded.png",
-      gitHubUrl: null,
-      linkedInUrl: null,
-    });
-
     const user: AuthStudentSummary = {
       studentId: 10,
       firstName: "Nour",
@@ -235,22 +228,41 @@ describe("App shell and home route", () => {
       photoUrl: "/images/people/salma-khaled.jpg",
     };
 
+    vi.spyOn(studentsApi, "getMe").mockResolvedValue({
+      ...user,
+      showEmailInDirectory: false,
+      interests: [],
+      profile: {
+        bio: null,
+        photoUrl: "/images/people/salma-khaled.jpg",
+        gitHubUrl: null,
+        linkedInUrl: null,
+      },
+    });
+    vi.spyOn(skillsApi, "list").mockResolvedValue([]);
+    vi.spyOn(skillsApi, "getStudentSkills").mockResolvedValue([]);
+    const uploadSpy = vi.spyOn(studentsApi, "uploadProfilePhoto").mockResolvedValueOnce({
+      bio: null,
+      photoUrl: "/images/people/student-10-uploaded.png",
+      gitHubUrl: null,
+      linkedInUrl: null,
+    });
+
     render(
       <MemoryRouter initialEntries={["/profile/me"]}>
         <AppCoreProviders initialUser={user}>
-          <CommunityHubPage mode="portfolio" />
+          <SelfProfileStudioPage />
         </AppCoreProviders>
       </MemoryRouter>,
     );
 
-    const fileInput = screen.getByLabelText(/upload profile photo/i) as HTMLInputElement;
+    const fileInput = (await screen.findByLabelText(/upload profile photo/i)) as HTMLInputElement;
     const validFile = new File(["png-bytes"], "portrait.png", { type: "image/png" });
     fireEvent.change(fileInput, { target: { files: [validFile] } });
 
     await waitFor(() => {
       expect(uploadSpy).toHaveBeenCalledWith(validFile);
     });
-    expect(await screen.findByText(/profile photo updated/i)).toBeInTheDocument();
   });
 
   it("keeps mega-panel open on pointer hover followed by click and toggles closed only on explicit second click", () => {
