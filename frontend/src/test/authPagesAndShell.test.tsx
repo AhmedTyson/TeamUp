@@ -472,4 +472,24 @@ describe("M1 Phase 1 — Auth Pages, Academic Catalog API & AppShell", () => {
       expect(patchSpy).toHaveBeenCalledWith("/api/v1/notifications/mark-all-read");
     });
   });
+
+  it("sets dev quick-fill email without embedding any hardcoded fallback password in source", () => {
+    vi.stubEnv("VITE_DEV_SEED_PASSWORD", "");
+    render(
+      <MemoryRouter initialEntries={["/auth/login"]}>
+        <AppCoreProviders initialUser={null}>
+          <LoginPage />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    const quickFillBtn = screen.getByRole("button", { name: /platformadmin/i });
+    fireEvent.click(quickFillBtn);
+
+    const emailInput = screen.getByLabelText(/university email/i) as HTMLInputElement;
+    const passwordInput = screen.getByLabelText(/^password/i) as HTMLInputElement;
+    expect(emailInput.value).toBe("admin@teamup.local");
+    expect(passwordInput.value).toBe("");
+    vi.unstubAllEnvs();
+  });
 });

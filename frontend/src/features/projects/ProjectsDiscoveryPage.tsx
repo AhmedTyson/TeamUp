@@ -117,9 +117,9 @@ export function ProjectsDiscoveryPage() {
             return (
               <SpotlightCard key={project.projectId} className="flex flex-col justify-between rounded-2xl border border-white/10 bg-[#1b1d26] p-5 transition-colors hover:border-[#d3fb52]/40" showCornerArrow>
                 <div>
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3 pr-12">
                     <StatusPill status={project.status} />
-                    <span className="text-xs text-white/50">{new Date(project.createdAt).toLocaleDateString()}</span>
+                    <span className="text-xs text-white/50 tabular-nums">{new Date(project.createdAt).toLocaleDateString()}</span>
                   </div>
                   <h2 className="mt-4 text-lg font-bold text-white">{project.title}</h2>
                   <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-white/60">{project.description}</p>

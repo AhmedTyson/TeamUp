@@ -4,6 +4,8 @@
  */
 import { defineConfig, devices } from "@playwright/test";
 
+const E2E_SEED_PASSWORD = process.env.VITE_DEV_SEED_PASSWORD ?? "E2e-Local-Only-Seed-2026!";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -41,7 +43,7 @@ export default defineConfig({
         ASPNETCORE_ENVIRONMENT: "Development",
         UseSqliteFallbackIfOffline: "true",
         Seed__Enabled: "true",
-        Seed__AdminPassword: process.env.VITE_DEV_SEED_PASSWORD ?? "Adm!0RK8zvFIO2BDTX",
+        Seed__AdminPassword: E2E_SEED_PASSWORD,
         RateLimiting__AuthPermitLimit: "100",
         RateLimiting__AnonymousPermitLimit: "200",
       },
@@ -51,6 +53,9 @@ export default defineConfig({
       url: "http://localhost:5173",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
+      env: {
+        VITE_DEV_SEED_PASSWORD: E2E_SEED_PASSWORD,
+      },
     },
   ],
 });

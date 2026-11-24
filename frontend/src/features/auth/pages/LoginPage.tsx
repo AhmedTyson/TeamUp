@@ -93,8 +93,8 @@ export function LoginPage() {
   };
 
   const applyDemoCredentials = (email: string) => {
-    const demoPassword =
-      (import.meta.env.VITE_DEV_SEED_PASSWORD as string | undefined) || "Adm!0RK8zvFIO2BDTX";
+    // Dev-only convenience: password must come from the developer's .env.local; no credential is committed.
+    const demoPassword = (import.meta.env.VITE_DEV_SEED_PASSWORD as string | undefined) ?? "";
     setValue("email", email, { shouldDirty: true, shouldValidate: true });
     setValue("password", demoPassword, { shouldDirty: true });
   };
