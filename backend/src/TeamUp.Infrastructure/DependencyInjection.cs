@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TeamUp.Application.Admin;
 using TeamUp.Application.Common.Events;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Domain.Entities;
 using TeamUp.Infrastructure.EventDispatching;
 using TeamUp.Infrastructure.Persistence;
+using TeamUp.Infrastructure.Reports;
 using TeamUp.Infrastructure.Services;
 
 namespace TeamUp.Infrastructure;
@@ -29,6 +31,7 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher<Student>, PasswordHasher<Student>>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
+        services.AddScoped<IAdminReportService, AdminReportPdfService>();
 
         var emailProvider = config["Email:Provider"] ?? "Smtp";
         if (emailProvider.Equals("InMemory", StringComparison.OrdinalIgnoreCase))
