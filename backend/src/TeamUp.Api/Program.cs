@@ -340,8 +340,9 @@ else
 
 var seedEnabled = app.Configuration.GetValue("Seed:Enabled", false);
 var autoMigrate = app.Configuration.GetValue("Database:AutoMigrate", app.Environment.IsDevelopment() && seedEnabled);
+var syncEcosystemCatalog = app.Configuration.GetValue("Seed:SyncEcosystemCatalog", autoMigrate);
 
-if (autoMigrate || seedEnabled)
+if (autoMigrate || seedEnabled || syncEcosystemCatalog)
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -395,6 +396,88 @@ if (autoMigrate || seedEnabled)
                 // Column already exists in local SQLite dev database
             }
         }
+
+        // Legacy SQLite dev DBs created before AddFlexibleActivitiesAndHierarchy retain FacultyId INTEGER NOT NULL;
+        // rebuild Student cleanly with nullable FacultyId so flexible learners can be stored locally.
+        var sqliteConn = db.Database.GetDbConnection();
+        if (sqliteConn.State != System.Data.ConnectionState.Open)
+            await sqliteConn.OpenAsync();
+        await using (var checkCmd = sqliteConn.CreateCommand())
+        {
+            checkCmd.CommandText = "SELECT \"notnull\" FROM pragma_table_info('Student') WHERE name = 'FacultyId';";
+            var facultyNotNull = Convert.ToInt32(await checkCmd.ExecuteScalarAsync() ?? 0) == 1;
+            if (facultyNotNull)
+            {
+                await using var pragmaOff = sqliteConn.CreateCommand();
+                pragmaOff.CommandText = "PRAGMA foreign_keys = OFF; PRAGMA legacy_alter_table = ON;";
+                await pragmaOff.ExecuteNonQueryAsync();
+                try
+                {
+                    await using var tx = await sqliteConn.BeginTransactionAsync();
+                    await using var rebuildCmd = sqliteConn.CreateCommand();
+                    rebuildCmd.Transaction = tx;
+                    rebuildCmd.CommandText = """
+                        ALTER TABLE "Student" RENAME TO "_Student_legacy";
+                        CREATE TABLE "Student" (
+                            "StudentId" INTEGER NOT NULL CONSTRAINT "PK_Student" PRIMARY KEY AUTOINCREMENT,
+                            "Email" TEXT NOT NULL,
+                            "PasswordHash" TEXT NOT NULL,
+                            "FirstName" TEXT NOT NULL,
+                            "LastName" TEXT NOT NULL,
+                            "AcademicYear" INTEGER NOT NULL,
+                            "Role" TEXT NOT NULL DEFAULT 'Student',
+                            "SecurityStamp" TEXT NOT NULL,
+                            "ShowEmailInDirectory" INTEGER NOT NULL DEFAULT 0,
+                            "FacultyId" INTEGER NULL,
+                            "RefreshToken" TEXT NULL,
+                            "RefreshTokenExpiresAt" TEXT NULL,
+                            "PasswordResetToken" TEXT NULL,
+                            "PasswordResetTokenExpiresAt" TEXT NULL,
+                            "DeletedAt" TEXT NULL,
+                            "FailedLoginCount" INTEGER NOT NULL DEFAULT 0,
+                            "LockoutEndUtc" TEXT NULL,
+                            "PreviousRefreshToken" TEXT NULL,
+                            "PreviousRefreshTokenRotatedAt" TEXT NULL,
+                            "EmailNotificationsEnabled" INTEGER NOT NULL DEFAULT 1,
+                            "ReceiveLeaderboardDigests" INTEGER NOT NULL DEFAULT 1,
+                            "ReceiveProjectMatchEmails" INTEGER NOT NULL DEFAULT 1,
+                            "AffiliationType" TEXT NOT NULL DEFAULT 'UniversityStudent',
+                            "City" TEXT NULL,
+                            CONSTRAINT "CK_Student_AcademicYear" CHECK ([AcademicYear] BETWEEN 1 AND 7),
+                            CONSTRAINT "CK_Student_Role" CHECK ([Role] IN ('Student', 'OrgAdmin', 'PlatformAdmin')),
+                            CONSTRAINT "FK_Student_Faculty_FacultyId" FOREIGN KEY ("FacultyId") REFERENCES "Faculty" ("FacultyId") ON DELETE RESTRICT
+                        );
+                        INSERT INTO "Student" (
+                            "StudentId", "Email", "PasswordHash", "FirstName", "LastName", "AcademicYear", "Role",
+                            "SecurityStamp", "ShowEmailInDirectory", "FacultyId", "RefreshToken", "RefreshTokenExpiresAt",
+                            "PasswordResetToken", "PasswordResetTokenExpiresAt", "DeletedAt", "FailedLoginCount",
+                            "LockoutEndUtc", "PreviousRefreshToken", "PreviousRefreshTokenRotatedAt",
+                            "EmailNotificationsEnabled", "ReceiveLeaderboardDigests", "ReceiveProjectMatchEmails",
+                            "AffiliationType", "City"
+                        )
+                        SELECT
+                            "StudentId", "Email", "PasswordHash", "FirstName", "LastName", "AcademicYear", "Role",
+                            "SecurityStamp", "ShowEmailInDirectory", "FacultyId", "RefreshToken", "RefreshTokenExpiresAt",
+                            "PasswordResetToken", "PasswordResetTokenExpiresAt", "DeletedAt", "FailedLoginCount",
+                            "LockoutEndUtc", "PreviousRefreshToken", "PreviousRefreshTokenRotatedAt",
+                            "EmailNotificationsEnabled", "ReceiveLeaderboardDigests", "ReceiveProjectMatchEmails",
+                            "AffiliationType", "City"
+                        FROM "_Student_legacy";
+                        DROP TABLE "_Student_legacy";
+                        CREATE UNIQUE INDEX "IX_Student_Email" ON "Student" ("Email") WHERE [DeletedAt] IS NULL;
+                        CREATE INDEX "IX_Student_FacultyId" ON "Student" ("FacultyId");
+                        """;
+                    await rebuildCmd.ExecuteNonQueryAsync();
+                    await tx.CommitAsync();
+                }
+                finally
+                {
+                    await using var pragmaOn = sqliteConn.CreateCommand();
+                    pragmaOn.CommandText = "PRAGMA legacy_alter_table = OFF; PRAGMA foreign_keys = ON;";
+                    await pragmaOn.ExecuteNonQueryAsync();
+                }
+            }
+        }
     }
     else
     {
@@ -423,6 +506,10 @@ if (autoMigrate || seedEnabled)
 
         var hash = new PasswordHasher<Student>().HashPassword(null!, password);
         await DbSeeder.SeedAsync(db, hash, app.Environment.IsDevelopment());
+    }
+    else if (syncEcosystemCatalog)
+    {
+        await DbSeeder.SyncEcosystemCatalogAsync(db, isDevelopment: false);
     }
 }
 

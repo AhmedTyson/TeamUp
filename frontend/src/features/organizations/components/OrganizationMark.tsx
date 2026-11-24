@@ -23,7 +23,10 @@ export function OrganizationMark({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden border border-white/10 bg-[#d3fb52]/10 font-bold text-[#d3fb52]",
+        "flex shrink-0 items-center justify-center overflow-hidden border",
+        canRenderLogo
+          ? "border-black/10 bg-white p-1.5 shadow-sm"
+          : "border-white/10 bg-[#d3fb52]/10 font-bold text-[#d3fb52]",
         className,
       )}
     >
@@ -31,7 +34,9 @@ export function OrganizationMark({
         <img
           src={logoUrl}
           alt={`${name} logo`}
-          className="size-full object-cover"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          className="size-full object-contain"
           onError={() => setImageError(true)}
         />
       ) : (

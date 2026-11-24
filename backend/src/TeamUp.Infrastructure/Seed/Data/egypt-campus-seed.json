@@ -1,0 +1,2527 @@
+{
+  "version": "2026.11.v1",
+  "universities": [
+    {
+      "name": "Cairo University",
+      "city": "Giza",
+      "country": "Egypt",
+      "website": "https://cu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Cairo_University_new_logo.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Artificial Intelligence", "code": "FCAI" },
+        { "name": "Faculty of Engineering", "code": "ENG" },
+        { "name": "Faculty of Science", "code": "SCI" },
+        { "name": "Faculty of Commerce", "code": "COM_CU" },
+        { "name": "Faculty of Economics and Political Science", "code": "FEPS_CU" }
+      ]
+    },
+    {
+      "name": "Ain Shams University",
+      "city": "Cairo",
+      "country": "Egypt",
+      "website": "https://asu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/3/3d/Ain_Shams_logo.png",
+      "faculties": [
+        { "name": "Faculty of Computer and Information Sciences", "code": "CIS" },
+        { "name": "Faculty of Engineering", "code": "ENG_ASU" },
+        { "name": "Faculty of Business", "code": "BUS_ASU" },
+        { "name": "Faculty of Science", "code": "SCI_ASU" },
+        { "name": "Faculty of Al-Alsun", "code": "ALSON_ASU" }
+      ]
+    },
+    {
+      "name": "Alexandria University",
+      "city": "Alexandria",
+      "country": "Egypt",
+      "website": "https://alexu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/6/63/%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D8%A5%D8%B3%D9%83%D9%86%D8%AF%D8%B1%D9%8A%D8%A9.png",
+      "faculties": [
+        { "name": "Faculty of Engineering", "code": "ENG_ALEX" },
+        { "name": "Faculty of Computing and Data Science", "code": "CDS_ALEX" },
+        { "name": "Faculty of Business", "code": "BUS_ALEX" },
+        { "name": "Faculty of Science", "code": "SCI_ALEX" }
+      ]
+    },
+    {
+      "name": "Mansoura University",
+      "city": "Mansoura",
+      "country": "Egypt",
+      "website": "https://mans.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/5/5e/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D9%85%D9%86%D8%B5%D9%88%D8%B1%D8%A9.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Information", "code": "FCI_MANS" },
+        { "name": "Faculty of Engineering", "code": "ENG_MANS" },
+        { "name": "Faculty of Commerce", "code": "COM_MANS" },
+        { "name": "Faculty of Medicine", "code": "MED_MANS" }
+      ]
+    },
+    {
+      "name": "Assiut University",
+      "city": "Assiut",
+      "country": "Egypt",
+      "website": "https://aun.edu.eg",
+      "logoUrl": "https://www.aun.edu.eg/main/themes/gavias_colin/aun-logo.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Information", "code": "FCI_AUN" },
+        { "name": "Faculty of Engineering", "code": "ENG_AUN" },
+        { "name": "Faculty of Commerce", "code": "COM_AUN" }
+      ]
+    },
+    {
+      "name": "Capital University",
+      "city": "Cairo",
+      "country": "Egypt",
+      "website": "https://capu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Capital_University_Logo.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Artificial Intelligence", "code": "FCAI_CAPU" },
+        { "name": "Faculty of Engineering", "code": "ENG_CAPU" }
+      ]
+    },
+    {
+      "name": "Zagazig University",
+      "city": "Zagazig",
+      "country": "Egypt",
+      "website": "https://zu.edu.eg",
+      "logoUrl": "https://www.zu.edu.eg/uploads/2017/07/ZULogo.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Informatics", "code": "FCI_ZU" },
+        { "name": "Faculty of Engineering", "code": "ENG_ZU" },
+        { "name": "Faculty of Commerce", "code": "COM_ZU" }
+      ]
+    },
+    {
+      "name": "Tanta University",
+      "city": "Tanta",
+      "country": "Egypt",
+      "website": "https://tanta.edu.eg",
+      "logoUrl": "https://tanta.edu.eg/tantaedu/img/unv-logo.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Informatics", "code": "FCI_TU" },
+        { "name": "Faculty of Engineering", "code": "ENG_TU" },
+        { "name": "Faculty of Commerce", "code": "COM_TU" }
+      ]
+    },
+    {
+      "name": "Benha University",
+      "city": "Benha",
+      "country": "Egypt",
+      "website": "https://bu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/d/dc/Benha_University_Logo.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Artificial Intelligence", "code": "FCAI_BU" },
+        { "name": "Shoubra Faculty of Engineering", "code": "ENG_BU" },
+        { "name": "Benha Faculty of Engineering", "code": "ENG_BENHA" },
+        { "name": "Faculty of Commerce", "code": "COM_BU" }
+      ]
+    },
+    {
+      "name": "Suez Canal University",
+      "city": "Ismailia",
+      "country": "Egypt",
+      "website": "https://suez.edu.eg",
+      "logoUrl": "https://suez.edu.eg/ar/wp-content/uploads/2022/01/266177708_300900118547240_420708396794634738_n-1.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Informatics", "code": "FCI_SCU" },
+        { "name": "Faculty of Engineering", "code": "ENG_SCU" },
+        { "name": "Faculty of Commerce", "code": "COM_SCU" }
+      ]
+    },
+    {
+      "name": "German University in Cairo (GUC)",
+      "city": "New Cairo",
+      "country": "Egypt",
+      "website": "https://guc.edu.eg",
+      "logoUrl": "https://www.guc.edu.eg/img/guc_logo_og.png",
+      "faculties": [
+        { "name": "Faculty of Media Engineering and Technology", "code": "MET_GUC" },
+        { "name": "Faculty of Information Engineering and Technology", "code": "IET_GUC" },
+        { "name": "Faculty of Management Technology", "code": "MGT_GUC" },
+        { "name": "Faculty of Applied Sciences and Arts", "code": "AA_GUC" }
+      ]
+    },
+    {
+      "name": "The American University in Cairo (AUC)",
+      "city": "New Cairo",
+      "country": "Egypt",
+      "website": "https://aucegypt.edu",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1b/AUC_Arabic_Logo_2021.png",
+      "faculties": [
+        { "name": "School of Sciences and Engineering", "code": "SSE_AUC" },
+        { "name": "Onsi Sawiris School of Business", "code": "BUS_AUC" },
+        { "name": "School of Global Affairs and Public Policy", "code": "GAPP_AUC" }
+      ]
+    },
+    {
+      "name": "Helwan University",
+      "city": "Cairo",
+      "country": "Egypt",
+      "website": "https://helwan.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/8/88/Helwan_University_Logo.jpg",
+      "faculties": [
+        { "name": "Business Information Systems (BIS)", "code": "BIS_HU" },
+        { "name": "Faculty of Computers and Artificial Intelligence", "code": "FCAI_HU" },
+        { "name": "Faculty of Engineering (Helwan)", "code": "ENG_HU" },
+        { "name": "Faculty of Engineering (Mataria)", "code": "ENG_MAT_HU" },
+        { "name": "Faculty of Commerce and Business Administration", "code": "COM_HU" },
+        { "name": "Financial Markets and Institutions (FMI)", "code": "FMI_HU" },
+        { "name": "Faculty of Applied Arts", "code": "AA_HU" },
+        { "name": "Faculty of Science", "code": "SCI_HU" },
+        { "name": "Faculty of Fine Arts", "code": "FA_HU" }
+      ]
+    },
+    {
+      "name": "Al-Azhar University",
+      "city": "Cairo",
+      "country": "Egypt",
+      "website": "https://azhar.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/5/54/Al-Azhar_University_logo.svg",
+      "faculties": [
+        { "name": "Faculty of Engineering", "code": "ENG_AZHAR" },
+        { "name": "Faculty of Science", "code": "SCI_AZHAR" },
+        { "name": "Faculty of Commerce", "code": "COM_AZHAR" }
+      ]
+    },
+    {
+      "name": "Menoufia University",
+      "city": "Shebin El-Kom",
+      "country": "Egypt",
+      "website": "https://menofia.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/c/c1/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D9%85%D9%86%D9%88%D9%81%D9%8A%D8%A9.JPG",
+      "faculties": [
+        { "name": "Faculty of Computers and Information", "code": "FCI_MU" },
+        { "name": "Faculty of Electronic Engineering (Menouf)", "code": "FEE_MU" },
+        { "name": "Faculty of Engineering (Shebin El-Kom)", "code": "ENG_MU" },
+        { "name": "Faculty of Artificial Intelligence", "code": "AI_MU" }
+      ]
+    },
+    {
+      "name": "Minia University",
+      "city": "Minia",
+      "country": "Egypt",
+      "website": "https://minia.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/1/11/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D9%85%D9%86%D9%8A%D8%A7.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Information", "code": "FCI_MINIA" },
+        { "name": "Faculty of Engineering", "code": "ENG_MINIA" },
+        { "name": "Faculty of Science", "code": "SCI_MINIA" }
+      ]
+    },
+    {
+      "name": "Fayoum University",
+      "city": "Fayoum",
+      "country": "Egypt",
+      "website": "https://fayoum.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/7/7b/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D9%81%D9%8A%D9%88%D9%85.jpg",
+      "faculties": [
+        { "name": "Faculty of Computers and Artificial Intelligence", "code": "FCAI_FYM" },
+        { "name": "Faculty of Engineering", "code": "ENG_FYM" },
+        { "name": "Faculty of Science", "code": "SCI_FYM" }
+      ]
+    },
+    {
+      "name": "Beni-Suef University",
+      "city": "Beni Suef",
+      "country": "Egypt",
+      "website": "https://bsu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/7/79/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A8%D9%86%D9%8A_%D8%B3%D9%88%D9%8A%D9%81.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Artificial Intelligence", "code": "FCAI_BSU" },
+        { "name": "Faculty of Engineering", "code": "ENG_BSU" },
+        { "name": "Faculty of Navigation Science and Space Technology", "code": "NAVA_BSU" }
+      ]
+    },
+    {
+      "name": "Kafrelsheikh University",
+      "city": "Kafr El-Sheikh",
+      "country": "Egypt",
+      "website": "https://kfs.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/1/1e/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D9%83%D9%81%D8%B1_%D8%A7%D9%84%D8%B4%D9%8A%D8%AE.png",
+      "faculties": [
+        { "name": "Faculty of Artificial Intelligence", "code": "AI_KFS" },
+        { "name": "Faculty of Computers and Information", "code": "FCI_KFS" },
+        { "name": "Faculty of Engineering", "code": "ENG_KFS" }
+      ]
+    },
+    {
+      "name": "Sohag University",
+      "city": "Sohag",
+      "country": "Egypt",
+      "website": "https://sohag-univ.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/2/2e/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%B3%D9%88%D9%87%D8%A7%D8%AC.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Artificial Intelligence", "code": "FCAI_SOHAG" },
+        { "name": "Faculty of Engineering", "code": "ENG_SOHAG" },
+        { "name": "Faculty of Commerce", "code": "COM_SOHAG" }
+      ]
+    },
+    {
+      "name": "South Valley University",
+      "city": "Qena",
+      "country": "Egypt",
+      "website": "https://svu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b6/Qina_university_logo.jpg",
+      "faculties": [
+        { "name": "Faculty of Computers and Information", "code": "FCI_SVU" },
+        { "name": "Faculty of Engineering", "code": "ENG_SVU" },
+        { "name": "Faculty of Science", "code": "SCI_SVU" }
+      ]
+    },
+    {
+      "name": "Port Said University",
+      "city": "Port Said",
+      "country": "Egypt",
+      "website": "https://psu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/3/33/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A8%D9%88%D8%B1%D8%B3%D8%B9%D9%8A%D8%AF.png",
+      "faculties": [
+        { "name": "Faculty of Engineering", "code": "ENG_PSU" },
+        { "name": "Faculty of Management Technology and Information Systems", "code": "MTIS_PSU" },
+        { "name": "Faculty of Commerce", "code": "COM_PSU" }
+      ]
+    },
+    {
+      "name": "Damanhour University",
+      "city": "Damanhour",
+      "country": "Egypt",
+      "website": "https://damanhour.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/5/52/%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%AF%D9%85%D9%86%D9%87%D9%88%D8%B1.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Information", "code": "FCI_DMU" },
+        { "name": "Faculty of Engineering", "code": "ENG_DMU" },
+        { "name": "Faculty of Commerce", "code": "COM_DMU" }
+      ]
+    },
+    {
+      "name": "Aswan University",
+      "city": "Aswan",
+      "country": "Egypt",
+      "website": "https://aswu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/f/f7/%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A3%D8%B3%D9%88%D8%A7%D9%86.png",
+      "faculties": [
+        { "name": "Faculty of Engineering", "code": "ENG_ASWU" },
+        { "name": "Faculty of Energy Engineering", "code": "ENRG_ASWU" },
+        { "name": "Faculty of Computers and Information", "code": "FCI_ASWU" }
+      ]
+    },
+    {
+      "name": "Suez University",
+      "city": "Suez",
+      "country": "Egypt",
+      "website": "https://suezuniv.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/b/b8/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D8%B3%D9%88%D9%8A%D8%B3.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Information", "code": "FCI_SU" },
+        { "name": "Faculty of Petroleum and Mining Engineering", "code": "PETRO_SU" },
+        { "name": "Faculty of Engineering", "code": "ENG_SU" }
+      ]
+    },
+    {
+      "name": "University of Sadat City",
+      "city": "Sadat City",
+      "country": "Egypt",
+      "website": "https://usc.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/6/6c/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D9%85%D8%AF%D9%8A%D9%86%D8%A9_%D8%A7%D9%84%D8%B3%D8%A7%D8%AF%D8%A7%D8%AA.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Artificial Intelligence", "code": "FCAI_USC" },
+        { "name": "Faculty of Commerce", "code": "COM_USC" },
+        { "name": "Genetic Engineering and Biotechnology Institute", "code": "GEBI_USC" }
+      ]
+    },
+    {
+      "name": "Arab Academy for Science, Technology & Maritime Transport (AASTMT)",
+      "city": "Alexandria",
+      "country": "Egypt",
+      "website": "https://aast.edu",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/d/da/AASTMT_Logo.png",
+      "faculties": [
+        { "name": "College of Computing and Information Technology", "code": "CCIT_AAST" },
+        { "name": "College of Engineering and Technology", "code": "ENG_AAST" },
+        { "name": "College of Artificial Intelligence", "code": "AI_AAST" },
+        { "name": "College of Management and Technology", "code": "MGT_AAST" }
+      ]
+    },
+    {
+      "name": "The British University in Egypt (BUE)",
+      "city": "El Shorouk",
+      "country": "Egypt",
+      "website": "https://bue.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/6/62/British_University_in_Egypt.png",
+      "faculties": [
+        { "name": "Faculty of Informatics and Computer Science", "code": "ICS_BUE" },
+        { "name": "Faculty of Engineering", "code": "ENG_BUE" },
+        { "name": "Faculty of Business Administration, Economics and Political Science", "code": "BAE_BUE" }
+      ]
+    },
+    {
+      "name": "Nile University",
+      "city": "Sheikh Zayed",
+      "country": "Egypt",
+      "website": "https://nu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/7/78/Nile_University_Logo.png",
+      "faculties": [
+        { "name": "School of Information Technology and Computer Science", "code": "ITCS_NU" },
+        { "name": "School of Engineering and Applied Sciences", "code": "EAS_NU" },
+        { "name": "School of Business Administration", "code": "BUS_NU" },
+        { "name": "School of Management of Technology", "code": "MOT_NU" }
+      ]
+    },
+    {
+      "name": "Zewail City of Science, Technology and Innovation",
+      "city": "6th of October",
+      "country": "Egypt",
+      "website": "https://zewailcity.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/5/5d/%D8%B4%D8%B9%D8%A7%D8%B1_%D9%85%D8%AF%D9%8A%D9%86%D8%A9_%D8%B2%D9%88%D9%8A%D9%84.png",
+      "faculties": [
+        { "name": "Computational Sciences and Artificial Intelligence", "code": "CSAI_ZC" },
+        { "name": "Engineering Programs", "code": "ENG_ZC" },
+        { "name": "Science Programs", "code": "SCI_ZC" }
+      ]
+    },
+    {
+      "name": "Egypt-Japan University of Science and Technology (E-JUST)",
+      "city": "New Borg El Arab",
+      "country": "Egypt",
+      "website": "https://ejust.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d7/E-JUST_logo.png",
+      "faculties": [
+        { "name": "School of Electronics, Communications and Computing", "code": "ECCE_EJUST" },
+        { "name": "Faculty of Computer Science and Information Technology", "code": "CSIT_EJUST" },
+        { "name": "Faculty of International Business and Humanities", "code": "FIBH_EJUST" }
+      ]
+    },
+    {
+      "name": "Misr International University (MIU)",
+      "city": "Obour City",
+      "country": "Egypt",
+      "website": "https://miuegypt.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/3/35/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D9%85%D8%B5%D8%B1_%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A%D8%A9.png",
+      "faculties": [
+        { "name": "Faculty of Computer Science", "code": "CS_MIU" },
+        { "name": "Faculty of Engineering Sciences and Arts", "code": "ENG_MIU" },
+        { "name": "Faculty of Business Administration and International Trade", "code": "BUS_MIU" }
+      ]
+    },
+    {
+      "name": "Misr University for Science and Technology (MUST)",
+      "city": "6th of October",
+      "country": "Egypt",
+      "website": "https://must.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/b/b6/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D9%85%D8%B5%D8%B1_%D9%84%D9%84%D8%B9%D9%84%D9%88%D9%85_%D9%88%D8%A7%D9%84%D8%AA%D9%83%D9%86%D9%88%D9%84%D9%88%D8%AC%D9%8A%D8%A7.svg",
+      "faculties": [
+        { "name": "College of Information Technology", "code": "IT_MUST" },
+        { "name": "College of Engineering", "code": "ENG_MUST" },
+        { "name": "College of Business, Economics and Information Systems", "code": "BEIS_MUST" }
+      ]
+    },
+    {
+      "name": "October 6 University (O6U)",
+      "city": "6th of October",
+      "country": "Egypt",
+      "website": "https://o6u.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/2/29/O6U_Logo.jpg",
+      "faculties": [
+        { "name": "Faculty of Computer Science and Information Systems", "code": "CSIS_O6U" },
+        { "name": "Faculty of Engineering", "code": "ENG_O6U" },
+        { "name": "Faculty of Economics and Management", "code": "EMS_O6U" }
+      ]
+    },
+    {
+      "name": "Modern Sciences and Arts University (MSA)",
+      "city": "6th of October",
+      "country": "Egypt",
+      "website": "https://msa.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a7/MSA_Logo3.jpg",
+      "faculties": [
+        { "name": "Faculty of Computer Science", "code": "CS_MSA" },
+        { "name": "Faculty of Engineering", "code": "ENG_MSA" },
+        { "name": "Faculty of Management Sciences", "code": "MGT_MSA" },
+        { "name": "Faculty of Arts and Design", "code": "AD_MSA" }
+      ]
+    },
+    {
+      "name": "Future University in Egypt (FUE)",
+      "city": "New Cairo",
+      "country": "Egypt",
+      "website": "https://fue.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Fue.png",
+      "faculties": [
+        { "name": "Faculty of Computers and Information Technology", "code": "FCIT_FUE" },
+        { "name": "Faculty of Engineering and Technology", "code": "ENG_FUE" },
+        { "name": "Faculty of Commerce and Business Administration", "code": "CBA_FUE" }
+      ]
+    },
+    {
+      "name": "Pharos University in Alexandria (PUA)",
+      "city": "Alexandria",
+      "country": "Egypt",
+      "website": "https://pua.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/4/46/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D9%81%D8%A7%D8%B1%D9%88%D8%B3.png",
+      "faculties": [
+        { "name": "Faculty of Computer Science and Artificial Intelligence", "code": "CSAI_PUA" },
+        { "name": "Faculty of Engineering", "code": "ENG_PUA" },
+        { "name": "Faculty of Financial and Administrative Sciences", "code": "FIN_PUA" }
+      ]
+    },
+    {
+      "name": "Delta University for Science and Technology",
+      "city": "Gamasa",
+      "country": "Egypt",
+      "website": "https://new.deltauniv.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/a/ae/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D8%AF%D9%84%D8%AA%D8%A7_%D9%84%D9%84%D8%B9%D9%84%D9%88%D9%85_%D9%88%D8%A7%D9%84%D8%AA%D9%83%D9%86%D9%88%D9%84%D9%88%D8%AC%D9%8A%D8%A7.png",
+      "faculties": [
+        { "name": "Faculty of Artificial Intelligence", "code": "AI_DELTA" },
+        { "name": "Faculty of Engineering", "code": "ENG_DELTA" },
+        { "name": "Faculty of Business Administration", "code": "BUS_DELTA" }
+      ]
+    },
+    {
+      "name": "Sinai University",
+      "city": "El-Arish",
+      "country": "Egypt",
+      "website": "https://su.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Sinai%27s_flat_logo.png",
+      "faculties": [
+        { "name": "Faculty of Information Technology and Computer Science", "code": "ITCS_SINAI" },
+        { "name": "Faculty of Engineering", "code": "ENG_SINAI" },
+        { "name": "Faculty of Business Administration", "code": "BUS_SINAI" }
+      ]
+    },
+    {
+      "name": "Badr University in Cairo (BUC)",
+      "city": "Badr City",
+      "country": "Egypt",
+      "website": "https://buc.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3c/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A8%D8%AF%D8%B1_%D8%A8%D8%A7%D9%84%D9%82%D8%A7%D9%87%D8%B1%D8%A9.png",
+      "faculties": [
+        { "name": "School of Engineering and Technology", "code": "ENG_BUC" },
+        { "name": "School of Business and Economics", "code": "BUS_BUC" }
+      ]
+    },
+    {
+      "name": "Heliopolis University",
+      "city": "Cairo",
+      "country": "Egypt",
+      "website": "https://hu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/c/c8/%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D9%87%D9%84%D9%8A%D9%88%D8%A8%D9%88%D9%84%D9%8A%D8%B3.jpg",
+      "faculties": [
+        { "name": "Faculty of Engineering", "code": "ENG_HELIOP" },
+        { "name": "Faculty of Business and Economics", "code": "BUS_HELIOP" }
+      ]
+    },
+    {
+      "name": "French University of Egypt (UFE)",
+      "city": "El Shorouk",
+      "country": "Egypt",
+      "website": "https://ufe.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0c/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%A7%D9%84%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D8%A3%D9%87%D9%84%D9%8A%D8%A9_%D8%A7%D9%84%D9%81%D8%B1%D9%86%D8%B3%D9%8A%D8%A9_%D9%81%D9%8A_%D9%85%D8%B5%D8%B1.png",
+      "faculties": [
+        { "name": "Faculty of Engineering", "code": "ENG_UFE" },
+        { "name": "Faculty of Management and Information Systems", "code": "MIS_UFE" }
+      ]
+    },
+    {
+      "name": "Nahda University in Beni Suef (NUB)",
+      "city": "Beni Suef",
+      "country": "Egypt",
+      "website": "https://nub.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/4/42/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D9%86%D9%87%D8%B6%D8%A9.png",
+      "faculties": [
+        { "name": "Faculty of Computer Science", "code": "CS_NUB" },
+        { "name": "Faculty of Engineering", "code": "ENG_NUB" },
+        { "name": "Faculty of Business Administration", "code": "BUS_NUB" }
+      ]
+    },
+    {
+      "name": "Egyptian Chinese University (ECU)",
+      "city": "Cairo",
+      "country": "Egypt",
+      "website": "https://ecu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/7/7e/Egyptian_Chinese_University.png",
+      "faculties": [
+        { "name": "Faculty of Engineering and Technology", "code": "ENG_ECU" },
+        { "name": "Faculty of Economics and International Trade", "code": "EIT_ECU" }
+      ]
+    },
+    {
+      "name": "Egyptian Russian University (ERU)",
+      "city": "Badr City",
+      "country": "Egypt",
+      "website": "https://eru.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/e/e7/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%A7%D9%84%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A%D8%A9_%D8%A7%D9%84%D8%B1%D9%88%D8%B3%D9%8A%D8%A9.png",
+      "faculties": [
+        { "name": "Faculty of Artificial Intelligence", "code": "AI_ERU" },
+        { "name": "Faculty of Engineering", "code": "ENG_ERU" },
+        { "name": "Faculty of Management, Economics and Business Technology", "code": "MEBT_ERU" }
+      ]
+    },
+    {
+      "name": "Horus University in Egypt (HUE)",
+      "city": "New Damietta",
+      "country": "Egypt",
+      "website": "https://horus.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/8/8f/Horus_University.png",
+      "faculties": [
+        { "name": "Faculty of Artificial Intelligence and Information", "code": "AI_HUE" },
+        { "name": "Faculty of Engineering", "code": "ENG_HUE" },
+        { "name": "Faculty of Business Administration", "code": "BUS_HUE" }
+      ]
+    },
+    {
+      "name": "Deraya University",
+      "city": "New Minya",
+      "country": "Egypt",
+      "website": "https://deraya.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/9/9a/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%AF%D8%B1%D8%A7%D9%8A%D8%A9.png",
+      "faculties": [
+        { "name": "Faculty of Business Administration", "code": "BUS_DERAYA" },
+        { "name": "Faculty of Pharmacy", "code": "PHRM_DERAYA" }
+      ]
+    },
+    {
+      "name": "Galala University (GU)",
+      "city": "Galala Plateau",
+      "country": "Egypt",
+      "website": "https://gu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/c/cb/%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D8%AC%D9%84%D8%A7%D9%84%D8%A9.png",
+      "faculties": [
+        { "name": "Computer Science and Engineering", "code": "CSE_GU" },
+        { "name": "Engineering Sciences", "code": "ENG_GU" },
+        { "name": "Administrative Sciences", "code": "ADM_GU" }
+      ]
+    },
+    {
+      "name": "King Salman International University (KSIU)",
+      "city": "South Sinai",
+      "country": "Egypt",
+      "website": "https://ksiu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/8/84/%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D9%85%D9%84%D9%83_%D8%B3%D9%84%D9%85%D8%A7%D9%86.png",
+      "faculties": [
+        { "name": "Computer Science and Engineering", "code": "CSE_KSIU" },
+        { "name": "Engineering", "code": "ENG_KSIU" },
+        { "name": "Administrative Sciences", "code": "ADM_KSIU" }
+      ]
+    },
+    {
+      "name": "Alamein International University (AIU)",
+      "city": "New Alamein",
+      "country": "Egypt",
+      "website": "https://aiu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/9/99/AIU_New_Logo.png",
+      "faculties": [
+        { "name": "Computer Science and Engineering", "code": "CSE_AIU" },
+        { "name": "Engineering", "code": "ENG_AIU" },
+        { "name": "Business", "code": "BUS_AIU" }
+      ]
+    },
+    {
+      "name": "New Mansoura University (NMU)",
+      "city": "New Mansoura",
+      "country": "Egypt",
+      "website": "https://nmu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/d/d4/%D8%B4%D8%B9%D8%A7%D8%B1_%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A7%D9%84%D9%85%D9%86%D8%B5%D9%88%D8%B1%D8%A9_%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF%D8%A9.png",
+      "faculties": [
+        { "name": "Computer Science and Engineering", "code": "CSE_NMU" },
+        { "name": "Engineering", "code": "ENG_NMU" },
+        { "name": "Business", "code": "BUS_NMU" }
+      ]
+    },
+    {
+      "name": "Helwan National University (HNU)",
+      "city": "Helwan, Cairo",
+      "country": "Egypt",
+      "website": "https://hnu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/7/74/%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%AD%D9%84%D9%88%D8%A7%D9%86_%D8%A7%D9%84%D8%A7%D9%87%D9%84%D9%8A%D8%A9.jpg",
+      "faculties": [
+        { "name": "Faculty of Computer Science and Artificial Intelligence", "code": "CSAI_HNU" },
+        { "name": "Faculty of Engineering", "code": "ENG_HNU" },
+        { "name": "Faculty of Humanities, Commerce and Business", "code": "HCB_HNU" }
+      ]
+    },
+    {
+      "name": "October Technological University (OTU)",
+      "city": "6th of October",
+      "country": "Egypt",
+      "website": "https://otu.edu.eg",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/ar/8/8b/%D8%AC%D8%A7%D9%85%D8%B9%D8%A9_%D8%A3%D9%83%D8%AA%D9%88%D8%A8%D8%B1_%D8%A7%D9%84%D8%AA%D9%83%D9%86%D9%88%D9%84%D9%88%D8%AC%D9%8A%D8%A9.png",
+      "faculties": [
+        { "name": "College of Industry and Energy Technology", "code": "IET_OTU" },
+        { "name": "Information Technology Programs", "code": "IT_OTU" }
+      ]
+    }
+  ],
+  "skills": [
+    { "name": "C#", "category": "Backend", "description": "Strongly typed .NET systems and API engineering." },
+    { "name": "ASP.NET Core", "category": "Backend", "description": "High-throughput REST services, SignalR, and Clean Architecture." },
+    { "name": "Entity Framework Core", "category": "Backend", "description": "Relational modeling, migrations, and query tuning." },
+    { "name": "SQL Server", "category": "Database", "description": "Enterprise relational schemas, indexing, and T-SQL." },
+    { "name": "PostgreSQL", "category": "Database", "description": "Open-source relational persistence and analytics." },
+    { "name": "Python", "category": "Backend", "description": "Automation, data pipelines, FastAPI backends, and ML." },
+    { "name": "Java", "category": "Backend", "description": "Enterprise services and object-oriented algorithms." },
+    { "name": "Node.js", "category": "Backend", "description": "Event-driven APIs and realtime web services." },
+    { "name": "JavaScript", "category": "Frontend", "description": "Core web scripting and interactive interfaces." },
+    { "name": "TypeScript", "category": "Frontend", "description": "Type-safe client and full-stack web engineering." },
+    { "name": "React", "category": "Frontend", "description": "Component architectures, hooks, and modern SPAs." },
+    { "name": "Angular", "category": "Frontend", "description": "Structured enterprise web applications." },
+    { "name": "Vue.js", "category": "Frontend", "description": "Progressive reactive UI development." },
+    { "name": "HTML/CSS", "category": "Frontend", "description": "Semantic markup, accessibility, and responsive layout." },
+    { "name": "Next.js", "category": "Frontend", "description": "Server-rendered and hybrid React web platforms." },
+    { "name": "Tailwind CSS", "category": "Frontend", "description": "Utility-first design systems and rapid UI engineering." },
+    { "name": "Flutter", "category": "Mobile", "description": "Cross-platform Android and iOS mobile apps." },
+    { "name": "Kotlin", "category": "Mobile", "description": "Modern native Android and multiplatform mobile development." },
+    { "name": "Docker", "category": "DevOps", "description": "Reproducible containers and multi-service local stacks." },
+    { "name": "Git", "category": "DevOps", "description": "Collaborative branching, code review, and release workflows." },
+    { "name": "CI/CD", "category": "DevOps", "description": "Automated build, security scanning, and deployment pipelines." },
+    { "name": "Azure", "category": "Cloud", "description": "Microsoft Azure App Service, containers, and cloud identities." },
+    { "name": "AWS", "category": "Cloud", "description": "Elastic compute, object storage, and managed cloud systems." },
+    { "name": "Machine Learning", "category": "AI", "description": "Predictive modeling, NLP, and vision inference." },
+    { "name": "Data Analysis", "category": "AI", "description": "Statistical exploration, KPI modeling, and insight decks." },
+    { "name": "UI/UX Design", "category": "Design", "description": "User journeys, wireframing, usability testing, and design systems." },
+    { "name": "Figma", "category": "Design", "description": "Collaborative interface prototyping and component tokens." },
+    { "name": "Power BI", "category": "Business", "description": "Executive DAX dashboards and financial reporting." },
+    { "name": "Business Analysis", "category": "Business", "description": "ERP process mapping, BRDs, and product discovery." },
+    { "name": "SAP ERP", "category": "Business", "description": "Enterprise resource planning workflows for BIS and commerce teams." },
+    { "name": "SQL", "category": "Database", "description": "Analytical queries, CTEs, and relational reporting." },
+    { "name": "Embedded C", "category": "Embedded", "description": "Microcontroller firmware for STM32, AVR, and ESP32." },
+    { "name": "ROS2", "category": "Embedded", "description": "Autonomous robot middleware, SLAM, and sensor fusion." },
+    { "name": "Arduino", "category": "Embedded", "description": "Rapid sensor prototyping and hardware control loops." },
+    { "name": "Competitive Programming", "category": "Algorithms", "description": "Graph theory, dynamic programming, and ICPC contests." },
+    { "name": "Project Management", "category": "Soft Skills", "description": "Sprint planning, milestone tracking, and cross-team delivery." },
+    { "name": "Public Speaking", "category": "Soft Skills", "description": "Technical workshops, keynote pitches, and community talks." },
+    { "name": "Teamwork", "category": "Soft Skills", "description": "Cross-faculty squad collaboration and mentorship." },
+    { "name": "Technical Writing", "category": "Soft Skills", "description": "Architecture docs, guides, and API specifications." },
+    { "name": "Cybersecurity", "category": "Security", "description": "Threat modeling, OWASP defense, IAM, and CIA/AAA auditing." }
+  ],
+  "badges": [
+    { "name": "First Steps", "description": "Earn your first 100 points", "iconUrl": "/badges/first-steps.png", "criteriaType": "PointsThreshold", "criteriaValue": 100 },
+    { "name": "Rising Star", "description": "Reach 500 points", "iconUrl": "/badges/rising-star.png", "criteriaType": "PointsThreshold", "criteriaValue": 500 },
+    { "name": "Champion", "description": "Reach 2000 points", "iconUrl": "/badges/champion.png", "criteriaType": "PointsThreshold", "criteriaValue": 2000 },
+    { "name": "Workshop Marathoner", "description": "Attend 10 events", "iconUrl": "/badges/workshop-marathoner.png", "criteriaType": "EventCount", "criteriaValue": 10 },
+    { "name": "Task Master", "description": "Complete 25 tasks", "iconUrl": "/badges/task-master.png", "criteriaType": "TaskCount", "criteriaValue": 25 }
+  ],
+  "students": [
+    {
+      "email": "salma@cu.edu.eg", "firstName": "Salma", "lastName": "Khaled", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "Giza", "facultyCode": "FCAI", "points": 2840,
+      "photoUrl": "/images/people/salma-khaled.jpg",
+      "bio": "Building cross-faculty AI & React squads at Cairo University FCAI.",
+      "interests": ["Applied AI", "React Architecture", "Open Source"],
+      "skills": [
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "React", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "Machine Learning", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "omar@capu.edu.eg", "firstName": "Omar", "lastName": "Mostafa", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Cairo", "facultyCode": "ENG_CAPU", "points": 2490,
+      "photoUrl": "/images/people/omar-mostafa.jpg",
+      "bio": "Embedded systems & full-stack clubs lead at Capital University.",
+      "interests": ["Robotics", "Cloud Infrastructure", "Developer Communities"],
+      "skills": [
+        { "name": "TypeScript", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Docker", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "C#", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "youssef@asu.edu.eg", "firstName": "Youssef", "lastName": "Adel", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Cairo", "facultyCode": "CIS", "points": 2310,
+      "photoUrl": "/images/people/youssef-adel.jpg",
+      "bio": "Backend architect & campus workshop mentor at Ain Shams CIS.",
+      "interests": ["Clean Architecture", "Distributed Systems", "Mentorship"],
+      "skills": [
+        { "name": "ASP.NET Core", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "PostgreSQL", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Docker", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "hana@alexu.edu.eg", "firstName": "Hana", "lastName": "El-Sayed", "academicYear": 2,
+      "affiliationType": "UniversityStudent", "city": "Alexandria", "facultyCode": "CDS_ALEX", "points": 1920,
+      "photoUrl": "/images/people/hana-el-sayed.jpg",
+      "bio": "Data science & computer vision researcher at Alexandria CDS.",
+      "interests": ["Computer Vision", "Design Systems", "Hackathons"],
+      "skills": [
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Data Analysis", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Figma", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "karim@guc.edu.eg", "firstName": "Karim", "lastName": "Mansour", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "New Cairo", "facultyCode": "MET_GUC", "points": 1780,
+      "photoUrl": "/images/people/karim-mansour.jpg",
+      "bio": "Systems engineer & design-systems builder at GUC MET.",
+      "interests": ["Design Engineering", "TypeScript", "Robotics"],
+      "skills": [
+        { "name": "React", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "TypeScript", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "UI/UX Design", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "mariam@mans.edu.eg", "firstName": "Mariam", "lastName": "Nabil", "academicYear": 2,
+      "affiliationType": "UniversityStudent", "city": "Mansoura", "facultyCode": "FCI_MANS", "points": 1540,
+      "photoUrl": "/images/people/mariam-nabil.jpg",
+      "bio": "Applied ML & UX researcher at Mansoura University FCI.",
+      "interests": ["Arabic NLP", "Product Research", "UX Accessibility"],
+      "skills": [
+        { "name": "Machine Learning", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "UI/UX Design", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "ahmed.tarek@bis.helwan.edu.eg", "firstName": "Ahmed", "lastName": "Tarek", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "Cairo", "facultyCode": "BIS_HU", "points": 2910,
+      "photoUrl": null,
+      "bio": "Senior BIS Helwan builder bridging .NET backends, ERP analytics, and campus recruitment tooling.",
+      "interests": ["Business Intelligence", "Full-Stack .NET", "FinTech"],
+      "skills": [
+        { "name": "ASP.NET Core", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "React", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "Power BI", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "SQL Server", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 }
+      ]
+    },
+    {
+      "email": "nada.elgamal@bis.helwan.edu.eg", "firstName": "Nada", "lastName": "El-Gamal", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Maadi, Cairo", "facultyCode": "BIS_HU", "points": 2180,
+      "photoUrl": null,
+      "bio": "BIS Helwan product analyst & ThreeDOS academic lead focused on data storytelling and UX flows.",
+      "interests": ["Product Management", "Data Storytelling", "FinTech"],
+      "skills": [
+        { "name": "Business Analysis", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Power BI", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Figma", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "SQL", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "ziad.hossam@bis.helwan.edu.eg", "firstName": "Ziad", "lastName": "Hossam", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Helwan, Cairo", "facultyCode": "BIS_HU", "points": 1650,
+      "photoUrl": null,
+      "bio": "SAP & enterprise analytics mentor at Helwan BIS exploring TypeScript microservices.",
+      "interests": ["SAP ERP", "Cloud Analytics", "Entrepreneurship"],
+      "skills": [
+        { "name": "SAP ERP", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "TypeScript", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "Data Analysis", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "rana.sherif@bis.helwan.edu.eg", "firstName": "Rana", "lastName": "Sherif", "academicYear": 2,
+      "affiliationType": "UniversityStudent", "city": "Nasr City, Cairo", "facultyCode": "BIS_HU", "points": 1190,
+      "photoUrl": null,
+      "bio": "BIS Helwan sophomore designing accessible student dashboards and commerce MVPs.",
+      "interests": ["UI/UX Design", "Next.js", "Digital Banking"],
+      "skills": [
+        { "name": "Figma", "proficiencyLevel": "Advanced", "yearsOfExperience": 1.5 },
+        { "name": "Tailwind CSS", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 },
+        { "name": "React", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 }
+      ]
+    },
+    {
+      "email": "seif.wael@bis.helwan.edu.eg", "firstName": "Seif", "lastName": "Wael", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "Dokki, Giza", "facultyCode": "BIS_HU", "points": 2050,
+      "photoUrl": null,
+      "bio": "BIS graduation project lead automating SME VAT & e-invoicing compliance dashboards.",
+      "interests": ["Egyptian E-Invoice", "Data Engineering", "SQL"],
+      "skills": [
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "SQL Server", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "Power BI", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "habiba.magdy@bis.helwan.edu.eg", "firstName": "Habiba", "lastName": "Magdy", "academicYear": 1,
+      "affiliationType": "UniversityStudent", "city": "Helwan, Cairo", "facultyCode": "BIS_HU", "points": 620,
+      "photoUrl": null,
+      "bio": "First-year BIS Helwan learner joining student committees and SQL analytics bootcamps.",
+      "interests": ["Data Analytics", "Community Ops", "Public Speaking"],
+      "skills": [
+        { "name": "SQL", "proficiencyLevel": "Beginner", "yearsOfExperience": 0.5 },
+        { "name": "HTML/CSS", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 },
+        { "name": "Public Speaking", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 }
+      ]
+    },
+    {
+      "email": "mohamed.amr@eng.helwan.edu.eg", "firstName": "Mohamed", "lastName": "Amr", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "Helwan, Cairo", "facultyCode": "ENG_HU", "points": 2640,
+      "photoUrl": null,
+      "bio": "Electronics senior at Helwan Engineering leading IEEE robotics & ROS2 tracks.",
+      "interests": ["Autonomous Robots", "Embedded Linux", "Smart Grids"],
+      "skills": [
+        { "name": "Embedded C", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "ROS2", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Arduino", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 }
+      ]
+    },
+    {
+      "email": "farah.ehab@fcai.helwan.edu.eg", "firstName": "Farah", "lastName": "Ehab", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Maadi, Cairo", "facultyCode": "FCAI_HU", "points": 2120,
+      "photoUrl": null,
+      "bio": "Helwan FCAI problem solver mentoring ICPC Level 1 sheets and TypeScript web teams.",
+      "interests": ["Algorithms", "Competitive Programming", "Frontend Architecture"],
+      "skills": [
+        { "name": "Competitive Programming", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "TypeScript", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "React", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "abdelrahman.ashraf@eng.helwan.edu.eg", "firstName": "Abdelrahman", "lastName": "Ashraf", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Helwan, Cairo", "facultyCode": "ENG_HU", "points": 1730,
+      "photoUrl": null,
+      "bio": "Power engineering student designing solar telemetry inverters and campus energy audits.",
+      "interests": ["Renewable Energy", "IoT Telemetry", "PCB Design"],
+      "skills": [
+        { "name": "Arduino", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "Embedded C", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "Python", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "yasmin.ayman@aa.helwan.edu.eg", "firstName": "Yasmin", "lastName": "Ayman", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Zamalek, Cairo", "facultyCode": "AA_HU", "points": 1410,
+      "photoUrl": null,
+      "bio": "Helwan Applied Arts product designer crafting event identities and accessible campus apps.",
+      "interests": ["Visual Identity", "Design Systems", "Branding"],
+      "skills": [
+        { "name": "Figma", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "UI/UX Design", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "Tailwind CSS", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 }
+      ]
+    },
+    {
+      "email": "mostafa.sameh@cu.edu.eg", "firstName": "Mostafa", "lastName": "Sameh", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "Giza", "facultyCode": "ENG", "points": 2380,
+      "photoUrl": null,
+      "bio": "Cairo University Mechanical & Robotics senior building ROVs and perception models.",
+      "interests": ["Marine Robotics", "Computer Vision", "ROS2"],
+      "skills": [
+        { "name": "ROS2", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "Embedded C", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "nourhan.hesham@asu.edu.eg", "firstName": "Nourhan", "lastName": "Hesham", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Heliopolis, Cairo", "facultyCode": "CIS", "points": 1890,
+      "photoUrl": null,
+      "bio": "Ain Shams CIS cybersecurity & Azure engineer organizing capture-the-flag workshops.",
+      "interests": ["AppSec", "Threat Modeling", "Cloud IAM"],
+      "skills": [
+        { "name": "Cybersecurity", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Azure", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "ASP.NET Core", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "hazem.walid@asu.edu.eg", "firstName": "Hazem", "lastName": "Walid", "academicYear": 2,
+      "affiliationType": "UniversityStudent", "city": "Abbassia, Cairo", "facultyCode": "ENG_ASU", "points": 1240,
+      "photoUrl": null,
+      "bio": "Open-source contributor at OSC Ain Shams maintaining Flutter and Linux community tools.",
+      "interests": ["Linux", "Open Source", "Mobile Engineering"],
+      "skills": [
+        { "name": "Flutter", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Git", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Kotlin", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 }
+      ]
+    },
+    {
+      "email": "eslam.gamal@alexu.edu.eg", "firstName": "Eslam", "lastName": "Gamal", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "Alexandria", "facultyCode": "ENG_ALEX", "points": 2420,
+      "photoUrl": null,
+      "bio": "Alexandria Computer & Communications lead mentoring cloud-native backend architectures.",
+      "interests": ["Containers", "Distributed APIs", "Cloud Workshops"],
+      "skills": [
+        { "name": "Docker", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "CI/CD", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "AWS", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "reem.osama@mans.edu.eg", "firstName": "Reem", "lastName": "Osama", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Mansoura", "facultyCode": "ENG_MANS", "points": 1610,
+      "photoUrl": null,
+      "bio": "Biomedical & medical imaging enthusiast in Mansoura building clinical triage models.",
+      "interests": ["HealthTech", "Medical Imaging", "Python"],
+      "skills": [
+        { "name": "Machine Learning", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "Data Analysis", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "tarek.elmasry@azhar.edu.eg", "firstName": "Tarek", "lastName": "El-Masry", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "Nasr City, Cairo", "facultyCode": "ENG_AZHAR", "points": 1970,
+      "photoUrl": null,
+      "bio": "Al-Azhar Systems & Computers engineer building reliable school management and EdTech APIs.",
+      "interests": ["EdTech", "Backend APIs", "Database Tuning"],
+      "skills": [
+        { "name": "C#", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "Entity Framework Core", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "PostgreSQL", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "shahd.mohsen@aast.edu", "firstName": "Shahd", "lastName": "Mohsen", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Alexandria", "facultyCode": "CCIT_AAST", "points": 1840,
+      "photoUrl": null,
+      "bio": "AASTMT Computing scholar driving IEEE WIE outreach and Flutter civic applications.",
+      "interests": ["Women in Tech", "Flutter", "Social Impact"],
+      "skills": [
+        { "name": "Flutter", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Figma", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "Public Speaking", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "ali.reda@bue.edu.eg", "firstName": "Ali", "lastName": "Reda", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "El Shorouk", "facultyCode": "ICS_BUE", "points": 1680,
+      "photoUrl": null,
+      "bio": "BUE Informatics AI engineer building Arabic retrieval-augmented generation workflows.",
+      "interests": ["LLMs", "Search Ranking", "TypeScript"],
+      "skills": [
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Next.js", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "Machine Learning", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "malak.essam@nu.edu.eg", "firstName": "Malak", "lastName": "Essam", "academicYear": 2,
+      "affiliationType": "UniversityStudent", "city": "Sheikh Zayed", "facultyCode": "ITCS_NU", "points": 1350,
+      "photoUrl": null,
+      "bio": "Nile University undergrad researcher studying speech accessibility & mobile UX.",
+      "interests": ["Accessibility", "Speech AI", "HCI"],
+      "skills": [
+        { "name": "Python", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "React", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "UI/UX Design", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "mahmoud.fathy@zewailcity.edu.eg", "firstName": "Mahmoud", "lastName": "Fathy", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "6th of October", "facultyCode": "CSAI_ZC", "points": 2290,
+      "photoUrl": null,
+      "bio": "Zewail City CSAI researcher working on edge computer vision and embedded AI.",
+      "interests": ["Edge AI", "Scientific Computing", "Research"],
+      "skills": [
+        { "name": "Machine Learning", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "Embedded C", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "aya.hatem@ejust.edu.eg", "firstName": "Aya", "lastName": "Hatem", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "New Borg El Arab", "facultyCode": "CSIT_EJUST", "points": 1760,
+      "photoUrl": null,
+      "bio": "E-JUST CSIT student automating precision agriculture telemetry across the Nile Delta.",
+      "interests": ["AgriTech", "IoT", "Data Pipelines"],
+      "skills": [
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Arduino", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "PostgreSQL", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "sherif.nader@aun.edu.eg", "firstName": "Sherif", "lastName": "Nader", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "Assiut", "facultyCode": "FCI_AUN", "points": 1910,
+      "photoUrl": null,
+      "bio": "Upper Egypt organizer bringing competitive coding & backend bootcamps to Assiut.",
+      "interests": ["Upper Egypt Tech", "Node.js", "Mentorship"],
+      "skills": [
+        { "name": "Node.js", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "TypeScript", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Competitive Programming", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "dalia.fouad@zu.edu.eg", "firstName": "Dalia", "lastName": "Fouad", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Zagazig", "facultyCode": "FCI_ZU", "points": 1480,
+      "photoUrl": null,
+      "bio": "Zagazig FCI developer building offline-first React & Angular healthcare portals.",
+      "interests": ["HealthTech", "Angular", "API Security"],
+      "skills": [
+        { "name": "Angular", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "TypeScript", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "SQL Server", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "belal.medhat@bu.edu.eg", "firstName": "Belal", "lastName": "Medhat", "academicYear": 2,
+      "affiliationType": "UniversityStudent", "city": "Benha", "facultyCode": "FCAI_BU", "points": 1120,
+      "photoUrl": null,
+      "bio": "Benha FCAI sophomore exploring DevOps automation and Docker compose workflows.",
+      "interests": ["DevOps", "Linux", "CI/CD"],
+      "skills": [
+        { "name": "Docker", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "CI/CD", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 },
+        { "name": "Git", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "hagar.ibrahim@suez.edu.eg", "firstName": "Hagar", "lastName": "Ibrahim", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Ismailia", "facultyCode": "FCI_SCU", "points": 1590,
+      "photoUrl": null,
+      "bio": "Suez Canal University logistics & maritime software builder from Ismailia.",
+      "interests": ["Supply Chain", "Kotlin", "Cloud Databases"],
+      "skills": [
+        { "name": "Kotlin", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Java", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "PostgreSQL", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "amr.khaled@menofia.edu.eg", "firstName": "Amr", "lastName": "Khaled", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Menouf", "facultyCode": "FEE_MU", "points": 1690,
+      "photoUrl": null,
+      "bio": "Menouf Electronic Engineering builder focused on STM32 firmware & real-time telemetry.",
+      "interests": ["Embedded Systems", "IoT", "RTLS"],
+      "skills": [
+        { "name": "Embedded C", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "Arduino", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "C#", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 }
+      ]
+    },
+    {
+      "email": "jana.sherif@aucegypt.edu", "firstName": "Jana", "lastName": "Sherif", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "New Cairo", "facultyCode": "BUS_AUC", "points": 1950,
+      "photoUrl": null,
+      "bio": "AUC venture builder connecting Egyptian university prototypes to social impact incubators.",
+      "interests": ["Social Venture", "Impact KPIs", "Pitch Coaching"],
+      "skills": [
+        { "name": "Business Analysis", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "Project Management", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "Public Speaking", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 }
+      ]
+    },
+    {
+      "email": "marwan.adel@gu.edu.eg", "firstName": "Marwan", "lastName": "Adel", "academicYear": 2,
+      "affiliationType": "UniversityStudent", "city": "Galala Plateau", "facultyCode": "CSE_GU", "points": 980,
+      "photoUrl": null,
+      "bio": "Galala University CSE student interested in cloud APIs, React tooling, and hackathons.",
+      "interests": ["Web Platforms", "Cloud Computing", "Hackathons"],
+      "skills": [
+        { "name": "React", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "Node.js", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 },
+        { "name": "TypeScript", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 }
+      ]
+    },
+    {
+      "email": "rawda.elshenawy@aiu.edu.eg", "firstName": "Rawda", "lastName": "El-Shenawy", "academicYear": 2,
+      "affiliationType": "UniversityStudent", "city": "New Alamein", "facultyCode": "CSE_AIU", "points": 870,
+      "photoUrl": null,
+      "bio": "AIU Computer Science learner organizing North Coast AI study circles.",
+      "interests": ["Generative AI", "Python", "Campus Clubs"],
+      "skills": [
+        { "name": "Python", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "Data Analysis", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 },
+        { "name": "Teamwork", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "karim.elbanna@hnu.edu.eg", "firstName": "Karim", "lastName": "El-Banna", "academicYear": 2,
+      "affiliationType": "UniversityStudent", "city": "Helwan, Cairo", "facultyCode": "CSAI_HNU", "points": 1060,
+      "photoUrl": null,
+      "bio": "Helwan National University AI student collaborating across Helwan & Maadi tech meetups.",
+      "interests": ["Applied ML", "Next.js", "Developer Events"],
+      "skills": [
+        { "name": "Next.js", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 },
+        { "name": "Python", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "Tailwind CSS", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "passant.mahmoud@bsu.edu.eg", "firstName": "Passant", "lastName": "Mahmoud", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Beni Suef", "facultyCode": "FCAI_BSU", "points": 1320,
+      "photoUrl": null,
+      "bio": "Beni-Suef FCAI data analyst helping regional nonprofits digitize beneficiary tracking.",
+      "interests": ["Data for Good", "SQL", "Power BI"],
+      "skills": [
+        { "name": "Power BI", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "SQL", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "Technical Writing", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "mazen.tamer@kfs.edu.eg", "firstName": "Mazen", "lastName": "Tamer", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Kafr El-Sheikh", "facultyCode": "AI_KFS", "points": 1520,
+      "photoUrl": null,
+      "bio": "Faculty of AI pioneer training precision farming sensors and weather forecast pipelines.",
+      "interests": ["Precision Agriculture", "Time Series", "AWS"],
+      "skills": [
+        { "name": "Machine Learning", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "AWS", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "Python", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "menna.khaled@tanta.edu.eg", "firstName": "Menna", "lastName": "Khaled", "academicYear": 4,
+      "affiliationType": "UniversityStudent", "city": "Tanta", "facultyCode": "FCI_TU", "points": 1640,
+      "photoUrl": null,
+      "bio": "Tanta FCI full-stack developer mentoring student technical tracks across the Delta.",
+      "interests": ["Delta Dev Community", "React", "ASP.NET Core"],
+      "skills": [
+        { "name": "React", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "C#", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "Tailwind CSS", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "yassin.emad@psu.edu.eg", "firstName": "Yassin", "lastName": "Emad", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Port Said", "facultyCode": "MTIS_PSU", "points": 1270,
+      "photoUrl": null,
+      "bio": "Port Said MTIS student combining business process modeling with web dashboards.",
+      "interests": ["Logistics ERP", "Power BI", "Product Ops"],
+      "skills": [
+        { "name": "Business Analysis", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "Power BI", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "JavaScript", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "laila.mansour@miu.edu.eg", "firstName": "Laila", "lastName": "Mansour", "academicYear": 3,
+      "affiliationType": "UniversityStudent", "city": "Cairo", "facultyCode": "CS_MIU", "points": 1390,
+      "photoUrl": null,
+      "bio": "MIU Computer Science mobile builder shipping bilingual Egyptian transit utilities.",
+      "interests": ["Mobile Apps", "Design Tokens", "Civic Tech"],
+      "skills": [
+        { "name": "Flutter", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "UI/UX Design", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "Git", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "ziad.tarek@indie.eg", "firstName": "Ziad", "lastName": "Tarek", "academicYear": 1,
+      "affiliationType": "IndependentLearner", "city": "Cairo", "facultyCode": null, "points": 1440,
+      "photoUrl": null,
+      "bio": "Self-taught TypeScript & open-source systems contributor joining Cairo hackathons.",
+      "interests": ["Open Source", "TypeScript", "Systems Tooling"],
+      "skills": [
+        { "name": "TypeScript", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Node.js", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 },
+        { "name": "Docker", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 }
+      ]
+    },
+    {
+      "email": "basel.hany@grad.eg", "firstName": "Basel", "lastName": "Hany", "academicYear": 4,
+      "affiliationType": "FreshGraduate", "city": "Alexandria", "facultyCode": null, "points": 2080,
+      "photoUrl": null,
+      "bio": "Fresh engineering graduate mentoring student branches in cloud CI/CD and AppSec.",
+      "interests": ["Cloud Security", "Career Coaching", "Architecture"],
+      "skills": [
+        { "name": "Cybersecurity", "proficiencyLevel": "Advanced", "yearsOfExperience": 3 },
+        { "name": "Azure", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "CI/CD", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 }
+      ]
+    },
+    {
+      "email": "toqa.hassan@grad.eg", "firstName": "Toqa", "lastName": "Hassan", "academicYear": 4,
+      "affiliationType": "FreshGraduate", "city": "Mansoura", "facultyCode": null, "points": 1710,
+      "photoUrl": null,
+      "bio": "Recent BIS & Analytics graduate coaching Enactus & ThreeDOS project teams.",
+      "interests": ["Product Discovery", "Analytics", "Youth Entrepreneurship"],
+      "skills": [
+        { "name": "Business Analysis", "proficiencyLevel": "Advanced", "yearsOfExperience": 2.5 },
+        { "name": "Power BI", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "Project Management", "proficiencyLevel": "Intermediate", "yearsOfExperience": 2 }
+      ]
+    },
+    {
+      "email": "eyad.ashraf@stem.eg", "firstName": "Eyad", "lastName": "Ashraf", "academicYear": 1,
+      "affiliationType": "HighSchoolTech", "city": "Maadi, Cairo", "facultyCode": null, "points": 790,
+      "photoUrl": null,
+      "bio": "STEM Egypt high-school robotics & competitive programming finalist preparing competition builds.",
+      "interests": ["STEM Egypt", "Robotics", "ICPC Juniors"],
+      "skills": [
+        { "name": "Arduino", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "Competitive Programming", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1.5 },
+        { "name": "Python", "proficiencyLevel": "Intermediate", "yearsOfExperience": 1 }
+      ]
+    },
+    {
+      "email": "salma.eldaly@indie.eg", "firstName": "Salma", "lastName": "El-Daly", "academicYear": 2,
+      "affiliationType": "IndependentLearner", "city": "Ismailia", "facultyCode": null, "points": 1160,
+      "photoUrl": null,
+      "bio": "Independent UI/UX designer & frontend freelancer volunteering across Egyptian tech circles.",
+      "interests": ["Accessibility", "Design Systems", "Indie Products"],
+      "skills": [
+        { "name": "Figma", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "UI/UX Design", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 },
+        { "name": "HTML/CSS", "proficiencyLevel": "Advanced", "yearsOfExperience": 2 }
+      ]
+    }
+  ],
+  "organizations": [
+    {
+      "name": "IEEE Helwan Student Branch",
+      "description": "Pioneer engineering & computing student branch at Helwan University empowering students with technical workshops, robotics competitions, research bootcamps, and career readiness.",
+      "category": "Engineering",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg",
+      "scope": "UniversityBranch",
+      "universityName": "Helwan University",
+      "city": "Helwan, Cairo",
+      "websiteUrl": "https://ieee-helwan.org",
+      "isRecruiting": true,
+      "currentSeasonName": "Season 2026 — Fall Recruitment",
+      "units": [
+        { "name": "Computer Society", "code": "CS", "description": "Full-stack web, AI, algorithms, and competitive programming tracks.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 25 },
+        { "name": "Robotics & Automation", "code": "RAS", "description": "Autonomous robots, ROS2, embedded firmware, and Arduino hardware.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 18 },
+        { "name": "Power & Energy Society", "code": "PES", "description": "Smart grids, renewable energy systems, and power electronics.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 15 },
+        { "name": "Communications Society", "code": "ComSoc", "description": "5G networks, IoT telemetry, RF hardware, and SDR labs.", "unitType": "TechnicalChapter", "isRecruiting": false, "openSeats": 10 },
+        { "name": "Women in Engineering", "code": "WIE", "description": "Empowering women engineers through mentorship and leadership labs.", "unitType": "AffinityGroup", "isRecruiting": true, "openSeats": 20 },
+        { "name": "Human Resources", "code": "HR", "description": "Recruitment screening, member experience, and season evaluations.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 8 },
+        { "name": "PR & Fundraising", "code": "PR", "description": "Corporate sponsorships, partner outreach, and speaker invitations.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 10 },
+        { "name": "Marketing & Media", "code": "MEDIA", "description": "Visual identity, photography, social campaigns, and event branding.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 12 },
+        { "name": "Logistics & OC", "code": "OC", "description": "Venue operations, stage tech, registration desks, and event execution.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 14 }
+      ],
+      "members": [
+        { "studentEmail": "mohamed.amr@eng.helwan.edu.eg", "role": "Chair", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "salma@cu.edu.eg", "role": "Vice Chair", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "omar@capu.edu.eg", "role": "Head of HR", "unitCode": "HR", "hierarchyTier": "CommitteeLeadership" },
+        { "studentEmail": "youssef@asu.edu.eg", "role": "CS Chapter Chair", "unitCode": "CS", "hierarchyTier": "CommitteeLeadership" },
+        { "studentEmail": "karim@guc.edu.eg", "role": "RAS Chapter Head", "unitCode": "RAS", "hierarchyTier": "CommitteeLeadership" },
+        { "studentEmail": "hana@alexu.edu.eg", "role": "Media & Marketing Lead", "unitCode": "MEDIA", "hierarchyTier": "CommitteeLeadership" },
+        { "studentEmail": "abdelrahman.ashraf@eng.helwan.edu.eg", "role": "PES Chapter Head", "unitCode": "PES", "hierarchyTier": "CommitteeLeadership" },
+        { "studentEmail": "mariam@mans.edu.eg", "role": "Member", "unitCode": "OC", "hierarchyTier": "OrganizingCrew" },
+        { "studentEmail": "habiba.magdy@bis.helwan.edu.eg", "role": "Participant", "unitCode": "WIE", "hierarchyTier": "Participant" }
+      ]
+    },
+    {
+      "name": "ThreeDOS — Helwan BIS",
+      "description": "Flagship Business Information Systems (BIS) student organization at Helwan University bridging software systems, SAP/ERP analytics, UI/UX product design, and career mentorship.",
+      "category": "Entrepreneurship",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/8/88/Helwan_University_Logo.jpg",
+      "scope": "FacultyChapter",
+      "universityName": "Helwan University",
+      "city": "Zamalek & Helwan, Cairo",
+      "websiteUrl": "https://helwan.edu.eg",
+      "isRecruiting": true,
+      "currentSeasonName": "Season 2026 — BIS Ambassadors",
+      "units": [
+        { "name": "BIS Technical & BI", "code": "BIS_TECH", "description": ".NET APIs, Power BI dashboards, SQL modeling, and product prototyping.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 22 },
+        { "name": "Academic & Career Advisory", "code": "AC", "description": "ERP case studies, fintech simulations, and freshmen mentorship.", "unitType": "AffinityGroup", "isRecruiting": true, "openSeats": 18 },
+        { "name": "Human Resources", "code": "HR", "description": "Interviews, evaluation matrices, and committee culture.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 8 },
+        { "name": "Marketing & Design", "code": "MEDIA", "description": "Visual branding, Figma UI kits, and campus campaigns.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 10 }
+      ],
+      "members": [
+        { "studentEmail": "ahmed.tarek@bis.helwan.edu.eg", "role": "President", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "nada.elgamal@bis.helwan.edu.eg", "role": "Vice President", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "ziad.hossam@bis.helwan.edu.eg", "role": "Head of Academic", "unitCode": "AC", "hierarchyTier": "CommitteeLeadership" },
+        { "studentEmail": "rana.sherif@bis.helwan.edu.eg", "role": "Design Lead", "unitCode": "MEDIA", "hierarchyTier": "CommitteeLeadership" },
+        { "studentEmail": "toqa.hassan@grad.eg", "role": "Senior Member", "unitCode": "BIS_TECH", "hierarchyTier": "OrganizingCrew" }
+      ]
+    },
+    {
+      "name": "GDG on Campus — Helwan BIS",
+      "description": "Developer student chapter focused on Helwan BIS & Commerce students learning web engineering, product analytics, Gemini APIs, and UX architecture.",
+      "category": "Technology",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/6/64/Google_Developers_icon_2020.png",
+      "scope": "FacultyChapter",
+      "universityName": "Helwan University",
+      "city": "Zamalek, Cairo",
+      "websiteUrl": "https://gdg.community.dev",
+      "isRecruiting": true,
+      "currentSeasonName": "2026 Campus Cohort",
+      "units": [
+        { "name": "Data & Analytics Circle", "code": "DATA", "description": "SQL modeling, Python pandas, and interactive BI reporting.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 25 },
+        { "name": "Web & Frontend Lab", "code": "WEB", "description": "React, TypeScript, Tailwind CSS, and modern web builds.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 25 },
+        { "name": "UI/UX Studio", "code": "UIUX", "description": "Design systems, user research, and interactive Figma sprints.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 12 }
+      ],
+      "members": [
+        { "studentEmail": "seif.wael@bis.helwan.edu.eg", "role": "Chair", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "yasmin.ayman@aa.helwan.edu.eg", "role": "UI/UX Head", "unitCode": "UIUX", "hierarchyTier": "CommitteeLeadership" },
+        { "studentEmail": "karim.elbanna@hnu.edu.eg", "role": "Member", "unitCode": "WEB", "hierarchyTier": "OrganizingCrew" }
+      ]
+    },
+    {
+      "name": "IEEE Cairo University SB",
+      "description": "Student branch at Cairo University advancing electrical engineering, AI systems, and cross-faculty innovation projects.",
+      "category": "Engineering",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg",
+      "scope": "UniversityBranch",
+      "universityName": "Cairo University",
+      "city": "Giza",
+      "websiteUrl": "https://ieeecusb.org",
+      "isRecruiting": true,
+      "currentSeasonName": "2026 Technical Track",
+      "units": [
+        { "name": "Computer Society", "code": "CS", "description": "Systems engineering, distributed backends, and cloud labs.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 20 },
+        { "name": "Robotics & Automation", "code": "RAS", "description": "Mechatronics, computer vision, and UAV flight stacks.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 15 },
+        { "name": "Human Resources", "code": "HR", "description": "Member onboarding, KPI tracking, and technical committee pairing.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 6 }
+      ],
+      "members": [
+        { "studentEmail": "mostafa.sameh@cu.edu.eg", "role": "Chair", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "salma@cu.edu.eg", "role": "CS Chapter Head", "unitCode": "CS", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "IEEE Ain Shams SB",
+      "description": "Ain Shams engineering & computing branch running embedded hardware labs, AppSec sessions, and national robotics qualifiers.",
+      "category": "Engineering",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg",
+      "scope": "UniversityBranch",
+      "universityName": "Ain Shams University",
+      "city": "Abbassia, Cairo",
+      "websiteUrl": "https://ieee.org",
+      "isRecruiting": true,
+      "currentSeasonName": "Season 2026",
+      "units": [
+        { "name": "Computer Society", "code": "CS", "description": "Cloud APIs, AppSec, and machine learning workshops.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 20 },
+        { "name": "Women in Engineering", "code": "WIE", "description": "Engineering mentorship and research circles.", "unitType": "AffinityGroup", "isRecruiting": true, "openSeats": 15 }
+      ],
+      "members": [
+        { "studentEmail": "youssef@asu.edu.eg", "role": "President", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "nourhan.hesham@asu.edu.eg", "role": "WIE Head", "unitCode": "WIE", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "IEEE Alexandria SB",
+      "description": "Historic Alexandria University IEEE branch driving communications, smart energy, and software engineering initiatives.",
+      "category": "Engineering",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg",
+      "scope": "UniversityBranch",
+      "universityName": "Alexandria University",
+      "city": "Alexandria",
+      "websiteUrl": "https://ieee.org",
+      "isRecruiting": true,
+      "currentSeasonName": "Alexandria Tech Season",
+      "units": [
+        { "name": "Computer Society", "code": "CS", "description": "Modern web, AI computer vision, and cloud deployments.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 18 },
+        { "name": "Communications Society", "code": "ComSoc", "description": "Wireless networks, IoT sensors, and edge telemetry.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 14 }
+      ],
+      "members": [
+        { "studentEmail": "eslam.gamal@alexu.edu.eg", "role": "Chair", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "hana@alexu.edu.eg", "role": "CS Lead", "unitCode": "CS", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "IEEE Mansoura SB",
+      "description": "Mansoura engineering and computing community organizing Delta-wide technical summits, UX labs, and AI tracks.",
+      "category": "Engineering",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg",
+      "scope": "UniversityBranch",
+      "universityName": "Mansoura University",
+      "city": "Mansoura",
+      "websiteUrl": "https://ieee.org",
+      "isRecruiting": true,
+      "currentSeasonName": "Delta Season 2026",
+      "units": [
+        { "name": "Computer Society", "code": "CS", "description": "Applied machine learning and full-stack software.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 16 },
+        { "name": "Logistics & OC", "code": "OC", "description": "Conference operations and participant hosting.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 12 }
+      ],
+      "members": [
+        { "studentEmail": "reem.osama@mans.edu.eg", "role": "Chair", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "mariam@mans.edu.eg", "role": "Head of CS", "unitCode": "CS", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "IEEE AASTMT Alexandria SB",
+      "description": "AASTMT student branch specializing in autonomous maritime ROVs, AI agents, and cross-campus competitions.",
+      "category": "Engineering",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/d/da/AASTMT_Logo.png",
+      "scope": "UniversityBranch",
+      "universityName": "Arab Academy for Science, Technology & Maritime Transport (AASTMT)",
+      "city": "Abu Qir, Alexandria",
+      "websiteUrl": "https://aast.edu",
+      "isRecruiting": true,
+      "currentSeasonName": "Marine & AI 2026",
+      "units": [
+        { "name": "Robotics & Autonomous ROV", "code": "RAS", "description": "Underwater robotics, computer vision, and MATE ROV prep.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 14 },
+        { "name": "Women in Engineering", "code": "WIE", "description": "Leadership & STEM outreach across Alexandria.", "unitType": "AffinityGroup", "isRecruiting": true, "openSeats": 12 }
+      ],
+      "members": [
+        { "studentEmail": "shahd.mohsen@aast.edu", "role": "Chair", "unitCode": null, "hierarchyTier": "HighBoard" }
+      ]
+    },
+    {
+      "name": "Enactus Helwan",
+      "description": "Entrepreneurship action community turning student innovation into sustainable social enterprises across Helwan.",
+      "category": "Entrepreneurship",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Enactus_Full_Color_logo.png",
+      "scope": "UniversityBranch",
+      "universityName": "Helwan University",
+      "city": "Helwan, Cairo",
+      "websiteUrl": "https://enactus-helwan.org",
+      "isRecruiting": true,
+      "currentSeasonName": "Social Impact 2026",
+      "units": [
+        { "name": "Project Development", "code": "PD", "description": "Business modeling, field validation, and green impact ventures.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 20 },
+        { "name": "Human Resources", "code": "HR", "description": "Talent sourcing, interview panels, and crew engagement.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 8 },
+        { "name": "PR & Partnerships", "code": "PR", "description": "NGO alliances, incubator pitch days, and community sponsors.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 8 },
+        { "name": "Media & Branding", "code": "MEDIA", "description": "Storytelling campaigns and venture launch visuals.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 10 }
+      ],
+      "members": [
+        { "studentEmail": "nada.elgamal@bis.helwan.edu.eg", "role": "President", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "abdelrahman.ashraf@eng.helwan.edu.eg", "role": "Head of PD", "unitCode": "PD", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "Enactus Cairo University",
+      "description": "Social entrepreneurship powerhouse building scalable environmental and fintech ventures for Egyptian communities.",
+      "category": "Entrepreneurship",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Enactus_Full_Color_logo.png",
+      "scope": "UniversityBranch",
+      "universityName": "Cairo University",
+      "city": "Giza",
+      "websiteUrl": "https://enactus.org",
+      "isRecruiting": true,
+      "currentSeasonName": "National Cup 2026",
+      "units": [
+        { "name": "Project Management", "code": "PM", "description": "Community venture execution and impact KPI tracking.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 18 },
+        { "name": "Presentation & Pitch", "code": "PITCH", "description": "Executive storytelling and national competition decks.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 10 }
+      ],
+      "members": [
+        { "studentEmail": "jana.sherif@aucegypt.edu", "role": "Executive", "unitCode": "PITCH", "hierarchyTier": "HighBoard" }
+      ]
+    },
+    {
+      "name": "Enactus Ain Shams",
+      "description": "Ain Shams entrepreneurial student team designing sustainable agritech and clean-water ventures.",
+      "category": "Entrepreneurship",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Enactus_Full_Color_logo.png",
+      "scope": "UniversityBranch",
+      "universityName": "Ain Shams University",
+      "city": "Cairo",
+      "websiteUrl": "https://enactus.org",
+      "isRecruiting": true,
+      "currentSeasonName": "Impact Season 2026",
+      "units": [
+        { "name": "Project Development", "code": "PD", "description": "Sustainability field research and revenue modeling.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 18 },
+        { "name": "Marketing & Growth", "code": "MKT", "description": "Community storytelling and enterprise partnerships.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 10 }
+      ],
+      "members": [
+        { "studentEmail": "toqa.hassan@grad.eg", "role": "Head of PD", "unitCode": "PD", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "GDG Helwan",
+      "description": "Independent Google Developer Group serving Helwan, Maadi, and South Cairo with Android, Flutter, Cloud, and Gemini AI study jams.",
+      "category": "Technology",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/6/64/Google_Developers_icon_2020.png",
+      "scope": "Independent",
+      "universityName": null,
+      "city": "Helwan & Maadi, Cairo",
+      "websiteUrl": "https://gdg.community.dev/gdg-helwan/",
+      "isRecruiting": true,
+      "currentSeasonName": "DevFest Crew 2026",
+      "units": [
+        { "name": "Cloud & AI Study Jam", "code": "AI", "description": "Hands-on cloud and applied LLM engineering sessions.", "unitType": "WorkingGroup", "isRecruiting": true, "openSeats": 30 },
+        { "name": "Flutter Mobile Builders", "code": "FLT", "description": "Cross-platform mobile apps for local startups and open source.", "unitType": "WorkingGroup", "isRecruiting": true, "openSeats": 20 }
+      ],
+      "members": [
+        { "studentEmail": "farah.ehab@fcai.helwan.edu.eg", "role": "Chair", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "laila.mansour@miu.edu.eg", "role": "Flutter Lead", "unitCode": "FLT", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "GDG Cairo",
+      "description": "Greater Cairo flagship developer community uniting engineers, founders, and university builders around modern web and AI tools.",
+      "category": "Technology",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/6/64/Google_Developers_icon_2020.png",
+      "scope": "Independent",
+      "universityName": null,
+      "city": "Greater Cairo",
+      "websiteUrl": "https://gdg.community.dev/gdg-cairo/",
+      "isRecruiting": false,
+      "currentSeasonName": null,
+      "units": [
+        { "name": "Web Platform Chapter", "code": "WEB", "description": "Modern TypeScript, performance, and design systems talks.", "unitType": "WorkingGroup", "isRecruiting": false, "openSeats": 0 },
+        { "name": "Applied AI Circle", "code": "GENAI", "description": "Open-weights inference, RAG architectures, and agents.", "unitType": "WorkingGroup", "isRecruiting": false, "openSeats": 0 }
+      ],
+      "members": [
+        { "studentEmail": "ziad.tarek@indie.eg", "role": "Chair", "unitCode": "WEB", "hierarchyTier": "HighBoard" },
+        { "studentEmail": "ali.reda@bue.edu.eg", "role": "AI Lead", "unitCode": "GENAI", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "GDG Alexandria",
+      "description": "Coastal developer chapter advancing cloud native engineering, Kotlin mobile systems, and applied AI workshops in Alexandria.",
+      "category": "Technology",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/6/64/Google_Developers_icon_2020.png",
+      "scope": "Independent",
+      "universityName": null,
+      "city": "Alexandria",
+      "websiteUrl": "https://gdg.community.dev",
+      "isRecruiting": true,
+      "currentSeasonName": "DevFest Alex Crew",
+      "units": [
+        { "name": "Cloud Native Track", "code": "CLOUD", "description": "Containers, CI/CD, and resilient distributed systems.", "unitType": "WorkingGroup", "isRecruiting": true, "openSeats": 20 },
+        { "name": "Android & Kotlin Lab", "code": "ANDROID", "description": "Jetpack Compose and Kotlin Multiplatform apps.", "unitType": "WorkingGroup", "isRecruiting": true, "openSeats": 15 }
+      ],
+      "members": [
+        { "studentEmail": "basel.hany@grad.eg", "role": "Chair", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "eslam.gamal@alexu.edu.eg", "role": "Cloud Lead", "unitCode": "CLOUD", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "MSP Tech Club — Helwan University",
+      "description": "Microsoft student community at Helwan University covering .NET Clean Architecture, Azure Cloud, Power BI, and AI Engineering.",
+      "category": "Technology",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+      "scope": "UniversityBranch",
+      "universityName": "Helwan University",
+      "city": "Helwan, Cairo",
+      "websiteUrl": "https://mvp.microsoft.com/studentambassadors",
+      "isRecruiting": true,
+      "currentSeasonName": "2026 Ambassadors",
+      "units": [
+        { "name": ".NET & Backend Track", "code": "DOTNET", "description": "ASP.NET Core, EF Core, and enterprise SQL Server.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 20 },
+        { "name": "Power BI & Data Science", "code": "DATA", "description": "BIS analytics, DAX modeling, and Python workflows.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 20 },
+        { "name": "Human Resources", "code": "HR", "description": "Ambassador interviews and member follow-ups.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 8 }
+      ],
+      "members": [
+        { "studentEmail": "ahmed.tarek@bis.helwan.edu.eg", "role": "Chair", "unitCode": "DOTNET", "hierarchyTier": "HighBoard" },
+        { "studentEmail": "ziad.hossam@bis.helwan.edu.eg", "role": "Data Head", "unitCode": "DATA", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "MSP Tech Club — Ain Shams",
+      "description": "Microsoft student community at Ain Shams FCIS building .NET APIs, Azure services, UI/UX interfaces, and technical bootcamps.",
+      "category": "Technology",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+      "scope": "UniversityBranch",
+      "universityName": "Ain Shams University",
+      "city": "Cairo",
+      "websiteUrl": "https://mvp.microsoft.com/studentambassadors",
+      "isRecruiting": true,
+      "currentSeasonName": "Season 2026",
+      "units": [
+        { "name": "Cloud & DevOps", "code": "CLOUD", "description": "Azure deployments, GitHub Actions, and AppSec.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 18 },
+        { "name": "Frontend Studio", "code": "WEB", "description": "TypeScript, React, and Next.js engineering.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 18 }
+      ],
+      "members": [
+        { "studentEmail": "youssef@asu.edu.eg", "role": "Chair", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "nourhan.hesham@asu.edu.eg", "role": "Cloud Head", "unitCode": "CLOUD", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "ICPC Helwan Community",
+      "description": "Competitive programming training ground for Helwan FCAI & Engineering preparing student teams for ECPC and ACPC.",
+      "category": "Algorithms",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3f/ICPC_logo.png",
+      "scope": "UniversityBranch",
+      "universityName": "Helwan University",
+      "city": "Helwan, Cairo",
+      "websiteUrl": "https://icpc.global",
+      "isRecruiting": true,
+      "currentSeasonName": "ECPC 2026 Training",
+      "units": [
+        { "name": "Newcomers Level 0", "code": "L0", "description": "C++ STL, math foundations, and complexity analysis.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 60 },
+        { "name": "Level 1 & Graphs", "code": "L1", "description": "DFS, BFS, shortest paths, and dynamic programming.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 35 },
+        { "name": "Problem Setters & Mentors", "code": "MENTORS", "description": "Standing problem preparation, upsolving, and mock contests.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 12 }
+      ],
+      "members": [
+        { "studentEmail": "farah.ehab@fcai.helwan.edu.eg", "role": "President", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "eyad.ashraf@stem.eg", "role": "Member", "unitCode": "L1", "hierarchyTier": "OrganizingCrew" }
+      ]
+    },
+    {
+      "name": "ICPC Cairo University",
+      "description": "Premier competitive programming training network at Cairo University mentoring hundreds of coders for ECPC/ACPC.",
+      "category": "Algorithms",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3f/ICPC_logo.png",
+      "scope": "UniversityBranch",
+      "universityName": "Cairo University",
+      "city": "Giza",
+      "websiteUrl": "https://icpc.global",
+      "isRecruiting": true,
+      "currentSeasonName": "Cairo ECPC 2026",
+      "units": [
+        { "name": "Newcomers Bootcamp", "code": "NEWCOMERS", "description": "Structured C++ algorithms and weekly sheets.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 80 },
+        { "name": "Senior Contests", "code": "CONTEST", "description": "Team practice contests and editorial reviews.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 30 }
+      ],
+      "members": [
+        { "studentEmail": "salma@cu.edu.eg", "role": "Senior Member", "unitCode": "CONTEST", "hierarchyTier": "OrganizingCrew" }
+      ]
+    },
+    {
+      "name": "Open Source Community (OSC) — Ain Shams",
+      "description": "Free and open-source software movement at Ain Shams spreading Linux, Blender, web engineering, and OSS culture across Egypt.",
+      "category": "Open Source",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Open_Source_Initiative_keyhole.svg",
+      "scope": "UniversityBranch",
+      "universityName": "Ain Shams University",
+      "city": "Cairo",
+      "websiteUrl": "https://osc.org.eg",
+      "isRecruiting": true,
+      "currentSeasonName": "Ubuntu & OSS 2026",
+      "units": [
+        { "name": "Linux & Systems", "code": "LINUX", "description": "Kernel basics, shell scripting, and container tooling.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 22 },
+        { "name": "Web & Mobile OSS", "code": "WEB", "description": "Open web contributors, React, and Flutter.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 20 }
+      ],
+      "members": [
+        { "studentEmail": "hazem.walid@asu.edu.eg", "role": "President", "unitCode": "LINUX", "hierarchyTier": "HighBoard" }
+      ]
+    },
+    {
+      "name": "STP Egypt",
+      "description": "Cross-university leadership, academic coaching, and career development organization preparing Egyptian students for tech and management careers.",
+      "category": "Leadership",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/a/aa/TED_three_letter_logo.svg",
+      "scope": "CrossUniversity",
+      "universityName": null,
+      "city": "Cairo, Egypt",
+      "websiteUrl": "https://stp-egypt.org",
+      "isRecruiting": true,
+      "currentSeasonName": "Season 21",
+      "units": [
+        { "name": "Technical Track", "code": "TECH", "description": "Software engineering and problem-solving workshops.", "unitType": "TechnicalChapter", "isRecruiting": true, "openSeats": 24 },
+        { "name": "Academic & Juniors", "code": "AC", "description": "Career guidance and STEM readiness camps for freshmen.", "unitType": "AffinityGroup", "isRecruiting": true, "openSeats": 16 },
+        { "name": "Human Resources", "code": "HR", "description": "Structured evaluation rubrics and mentoring follow-ups.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 8 }
+      ],
+      "members": [
+        { "studentEmail": "jana.sherif@aucegypt.edu", "role": "Vice President", "unitCode": null, "hierarchyTier": "HighBoard" },
+        { "studentEmail": "omar@capu.edu.eg", "role": "Head of HR", "unitCode": "HR", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "AIESEC in Helwan",
+      "description": "Global youth leadership exchange chapter at Helwan enabling cross-cultural internships and volunteering impact.",
+      "category": "Leadership",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/en/e/e3/AIESEC_Logo.svg",
+      "scope": "UniversityBranch",
+      "universityName": "Helwan University",
+      "city": "Helwan & Maadi, Cairo",
+      "websiteUrl": "https://aiesec.org",
+      "isRecruiting": true,
+      "currentSeasonName": "Winter Exchange 2026",
+      "units": [
+        { "name": "Talent Management", "code": "TM", "description": "Member leadership pipelines and assessment centers.", "unitType": "OperationalCommittee", "isRecruiting": true, "openSeats": 10 },
+        { "name": "Global Talent Exchange", "code": "OGT", "description": "Tech & business internships abroad for Egyptian youth.", "unitType": "AffinityGroup", "isRecruiting": true, "openSeats": 15 }
+      ],
+      "members": [
+        { "studentEmail": "passant.mahmoud@bsu.edu.eg", "role": "Vice Head of TM", "unitCode": "TM", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    },
+    {
+      "name": "Egypt AI & Robotics Collective",
+      "description": "Open independent builder collective uniting university students, fresh graduates, and self-taught researchers on open-source AI and robotics.",
+      "category": "AI & Robotics",
+      "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/9/95/Font_Awesome_5_brands_github.svg",
+      "scope": "Independent",
+      "universityName": null,
+      "city": "Cairo & Remote",
+      "websiteUrl": "https://egypt-ai.org",
+      "isRecruiting": true,
+      "currentSeasonName": "Open Research Cohort",
+      "units": [
+        { "name": "Open LLM Lab", "code": "LLM", "description": "Arabic & bilingual fine-tuning, evaluation, and tooling.", "unitType": "WorkingGroup", "isRecruiting": true, "openSeats": 15 },
+        { "name": "Edge Robotics Guild", "code": "EDGE", "description": "On-device vision and embedded ROS navigation.", "unitType": "WorkingGroup", "isRecruiting": true, "openSeats": 12 },
+        { "name": "Computer Vision Circle", "code": "CV", "description": "Medical & industrial vision models on edge hardware.", "unitType": "WorkingGroup", "isRecruiting": true, "openSeats": 14 }
+      ],
+      "members": [
+        { "studentEmail": "mahmoud.fathy@zewailcity.edu.eg", "role": "Chair", "unitCode": "EDGE", "hierarchyTier": "HighBoard" },
+        { "studentEmail": "ali.reda@bue.edu.eg", "role": "Head of LLM Lab", "unitCode": "LLM", "hierarchyTier": "CommitteeLeadership" },
+        { "studentEmail": "mostafa.sameh@cu.edu.eg", "role": "Head of Vision", "unitCode": "CV", "hierarchyTier": "CommitteeLeadership" }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Egyptian SME E-Invoice & ERP Analytics Suite",
+      "description": "Cross-faculty Helwan BIS + FCAI platform helping Egyptian small businesses reconcile e-invoices, VAT reports, and cashflow forecasts with Power BI and ASP.NET Core.",
+      "status": "InProgress",
+      "maxTeamSize": 6,
+      "creatorEmail": "ahmed.tarek@bis.helwan.edu.eg",
+      "requiredSkills": [
+        { "name": "ASP.NET Core", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Power BI", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "React", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "SQL Server", "requiredLevel": "Intermediate", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "ahmed.tarek@bis.helwan.edu.eg", "role": "Leader" },
+        { "studentEmail": "seif.wael@bis.helwan.edu.eg", "role": "Data Engineer" },
+        { "studentEmail": "nada.elgamal@bis.helwan.edu.eg", "role": "Business Analyst" },
+        { "studentEmail": "rana.sherif@bis.helwan.edu.eg", "role": "UI/UX Designer" }
+      ],
+      "tasks": [
+        { "title": "Design e-invoice normalization schema & VAT audit views", "description": "Build SQL Server views for monthly Egyptian tax reconciliation.", "status": "Done", "priority": "High", "dueOffsetDays": -2, "assignedStudentEmail": "seif.wael@bis.helwan.edu.eg" },
+        { "title": "Implement clean REST endpoints for SME cashflow cohorts", "description": "Expose paginated analytics endpoints with role checks.", "status": "InProgress", "priority": "High", "dueOffsetDays": 5, "assignedStudentEmail": "ahmed.tarek@bis.helwan.edu.eg" },
+        { "title": "Build mobile-friendly invoice review drawer", "description": "Ship Figma-approved React components for finance leads.", "status": "Todo", "priority": "Medium", "dueOffsetDays": 9, "assignedStudentEmail": "rana.sherif@bis.helwan.edu.eg" }
+      ],
+      "applications": [
+        { "studentEmail": "ziad.hossam@bis.helwan.edu.eg", "message": "I completed SAP FI/CO & Power BI coursework at BIS Helwan and would love to help with ERP exports.", "status": "Pending" }
+      ]
+    },
+    {
+      "title": "Cairo Smart Metro & Microtransit Predictor",
+      "description": "Real-time commuter crowding and transfer estimator across Greater Cairo Metro Lines 1-3 and LRT using time-series ML and React maps.",
+      "status": "Recruiting",
+      "maxTeamSize": 5,
+      "creatorEmail": "salma@cu.edu.eg",
+      "requiredSkills": [
+        { "name": "Python", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Machine Learning", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "React", "requiredLevel": "Intermediate", "isMandatory": true }
+      ],
+      "members": [
+        { "studentEmail": "salma@cu.edu.eg", "role": "Leader" },
+        { "studentEmail": "laila.mansour@miu.edu.eg", "role": "Mobile Developer" },
+        { "studentEmail": "karim@guc.edu.eg", "role": "Frontend Lead" }
+      ],
+      "tasks": [
+        { "title": "Calibrate peak-hour station delay model on Cairo rush hours", "status": "InProgress", "priority": "High", "dueOffsetDays": 4, "assignedStudentEmail": "salma@cu.edu.eg" },
+        { "title": "Create interactive station transfer time card", "status": "Todo", "priority": "Medium", "dueOffsetDays": 8, "assignedStudentEmail": "karim@guc.edu.eg" }
+      ],
+      "applications": [
+        { "studentEmail": "karim.elbanna@hnu.edu.eg", "message": "Building Next.js transit cards at HNU — keen to integrate the Cairo commute API.", "status": "Pending" }
+      ]
+    },
+    {
+      "title": "Autonomous Nile Water Quality Rover",
+      "description": "IEEE Helwan & Cairo University joint ROS2 autonomous surface craft monitoring pH, turbidity, and dissolved oxygen telemetry along the Nile.",
+      "status": "InProgress",
+      "maxTeamSize": 6,
+      "creatorEmail": "mohamed.amr@eng.helwan.edu.eg",
+      "requiredSkills": [
+        { "name": "ROS2", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Embedded C", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Python", "requiredLevel": "Intermediate", "isMandatory": true }
+      ],
+      "members": [
+        { "studentEmail": "mohamed.amr@eng.helwan.edu.eg", "role": "Leader" },
+        { "studentEmail": "mostafa.sameh@cu.edu.eg", "role": "Autonomy Engineer" },
+        { "studentEmail": "abdelrahman.ashraf@eng.helwan.edu.eg", "role": "Power & Solar Lead" },
+        { "studentEmail": "omar@capu.edu.eg", "role": "Telemetry Backend" }
+      ],
+      "tasks": [
+        { "title": "Tune PID thruster stabilization controller in ROS2 Gazebo", "status": "Done", "priority": "High", "dueOffsetDays": -3, "assignedStudentEmail": "mohamed.amr@eng.helwan.edu.eg" },
+        { "title": "Integrate solar MPPT battery telemetry packet over LoRa", "status": "InProgress", "priority": "High", "dueOffsetDays": 6, "assignedStudentEmail": "abdelrahman.ashraf@eng.helwan.edu.eg" }
+      ],
+      "applications": [
+        { "studentEmail": "amr.khaled@menofia.edu.eg", "message": "I write STM32 LoRa firmware at Menouf Electronic Engineering and can join the sensor bus team.", "status": "Pending" }
+      ]
+    },
+    {
+      "title": "Arabic Sign Language Live Classroom Translator",
+      "description": "Edge computer vision & Arabic NLP web app translating Egyptian Sign Language gestures to live Arabic captions for university lectures.",
+      "status": "Recruiting",
+      "maxTeamSize": 5,
+      "creatorEmail": "hana@alexu.edu.eg",
+      "requiredSkills": [
+        { "name": "Machine Learning", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Python", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "UI/UX Design", "requiredLevel": "Intermediate", "isMandatory": true }
+      ],
+      "members": [
+        { "studentEmail": "hana@alexu.edu.eg", "role": "Leader" },
+        { "studentEmail": "malak.essam@nu.edu.eg", "role": "Accessibility Researcher" },
+        { "studentEmail": "mariam@mans.edu.eg", "role": "NLP Modeler" }
+      ],
+      "tasks": [
+        { "title": "Benchmark hand-pose inference latency on browser WASM", "status": "Done", "priority": "High", "dueOffsetDays": -1, "assignedStudentEmail": "hana@alexu.edu.eg" },
+        { "title": "Design high-contrast Arabic caption overlay for lecture halls", "status": "InProgress", "priority": "Medium", "dueOffsetDays": 7, "assignedStudentEmail": "malak.essam@nu.edu.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "Campus Solar Microgrid & Energy Audit Dashboard",
+      "description": "IEEE Helwan PES smart-building telemetry suite tracking rooftop solar generation and peak AC loads across engineering halls.",
+      "status": "InProgress",
+      "maxTeamSize": 5,
+      "creatorEmail": "abdelrahman.ashraf@eng.helwan.edu.eg",
+      "requiredSkills": [
+        { "name": "Arduino", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "React", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "PostgreSQL", "requiredLevel": "Intermediate", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "abdelrahman.ashraf@eng.helwan.edu.eg", "role": "Leader" },
+        { "studentEmail": "youssef@asu.edu.eg", "role": "Backend Architect" }
+      ],
+      "tasks": [
+        { "title": "Set up rollup aggregation for 1-minute inverter readings", "status": "Todo", "priority": "Medium", "dueOffsetDays": 6, "assignedStudentEmail": "youssef@asu.edu.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "Delta AgriTech Soil Moisture & Irrigation IoT",
+      "description": "Low-cost ESP32 soil telemetry network helping Delta smallholder farms optimize water schedules using localized weather forecasts.",
+      "status": "Recruiting",
+      "maxTeamSize": 5,
+      "creatorEmail": "aya.hatem@ejust.edu.eg",
+      "requiredSkills": [
+        { "name": "Python", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "Arduino", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "AWS", "requiredLevel": "Beginner", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "aya.hatem@ejust.edu.eg", "role": "Leader" },
+        { "studentEmail": "mazen.tamer@kfs.edu.eg", "role": "ML Engineer" }
+      ],
+      "tasks": [
+        { "title": "Train evapotranspiration irrigation threshold model", "status": "InProgress", "priority": "High", "dueOffsetDays": 5, "assignedStudentEmail": "mazen.tamer@kfs.edu.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "Egyptian Bilingual RAG Research Assistant",
+      "description": "Open-weights Arabic & English RAG workspace indexing Egyptian engineering theses, lecture notes, and open textbooks with citation verification.",
+      "status": "InProgress",
+      "maxTeamSize": 5,
+      "creatorEmail": "ali.reda@bue.edu.eg",
+      "requiredSkills": [
+        { "name": "Python", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Machine Learning", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "Next.js", "requiredLevel": "Intermediate", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "ali.reda@bue.edu.eg", "role": "Leader" },
+        { "studentEmail": "mahmoud.fathy@zewailcity.edu.eg", "role": "Evaluation Lead" },
+        { "studentEmail": "ziad.tarek@indie.eg", "role": "Web Engineer" }
+      ],
+      "tasks": [
+        { "title": "Build Arabic diacritic-normalized hybrid BM25 + dense retriever", "status": "Done", "priority": "High", "dueOffsetDays": -2, "assignedStudentEmail": "ali.reda@bue.edu.eg" },
+        { "title": "Add citation span highlighter in Next.js reader", "status": "InProgress", "priority": "Medium", "dueOffsetDays": 4, "assignedStudentEmail": "ziad.tarek@indie.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "Medical Chest X-Ray Triage Companion",
+      "description": "Mansoura University healthcare AI tool prioritizing urgent rural clinic chest radiographs for radiologist review.",
+      "status": "InProgress",
+      "maxTeamSize": 5,
+      "creatorEmail": "reem.osama@mans.edu.eg",
+      "requiredSkills": [
+        { "name": "Machine Learning", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Python", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Angular", "requiredLevel": "Intermediate", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "reem.osama@mans.edu.eg", "role": "Leader" },
+        { "studentEmail": "dalia.fouad@zu.edu.eg", "role": "Frontend Developer" }
+      ],
+      "tasks": [
+        { "title": "Validate Grad-CAM explainability overlays with clinicians", "status": "InProgress", "priority": "High", "dueOffsetDays": 10, "assignedStudentEmail": "reem.osama@mans.edu.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "ICPC ECPC Upsolving & Sheet Tracker",
+      "description": "Unified competitive programming progression dashboard tracking contest sheet solve rates across Helwan, Cairo, and STEM newcomers.",
+      "status": "Recruiting",
+      "maxTeamSize": 5,
+      "creatorEmail": "farah.ehab@fcai.helwan.edu.eg",
+      "requiredSkills": [
+        { "name": "Competitive Programming", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "TypeScript", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "React", "requiredLevel": "Intermediate", "isMandatory": true }
+      ],
+      "members": [
+        { "studentEmail": "farah.ehab@fcai.helwan.edu.eg", "role": "Leader" },
+        { "studentEmail": "eyad.ashraf@stem.eg", "role": "Sheet Curator" }
+      ],
+      "tasks": [
+        { "title": "Build weekly contest standing diff & mentor alerts", "status": "Todo", "priority": "High", "dueOffsetDays": 7, "assignedStudentEmail": "farah.ehab@fcai.helwan.edu.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "University Lab Equipment Reservation Engine",
+      "description": "Zero-conflict reservation & RFID badge checkout system for campus robotics, 3D printing, and electronics workshops.",
+      "status": "InProgress",
+      "maxTeamSize": 5,
+      "creatorEmail": "youssef@asu.edu.eg",
+      "requiredSkills": [
+        { "name": "ASP.NET Core", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "PostgreSQL", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "Docker", "requiredLevel": "Intermediate", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "youssef@asu.edu.eg", "role": "Leader" },
+        { "studentEmail": "tarek.elmasry@azhar.edu.eg", "role": "Backend Engineer" },
+        { "studentEmail": "belal.medhat@bu.edu.eg", "role": "DevOps Engineer" }
+      ],
+      "tasks": [
+        { "title": "Add optimistic concurrency check on oscilloscope slot bookings", "status": "Done", "priority": "High", "dueOffsetDays": -1, "assignedStudentEmail": "youssef@asu.edu.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "Campus Security Posture & OWASP Audit Kit",
+      "description": "Student club web-app security checklist, CSP validator, and SSRF hardening suite maintained by Ain Shams & Alexandria AppSec mentors.",
+      "status": "Recruiting",
+      "maxTeamSize": 4,
+      "creatorEmail": "nourhan.hesham@asu.edu.eg",
+      "requiredSkills": [
+        { "name": "Cybersecurity", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "CI/CD", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "Docker", "requiredLevel": "Intermediate", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "nourhan.hesham@asu.edu.eg", "role": "Leader" },
+        { "studentEmail": "basel.hany@grad.eg", "role": "Security Reviewer" }
+      ],
+      "tasks": [
+        { "title": "Publish GitHub Actions CSP & dependency-audit starter workflow", "status": "InProgress", "priority": "High", "dueOffsetDays": 6, "assignedStudentEmail": "basel.hany@grad.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "Suez Canal Cold-Chain Fleet Telemetry",
+      "description": "Kotlin mobile app & Node.js ingestion service monitoring refrigerated pharmaceutical logistics telemetry across Ismailia & Port Said.",
+      "status": "Recruiting",
+      "maxTeamSize": 5,
+      "creatorEmail": "hagar.ibrahim@suez.edu.eg",
+      "requiredSkills": [
+        { "name": "Kotlin", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "Node.js", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "Power BI", "requiredLevel": "Beginner", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "hagar.ibrahim@suez.edu.eg", "role": "Leader" },
+        { "studentEmail": "yassin.emad@psu.edu.eg", "role": "Logistics Analyst" }
+      ],
+      "tasks": [
+        { "title": "Stream temperature anomaly alerts to driver Android app", "status": "Todo", "priority": "Medium", "dueOffsetDays": 8, "assignedStudentEmail": "hagar.ibrahim@suez.edu.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "Enactus Green Circular Packaging Exchange",
+      "description": "B2B marketplace connecting Upper Egypt food producers with recycled agricultural fiber packaging suppliers.",
+      "status": "InProgress",
+      "maxTeamSize": 5,
+      "creatorEmail": "passant.mahmoud@bsu.edu.eg",
+      "requiredSkills": [
+        { "name": "Business Analysis", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "Power BI", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "React", "requiredLevel": "Intermediate", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "passant.mahmoud@bsu.edu.eg", "role": "Leader" },
+        { "studentEmail": "toqa.hassan@grad.eg", "role": "Product Strategist" },
+        { "studentEmail": "sherif.nader@aun.edu.eg", "role": "Backend Lead" }
+      ],
+      "tasks": [
+        { "title": "Finalize unit-economics dashboard for Assiut supplier pilot", "status": "InProgress", "priority": "High", "dueOffsetDays": 5, "assignedStudentEmail": "passant.mahmoud@bsu.edu.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "Accessible Campus Wayfinding & Indoor Maps",
+      "description": "Figma-crafted step-free navigation app helping wheelchair users locate ramps and elevators across multi-building Egyptian campuses.",
+      "status": "Recruiting",
+      "maxTeamSize": 5,
+      "creatorEmail": "yasmin.ayman@aa.helwan.edu.eg",
+      "requiredSkills": [
+        { "name": "Figma", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "UI/UX Design", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Flutter", "requiredLevel": "Intermediate", "isMandatory": true }
+      ],
+      "members": [
+        { "studentEmail": "yasmin.ayman@aa.helwan.edu.eg", "role": "Leader" },
+        { "studentEmail": "salma.eldaly@indie.eg", "role": "UX Researcher" },
+        { "studentEmail": "shahd.mohsen@aast.edu", "role": "Flutter Engineer" }
+      ],
+      "tasks": [
+        { "title": "Audit tactile & high-contrast WCAG AA route states", "status": "Done", "priority": "High", "dueOffsetDays": -2, "assignedStudentEmail": "salma.eldaly@indie.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "OSC Egypt Campus Linux Mirrors & CLI Kit",
+      "description": "Fast local package mirror index and automated Ubuntu/Fedora developer workstation bootstrapper maintained by OSC Ain Shams.",
+      "status": "Completed",
+      "maxTeamSize": 4,
+      "creatorEmail": "hazem.walid@asu.edu.eg",
+      "requiredSkills": [
+        { "name": "Docker", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "Git", "requiredLevel": "Advanced", "isMandatory": true },
+        { "name": "Flutter", "requiredLevel": "Intermediate", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "hazem.walid@asu.edu.eg", "role": "Leader" },
+        { "studentEmail": "menna.khaled@tanta.edu.eg", "role": "Web Maintainer" }
+      ],
+      "tasks": [
+        { "title": "Ship release v2.1 checksum verification script", "status": "Done", "priority": "Medium", "dueOffsetDays": -5, "assignedStudentEmail": "hazem.walid@asu.edu.eg" }
+      ],
+      "applications": []
+    },
+    {
+      "title": "North Coast Student Startup & Event Radar",
+      "description": "Curated aggregator of Egypt university competitions, STEM incubators, and AI study jams built at Alamein International University.",
+      "status": "Recruiting",
+      "maxTeamSize": 5,
+      "creatorEmail": "rawda.elshenawy@aiu.edu.eg",
+      "requiredSkills": [
+        { "name": "Python", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "React", "requiredLevel": "Intermediate", "isMandatory": true },
+        { "name": "Tailwind CSS", "requiredLevel": "Intermediate", "isMandatory": false }
+      ],
+      "members": [
+        { "studentEmail": "rawda.elshenawy@aiu.edu.eg", "role": "Leader" },
+        { "studentEmail": "marwan.adel@gu.edu.eg", "role": "Frontend Developer" }
+      ],
+      "tasks": [
+        { "title": "Launch university competition deadline calendar RSS feed", "status": "Todo", "priority": "Low", "dueOffsetDays": 12, "assignedStudentEmail": "marwan.adel@gu.edu.eg" }
+      ],
+      "applications": []
+    }
+  ],
+  "events": [
+    {
+      "organizationName": "IEEE Helwan Student Branch",
+      "unitCode": "CS",
+      "title": "Auxilio Engineering & AI Bootcamp 2026",
+      "description": "Three-day flagship hands-on engineering & AI bootcamp hosted by IEEE Helwan Student Branch covering clean backends, ROS robotics, and applied machine learning.",
+      "type": "Workshop",
+      "deliveryMode": "Hybrid",
+      "isPublic": true,
+      "meetingUrl": "https://meet.teamup.eg/ieee-helwan-auxilio",
+      "location": "Helwan Faculty of Engineering Main Hall · Cairo",
+      "startOffsetDays": 5,
+      "startHourUtc": 10,
+      "durationHours": 56,
+      "capacity": 120,
+      "sessions": [
+        { "sessionNo": 1, "title": "Opening Keynote & System Architecture", "offsetHours": 0, "durationHours": 3, "room": "Auditorium A1", "attendedEmails": ["salma@cu.edu.eg", "ahmed.tarek@bis.helwan.edu.eg"] },
+        { "sessionNo": 2, "title": "Computer Society: Full-Stack AI Lab", "offsetHours": 24, "durationHours": 3, "room": "Lab 3B / Stream", "attendedEmails": ["farah.ehab@fcai.helwan.edu.eg"] },
+        { "sessionNo": 3, "title": "RAS & PES Prototype Demo Day", "offsetHours": 48, "durationHours": 4, "room": "Main Hall", "attendedEmails": [] }
+      ],
+      "registrations": [
+        { "studentEmail": "salma@cu.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "mariam@mans.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "ahmed.tarek@bis.helwan.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "farah.ehab@fcai.helwan.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "karim.elbanna@hnu.edu.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "ThreeDOS — Helwan BIS",
+      "unitCode": "BIS_TECH",
+      "title": "BIS Helwan ERP, BI & Product Case Competition 2026",
+      "description": "Annual case competition uniting Business Information Systems teams across Egypt to solve live FinTech, ERP analytics, and UX design briefs.",
+      "type": "Competition",
+      "deliveryMode": "Hybrid",
+      "isPublic": true,
+      "meetingUrl": "https://meet.teamup.eg/bis-helwan-case",
+      "location": "Helwan BIS Building · Zamalek, Cairo",
+      "startOffsetDays": 8,
+      "startHourUtc": 9,
+      "durationHours": 32,
+      "capacity": 150,
+      "sessions": [
+        { "sessionNo": 1, "title": "SAP S/4HANA & Egyptian FinTech Case Briefing", "offsetHours": 0, "durationHours": 2, "room": "Zamalek Hall B", "attendedEmails": ["ahmed.tarek@bis.helwan.edu.eg", "nada.elgamal@bis.helwan.edu.eg"] },
+        { "sessionNo": 2, "title": "Power BI Storytelling & Jury Finals", "offsetHours": 24, "durationHours": 4, "room": "Main Auditorium", "attendedEmails": [] }
+      ],
+      "registrations": [
+        { "studentEmail": "ahmed.tarek@bis.helwan.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "nada.elgamal@bis.helwan.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "ziad.hossam@bis.helwan.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "rana.sherif@bis.helwan.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "seif.wael@bis.helwan.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "habiba.magdy@bis.helwan.edu.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "GDG Helwan",
+      "unitCode": "AI",
+      "title": "DevFest Helwan Prep Workshop",
+      "description": "Community meetup in Helwan & Maadi exploring Kotlin Multiplatform, Gemini APIs, and Cloud Run deployments.",
+      "type": "Session",
+      "deliveryMode": "InPerson",
+      "isPublic": true,
+      "meetingUrl": null,
+      "location": "Creativa Innovation Hub · Helwan",
+      "startOffsetDays": 10,
+      "startHourUtc": 14,
+      "durationHours": 4,
+      "capacity": 80,
+      "sessions": [
+        { "sessionNo": 1, "title": "Gemini Agents & Cloud Run Workshop", "offsetHours": 0, "durationHours": 3, "room": "Hub Stage", "attendedEmails": ["laila.mansour@miu.edu.eg"] }
+      ],
+      "registrations": [
+        { "studentEmail": "laila.mansour@miu.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "karim.elbanna@hnu.edu.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "Egypt AI & Robotics Collective",
+      "unitCode": "LLM",
+      "title": "Egypt Open LLM & Embedded AI Summit",
+      "description": "Open national hackathon and speaker series bringing university students and independent learners together.",
+      "type": "Hackathon",
+      "deliveryMode": "Online",
+      "isPublic": true,
+      "meetingUrl": "https://meet.teamup.eg/ai-summit",
+      "location": "Online Live Stage · Cairo Time (EET)",
+      "startOffsetDays": 14,
+      "startHourUtc": 18,
+      "durationHours": 28,
+      "capacity": 250,
+      "sessions": [
+        { "sessionNo": 1, "title": "Arabic Evaluation Benchmarks Keynote", "offsetHours": 0, "durationHours": 2, "room": "Main Stream", "attendedEmails": ["ali.reda@bue.edu.eg"] },
+        { "sessionNo": 2, "title": "Quantized Edge Inference Workshop", "offsetHours": 22, "durationHours": 3, "room": "Lab Stream", "attendedEmails": [] }
+      ],
+      "registrations": [
+        { "studentEmail": "ali.reda@bue.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "mahmoud.fathy@zewailcity.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "ziad.tarek@indie.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "ICPC Helwan Community",
+      "unitCode": "L1",
+      "title": "ECPC Graph Theory & Dynamic Programming Marathon",
+      "description": "Five-hour simulated regional contest followed by live editorial walkthroughs led by ICPC Helwan mentors.",
+      "type": "Competition",
+      "deliveryMode": "InPerson",
+      "isPublic": true,
+      "meetingUrl": null,
+      "location": "Helwan FCAI Computer Labs · Cairo",
+      "startOffsetDays": 6,
+      "startHourUtc": 9,
+      "durationHours": 7,
+      "capacity": 90,
+      "sessions": [
+        { "sessionNo": 1, "title": "Regional Practice Contest & Upsolving", "offsetHours": 0, "durationHours": 6, "room": "Lab 1 & 2", "attendedEmails": ["eyad.ashraf@stem.eg"] }
+      ],
+      "registrations": [
+        { "studentEmail": "eyad.ashraf@stem.eg", "status": "Confirmed" },
+        { "studentEmail": "farah.ehab@fcai.helwan.edu.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "GDG on Campus — Helwan BIS",
+      "unitCode": "DATA",
+      "title": "Helwan BIS Clean Web & Analytics Sprint",
+      "description": "Weekend build sprint turning business datasets into React dashboards and interactive SQL APIs.",
+      "type": "Workshop",
+      "deliveryMode": "Hybrid",
+      "isPublic": true,
+      "meetingUrl": "https://meet.teamup.eg/bis-analytics-sprint",
+      "location": "Zamalek Innovation Studio · Cairo",
+      "startOffsetDays": 12,
+      "startHourUtc": 11,
+      "durationHours": 6,
+      "capacity": 70,
+      "sessions": [
+        { "sessionNo": 1, "title": "SQL Modeling & React Charting Lab", "offsetHours": 0, "durationHours": 5, "room": "Studio 2", "attendedEmails": [] }
+      ],
+      "registrations": [
+        { "studentEmail": "seif.wael@bis.helwan.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "rana.sherif@bis.helwan.edu.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "IEEE Cairo University SB",
+      "unitCode": "RAS",
+      "title": "Cairo Autonomous Robotics & Vision Day",
+      "description": "Showcase and technical seminar covering SLAM navigation, drone control loops, and underwater ROV frames.",
+      "type": "Session",
+      "deliveryMode": "InPerson",
+      "isPublic": true,
+      "meetingUrl": null,
+      "location": "Cairo University Faculty of Engineering · Giza",
+      "startOffsetDays": 15,
+      "startHourUtc": 12,
+      "durationHours": 5,
+      "capacity": 140,
+      "sessions": [
+        { "sessionNo": 1, "title": "ROS2 Navigation Stack Live Track", "offsetHours": 0, "durationHours": 4, "room": "Eng Hall 1", "attendedEmails": [] }
+      ],
+      "registrations": [
+        { "studentEmail": "mostafa.sameh@cu.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "mohamed.amr@eng.helwan.edu.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "MSP Tech Club — Ain Shams",
+      "unitCode": "CLOUD",
+      "title": "ASP.NET Core 10 & Azure Zero-Trust Workshop",
+      "description": "Hands-on backend security session covering JWT security stamps, rate limiting, and cloud telemetry.",
+      "type": "Workshop",
+      "deliveryMode": "Hybrid",
+      "isPublic": true,
+      "meetingUrl": "https://meet.teamup.eg/msp-asu-dotnet",
+      "location": "Ain Shams FCIS Main Theater · Abbassia",
+      "startOffsetDays": 9,
+      "startHourUtc": 13,
+      "durationHours": 4,
+      "capacity": 110,
+      "sessions": [
+        { "sessionNo": 1, "title": "Clean Architecture & STRIDE Hardening", "offsetHours": 0, "durationHours": 3, "room": "Theater B", "attendedEmails": ["nourhan.hesham@asu.edu.eg"] }
+      ],
+      "registrations": [
+        { "studentEmail": "nourhan.hesham@asu.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "tarek.elmasry@azhar.edu.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "Enactus Helwan",
+      "unitCode": "PD",
+      "title": "Social Enterprise Impact & Pitch Boot Camp",
+      "description": "Practical business modeling and sustainability impact measurement clinic for student venture founders.",
+      "type": "Workshop",
+      "deliveryMode": "InPerson",
+      "isPublic": true,
+      "meetingUrl": null,
+      "location": "Helwan University Main Campus · Cairo",
+      "startOffsetDays": 18,
+      "startHourUtc": 11,
+      "durationHours": 5,
+      "capacity": 95,
+      "sessions": [
+        { "sessionNo": 1, "title": "Field Validation & Unit Economics Canvas", "offsetHours": 0, "durationHours": 4, "room": "Hall 4", "attendedEmails": [] }
+      ],
+      "registrations": [
+        { "studentEmail": "toqa.hassan@grad.eg", "status": "Confirmed" },
+        { "studentEmail": "jana.sherif@aucegypt.edu", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "Open Source Community (OSC) — Ain Shams",
+      "unitCode": "LINUX",
+      "title": "Egypt Linux InstallFest & First OSS PR Day",
+      "description": "Guided installation workshop, Git branching clinic, and curated first pull requests on Egyptian open-source repos.",
+      "type": "Workshop",
+      "deliveryMode": "InPerson",
+      "isPublic": true,
+      "meetingUrl": null,
+      "location": "Ain Shams University Campus · Cairo",
+      "startOffsetDays": 11,
+      "startHourUtc": 10,
+      "durationHours": 6,
+      "capacity": 130,
+      "sessions": [
+        { "sessionNo": 1, "title": "Partitioning, Containers & First Pull Request", "offsetHours": 0, "durationHours": 5, "room": "Credit Building", "attendedEmails": [] }
+      ],
+      "registrations": [
+        { "studentEmail": "hazem.walid@asu.edu.eg", "status": "Confirmed" },
+        { "studentEmail": "belal.medhat@bu.edu.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "GDG Alexandria",
+      "unitCode": "CLOUD",
+      "title": "Mediterranean Cloud & Security Study Jam",
+      "description": "Technical study jam in Alexandria focusing on container hardening, CI/CD signing, and observability.",
+      "type": "Session",
+      "deliveryMode": "Hybrid",
+      "isPublic": true,
+      "meetingUrl": "https://meet.teamup.eg/gdg-alex-cloud",
+      "location": "Library of Alexandria Conference Hall · Alexandria",
+      "startOffsetDays": 16,
+      "startHourUtc": 15,
+      "durationHours": 4,
+      "capacity": 100,
+      "sessions": [
+        { "sessionNo": 1, "title": "Zero-Downtime Container Pipelines", "offsetHours": 0, "durationHours": 3, "room": "West Hall", "attendedEmails": [] }
+      ],
+      "registrations": [
+        { "studentEmail": "basel.hany@grad.eg", "status": "Confirmed" },
+        { "studentEmail": "eslam.gamal@alexu.edu.eg", "status": "Confirmed" }
+      ]
+    },
+    {
+      "organizationName": "IEEE AASTMT Alexandria SB",
+      "unitCode": "RAS",
+      "title": "AASTMT Marine Robotics & Autonomous Systems Challenge",
+      "description": "National aquatic robotics qualification challenge with CAD inspection, pool trials, and telemetry scoring.",
+      "type": "Competition",
+      "deliveryMode": "InPerson",
+      "isPublic": true,
+      "meetingUrl": null,
+      "location": "AASTMT Abu Qir Pool Complex · Alexandria",
+      "startOffsetDays": 21,
+      "startHourUtc": 9,
+      "durationHours": 8,
+      "capacity": 90,
+      "sessions": [
+        { "sessionNo": 1, "title": "ROV Pool Qualification & Safety Check", "offsetHours": 0, "durationHours": 7, "room": "Marine Basin", "attendedEmails": [] }
+      ],
+      "registrations": [
+        { "studentEmail": "shahd.mohsen@aast.edu", "status": "Confirmed" },
+        { "studentEmail": "mostafa.sameh@cu.edu.eg", "status": "Confirmed" }
+      ]
+    }
+  ],
+  "membershipApplications": [
+    {
+      "organizationName": "IEEE Helwan Student Branch",
+      "studentEmail": "karim.elbanna@hnu.edu.eg",
+      "unitCode": "CS",
+      "seasonName": "Season 2026 — Fall Recruitment",
+      "message": "Building React and Python projects at HNU and eager to join CS workshops.",
+      "stage": "Applied",
+      "evaluationScore": null,
+      "interviewNotes": null
+    },
+    {
+      "organizationName": "IEEE Helwan Student Branch",
+      "studentEmail": "belal.medhat@bu.edu.eg",
+      "unitCode": "CS",
+      "seasonName": "Season 2026 — Fall Recruitment",
+      "message": "Keen to support Docker and CI/CD automation workshops for freshmen.",
+      "stage": "HrScreening",
+      "evaluationScore": 8.4,
+      "interviewNotes": "Strong teamwork motivation and clear availability for Thursday labs."
+    },
+    {
+      "organizationName": "IEEE Helwan Student Branch",
+      "studentEmail": "seif.wael@bis.helwan.edu.eg",
+      "unitCode": "HR",
+      "seasonName": "Season 2026 — Fall Recruitment",
+      "message": "BIS senior interested in organizing technical mentorship evaluation rubrics.",
+      "stage": "CommitteeInterview",
+      "evaluationScore": 9.1,
+      "interviewNotes": "Structured interview methodology and solid cross-faculty communication."
+    },
+    {
+      "organizationName": "IEEE Helwan Student Branch",
+      "studentEmail": "yasmin.ayman@aa.helwan.edu.eg",
+      "unitCode": "MEDIA",
+      "seasonName": "Season 2026 — Fall Recruitment",
+      "message": "Applied Arts designer applying to lead branding assets for Season 2026 events.",
+      "stage": "CommitteeInterview",
+      "evaluationScore": 9.4,
+      "interviewNotes": "Impressive Figma typography portfolio ready for event banners."
+    },
+    {
+      "organizationName": "ThreeDOS — Helwan BIS",
+      "studentEmail": "habiba.magdy@bis.helwan.edu.eg",
+      "unitCode": "AC",
+      "seasonName": "Season 2026 — BIS Ambassadors",
+      "message": "Freshman in Helwan BIS looking to help coordinate study sessions.",
+      "stage": "Applied",
+      "evaluationScore": null,
+      "interviewNotes": null
+    },
+    {
+      "organizationName": "ThreeDOS — Helwan BIS",
+      "studentEmail": "yassin.emad@psu.edu.eg",
+      "unitCode": "BIS_TECH",
+      "seasonName": "Season 2026 — BIS Ambassadors",
+      "message": "Interested in cross-campus ERP & Power BI remote sprints with Helwan BIS.",
+      "stage": "HrScreening",
+      "evaluationScore": 8.2,
+      "interviewNotes": "Great analytical portfolio in logistics KPI reporting."
+    },
+    {
+      "organizationName": "ThreeDOS — Helwan BIS",
+      "studentEmail": "passant.mahmoud@bsu.edu.eg",
+      "unitCode": "BIS_TECH",
+      "seasonName": "Season 2026 — BIS Ambassadors",
+      "message": "Sharing nonprofit SQL & Power BI case templates across Egyptian BIS circles.",
+      "stage": "CommitteeInterview",
+      "evaluationScore": 9.0,
+      "interviewNotes": "Strong technical teaching clarity during interview briefing."
+    },
+    {
+      "organizationName": "ThreeDOS — Helwan BIS",
+      "studentEmail": "seif.wael@bis.helwan.edu.eg",
+      "unitCode": "BIS_TECH",
+      "seasonName": "Season 2026 — BIS Ambassadors",
+      "message": "Ready to mentor freshman SQL & e-invoice workshops.",
+      "stage": "Accepted",
+      "evaluationScore": 9.6,
+      "interviewNotes": "Unanimous panel endorsement for BIS technical track."
+    },
+    {
+      "organizationName": "GDG on Campus — Helwan BIS",
+      "studentEmail": "rana.sherif@bis.helwan.edu.eg",
+      "unitCode": "UIUX",
+      "seasonName": "2026 Campus Cohort",
+      "message": "Designing Tailwind & Figma interfaces for BIS Helwan teams.",
+      "stage": "HrScreening",
+      "evaluationScore": 8.8,
+      "interviewNotes": "Clean responsive component prototypes verified."
+    },
+    {
+      "organizationName": "GDG on Campus — Helwan BIS",
+      "studentEmail": "ziad.hossam@bis.helwan.edu.eg",
+      "unitCode": "DATA",
+      "seasonName": "2026 Campus Cohort",
+      "message": "Joining the Data & Analytics circle to co-host SQL study jams.",
+      "stage": "Applied",
+      "evaluationScore": null,
+      "interviewNotes": null
+    },
+    {
+      "organizationName": "Enactus Helwan",
+      "studentEmail": "toqa.hassan@grad.eg",
+      "unitCode": "PR",
+      "seasonName": "Social Impact 2026",
+      "message": "BIS graduate offering pitch deck & NGO alliance coaching.",
+      "stage": "CommitteeInterview",
+      "evaluationScore": 9.25,
+      "interviewNotes": "Deep familiarity with Enactus national judging criteria."
+    },
+    {
+      "organizationName": "Enactus Helwan",
+      "studentEmail": "salma.eldaly@indie.eg",
+      "unitCode": "MEDIA",
+      "seasonName": "Social Impact 2026",
+      "message": "Volunteering product UI and accessibility design for social enterprise builds.",
+      "stage": "Applied",
+      "evaluationScore": null,
+      "interviewNotes": null
+    },
+    {
+      "organizationName": "MSP Tech Club — Helwan University",
+      "studentEmail": "tarek.elmasry@azhar.edu.eg",
+      "unitCode": "DOTNET",
+      "seasonName": "2026 Ambassadors",
+      "message": "Helping students adopt EF Core migrations and PostgreSQL/SQL Server patterns.",
+      "stage": "HrScreening",
+      "evaluationScore": 8.7,
+      "interviewNotes": "Strong .NET domain knowledge and clean code samples."
+    },
+    {
+      "organizationName": "ICPC Helwan Community",
+      "studentEmail": "menna.khaled@tanta.edu.eg",
+      "unitCode": "MENTORS",
+      "seasonName": "ECPC 2026 Training",
+      "message": "Co-authoring beginner algorithm guides and contest web scoreboards.",
+      "stage": "CommitteeInterview",
+      "evaluationScore": 8.95,
+      "interviewNotes": "Clear problem explanation approach for Level 0 newcomers."
+    },
+    {
+      "organizationName": "Egypt AI & Robotics Collective",
+      "studentEmail": "rawda.elshenawy@aiu.edu.eg",
+      "unitCode": "LLM",
+      "seasonName": "Open Research Cohort",
+      "message": "Organizing AIU study sessions on open Arabic benchmarks.",
+      "stage": "Applied",
+      "evaluationScore": null,
+      "interviewNotes": null
+    },
+    {
+      "organizationName": "Egypt AI & Robotics Collective",
+      "studentEmail": "mazen.tamer@kfs.edu.eg",
+      "unitCode": "CV",
+      "seasonName": "Open Research Cohort",
+      "message": "Contributing crop imaging evaluation datasets from Kafrelsheikh AI.",
+      "stage": "HrScreening",
+      "evaluationScore": 8.85,
+      "interviewNotes": "Well-documented dataset pipeline ready for baseline evals."
+    },
+    {
+      "organizationName": "GDG Helwan",
+      "studentEmail": "marwan.adel@gu.edu.eg",
+      "unitCode": "AI",
+      "seasonName": "DevFest Crew 2026",
+      "message": "Supporting GenAI workshop moderation and web check-in sessions.",
+      "stage": "Applied",
+      "evaluationScore": null,
+      "interviewNotes": null
+    },
+    {
+      "organizationName": "STP Egypt",
+      "studentEmail": "sherif.nader@aun.edu.eg",
+      "unitCode": "TECH",
+      "seasonName": "Season 21",
+      "message": "Extending STP Technical Track coaching to Upper Egypt cohorts.",
+      "stage": "CommitteeInterview",
+      "evaluationScore": 9.3,
+      "interviewNotes": "Proven track record mentoring Assiut freshmen."
+    }
+  ]
+}

@@ -24,6 +24,8 @@ test.describe("M4 Profiles, Directory & Gamification E2E", () => {
     await expect(page.locator('select[name="affiliationType"]')).toBeVisible();
 
     await page.goto("/students");
+    await expect(page.locator("h1").first()).toBeVisible();
+    await page.getByPlaceholder("Search by student name...").fill("Salma");
     await expect(page.getByText("Salma Khaled").first()).toBeVisible();
 
     await page.goto("/leaderboard");

@@ -49,7 +49,9 @@ public class OrganizationMemberConfig : IEntityTypeConfiguration<OrganizationMem
     {
         b.HasKey(x => new { x.OrganizationId, x.StudentId });
         b.Property(x => x.Role).HasMaxLength(60).IsRequired();
-        b.Property(x => x.HierarchyTier).HasDefaultValue(OrganizationHierarchyTier.OrganizingCrew);
+        b.Property(x => x.HierarchyTier)
+            .HasDefaultValue(OrganizationHierarchyTier.OrganizingCrew)
+            .HasSentinel((OrganizationHierarchyTier)(-1));
         b.Property(x => x.JoinedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         b.HasOne(x => x.Organization).WithMany().HasForeignKey(x => x.OrganizationId);
         b.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId);

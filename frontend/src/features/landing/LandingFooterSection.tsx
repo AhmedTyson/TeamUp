@@ -1,10 +1,9 @@
 /**
  * @date 2026-11-24
- * @purpose Handshake Rosetta dark burst footer for TeamUp landing page with live backend API health indicator.
+ * @purpose Handshake Rosetta dark burst footer for TeamUp landing page.
  */
 import { forwardRef, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { ApiHealthPill } from "@/components/layout/ApiHealthPill";
 
 export interface LandingFooterSectionProps {
   footerVisible: boolean;
@@ -166,11 +165,10 @@ export const LandingFooterSection = forwardRef<HTMLElement, LandingFooterSection
           </div>
         </div>
 
-        {/* Footer Horizon Divider, Caption & Live Health Pill */}
+        {/* Footer Horizon Divider & Caption */}
         <div className="mx-auto max-w-[1220px]">
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] py-4 text-xs text-[#9ca3af]">
             <span>TeamUp · Egyptian Campus Collaboration Network</span>
-            <ApiHealthPill />
           </div>
           <div aria-hidden="true" className="footer-horizon-line" />
         </div>

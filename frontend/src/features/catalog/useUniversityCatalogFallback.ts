@@ -144,6 +144,7 @@ export const FALLBACK_UNIVERSITIES: UniversityCatalogItem[] = [
       { facultyId: 22, name: "Faculty of Engineering (Helwan)", code: "ENG_HU" },
       { facultyId: 23, name: "Faculty of Computers and Artificial Intelligence", code: "FCAI_HU" },
       { facultyId: 24, name: "Faculty of Commerce and Business Administration", code: "COM_HU" },
+      { facultyId: 25, name: "Business Information Systems (BIS)", code: "BIS_HU" },
     ],
   },
 ];

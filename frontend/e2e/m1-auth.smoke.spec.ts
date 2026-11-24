@@ -101,10 +101,12 @@ test.describe("M1 Authentication E2E Smoke Suite", () => {
     // Navigate to Academic Catalog and verify DB university logos + multi-page pagination
     await page.getByRole("link", { name: /Academic Catalog/i }).click();
     await expect(page).toHaveURL(/\/admin\/catalog$/);
-    await expect(page.getByAltText("Cairo University official logo")).toBeVisible();
+    await expect(page.getByAltText("Ain Shams University official logo").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Next page" })).toBeEnabled();
     await page.getByRole("button", { name: "Next page" }).click();
     await expect(page).toHaveURL(/page=2/);
+    await page.goto("/admin/catalog?search=Cairo");
+    await expect(page.getByAltText("Cairo University official logo").first()).toBeVisible();
 
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page).toHaveURL(/\/auth\/login/);
@@ -142,6 +144,7 @@ test.describe("M1 Authentication E2E Smoke Suite", () => {
     await expect(page.locator("#brand-icon-scrolled")).toHaveCount(0);
     await expect(page.locator("#nav-gliding-pill")).toHaveCSS("opacity", "0");
     await expect(page.getByRole("link", { name: "Sign In" })).toBeVisible();
+    await expect(page.getByText("API Live")).toHaveCount(0);
 
     const primaryNav = page.locator("#primary-nav");
     const glidingPill = page.locator("#nav-gliding-pill");

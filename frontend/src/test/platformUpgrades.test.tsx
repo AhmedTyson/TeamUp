@@ -27,8 +27,10 @@ import {
 } from "@/api";
 import { AppCoreProviders } from "@/app/providers";
 import { ApiHealthPill } from "@/components/layout/ApiHealthPill";
+import { AppShell } from "@/components/layout/AppShell";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { Navbar } from "@/components/layout/Navbar";
+import { LandingFooterSection } from "@/features/landing/LandingFooterSection";
 import { RegisterPage } from "@/features/auth/pages/RegisterPage";
 import {
   OrgAdminDashboardPage,
@@ -643,5 +645,21 @@ describe("20-Item Plan & Role Dashboards Suite", () => {
     );
 
     expect(await screen.findByText("API Live")).toBeInTheDocument();
+  });
+
+  it("does not mount API Live telemetry indicator in AppShell or LandingFooterSection", () => {
+    render(
+      <MemoryRouter initialEntries={["/projects"]}>
+        <AppCoreProviders initialUser={null}>
+          <AppShell>
+            <div>Main workspace</div>
+          </AppShell>
+          <LandingFooterSection footerVisible footerLinksRevealed />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText(/API Live/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/API status:/i)).not.toBeInTheDocument();
   });
 });

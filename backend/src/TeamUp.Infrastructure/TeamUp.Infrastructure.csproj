@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Seed\Data\egypt-campus-seed.json" />
     <EmbeddedResource Include="Templates\Assets\*" />
     <EmbeddedResource Include="Templates\Emails\*.html" />
     <EmbeddedResource Include="Templates\Reports\*.html" />

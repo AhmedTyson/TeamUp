@@ -17,6 +17,22 @@ import { LandingFooterSection } from "@/features/landing/LandingFooterSection";
 import { LandingMarqueeSection } from "@/features/landing/LandingMarqueeSection";
 import { LandingPartnerUniversitiesSection } from "@/features/landing/LandingPartnerUniversitiesSection";
 
+const FLAGSHIP_UNIVERSITY_ORDER = new Map<string, number>([
+  ["Cairo University", 1],
+  ["Helwan University", 2],
+  ["Ain Shams University", 3],
+  ["Alexandria University", 4],
+  ["Mansoura University", 5],
+  ["Assiut University", 6],
+  ["Capital University", 7],
+  ["German University in Cairo (GUC)", 8],
+  ["The American University in Cairo (AUC)", 9],
+  ["Zagazig University", 10],
+  ["Tanta University", 11],
+  ["Benha University", 12],
+  ["Suez Canal University", 13],
+]);
+
 export function HomePage() {
   const navigate = useNavigate();
 
@@ -30,10 +46,18 @@ export function HomePage() {
     retry: false,
   });
 
-  const universitiesList =
+  const rawUniversitiesList =
     catalogQuery.data && catalogQuery.data.length > 0
       ? catalogQuery.data
       : PARTNER_CAMPUSES_FALLBACK;
+  const universitiesList = [...rawUniversitiesList].sort((a, b) => {
+    const rankA = FLAGSHIP_UNIVERSITY_ORDER.get(a.name) ?? 999;
+    const rankB = FLAGSHIP_UNIVERSITY_ORDER.get(b.name) ?? 999;
+    if (rankA !== rankB) {
+      return rankA - rankB;
+    }
+    return a.name.localeCompare(b.name);
+  });
   const totalCampuses = universitiesList.length;
   const totalCampusPages = Math.max(1, Math.ceil(totalCampuses / campusPageSize));
   const safeCampusPage = Math.min(campusPage, totalCampusPages);

@@ -4,7 +4,6 @@
  */
 import type { ReactNode } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { ApiHealthPill } from "./ApiHealthPill";
 import { CommandPalette } from "./CommandPalette";
 import { Navbar, type NavbarProps } from "./Navbar";
 
@@ -47,7 +46,6 @@ export function AppShell({ xpChipSlot, notificationSlot, children }: AppShellPro
                 <span className="text-center sm:text-left">
                   © 2026 TeamUp · The Collaboration Network for Egyptian Youth
                 </span>
-                <ApiHealthPill />
               </div>
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                 <Link to="/projects" className="hover:text-[#d3fb52]">

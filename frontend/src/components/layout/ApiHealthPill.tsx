@@ -11,6 +11,14 @@ export interface ApiHealthPillProps {
 }
 
 export function ApiHealthPill({ className }: ApiHealthPillProps) {
+  if (import.meta.env.PROD) {
+    return null;
+  }
+
+  return <ApiHealthPillContent className={className} />;
+}
+
+function ApiHealthPillContent({ className }: ApiHealthPillProps) {
   const { state, database, refetch } = useApiHealthDetails();
 
   const dotClass =

@@ -15,9 +15,13 @@ test.describe("M3 Activities, Hierarchy, Recruitment & Events E2E", () => {
 
     await page.goto("/organizations");
     await expect(page).toHaveURL(/\/organizations$/);
+    await expect(page.getByText("API Live")).toHaveCount(0);
+    await expect(page.getByText("Enactus Helwan")).toBeVisible();
+    await page.goto("/organizations?search=Helwan");
     await expect(page.getByText("IEEE Helwan Student Branch")).toBeVisible();
     await expect(page.getByText("Enactus Helwan")).toBeVisible();
     await expect(page.getByText("GDG Helwan")).toBeVisible();
+    await expect(page.getByText("ThreeDOS — Helwan BIS")).toBeVisible();
 
     await page.getByText("IEEE Helwan Student Branch").first().click();
     await expect(page).toHaveURL(/\/organizations\/\d+$/);
@@ -75,7 +79,7 @@ test.describe("M3 Activities, Hierarchy, Recruitment & Events E2E", () => {
     ).toBeVisible();
 
     // Also submit a recruitment application as an IndependentLearner so Chair Kanban sees live candidate
-    await page.goto("/organizations");
+    await page.goto("/organizations?search=IEEE%20Helwan");
     await page.getByText("IEEE Helwan Student Branch").first().click();
     await expect(page).toHaveURL(/\/organizations\/\d+$/);
     await page.getByRole("tab", { name: /Recruitment/i }).click();
@@ -97,7 +101,7 @@ test.describe("M3 Activities, Hierarchy, Recruitment & Events E2E", () => {
     await page.getByRole("button", { name: /Sign In/i }).click();
     await expect(page).toHaveURL(/\/projects$/);
 
-    await page.goto("/organizations");
+    await page.goto("/organizations?search=IEEE%20Helwan");
     await page.getByText("IEEE Helwan Student Branch").first().click();
     await expect(page).toHaveURL(/\/organizations\/\d+$/);
 
