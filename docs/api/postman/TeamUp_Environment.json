@@ -1,10 +1,10 @@
 {
-  "id": "ea6e1ea9-4fb1-4212-8a6e-556650021b66",
+  "id": "3a17348f-fbcf-40d6-af54-07a6ebf50e80",
   "name": "TeamUp Local Environment",
   "values": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:5000",
+      "value": "http://localhost:5186",
       "enabled": true
     },
     {

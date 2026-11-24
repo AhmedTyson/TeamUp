@@ -1,5 +1,7 @@
 # TeamUp — Master Live API Test & Verification Report
 
+> **Historical Milestone Snapshot (`v1.0.0-GA`, November 6, 2026):** Captures the initial 99-endpoint / 100-test GA verification run. For the current **116-endpoint** and **263 / 263 automated test** verification snapshot (plus Playwright E2E), see [`wiki/RELEASE_SIGN_OFF.md`](../../wiki/RELEASE_SIGN_OFF.md).
+
 > **Platform:** TeamUp — Student Collaboration & Gamification Backend  
 > **Framework:** .NET 10 / ASP.NET Core Web API / EF Core 10  
 > **Architecture:** Clean Architecture (Domain, Application, Infrastructure, Api)  

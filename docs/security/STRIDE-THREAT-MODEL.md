@@ -58,8 +58,8 @@ flowchart TD
 
     subgraph Edge["TB-01: Public Network Perimeter"]
         Kestrel["Kestrel Web Server / HTTPS Redirection"]:::api
-        RateLimiter["IP Rate Limiter (auth-policy)"]:::api
-        AuthHandler["JWT Authentication Handler"]:::api
+        RateLimiter["Tiered Rate Limiter (Global 120/30 + auth/directory 30)"]:::api
+        AuthHandler["JWT Auth & SecurityStamp Validator"]:::api
     end
 
     subgraph PresentationTier["Presentation Tier (TeamUp.Api)"]
@@ -84,7 +84,7 @@ flowchart TD
     end
 
     subgraph OutOfBand["TB-05: External Communication Channel"]
-        EmailService["IEmailSender (InMemoryEmailSender)"]:::ext
+        EmailService["IEmailSender (SmtpEmailSender / Dev InMemory)"]:::ext
     end
 
     StudentClient -->|HTTPS / REST API Requests| Kestrel
@@ -99,8 +99,8 @@ flowchart TD
 
     Controllers -->|Claims: StudentId, Role| AuthSvc
     Controllers -->|EnsureCreator Verification| ProjectSvc
-    Controllers -->|Role Claims Check Only| OrgSvc
-    Controllers -->|Role Claims Check Only| EventSvc
+    Controllers -->|Scoped OrgAuth Check| OrgSvc
+    Controllers -->|Scoped OrgAuth Check| EventSvc
     Controllers -->|PlatformAdmin Policy| AdminSvc
     Controllers --> GamificationSvc
 
@@ -119,6 +119,8 @@ flowchart TD
 ---
 
 ## 4. STRIDE Threat Analysis Matrix
+
+> **Note:** Sections 4 and 5 preserve the pre-remediation threat analysis and implementation roadmap; all 16 findings are verified mitigated in [Section 7](#7-remediation-status-matrix-implemented-november-2026).
 
 | Category | Threat ID | Threat Description | Likelihood | Impact | Risk Level | Mitigation Strategy |
 |---|---|---|---|---|---|---|
@@ -225,7 +227,7 @@ Priority Implementation Order:
 To verify these remediations:
 - **BOLA Tests:** Add integration tests in `TeamUp.IntegrationTests` verifying that an `OrgAdmin` of Organization 1 receives `403 Forbidden` when issuing updates to Organization 2.
 - **Key Validation Tests:** Add unit tests validating that missing or default JWT keys trigger application termination in non-development environments.
-- **Rate Limit Verification:** Execute load tests via `scripts/test_live_api.ps1` ensuring `429 TooManyRequests` is returned across all unauthenticated endpoints exceeding 60 requests/minute.
+- **Rate Limit Verification:** Execute load tests via `scripts/test_live_api.ps1` ensuring `429 Too Many Requests` is returned when exceeding `30 requests/minute` (anonymous, `auth-policy`, `directory-policy`) or `120 requests/minute` (authenticated).
 
 ---
 

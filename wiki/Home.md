@@ -1,6 +1,6 @@
 # TeamUp — Project Wiki
 
-> **Student Collaboration & Gamification Platform** · Clean Architecture .NET 10 Web API + EF Core 10 + Microsoft SQL Server 2022, 23 relational tables, 99 REST endpoints, 100% automated test coverage.
+> **Student Collaboration & Gamification Platform** · Clean Architecture .NET 10 Web API + React 19 SPA + EF Core 10 + Microsoft SQL Server 2022 · 24 runtime tables (23 core domain + `AuditLog`), 116 REST endpoints, 263/263 automated tests passing.
 >
 > This folder is the project's documentation home. All architectural blueprints, database models, operational guides, and endpoint references are indexed here.
 
@@ -10,51 +10,51 @@
 
 | Dimension | Specification |
 |---|---|
-| **Backend Framework** | .NET 10 / ASP.NET Core Web API / C# 13 (`Nullable=enable`, `TreatWarningsAsErrors=true`) |
-| **Frontend Web App** | Standalone HTML5 / Tailwind CSS / Vanilla JS (`frontend/index.html`) with liquid lime nav |
-| **Architecture** | Clean Architecture / DDD Bounded Contexts / CQRS / N-Tier Modular Monolith |
-| **Database & ORM** | Microsoft SQL Server 2022 · Entity Framework Core 10 · 23 Tables · 29 Foreign Keys |
-| **Integrity Rules** | **Zero Cascades** (`ON DELETE NO ACTION`) · Single-Column Soft Delete (`DeletedAt`) · Filtered Unique Indexes |
-| **Security & Auth** | JWT Bearer Auth · PBKDF2 Password Hashing · SHA-256 Crypto Refresh Tokens · Partitioned Rate Limiter |
-| **API Surface** | 99 RESTful Endpoints (`/api/v1/*` + `/health`) · Uniform `BaseResponse<T>` Envelope |
-| **Test Suite** | **100 / 100 Passing Tests** (57 Unit Tests + 43 Integration Tests via `WebApplicationFactory`) |
-| **Engineering Team** | 4 Functional Contexts: M1 (Auth/Identity/Admin), M2 (Projects/Tasks), M3 (Orgs/Events), M4 (Gamification/Alerts) |
+| **Backend Framework** | .NET 10 / ASP.NET Core Web API / C# 14 (`Nullable=enable`, `TreatWarningsAsErrors=true`) |
+| **Frontend Web App** | React 19 + Vite 8 + TypeScript + Tailwind CSS v4 SPA (`frontend/`) with React Router v7 & TanStack Query v5 |
+| **Architecture** | Clean Architecture / DDD Bounded Contexts / Modular Monolith (`Domain`, `Application`, `Infrastructure`, `Api`) |
+| **Database & ORM** | Microsoft SQL Server 2022 (with Development SQLite fallback) · EF Core 10 · 24 Runtime Tables (23 Core + `AuditLog`) · 31 Foreign Keys |
+| **Integrity Rules** | **Zero Cascades** (`ON DELETE NO ACTION`) · 22 `ISoftDelete` Tables (`DeletedAt`) · 2 `IAppendOnly` Ledgers (`ScoreTransaction`, `AuditLog`) · 11 Filtered Unique Indexes · 20 CHECK Constraints |
+| **Security & Auth** | JWT Bearer Auth (`SecurityStamp` validated) · PBKDF2 Password Hashing · SHA-256 Crypto Refresh Tokens (10s reuse grace) · Tiered Rate Limiting (`120/30/30/30` per 60s) · STRIDE Hardened |
+| **API Surface** | 116 RESTful Endpoints (115 Controller Actions across 19 Controllers + `/health`) · Uniform `ApiResponse<T>` / `BaseResponse<T>` Envelope |
+| **Test Suite** | **263 / 263 Passing Tests** (117 Unit + 75 Integration via `WebApplicationFactory` + 71 Frontend Vitest) + Playwright E2E Smoke Suite |
+| **Engineering Team** | 4 Functional Contexts: M1 (Auth/Identity/Admin), M2 (Skills/Projects/Tasks), M3 (Orgs/Events/Attendance), M4 (Gamification/Badges/Alerts) |
 
 ---
 
 ## Start Here
 
 - [System Overview](./System%20Overview.md) — Platform vision, core capability map, and system context diagram.
-- [Getting Started Guide](./Getting%20Started%20Guide.md) — Local prerequisites, SQL Server setup, migrations, database seeding, and first run.
+- [Getting Started Guide](./Getting%20Started%20Guide.md) — Local prerequisites, SQL Server & SQLite setup, migrations, database seeding, and first run.
 - [Development Guidelines](./Development%20Guidelines.md) — Coding conventions, Clean Architecture rules, branch workflows, and definition of done.
 
 ---
 
 ## Architecture & Design
 
-- [Architecture Overview](./Architecture.md) — N-Tier Clean Architecture, sequence diagrams, Result pattern, and Domain Events pub-sub.
-- [Technology Stack & Architecture](./Technology%20Stack%20%26%20Architecture.md) — Framework choices, library dependencies, concurrency topology, and version notes.
-- [Backend Services](./Backend%20Services.md) — Comprehensive catalogue of application services, domain logic, and cross-module interactions.
-- [Database Design & Relational Mapping](./Database%20Design%20%26%20Relational%20Mapping.md) — Chen ERD (13 entities), Relational Mapping (23 tables across 5 tiers), 3NF audit, and D1–D10 schema design corrections.
+- [Architecture Overview](./Architecture.md) — N-Tier Clean Architecture, sequence diagrams, exception-driven error handling, and Domain Events pub-sub.
+- [Technology Stack & Architecture](./Technology%20Stack%20%26%20Architecture.md) — Backend & frontend stack choices, library dependencies, caching topology, and concurrency notes.
+- [Backend Services](./Backend%20Services.md) — Comprehensive catalogue of application, security, infrastructure, and PDF/email services plus domain event handlers.
+- [Database Design & Relational Mapping](./Database%20Design%20%26%20Relational%20Mapping.md) — Chen ERD (13 entities), Core Relational Mapping (23 tables across 5 tiers + `AuditLog` = 24 runtime tables), 3NF audit, and D1–D10 schema corrections.
 
 ---
 
 ## Operations & Reference
 
-- [Infrastructure](./Infrastructure.md) — Docker Compose (SQL Server), GitHub Actions CI pipeline, rate limiting, and health monitoring.
-- [Deployment Guide](./DEPLOYMENT.md) — Production containerization, environment configuration, database migration runbook, and backup/DR policies.
-- [Environment Configuration](./ENVIRONMENT.md) — Exhaustive reference of configuration keys, connection strings, JWT parameters, and seed credentials.
-- [Release Sign-off](./RELEASE_SIGN_OFF.md) — 20-Phase release verification checklist, zero-cascade DB audit sign-off, and live test execution logs.
-- [API Reference](./API%20Reference.md) — Architectural standards, problem details, authentication schemes, and narrative module guide.
-- [API Endpoints Reference](./API%20Endpoints%20Reference.md) — Curated master catalog of all 99 endpoints with verbs, auth requirements, payloads, and HTTP status codes.
-- [Routes Appendix](./ROUTES-APPENDIX.md) — Full 99-endpoint audit tracking matrix mapped to controllers, actions, and security tiers.
+- [Infrastructure](./Infrastructure.md) — Docker SQL Server containerization, GitHub Actions CI/CD pipelines, tiered rate limiting, security headers, and health monitoring.
+- [Deployment Guide](./DEPLOYMENT.md) — Production deployment options (MonsterASP.NET + Static SPA CDN and Self-Hosted Nginx/Kestrel), migrations, and backup/DR policies.
+- [Environment Configuration](./ENVIRONMENT.md) — Exhaustive reference of backend and frontend configuration keys, connection strings, JWT/SMTP parameters, and rate limits.
+- [Release Sign-off](./RELEASE_SIGN_OFF.md) — Historical `v1.0.0-GA` 20-Phase sign-off plus current post-GA verification snapshot (263/263 tests, STRIDE, React 19 SPA).
+- [API Reference](./API%20Reference.md) — Architectural standards, response envelopes, authentication schemes, and narrative module guide across all 116 endpoints.
+- [API Endpoints Reference](./API%20Endpoints%20Reference.md) — Curated endpoint catalog with verified verbs, auth requirements, DTO payloads, and HTTP status codes.
+- [Routes Appendix](./ROUTES-APPENDIX.md) — Complete 116-route audit tracking matrix mapped to all 19 controllers, actions, and security tiers.
 
 ---
 
 ## Audits & Advanced Research
 
-- [Clean Code & Architecture Audit](./Clean%20Code%20%26%20Architecture%20Audit.md) — Grade A audit summary (96% compliance), SOLID enforcement matrix, query optimization, and security hardening.
-- [Adaptable AI Engine Research](./Adaptable%20AI%20Engine%20Research.md) — Autonomous Adaptable AI architecture research (6 pillars, 30 phases: intent routing, multimodal avatar intake, flyer OCR, and DAG task decomposition).
+- [Clean Code & Architecture Audit](./Clean%20Code%20%26%20Architecture%20Audit.md) — Grade A audit summary, SOLID enforcement matrix, STRIDE security remediation, and query optimization.
+- [Adaptable AI Engine Research](./Adaptable%20AI%20Engine%20Research.md) — Future-roadmap research blueprint (6 pillars, 30 phases: intent routing, multimodal avatar intake, flyer OCR, and DAG task decomposition).
 
 ---
 
@@ -64,30 +64,30 @@
 TeamUp Documentation Home (wiki/Home.md)
 │
 ├── 🚀 Start Here
-│   ├── System Overview.md ──────────── Capability Map & Architecture Context
-│   ├── Getting Started Guide.md ────── Local Setup, Seeding & First Run
-│   └── Development Guidelines.md ───── Coding Rules, Git Workflows & DoD
+│   ├── System Overview.md ──────────────────────── Capability Map & Architecture Context
+│   ├── Getting Started Guide.md ────────────────── Local Setup, Seeding & First Run
+│   └── Development Guidelines.md ───────────────── Coding Rules, Git Workflows & DoD
 │
 ├── 🏛️ Architecture & Database
-│   ├── Architecture.md ─────────────── Clean Architecture, CQRS & Domain Events
-│   ├── Technology Stack.md ─────────── .NET 10, EF Core 10, SQL Server & Libraries
-│   ├── Backend Services.md ─────────── 12 Application Services & Business Logic
-│   └── Database Design.md ──────────── Chen ERD, Relational Mapping & Zero Cascades
+│   ├── Architecture.md ─────────────────────────── Clean Architecture, Exception Flow & Domain Events
+│   ├── Technology Stack & Architecture.md ──────── .NET 10, React 19, EF Core 10 & Caching
+│   ├── Backend Services.md ─────────────────────── Application, Security & Infra Services + 6 Domain Events
+│   └── Database Design & Relational Mapping.md ─── Chen ERD, 23 Core / 24 Runtime Tables & Zero Cascades
 │
 ├── ⚙️ Operations & Deployment
-│   ├── Infrastructure.md ───────────── Docker Compose, CI Quality Gates & Rate Limiter
-│   ├── DEPLOYMENT.md ───────────────── Production Runbook & Disaster Recovery
-│   ├── ENVIRONMENT.md ──────────────── Configuration Keys & Connection Strings
-│   └── RELEASE_SIGN_OFF.md ─────────── 20-Phase Verification & Live Test Sign-off
+│   ├── Infrastructure.md ───────────────────────── Docker SQL, CI/CD Pipelines & Rate Limiter
+│   ├── DEPLOYMENT.md ───────────────────────────── MonsterASP.NET, Static SPA & Self-Hosted Runbook
+│   ├── ENVIRONMENT.md ──────────────────────────── Configuration Keys, Connection Strings & Frontend Env
+│   └── RELEASE_SIGN_OFF.md ─────────────────────── 20-Phase GA Sign-Off & Current Verification Snapshot
 │
 ├── 📡 API Reference
-│   ├── API Reference.md ────────────── Architectural Envelope & Auth Matrix
-│   ├── API Endpoints Reference.md ──── Curated 99-Endpoint Catalog with Payloads
-│   └── ROUTES-APPENDIX.md ──────────── Raw Route-to-Controller Audit Matrix
+│   ├── API Reference.md ────────────────────────── Envelope Standards, Auth Matrix & Module Overview
+│   ├── API Endpoints Reference.md ──────────────── Curated Endpoint Catalog with Verified DTO Payloads
+│   └── ROUTES-APPENDIX.md ──────────────────────── Complete 116-Route Controller & Auth Matrix
 │
 └── 🔬 Audits & AI Research
-    ├── Clean Code Audit.md ─────────── Grade A Code Quality & SOLID Enforcement
-    └── Adaptable AI Engine.md ──────── 6-Pillar Autonomous Entity Synthesis
+    ├── Clean Code & Architecture Audit.md ──────── Grade A Code Quality, SOLID & STRIDE Remediation
+    └── Adaptable AI Engine Research.md ─────────── Future 6-Pillar Autonomous Entity Synthesis Blueprint
 ```
 
 ---
@@ -96,14 +96,18 @@ TeamUp Documentation Home (wiki/Home.md)
 
 | Documentation Guide | Corresponding Repository Source |
 |---|---|
-| Frontend Web App | [`frontend/index.html`](../frontend/index.html) |
+| Frontend Web App (React 19 SPA) | [`frontend/src/App.tsx`](../frontend/src/App.tsx) · [`frontend/package.json`](../frontend/package.json) |
+| Contribution & Team Rules | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
 | Brand Assets & Logo | [`assets/teamup-logo.svg`](../assets/teamup-logo.svg) · [`assets/logo.svg`](../assets/logo.svg) |
 | Database ERD | [`ERD/description.md`](../ERD/description.md) · [`ERD/TeamUp-Chen-ERD.png`](../ERD/TeamUp-Chen-ERD.png) |
 | Relational Schema | [`Mapping/description.md`](../Mapping/description.md) · [`Mapping/TeamUp-Relational-Mapping.png`](../Mapping/TeamUp-Relational-Mapping.png) |
+| Idempotent SQL Schema | [`docs/database/teamup-sqlserver-idempotent.sql`](../docs/database/teamup-sqlserver-idempotent.sql) |
 | Architecture & SOLID | [`docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md`](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md) |
 | Clean Code Audit | [`docs/architecture/CLEAN-CODE-AUDIT.md`](../docs/architecture/CLEAN-CODE-AUDIT.md) |
+| STRIDE Threat Model | [`docs/security/STRIDE-THREAT-MODEL.md`](../docs/security/STRIDE-THREAT-MODEL.md) |
+| Free Demo Deployment Guide | [`docs/DEPLOYMENT_FREE.md`](../docs/DEPLOYMENT_FREE.md) |
 | API Specifications | [`docs/api/API-PROPOSAL.md`](../docs/api/API-PROPOSAL.md) · [`docs/api/openapi.json`](../docs/api/openapi.json) |
-| Postman Collection | [`docs/api/postman/TeamUp_Collection.json`](../docs/api/postman/TeamUp_Collection.json) |
+| Postman Collection | [`docs/api/postman/TeamUp_Collection.json`](../docs/api/postman/TeamUp_Collection.json) · [`docs/api/postman/TeamUp_Environment.json`](../docs/api/postman/TeamUp_Environment.json) |
 | Live Verification Logs | [`docs/api/MASTER-LIVE-TEST-REPORT.md`](../docs/api/MASTER-LIVE-TEST-REPORT.md) |
 | 20-Phase Task Checklists | [`tasks/plan.md`](../tasks/plan.md) · [`tasks/todo.md`](../tasks/todo.md) |
 | AI Research Index | [`docs/research/adaptable-ai-engine/SUMMARY.md`](../docs/research/adaptable-ai-engine/SUMMARY.md) |
@@ -114,4 +118,5 @@ TeamUp Documentation Home (wiki/Home.md)
 
 - **Repository:** <https://github.com/AhmedTyson/TeamUp>
 - **Primary Branch:** `main`
-- **Solution:** `TeamUp.sln` (.NET 10)
+- **Solution:** [`backend/TeamUp.sln`](../backend/TeamUp.sln) (.NET 10)
+- **Frontend Workspace:** [`frontend/package.json`](../frontend/package.json) (React 19 + Vite 8)

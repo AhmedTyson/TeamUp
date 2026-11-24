@@ -1,10 +1,11 @@
 # TeamUp — Clean Code & Architecture Audit
 
-> **Architecture Quality & Clean Code Evaluation Report** · Independent architectural assessment grading the TeamUp backend across layering, data integrity, SOLID principles, security hardening, and performance hygiene.
+> **Architecture Quality & Clean Code Evaluation Report** · Architectural assessment of the TeamUp backend (`backend/TeamUp.sln`) across layering, data integrity, SOLID principles, STRIDE security hardening, and performance hygiene.
 
 > **Sources:**
 > - [docs/architecture/CLEAN-CODE-AUDIT.md](../docs/architecture/CLEAN-CODE-AUDIT.md)
 > - [docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md)
+> - [docs/security/STRIDE-THREAT-MODEL.md](../docs/security/STRIDE-THREAT-MODEL.md)
 > - [backend/TeamUp.sln](../backend/TeamUp.sln)
 
 ---
@@ -14,7 +15,7 @@
 1. [Executive Summary & Quality Scorecard](#executive-summary--quality-scorecard)
 2. [SOLID Principles Enforcement Matrix](#solid-principles-enforcement-matrix)
 3. [Database & Concurrency Hygiene](#database--concurrency-hygiene)
-4. [Security & Cryptographic Hardening Audit](#security--cryptographic-hardening-audit)
+4. [Security & STRIDE Hardening Audit](#security--stride-hardening-audit)
 5. [Code Smells Audited & Remediated](#code-smells-audited--remediated)
 6. [Performance & Query Optimization Audit](#performance--query-optimization-audit)
 
@@ -22,60 +23,65 @@
 
 ## Executive Summary & Quality Scorecard
 
-- **Audited Target:** `TeamUp.sln` (.NET 10 / EF Core 10 / SQL Server 2022)
-- **Overall Quality Grade:** 🟢 **Grade A (96% Architecture Compliance)**
+- **Audited Target:** [`backend/TeamUp.sln`](../backend/TeamUp.sln) (.NET 10 / C# 14 / EF Core 10 / SQL Server 2022)
+- **Baseline Audit Grade:** 🟢 **Grade A (96% Architecture Compliance)** (initial audit archived in [`docs/architecture/CLEAN-CODE-AUDIT.md`](../docs/architecture/CLEAN-CODE-AUDIT.md))
+- **Security Posture:** **16 / 16 STRIDE Findings Remediated** ([`docs/security/STRIDE-THREAT-MODEL.md`](../docs/security/STRIDE-THREAT-MODEL.md))
 - **Compiler Compliance:** **Zero Warnings (`TreatWarningsAsErrors=true`)**
-- **Test Integrity:** **100 / 100 Automated Tests Green (Zero Regressions)**
+- **Current Automated Test Integrity:** **263 / 263 Passing** (117 Backend Unit + 75 Backend Integration + 71 Frontend Vitest) + Playwright E2E smoke suite
 
 | Dimension | Compliance Assessment | Verification Finding |
 |---|---|---|
-| **Layered Architecture** | 🟢 **Compliant (100%)** | Strict dependency rule: Api ➔ Application ➔ Domain; Infrastructure implements Application abstractions. Zero leaks. |
-| **Data Integrity & Schema** | 🟢 **Compliant (100%)** | Relational 3NF; 23 tables; all 29 FKs enforce `NO ACTION`; single-column `DeletedAt` soft-delete; 10 filtered unique indexes. |
-| **Authentication & Tokens** | 🟢 **Compliant (100%)** | PBKDF2 password hashing; HMAC-SHA256 JWT; 64-byte crypto refresh tokens hashed with SHA-256 at rest. |
-| **Input Validation** | 🟢 **Compliant (100%)** | FluentValidation pipeline filter; automatic request short-circuiting returning 400 Bad Request with field errors. |
-| **Error Handling (RFC 7807)** | 🟢 **Compliant (95%)** | Global exception handler maps domain exceptions to uniform `BaseResponse<T>` envelopes. No stack trace leaks. |
-| **Performance & Memory** | 🟢 **Compliant (95%)** | `.AsNoTracking()` applied on all read queries; `IMemoryCache` for academic catalogs; connection retry policies active. |
+| **Layered Architecture** | 🟢 **Compliant** | Strict dependency rule: `Api` ➔ `Application` ➔ `Domain`; `Infrastructure` implements `Application` abstractions (`IAppDbContext`, `IJwtTokenService`, `IEmailSender`). |
+| **Data Integrity & Schema** | 🟢 **Compliant** | Relational 3NF; **24 runtime tables** (23 core + `AuditLog`); **31 FKs** all `NO ACTION`; 22 `ISoftDelete` tables; 2 `IAppendOnly` ledgers; **11 filtered unique indexes**; **20 CHECK constraints**. |
+| **Authentication & Tokens** | 🟢 **Compliant** | PBKDF2 password hashing; HMAC-SHA256 JWT with `SecurityStamp` validation; 64-byte crypto refresh tokens stored SHA-256 hashed with 10s reuse grace & replay revocation. |
+| **Input Validation** | 🟢 **Compliant** | `ValidationFilter` executes FluentValidation rules; `SafeUrlValidator` & `ImageFileValidator` guard external URLs and uploaded images. |
+| **Error Handling** | 🟢 **Compliant** | `GlobalExceptionHandler` maps domain exceptions to uniform `BaseResponse` JSON envelopes with zero stack trace leaks. |
+| **Performance & Memory** | 🟢 **Compliant** | `.AsNoTracking()` on read queries; 1-hour `IMemoryCache` for 3 catalogs; 30s `SecurityStamp` cache; SQL Server `EnableRetryOnFailure()`. |
 
 ---
 
 ## SOLID Principles Enforcement Matrix
 
 ### 1. Single Responsibility Principle (SRP)
-- **Ultra-Thin Controllers:** Controllers contain zero EF queries or business rule calculations. They validate DTOs, extract caller claims, delegate to an Application Service, and return an HTTP status envelope.
-- **Segregated Feature Slices:** Rather than a monolithic 1,000-line controller, resources are decomposed: `AuthController`, `StudentsController`, `StudentProfilesController`, `StudentInterestsController`, `ProjectsController`, `TasksController`.
+- **Thin Controllers:** Controllers contain zero EF Core queries. They extract `CurrentStudentId`/`CurrentUserRole`, delegate to Application Services, and return standardized `BaseApiController` envelopes.
+- **Segregated Feature Slices:** Resources are partitioned across 19 focused controllers (`AuthController`, `StudentsController`, `StudentProfilesController`, `StudentInterestsController`, `ProjectsController`, `TasksController`, `OrganizationsController`, `EventsController`, `EventSessionsController`, `EventRegistrationsController`, `SessionAttendanceController`, `AdminController`, etc.).
 
 ### 2. Open/Closed Principle (OCP)
-- **Domain Event Pub-Sub:** New business requirements (e.g., awarding XP upon event attendance or sending email alerts) are fulfilled by registering new event handlers without altering core domain entities.
+- **Domain Event Pub-Sub:** Cross-module behaviors (XP ledger awards, badge evaluation, in-app notifications) are implemented by 6 `IDomainEventHandler<T>` handlers dispatched post-commit without coupling domain services together.
 
 ### 3. Liskov Substitution Principle (LSP)
-- **Interface Contracts:** Domain abstractions (`ISoftDelete`, `IAppendOnly`, `IDomainEvent`) can be freely substituted across all 23 entities without breaking persistence invariants.
+- **Domain Marker Contracts:** `ISoftDelete` (22 entities), `IAppendOnly` (`ScoreTransaction`, `AuditLog`), and `IHasDomainEvents` (`BaseEntity`) are enforced uniformly by `SoftDeleteInterceptor` and `AppDbContext`.
 
 ### 4. Interface Segregation Principle (ISP)
-- **Focused Interfaces:** Large interfaces were broken into targeted contracts: `IAuthService`, `IProfileService`, `IProjectService`, `ISkillService`, `IEventService`, `IGamificationService`.
+- **Focused Service Contracts:** Monolithic contracts were decomposed into fine-grained interfaces:
+  - Students: `IStudentAccountService`, `IStudentProfileService`, `IStudentInterestService`
+  - Projects: `IProjectService`, `IProjectSkillService`, `IProjectMemberService`, `IProjectTaskService`, `IProjectRecommendationService`
+  - Domain modules: `IAuthService`, `IUniversityService`, `IFacultyService`, `ISkillService`, `IOrganizationService`, `IEventService`, `IGamificationService`, `IBadgeService`, `INotificationService`, `IDigestDispatchService`, `IAdminService`, `IAdminReportService`
 
 ### 5. Dependency Inversion Principle (DIP)
-- **Application Independence:** `TeamUp.Application` depends solely on abstractions (`IAppDbContext`, `IJwtTokenService`). EF Core and SQL Server details reside entirely in `TeamUp.Infrastructure`.
+- **Application Independence:** `TeamUp.Application` depends only on `TeamUp.Domain` and abstractions (`IAppDbContext`, `IJwtTokenService`, `IEmailSender`, `ITemplateRenderer`, `IProfilePhotoStorage`).
 
 ---
 
 ## Database & Concurrency Hygiene
 
 1. **Zero Cascades Rule:**
-   All 29 foreign key constraints strictly configure `DeleteBehavior.Restrict` (`ON DELETE NO ACTION ON UPDATE NO ACTION`). Verified via automated query against `sys.foreign_keys`.
+   All **31 foreign key constraints** configure `DeleteBehavior.Restrict` (`ON DELETE NO ACTION ON UPDATE NO ACTION`). Verified in CI against generated idempotent SQL DDL (`dotnet ef migrations script -i`).
 2. **Single-Column Soft Delete (`DeletedAt`):**
    - Active: `DeletedAt IS NULL`. Soft-deleted: `DeletedAt IS NOT NULL`.
-   - `SoftDeleteInterceptor` intercepts `EntityState.Deleted` and sets `DeletedAt = DateTime.UtcNow`.
-   - Global query filters `e.DeletedAt == null` automatically exclude deleted records on all standard queries.
-3. **Immutable Audit Ledger:**
-   `ScoreTransaction` implements `IAppendOnly`. The EF Core interceptor throws an `InvalidOperationException` on any update or deletion.
+   - `SoftDeleteInterceptor` converts `EntityState.Deleted` into `EntityState.Modified` setting only `DeletedAt = DateTime.UtcNow`.
+   - Global query filters `e.DeletedAt == null` exclude soft-deleted rows automatically.
+3. **Immutable Append-Only Ledgers:**
+   `ScoreTransaction` and `AuditLog` implement `IAppendOnly`. `SoftDeleteInterceptor` throws `InvalidOperationException` on any update or delete attempt.
 
 ---
 
-## Security & Cryptographic Hardening Audit
+## Security & STRIDE Hardening Audit
 
-- **Token Leak Elimination:** Verified that `ForgotPasswordResponse` redacts the reset token from HTTP payloads, sending it exclusively via university email.
-- **Token Hashing at Rest:** Refresh tokens and password reset tokens are stored as one-way `SHA-256` hashes in the database. A database dump does not compromise active sessions.
-- **Partitioned Rate Limiter:** Protects `/api/v1/auth/*` with a fixed window limit of 60 requests/minute per client IP.
+- **Token Leak Elimination:** `ForgotPasswordResponse` redacts reset tokens from HTTP responses, dispatching solely via `IEmailSender`.
+- **Token Hashing & Replay Detection:** Refresh and reset tokens are stored as `SHA-256` hashes; `AuthService` maintains a 10-second `RefreshReuseGrace` and revokes the entire session (`SecurityStamp` rotation) on stale replay.
+- **Tiered Partitioned Rate Limiting:** `Program.cs` enforces `120 req/min` (authenticated), `30 req/min` (anonymous), `30 req/min` (`auth-policy`), and `30 req/min` (`directory-policy`) using `StudentId` or sanitized `RemoteIpAddress` only.
+- **Scoped BOLA & Governance Guards:** `IOrganizationAuthorizationService` enforces per-organization board authorization, `Admin:AllowRuntimePlatformAdminPromotion` prevents runtime `PlatformAdmin` escalation, and `SecurityStartupValidator` blocks insecure production configs at startup.
 
 ---
 
@@ -83,15 +89,15 @@
 
 | Code Smell Identified | Refactored Solution | Impact |
 |---|---|---|
-| Monolithic `Entities.cs` file | Factored into domain subdirectories (`Identity/`, `Projects/`, `Organizations/`, `Gamification/`) | Improved readability and reduced merge conflicts. |
-| In-memory password comparison | Replaced with `IPasswordHasher<Student>` PBKDF2 | Resistant to timing attacks and brute-force cracking. |
-| Unconstrained string enums | Applied SQL Server `CHECK` constraints (`CK_Student_Role`, etc.) | Domain integrity enforced at database engine level. |
-| Composite PK application lockouts | Replaced with surrogate integer PK + filtered unique index on `Status = 'Pending'` | Allows students to re-apply if an earlier application was rejected. |
+| Monolithic `Entities.cs` file | Factored into bounded subdirectories (`Identity/`, `Projects/`, `Organizations/`, `Gamification/`) | Improved maintainability and reduced merge conflicts. |
+| God `IProjectService` / `IProfileService` | Segregated into ISP contracts (`IProjectService`, `IProjectSkillService`, `IProjectMemberService`, `IProjectTaskService`; `IStudentAccountService`, `IStudentProfileService`, `IStudentInterestService`) | Reduced coupling and simplified unit testing. |
+| Unconstrained string enums | Enforced EF Core `EnumToStringConverter` + 20 SQL Server `CHECK` constraints | Database-level domain integrity. |
+| Composite PK application lockouts | Surrogate integer PK + filtered unique index on `WHERE [DeletedAt] IS NULL AND [Status] = 'Pending'` | Allows students to re-apply after rejection or withdrawal. |
 
 ---
 
 ## Performance & Query Optimization Audit
 
-- **Read Queries:** Read-only methods across all services use `.AsNoTracking()`, reducing garbage collection pressure and eliminating change tracking overhead.
-- **In-Memory Caching:** University and faculty catalogs (`/api/v1/universities/catalog`) are cached in memory with a 30-minute sliding expiration, delivering sub-5ms response times.
-- **Filtered Index Performance:** SQL Server filtered indexes on `WHERE [DeletedAt] IS NULL` keep index b-trees compact and lightning-fast.
+- **Read Queries:** Read-only paths use `.AsNoTracking()`, reducing change-tracker allocations.
+- **In-Memory Caching:** `AcademicCatalog`, `MasterSkills`, and `BadgeCatalog` are cached in `IMemoryCache` with a **1-hour TTL** (`CatalogCacheKeys.DefaultTtl`) and invalidated on mutations; `SecurityStampValidator` caches active student state for **30 seconds**.
+- **Filtered Index Performance:** **11 filtered indexes** keep index b-trees compact and enforce active uniqueness and idempotent XP ledger awards.

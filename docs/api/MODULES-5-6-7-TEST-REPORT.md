@@ -1,5 +1,7 @@
 # TeamUp — Modules 5, 6 and 7 API Test Report
 
+> **Historical Milestone Snapshot (November 4, 2026):** Pre-reorganization integration run (`tests/TeamUp.IntegrationTests/` now resides under `backend/tests/TeamUp.IntegrationTests/`). See [`wiki/RELEASE_SIGN_OFF.md`](../../wiki/RELEASE_SIGN_OFF.md) for current test metrics.
+
 > **Execution Timestamp:** 2026-11-04 07:27 UTC+02:00
 > **Target Environment:** ASP.NET Core 10 Web API using `WebApplicationFactory` (in-process test server)
 > **Database Engine:** SQLite in-memory (test database; no SQL Server connection used)

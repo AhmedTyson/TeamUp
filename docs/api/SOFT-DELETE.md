@@ -9,8 +9,8 @@ Active (Live):         DeletedAt IS NULL
 Soft-Deleted:          DeletedAt IS NOT NULL (UTC Timestamp)
 
 Transition:
-DELETE /resource/{id}  ->  DeletedAt = DateTime.UtcNow  ->  Returns 204 No Content
-POST /resource/{id}/restore -> DeletedAt = NULL         ->  Returns 200 OK
+DELETE /resource/{id}                       ->  DeletedAt = DateTime.UtcNow  ->  Returns 204 No Content
+POST /api/v1/admin/restore/{entityType}/{id} -> DeletedAt = NULL             ->  Returns 200 OK
 ```
 
 ### Why a Single Column Instead of Two?
@@ -39,7 +39,7 @@ public abstract class BaseEntity : ISoftDelete
     public bool IsDeleted => DeletedAt.HasValue;
 }
 ```
-`ScoreTransaction` (append-only ledger) does not implement `ISoftDelete`; it implements `IAppendOnly`.
+Append-only ledgers (`ScoreTransaction` and `AuditLog`) do not implement `ISoftDelete`; they implement `IAppendOnly`.
 
 ### B. Transparent Interception (`SoftDeleteInterceptor`)
 Registered in EF Core pipeline (`AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>())`):

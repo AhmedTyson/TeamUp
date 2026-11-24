@@ -60,7 +60,7 @@ The **TeamUpDB** database provides the relational data foundation for:
   - `Email` (Simple, Candidate Key)
   - `PasswordHash` (Simple, security credential for JWT auth)
   - `Name` (Composite: `FirstName`, `LastName`)
-  - `AcademicYear` (Simple, e.g., 1 to 5)
+  - `AcademicYear` (Simple, e.g., 1 to 7)
   - `Role` (Simple, system access role: `Student`, `OrgAdmin`, `PlatformAdmin`)
   - `Interest` (Multivalued, e.g., `AI`, `Web Development`, `Robotics`)
   - `TotalPoints` (Derived, sum of positive points from `ScoreTransaction`)
@@ -197,8 +197,8 @@ The **TeamUpDB** database provides the relational data foundation for:
 
 1. **Weak Entity Selection (`EventSession`):**
    - An event session cannot exist without its parent `Event`.
-   - Its primary key is composite: `(EventID, SessionID)`.
-   - Drawn with a double rectangle, double diamond (`HasSession`), and dashed-underlined partial key (`SessionID`).
+   - In the conceptual Chen ERD, its key is composite `(EventID, SessionID)` and drawn with a double rectangle, double diamond (`HasSession`), and dashed-underlined partial key (`SessionID`).
+   - In relational mapping and EF Core (`Mapping/description.md`, correction D7), this refines to a surrogate PK `SessionId` plus a filtered unique index on `(EventId, SessionNo) WHERE [DeletedAt] IS NULL`.
 
 2. **Decoupling Event Registration vs. Attendance:**
    - `Registers` links `Student` to `Event` (intent to attend, capacity checks).
@@ -213,13 +213,16 @@ The **TeamUpDB** database provides the relational data foundation for:
    - Storing a direct `UniversityID` on `Student` would create transitive redundancy (`StudentID → FacultyID → UniversityID`), which is avoided.
 
 5. **Gamification Derived Attributes:**
-   - `Student.TotalPoints` and `Student.Level` are modeled as derived attributes (dashed ovals). In SQL Server and EF Core, `TotalPoints` is aggregated via `SUM(ScoreTransaction.Points)` or updated via application domain events. `Level` is calculated deterministically (`FLOOR(SQRT(TotalPoints / 100)) + 1`).
+   - `Student.TotalPoints` and `Student.Level` are modeled as derived attributes (dashed ovals). In SQL Server and EF Core, `TotalPoints` is aggregated via `SUM(ScoreTransaction.Points)`. `Level` is calculated deterministically (`FLOOR(SQRT(MAX(TotalPoints, 0) / 100)) + 1`).
+
+6. **Out-of-Band Governance Ledger (`AuditLog`):**
+   - While the conceptual ERD captures the 13 core academic/collaboration business entities, the production EF Core schema adds `AuditLog` (24th runtime table, `IAppendOnly`) during STRIDE security hardening to record administrative and security-sensitive mutations.
 
 ---
 
 ## 6. Deliverable Artifacts
 
-- **Image render:** `TeamUp-Chen-ERD.png` (high-resolution PNG screenshot, 6600 × 5700)
-- **Scalable vector:** `source/TeamUp-Chen-ERD.svg`
-- **Editable diagram:** `source/TeamUp-Chen-ERD.drawio` (compatible with Draw.io / diagrams.net)
-- **Generator script:** `source/gen_erd.py`
+- **Image render:** `TeamUp-Chen-ERD.png` (high-resolution PNG screenshot)
+- **Scalable vector:** `TeamUp-Chen-ERD.svg` & `source/TeamUp-Chen-ERD.svg`
+- **Editable diagram:** `TeamUp-Chen-ERD.drawio` & `source/TeamUp-Chen-ERD.drawio` (compatible with Draw.io / diagrams.net)
+- **Generator script:** `source/gen_erd.py` & `source/render.ps1`

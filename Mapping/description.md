@@ -88,7 +88,7 @@ The original raw mapping contained classical modeling traps that have been corre
 *Central student user account. Holds login credentials and academic enrollment.*
 - `StudentID` (INT, IDENTITY, **PK**)
 - `Email` (NVARCHAR(150), NOT NULL) — Filtered UNIQUE index `WHERE [DeletedAt] IS NULL` (Candidate key for JWT auth)
-- `PasswordHash` (NVARCHAR(256), NOT NULL) — Argon2id / ASP.NET Identity PasswordHasher
+- `PasswordHash` (NVARCHAR(256), NOT NULL) — ASP.NET Core Identity `PasswordHasher<Student>` (PBKDF2)
 - `FirstName` (NVARCHAR(50), NOT NULL) — Flattened from composite `Name`
 - `LastName` (NVARCHAR(50), NOT NULL) — Flattened from composite `Name`
 - `AcademicYear` (INT, NOT NULL) — CHECK `[AcademicYear] BETWEEN 1 AND 7`
@@ -325,7 +325,20 @@ The original raw mapping contained classical modeling traps that have been corre
 
 ---
 
-## 6. Deliverable Artifacts
+## 6. Post-Mapping Production Schema Extensions (Migrations 2–9)
+
+While the relational mapping diagram (`TeamUp-Relational-Mapping.png`) documents the 23 core domain tables and 29 initial foreign keys, subsequent production migrations extended the runtime schema to **24 tables**, **31 foreign keys** (all `ON DELETE NO ACTION ON UPDATE NO ACTION`), **11 filtered unique indexes**, and **20 CHECK constraints**:
+
+- **`AuditLog` (24th table, `IAppendOnly`):** Immutable security/governance ledger referencing `Student.StudentId` (`ActorStudentId`, FK #30).
+- **`SessionAttendance.RecordedByStudentId` (FK #31):** Tracks which organizer or self-checking student recorded attendance (`ON DELETE NO ACTION`).
+- **`Student` Auth, Security & Email Preference Columns:** `SecurityStamp`, `RefreshToken`, `RefreshTokenExpiresAt`, `PreviousRefreshToken`, `PreviousRefreshTokenRotatedAt`, `FailedLoginCount`, `LockoutEndUtc`, `PasswordResetToken`, `PasswordResetTokenExpiresAt`, `ShowEmailInDirectory`, `EmailNotificationsEnabled`, `ReceiveLeaderboardDigests`, `ReceiveProjectMatchEmails`.
+- **`University.LogoUrl`:** Optional institutional logo URL (`NVARCHAR(500)`).
+- **`Project.RowVersion` & `Event.RowVersion`:** Optimistic concurrency tokens preventing lost updates and registration overselling.
+- **`ScoreTransaction.SourceReferenceId` + 11th Filtered Unique Index:** Enforces idempotent XP payouts on `(StudentId, SourceType, SourceReferenceId) WHERE [SourceReferenceId] IS NOT NULL`.
+
+---
+
+## 7. Deliverable Artifacts
 
 - **Image render:** `TeamUp-Relational-Mapping.png` (high-resolution PNG screenshot, 3900 × 2700)
 - **Scalable vector:** `source/TeamUp-Relational-Mapping.svg` and `TeamUp-Relational-Mapping.svg`

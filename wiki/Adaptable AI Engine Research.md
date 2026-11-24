@@ -1,5 +1,7 @@
 # TeamUp — Adaptable AI Engine Research
 
+> **Status:** 🔬 **Future-Roadmap Research Blueprint (Planned Post-`v1.0.0`)** — The architecture and phases documented here are research specifications for upcoming AI capabilities and are **not yet implemented** in the current `.NET 10` / `React 19` codebase.
+
 > **Autonomous Adaptable AI Systems & Generative UI Architecture** · Master research blueprint outlining the 6-pillar, 30-phase architecture for autonomous student onboarding, flyer-to-event synthesis, project decomposition, and adversarial defense.
 
 > **Sources:**
@@ -28,7 +30,7 @@
 
 ## Executive Feasibility & Scientific Blueprint
 
-The Adaptable AI Engine represents the next-generation evolution of TeamUp: transitioning from a standard CRUD platform into an **Autonomous, Intent-Driven Collaboration Operating System**.
+The Adaptable AI Engine represents the planned next-generation evolution of TeamUp: transitioning from a standard CRUD platform into an **Autonomous, Intent-Driven Collaboration Operating System**.
 
 ### Core Tenet: Probabilistic AI with Deterministic Software Guards
 Probabilistic Large Language Models (LLMs) excel at natural language parsing, fuzzy entity disambiguation, and creative synthesis, but are prone to hallucinations and non-determinism. TeamUp enforces a **Dual-Shield Architecture**:

@@ -1,10 +1,12 @@
 # TeamUp — Live API Endpoint Validation & Response Evidence Report
 
-> **Execution Timestamp:** 2026-11-03 22:07:02 UTC
-> **Target Environment:** ASP.NET Core 10 Web API (http://localhost:5199)
-> **Database Engine:** Microsoft SQL Server 2022 (Docker container 	eamup-sql:14333)
-> **Architecture Standards:** RFC 7807 ProblemDetails, JWT Bearer Token, Single-Column Soft Delete (DeletedAt), BaseResponse<T> Envelope
-> **Payload Ordering Rule:** Personal identity properties first (irstName, lastName, mail, password), followed by academic and institutional affiliations.
+> **Historical Milestone Snapshot (November 3, 2026):** Early live test run of Module 01 (Auth & Profiles) prior to `backend/` solution reorganization and STRIDE hardening. See [`wiki/API Endpoints Reference.md`](../../wiki/API%20Endpoints%20Reference.md) for current contracts.
+
+> **Execution Timestamp:** 2026-11-03 22:07:02 UTC  
+> **Target Environment:** ASP.NET Core 10 Web API (http://localhost:5199)  
+> **Database Engine:** Microsoft SQL Server 2022 (Docker container `teamup-sql:14333`)  
+> **Architecture Standards:** RFC 7807 ProblemDetails, JWT Bearer Token, Single-Column Soft Delete (`DeletedAt`), `BaseResponse<T>` Envelope  
+> **Payload Ordering Rule:** Personal identity properties first (`firstName`, `lastName`, `email`, `password`), followed by academic and institutional affiliations.
 
 ---
 

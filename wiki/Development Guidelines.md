@@ -1,10 +1,11 @@
 # TeamUp — Development Guidelines
 
-> **Engineering Standards & Architectural Governance** · Coding conventions, Clean Architecture boundaries, database integrity rules, API response standards, and Definition of Done.
+> **Engineering Standards & Architectural Governance** · Coding conventions, Clean Architecture boundaries, database integrity rules, API response standards, security controls, and Definition of Done.
 
 > **Sources:**
 > - [docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md](../docs/architecture/N-TIER-SOLID-ARCHITECTURE-PLAN.md)
 > - [docs/architecture/CLEAN-CODE-AUDIT.md](../docs/architecture/CLEAN-CODE-AUDIT.md)
+> - [docs/security/STRIDE-THREAT-MODEL.md](../docs/security/STRIDE-THREAT-MODEL.md)
 > - [backend/Directory.Build.props](../backend/Directory.Build.props)
 > - [CONTRIBUTING.md](../CONTRIBUTING.md)
 
@@ -27,111 +28,116 @@
 
 1. **Dependency Inversion is Absolute:**
    - `TeamUp.Domain` has **zero** dependencies on external libraries, frameworks, or NuGet packages.
-   - `TeamUp.Application` depends **only** on `TeamUp.Domain`. It must never reference `TeamUp.Infrastructure` or `TeamUp.Api`.
-   - `TeamUp.Infrastructure` implements application interfaces (`IAppDbContext`, `IJwtTokenService`) and handles EF Core persistence.
-   - `TeamUp.Api` serves solely as the presentation HTTP entry point.
+   - `TeamUp.Application` depends **only** on `TeamUp.Domain` (plus EF Core abstractions, FluentValidation, and `Microsoft.Extensions.Identity.Core`). It must never reference `TeamUp.Infrastructure` or `TeamUp.Api`.
+   - `TeamUp.Infrastructure` implements application contracts (`IAppDbContext`, `IJwtTokenService`, `IEmailSender`, `ITemplateRenderer`, `IAdminReportService`) and handles EF Core persistence, SMTP/InMemory email, and QuestPDF rendering.
+   - `TeamUp.Api` serves solely as the HTTP presentation entry point (plus `LocalProfilePhotoStorage` for local `wwwroot` image uploads).
 2. **No "Fat Controllers":**
    - Controllers must never perform direct database queries (`_context.Projects.Where(...)`).
-   - Controllers only parse HTTP input, extract claims via `User.GetStudentId()`, invoke an Application Service or CQRS handler, and return an HTTP status code.
+   - Controllers only parse HTTP input, extract claims via `CurrentStudentId` / `CurrentUserRole`, invoke an Application Service, and return a standardized `BaseApiController` response.
 3. **Domain Event Decoupling:**
-   - Cross-module side effects (e.g., awarding points when a task completes or sending a notification when an application is accepted) must be published as `IDomainEvent` and processed by asynchronous in-process handlers.
+   - Cross-module side effects (e.g., awarding points when a task or session completes or sending notifications when an application is reviewed or a waitlist spot opens) must be raised via `AddDomainEvent(...)` on `BaseEntity` and dispatched post-`SaveChangesAsync` by `IDomainEventDispatcher`.
 
 ---
 
 ## Controller & API Layer Conventions
 
-- **Base Route:** `/api/v1/{resource}` using lowercase kebab-case nouns (e.g., `/api/v1/score-transactions`, `/api/v1/project-tasks`).
-- **Inheritance:** All API controllers inherit from `BaseApiController`.
-- **Response Envelopes:** Every response is wrapped in `BaseResponse<T>`:
+- **Base Route:** `/api/v1/{resource}` using lowercase kebab-case plural nouns (e.g., `/api/v1/score-transactions`, `/api/v1/required-skills`).
+- **Inheritance:** All 19 API controllers inherit from [`BaseApiController`](../backend/src/TeamUp.Api/Controllers/Common/BaseApiController.cs).
+- **Response Envelopes:** Every JSON response is wrapped in `ApiResponse<T>` / `BaseResponse<T>`:
   ```json
   {
     "success": true,
-    "message": "Project retrieved successfully.",
+    "message": "Operation completed successfully.",
     "statusCode": 200,
-    "data": { ... },
+    "data": { },
     "errors": null,
-    "timestamp": "2026-11-06T00:30:00Z"
+    "timestamp": "2026-11-24T12:00:00Z"
   }
   ```
 - **HTTP Methods:**
   - `GET`: Safe and idempotent data retrieval.
-  - `POST`: Create resource (`201 Created` with `Location` header) or trigger business operation.
-  - `PUT`: Full replacement or state assignment.
-  - `PATCH`: Partial update (e.g., task status transition).
-  - `DELETE`: **Soft-delete** (`204 No Content` or `200 OK`).
+  - `POST`: Create resource (`201 Created`, often with `Location` header via `CreatedAtAction`) or trigger a state/command operation.
+  - `PUT`: Full replacement or idempotent upsert (e.g., `PUT /api/v1/students/me/profile`, `PUT /api/v1/students/me/skills/{skillId}`).
+  - `PATCH`: Partial update or status/role transition (e.g., `PATCH /api/v1/tasks/{id}`, `PATCH /api/v1/admin/students/{id}/role`).
+  - `DELETE`: **Soft-delete** (`204 No Content`) or membership/registration withdrawal.
 
 ---
 
 ## Database & Entity Conventions
 
 ### 1. The Zero Cascades Rule
-- All 29 foreign key relationships must specify `DeleteBehavior.Restrict` (`ON DELETE NO ACTION ON UPDATE NO ACTION`).
-- Cascading operations across parent-child trees (such as soft-deleting an event's sessions) must be orchestrated transactionally in the application service layer.
+- All **31 foreign key relationships** across the 24 runtime tables must specify `DeleteBehavior.Restrict` (`ON DELETE NO ACTION ON UPDATE NO ACTION`, enforced globally in `AppDbContext.OnModelCreating`).
+- Cascading soft-deletes across parent-child trees (such as soft-deleting a university's faculties or an event's sessions) must be orchestrated explicitly in application service code.
 
 ### 2. Single-Column Soft Delete (`DeletedAt`)
-- Dual-column indicators (`IsDeleted` bool + `DeletedAt` timestamp) are strictly forbidden.
-- Entities implement `ISoftDelete` with a single nullable timestamp: `DateTime? DeletedAt { get; set; }`.
+- Dual-column persisted indicators (`IsDeleted` bool + `DeletedAt` timestamp) are strictly forbidden.
+- Mutable domain entities (22 tables) inherit `BaseEntity` / implement `ISoftDelete` with a single nullable timestamp: `DateTime? DeletedAt { get; set; }` (`IsDeleted => DeletedAt.HasValue` is an unmapped helper).
 - Active rows: `DeletedAt IS NULL`. Soft-deleted rows: `DeletedAt IS NOT NULL`.
-- `SoftDeleteInterceptor` intercepts `EntityState.Deleted` and transforms it into `DeletedAt = DateTime.UtcNow`.
+- `SoftDeleteInterceptor` intercepts `EntityState.Deleted` and converts it to `EntityState.Modified` setting only `DeletedAt = DateTime.UtcNow`.
 
 ### 3. Append-Only Ledgers
-- Financial and gamification audit logs (`ScoreTransaction`) implement `IAppendOnly`.
-- Updating or deleting append-only entities is intercepted by EF Core and throws `InvalidOperationException`. Adjustments require a compensating transaction row.
+- Financial/gamification and governance audit tables (`ScoreTransaction`, `AuditLog`) implement `IAppendOnly`.
+- Updating or deleting append-only entities is intercepted by `SoftDeleteInterceptor` and throws `InvalidOperationException`. Adjustments require inserting a compensating row.
 
 ### 4. Filtered Unique Indexes
-- Every unique business identifier (e.g., email address, skill name, active membership) must use a filtered unique index in SQL Server:
-  ```sql
-  CREATE UNIQUE INDEX [UX_Students_Email] ON [Students] ([Email]) WHERE [DeletedAt] IS NULL;
+- Unique business identifiers that can be reused after soft deletion must use a filtered unique index in SQL Server:
+  ```csharp
+  b.HasIndex(x => x.Email).IsUnique().HasFilter("[DeletedAt] IS NULL");
   ```
-- This guarantees uniqueness among active rows while allowing soft-deleted records to retain historical data.
+- Across the schema there are **11 filtered unique indexes** (10 soft-delete/pending-application indexes + 1 idempotency index on `ScoreTransaction(StudentId, SourceType, SourceReferenceId) WHERE [SourceReferenceId] IS NOT NULL`).
 
 ---
 
 ## Validation & Error Handling Standards
 
-- **Boundary Validation:** Use `FluentValidation`. Every incoming request DTO must have a corresponding `AbstractValidator<T>`.
-- **Pipeline Interception:** `ValidationFilter` executes validators before the controller action. If invalid, it immediately short-circuits with `400 Bad Request` and structured field errors:
+- **Boundary Validation:** Use `FluentValidation`. Incoming request DTOs have registered `AbstractValidator<T>` classes discovered via `AddValidatorsFromAssembly`.
+- **Pipeline Interception:** [`ValidationFilter`](../backend/src/TeamUp.Api/Filters/ValidationFilter.cs) executes validators before the controller action. If invalid, it immediately short-circuits with `400 Bad Request` and camelCased field errors:
   ```json
   {
     "success": false,
-    "message": "Validation failed.",
+    "message": "Validation failed: Please correct the highlighted fields and try again.",
     "statusCode": 400,
     "errors": [
-      { "field": "Email", "message": "A valid university email address is required." }
-    ]
+      { "field": "email", "message": "A valid email address is required." }
+    ],
+    "timestamp": "2026-11-24T12:00:00Z"
   }
   ```
-- **Domain Exception Translation:**
-  - `NotFoundException` maps to `404 Not Found`.
-  - `ConflictException` and unique constraint `DbUpdateException` map to `409 Conflict`.
-  - `ForbiddenAccessException` maps to `403 Forbidden`.
-  - Unhandled exceptions map to `500 Internal Server Error` via `GlobalExceptionHandler` with zero stack traces leaked in production.
+- **Domain Exception Translation (`GlobalExceptionHandler`):**
+  - `ValidationException` / `BadRequestException` / `ArgumentException` ➔ `400 Bad Request`
+  - `UnauthorizedException` ➔ `401 Unauthorized`
+  - `ForbiddenException` ➔ `403 Forbidden`
+  - `NotFoundException` ➔ `404 Not Found`
+  - `ConflictException`, `DbUpdateConcurrencyException`, and unique-constraint `DbUpdateException` ➔ `409 Conflict`
+  - Unhandled exceptions ➔ `500 Internal Server Error` with zero stack traces leaked.
 
 ---
 
 ## Security & Authentication Checklist
 
-For every endpoint added to TeamUp:
+For every endpoint or feature added to TeamUp:
 
-- [ ] Is it public? If not, attach `[Authorize]` or specify required policies (`PlatformAdminOnly`, `OrgAdminOrPlatformAdmin`).
-- [ ] Are sensitive tokens redacted? Password reset tokens must **never** be returned in HTTP response bodies.
-- [ ] Are tokens hashed at rest? Refresh tokens and reset tokens must be stored as SHA-256 hashes.
-- [ ] Is rate limiting applied? Public authentication endpoints must enforce the IP-partitioned rate limiter (`auth-policy`).
-- [ ] Does authorization check ownership? Ensure student callers can only edit their own portfolios or projects.
+- [ ] **Authentication & Authorization:** Is it intentionally `[AllowAnonymous]`? Otherwise attach `[Authorize]` and enforce role policies (`PlatformAdmin`, `OrgAdmin,PlatformAdmin`) or scoped checks (`IOrganizationAuthorizationService` / resource ownership).
+- [ ] **Session Revocation (`SecurityStamp`):** Password resets, logouts, role updates, and soft-deletes rotate `SecurityStamp` and invalidate `ISecurityStampValidator` cache.
+- [ ] **Token & Secret Redaction:** Password reset tokens must **never** be returned in HTTP response bodies (`ForgotPasswordResponse` returns only a generic message); refresh and reset tokens are stored as `SHA-256` hashes.
+- [ ] **Rate Limiting:** Public auth routes enforce `auth-policy` (`30 req/min` per `RemoteIpAddress`), student directory enforces `directory-policy` (`30 req/min`, max `20` rows/page), and all routes are guarded by the global partitioned limiter (`120 req/min` authenticated, `30 req/min` anonymous, `/health` exempt).
+- [ ] **Input & Upload Safety:** Validate external URLs with `SafeUrlValidator` (blocking `javascript:`/`data:`/SSRF targets) and uploaded images with `ImageFileValidator` (magic-byte sniffing + size cap).
+- [ ] **Governance Controls:** Keep `Admin:AllowRuntimePlatformAdminPromotion = false` unless explicitly opted in, and record sensitive mutations via `IAuditLogService`.
 
 ---
 
 ## Testing Standards
 
-- **Unit Tests (`TeamUp.UnitTests`):**
+- **Backend Unit Tests (`TeamUp.UnitTests` — 117 tests):**
   - Verify mathematical domain logic (gamification level calculations, badge criteria evaluation).
-  - Verify FluentValidators for boundary edge cases (nulls, string lengths, regex).
-  - Verify `SoftDeleteInterceptor` and `IAppendOnly` guards.
-- **Integration Tests (`TeamUp.IntegrationTests`):**
-  - Inherit from `TeamUpApiFactory` (using `WebApplicationFactory<Program>`).
-  - Test real HTTP status codes, JSON deserialization, and database query filters.
-  - Zero database leaks between tests (each test runs in isolated scope).
-- **Execution Target:** The entire test suite must execute cleanly with zero failures (`dotnet test`).
+  - Verify FluentValidators, `SafeUrlValidator`, `ImageFileValidator`, `AttendanceCodeService`, and `SecurityStartupValidator`.
+  - Verify `SoftDeleteInterceptor`, `IAppendOnly` guards, and zero physical cascades.
+- **Backend Integration Tests (`TeamUp.IntegrationTests` — 75 tests):**
+  - Inherit from `TeamUpApiFactory` (using `WebApplicationFactory<Program>` + isolated in-memory SQLite).
+  - Verify real HTTP status codes, JSON envelopes, JWT `SecurityStamp` revocation, rate limits, BOLA/IDOR guards, and OpenAPI v3 generation.
+- **Frontend Tests (`frontend/src/test/` — 71 Vitest tests) & E2E (`frontend/e2e/`):**
+  - Vitest + Testing Library (`happy-dom`) covering API client interceptors, auth/role guards, UI kit, and feature pages.
+  - Playwright Chromium smoke suite (`npm run test:e2e`) running against the compiled `TeamUp.Api` host.
 
 ---
 
@@ -140,26 +146,27 @@ For every endpoint added to TeamUp:
 ```mermaid
 gitGraph
     commit id: "Initial Solution"
-    branch develop
-    commit id: "feat(auth): jwt rotation"
-    branch feat/projects
+    branch feat/m2-projects
     commit id: "feat(m2): project sprint tasks"
-    checkout develop
-    merge feat/projects
-    branch feat/events
-    commit id: "feat(m3): event sessions"
-    checkout develop
-    merge feat/events
     checkout main
-    merge develop tag: "v1.0.0"
+    merge feat/m2-projects
+    branch feat/m3-events
+    commit id: "feat(m3): event sessions & QR check-in"
+    checkout main
+    merge feat/m3-events
+    branch fix/m1-stride
+    commit id: "fix(m1): security stamp & rate limits"
+    checkout main
+    merge fix/m1-stride tag: "v1.0.0"
 ```
 
-- **Branch Naming:** `feat/<module-name>`, `fix/<issue>`, `chore/<cleanup>`.
+- **Target Branch:** `main` (via Pull Request).
+- **Branch Naming:** `feat/m<1|2|3|4>-<short-description>`, `fix/m<1|2|3|4>-<short-description>`, `docs/<short-description>`.
 - **Commit Format:** Conventional Commits:
-  - `feat(m1): add refresh token rotation`
-  - `fix(db): eliminate cascade delete on event attendance`
-  - `test(gamification): add unit tests for score transaction ledger`
-  - `docs(wiki): update system overview and getting started guide`
+  - `feat(m1): add refresh token reuse grace and lockout`
+  - `fix(db): enforce DeleteBehavior.Restrict on all foreign keys`
+  - `test(gamification): add unit tests for idempotent score ledger`
+  - `docs(wiki): align documentation with current codebase`
 
 ---
 
@@ -167,9 +174,9 @@ gitGraph
 
 A task or pull request is only considered **Done** when:
 
-1. Code adheres strictly to Clean Architecture layer boundaries.
-2. FluentValidator created and verified for all incoming DTOs.
-3. Entity configuration explicitly enforces `DeleteBehavior.Restrict`.
-4. Unit and integration tests written and passing locally (`dotnet test`).
-5. GitHub Actions CI pipeline passes with 0 compiler warnings (`TreatWarningsAsErrors=true`).
-6. Endpoint documented in OpenAPI and Postman collections.
+1. Code adheres strictly to Clean Architecture layer boundaries (`Domain` ➔ `Application` ➔ `Infrastructure` / `Api`).
+2. FluentValidator created and verified for any new incoming request DTO.
+3. Entity configuration explicitly enforces `DeleteBehavior.Restrict` and filtered unique indexes (`[DeletedAt] IS NULL`) where applicable.
+4. Backend unit/integration tests and frontend Vitest/build checks pass locally (`dotnet test backend/TeamUp.sln`, `npm run test && npm run build`).
+5. GitHub Actions CI (`backend-build-and-test`, `frontend-build-and-test`, `e2e-playwright-smoke`) passes with 0 compiler warnings (`TreatWarningsAsErrors=true`) and zero physical cascades.
+6. Endpoint contracts are reflected in `docs/api/openapi.json` and API docs.

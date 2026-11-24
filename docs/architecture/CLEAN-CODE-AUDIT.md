@@ -1,5 +1,7 @@
 # TeamUp — Backend Architecture & Clean Code Quality Audit
 
+> **Historical Baseline Audit (November 3, 2026):** Initial Grade A audit on the early 31-test / 23-table backend. For current metrics (24 runtime tables, 31 FKs, 263/263 tests, 16/16 STRIDE mitigations), see [`wiki/Clean Code & Architecture Audit.md`](../../wiki/Clean%20Code%20%26%20Architecture%20Audit.md).
+
 **Auditor:** `@backend-architect`  
 **Target Codebase:** TeamUp Backend (`TeamUp.sln` — ASP.NET Core 10 / EF Core 10 / SQL Server 2022)  
 **Date:** 2026-11-03  

@@ -26,9 +26,9 @@ Deploy **TeamUp** 100% free with persistent **SQL Server**, persistent profile p
 2. Copy [`backend/src/TeamUp.Api/appsettings.Production.example.json`](../backend/src/TeamUp.Api/appsettings.Production.example.json) to a **git-ignored** file `backend/src/TeamUp.Api/appsettings.Production.json` and fill in:
    - `ConnectionStrings:TeamUpDb`
    - `Jwt:Key`
-   - `Seed:AdminPassword` (min 12 chars)
+   - `Seed:Enabled` / `Seed:AdminPassword` (min 12 chars — **only needed for initial bootstrap**; [`deploy-monsterasp.yml`](../.github/workflows/deploy-monsterasp.yml) forces `Seed:Enabled=false` and strips `Seed:AdminPassword` from `MONSTERASP_APPSETTINGS_JSON` on ongoing deploys)
    - `Cors:AllowedOrigins` (temporarily `["http://localhost:5173"]`, then update to your live frontend URL in Part 3)
-   - `Email` SMTP settings (Gmail App Password, Brevo SMTP, or Resend SMTP)
+   - `Email` SMTP settings (Gmail App Password, Brevo SMTP, or Resend SMTP), `Email:ResetPasswordUrlBase`, and `Email:FrontendBaseUrl`
 3. Build the MonsterASP.NET publish archive cleanly:
    ```powershell
    .\scripts\publish-monsterasp.ps1
@@ -79,7 +79,7 @@ See [`frontend/.env.example`](../frontend/.env.example).
 
 ## Part 3 — Final Wiring & Smoke Check
 
-1. Update `Cors:AllowedOrigins` (and `Email:ResetPasswordUrlBase`) inside MonsterASP.NET `appsettings.Production.json` to your live frontend origin (e.g. `https://teamup-demo.pages.dev`).
+1. Update `Cors:AllowedOrigins`, `Email:ResetPasswordUrlBase`, and `Email:FrontendBaseUrl` inside MonsterASP.NET `appsettings.Production.json` to your live frontend origin (e.g. `https://teamup-demo.pages.dev`).
 2. Restart the website in MonsterASP.NET Control Panel so the new CORS origin takes effect.
 3. Open your live frontend URL and verify:
    - Homepage student portraits + Partner Universities logos load cleanly.

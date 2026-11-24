@@ -1,5 +1,7 @@
 # API-PROPOSAL
 
+> **Historical Design Proposal (95 Initial Endpoints):** This document captures the initial endpoint assignment proposal. For the live **116-endpoint** API surface, see [`wiki/ROUTES-APPENDIX.md`](../../wiki/ROUTES-APPENDIX.md), [`wiki/API Reference.md`](../../wiki/API%20Reference.md), and [`docs/api/openapi.json`](./openapi.json).
+
 # TeamUp — RESTful API Endpoint Tracking & Assignment Document
 
 ## 1. Architectural Standards & Conventions

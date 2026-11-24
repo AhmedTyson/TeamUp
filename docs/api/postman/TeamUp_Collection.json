@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "16e50f14-8c86-4adc-a264-158cf8bc90fd",
+    "_postman_id": "7db0ac8f-6ec8-498d-9bd5-a9aa11ed6fde",
     "name": "TeamUp API Collection",
     "description": "Comprehensive API collection for TeamUp Student Collaboration \u0026 Gamification Platform (.NET 10).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -77,6 +77,21 @@
           }
         },
         {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout"
+            }
+          }
+        },
+        {
           "name": "Forgot Password",
           "request": {
             "method": "POST",
@@ -92,6 +107,25 @@
             "body": {
               "mode": "raw",
               "raw": "{\u0022email\u0022:\u0022tyson@teamup.edu\u0022}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/reset-password"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022email\u0022:\u0022tyson@teamup.edu\u0022,\u0022token\u0022:\u0022reset_token\u0022,\u0022newPassword\u0022:\u0022NewP@ssword123!\u0022}"
             }
           }
         }
@@ -151,6 +185,21 @@
       "name": "03. Student Profiles \u0026 Directory",
       "item": [
         {
+          "name": "Public Student Showcase",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/showcase?limit=6"
+            }
+          }
+        },
+        {
           "name": "Directory Search",
           "request": {
             "method": "GET",
@@ -196,6 +245,21 @@
             "body": {
               "mode": "raw",
               "raw": "{\u0022bio\u0022:\u0022Full-stack AI developer\u0022,\u0022githubUrl\u0022:\u0022https://github.com/AhmedTyson\u0022}"
+            }
+          }
+        },
+        {
+          "name": "Upload Profile Photo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/me/profile/photo"
             }
           }
         }
@@ -424,6 +488,40 @@
           }
         },
         {
+          "name": "Generate Rotating Check-In Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/1/attendance/check-in-code"
+            }
+          }
+        },
+        {
+          "name": "Student Self Check-In",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/1/attendance/self-check-in"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022verificationCode\u0022:\u002200000000.0000000000000000\u0022}"
+            }
+          }
+        },
+        {
           "name": "Verify Session Attendance",
           "request": {
             "method": "POST",
@@ -439,6 +537,21 @@
             "body": {
               "mode": "raw",
               "raw": "{\u0022studentId\u0022:1,\u0022verificationMethod\u0022:\u0022QRCode\u0022}"
+            }
+          }
+        },
+        {
+          "name": "Session Attendance Report (HTML)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/1/attendance/report"
             }
           }
         }
@@ -478,6 +591,21 @@
           }
         },
         {
+          "name": "Campus Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/gamification/leaderboard"
+            }
+          }
+        },
+        {
           "name": "Get Badge Catalog",
           "request": {
             "method": "GET",
@@ -504,6 +632,173 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/notifications"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Platform Admin \u0026 Governance",
+      "item": [
+        {
+          "name": "Admin Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/dashboard"
+            }
+          }
+        },
+        {
+          "name": "Update Student Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/students/1/role"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022role\u0022:\u0022OrgAdmin\u0022}"
+            }
+          }
+        },
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/audit-logs?page=1\u0026pageSize=20"
+            }
+          }
+        },
+        {
+          "name": "List Soft-Deleted Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/soft-deleted"
+            }
+          }
+        },
+        {
+          "name": "Restore Entity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/restore/Student/1"
+            }
+          }
+        },
+        {
+          "name": "Download Governance Summary PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/reports/platform-summary.pdf"
+            }
+          }
+        },
+        {
+          "name": "List Email Templates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/templates"
+            }
+          }
+        },
+        {
+          "name": "Preview Email Template",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/templates/preview/LeaderboardDigest"
+            }
+          }
+        },
+        {
+          "name": "Dispatch Leaderboard Digest",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/communications/leaderboard-digest"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022mode\u0022:\u0022TestToMe\u0022,\u0022dryRun\u0022:true}"
+            }
+          }
+        },
+        {
+          "name": "Dispatch Project Match Digest",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/communications/project-matches"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\u0022mode\u0022:\u0022TestToMe\u0022,\u0022dryRun\u0022:true}"
             }
           }
         }

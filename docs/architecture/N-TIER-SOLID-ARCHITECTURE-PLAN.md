@@ -1,5 +1,7 @@
 # TeamUp — N-Tier SOLID Architecture & Design Patterns Specification
 
+> **Historical Architecture Blueprint:** Initial design specification. For the implemented production architecture (ISP services, typed domain exceptions + `GlobalExceptionHandler` instead of `Result<T>`, 24 runtime tables, 6 domain events, and STRIDE controls), see [`wiki/Architecture.md`](../../wiki/Architecture.md) and [`wiki/Backend Services.md`](../../wiki/Backend%20Services.md).
+
 ## 1. Architectural Philosophy & Objectives
 
 The goal of this architectural blueprint is to structure **TeamUp** as a **Clean, Modular N-Tier Monolith** that is:

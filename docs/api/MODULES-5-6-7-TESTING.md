@@ -8,8 +8,8 @@ For the implemented routes and request bodies, see [MODULES-5-6-7-IMPLEMENTATION
 Use the .NET 10 SDK required by the projects. From the repository root, run:
 
 ```powershell
-dotnet restore TeamUp.sln
-dotnet test TeamUp.sln --no-restore
+dotnet restore backend/TeamUp.sln
+dotnet test backend/TeamUp.sln --no-restore
 ```
 
 The integration tests use an in-memory SQLite database and a test HTTP server; they do not need a running SQL Server.
