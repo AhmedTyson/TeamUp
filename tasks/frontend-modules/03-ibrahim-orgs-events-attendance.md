@@ -97,3 +97,11 @@ M3 delivers the complete campus student activities & live event operations suite
 
 - `orgEventRoutes` route fragment → imported in `frontend/src/app/router.tsx`.
 - Calls shared `invalidateGamification(queryClient, studentId)` after successful self check-in so M4's XP chip & notifications update immediately.
+
+---
+
+## 6. Email Notification Opt-In & Event Template Handoff Contract
+
+- **Account-Level Opt-In Flag Already Wired:** `Student.EmailNotificationsEnabled` (`default: true`) is exposed via `GET /api/v1/students/me`, `PATCH /api/v1/students/me`, `/profile/me`, and `/auth/register`. Any future event-email trigger in M3 **must** check `student.EmailNotificationsEnabled` before dispatching.
+- **Event Email UI Template Ready (M3-Isolated):** `backend/src/TeamUp.Infrastructure/Templates/Emails/EventNotification.html` is embedded and ready for `ITemplateRenderer.RenderEmailAsync("EventNotification.html", values, ct)` with scalar keys: `RecipientName`, `StatusLabel`, `EventMonth`, `EventDay`, `EventTitle`, `OrganizationName`, `EventDateRange`, `VenueLocation`, `SummaryText`, `EventUrl`, and `PreferencesUrl`.
+- **Optional Future Per-Event Toggle:** If per-event registration mute toggles are added after M3 merges, extend `EventRegistration` in a dedicated additive migration without modifying account-level `Student` preference flags.

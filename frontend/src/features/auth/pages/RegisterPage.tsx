@@ -54,6 +54,9 @@ export function RegisterPage() {
       universityId: "",
       facultyId: "",
       academicYear: "1",
+      emailNotificationsEnabled: true,
+      receiveLeaderboardDigests: true,
+      receiveProjectMatchEmails: true,
     },
   });
 
@@ -64,6 +67,10 @@ export function RegisterPage() {
   const selectedFacultyId = useWatch({ control, name: "facultyId" }) ?? "";
   const watchedAcademicYear = useWatch({ control, name: "academicYear" }) ?? "1";
   const watchedPassword = useWatch({ control, name: "password" }) ?? "";
+  const watchedEmailNotificationsEnabled = useWatch({
+    control,
+    name: "emailNotificationsEnabled",
+  }) ?? true;
 
   useEffect(() => {
     if (cooldownSeconds <= 0) {
@@ -126,6 +133,11 @@ export function RegisterPage() {
         password: values.password,
         academicYear: Number.parseInt(values.academicYear, 10),
         facultyId: Number.parseInt(values.facultyId, 10),
+        emailNotificationsEnabled: values.emailNotificationsEnabled,
+        receiveLeaderboardDigests:
+          values.emailNotificationsEnabled && values.receiveLeaderboardDigests,
+        receiveProjectMatchEmails:
+          values.emailNotificationsEnabled && values.receiveProjectMatchEmails,
       });
 
       toast.success(`Welcome to TeamUp, ${result.student.firstName}!`);
@@ -355,6 +367,50 @@ export function RegisterPage() {
         />
 
         <PasswordStrengthHints password={watchedPassword} />
+
+        <fieldset className="space-y-2.5 rounded-xl border border-white/[0.08] bg-[#14151c]/65 p-3.5">
+          <legend className="px-1 text-[11px] font-semibold uppercase tracking-wider text-white/75">
+            Email &amp; Digest Preferences
+          </legend>
+          <label className="flex items-start gap-2.5 cursor-pointer text-xs text-white/85">
+            <input
+              type="checkbox"
+              {...register("emailNotificationsEnabled")}
+              className="mt-0.5 size-4 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
+            />
+            <span>Receive email notifications for account &amp; event updates</span>
+          </label>
+          <label
+            className={`flex items-start gap-2.5 pl-6 text-xs ${
+              watchedEmailNotificationsEnabled
+                ? "cursor-pointer text-white/75"
+                : "cursor-not-allowed text-white/40"
+            }`}
+          >
+            <input
+              type="checkbox"
+              disabled={!watchedEmailNotificationsEnabled}
+              {...register("receiveLeaderboardDigests")}
+              className="mt-0.5 size-4 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
+            />
+            <span>Leaderboard standings &amp; campus news digest</span>
+          </label>
+          <label
+            className={`flex items-start gap-2.5 pl-6 text-xs ${
+              watchedEmailNotificationsEnabled
+                ? "cursor-pointer text-white/75"
+                : "cursor-not-allowed text-white/40"
+            }`}
+          >
+            <input
+              type="checkbox"
+              disabled={!watchedEmailNotificationsEnabled}
+              {...register("receiveProjectMatchEmails")}
+              className="mt-0.5 size-4 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
+            />
+            <span>Recruiting project recommendations matching my skills</span>
+          </label>
+        </fieldset>
 
         <Button
           type="submit"

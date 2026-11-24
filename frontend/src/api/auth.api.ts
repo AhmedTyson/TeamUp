@@ -19,6 +19,9 @@ export interface RegisterPayload {
   password: string;
   academicYear: number;
   facultyId: number;
+  emailNotificationsEnabled?: boolean;
+  receiveLeaderboardDigests?: boolean;
+  receiveProjectMatchEmails?: boolean;
 }
 
 export interface ForgotPasswordPayload {
@@ -55,6 +58,9 @@ export interface AuthStudentSummary {
   photoUrl?: string | null;
   profile?: AuthStudentProfileSummary | null;
   showEmailInDirectory?: boolean;
+  emailNotificationsEnabled?: boolean;
+  receiveLeaderboardDigests?: boolean;
+  receiveProjectMatchEmails?: boolean;
 }
 
 export interface AuthResult {

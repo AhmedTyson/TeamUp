@@ -6,7 +6,10 @@ public sealed record RegisterRequest(
     string Email,
     string Password,
     int AcademicYear,
-    int FacultyId
+    int FacultyId,
+    bool EmailNotificationsEnabled = true,
+    bool ReceiveLeaderboardDigests = true,
+    bool ReceiveProjectMatchEmails = true
 );
 
 public sealed record LoginRequest(

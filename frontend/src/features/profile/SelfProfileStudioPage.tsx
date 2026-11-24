@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
+  Bell,
   Camera,
   Eye,
   EyeOff,
@@ -67,6 +68,9 @@ export function SelfProfileStudioPage() {
       lastName: "",
       academicYear: 1,
       showEmailInDirectory: false,
+      emailNotificationsEnabled: true,
+      receiveLeaderboardDigests: true,
+      receiveProjectMatchEmails: true,
     },
   });
 
@@ -89,6 +93,9 @@ export function SelfProfileStudioPage() {
         lastName: student.lastName,
         academicYear: student.academicYear,
         showEmailInDirectory: Boolean(student.showEmailInDirectory),
+        emailNotificationsEnabled: student.emailNotificationsEnabled ?? true,
+        receiveLeaderboardDigests: student.receiveLeaderboardDigests ?? true,
+        receiveProjectMatchEmails: student.receiveProjectMatchEmails ?? true,
       });
 
       profileForm.reset({
@@ -374,6 +381,68 @@ export function SelfProfileStudioPage() {
                     </p>
                   </div>
                 </label>
+              </div>
+
+              {/* Account-level Email & Digest Opt-In Preferences (per-event toggles remain isolated for M3) */}
+              <div className="space-y-3 rounded-2xl border border-white/[0.085] bg-[#14151c]/80 p-4">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
+                  <Bell className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
+                  <span>Email &amp; Digest Notifications</span>
+                </div>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    {...accountForm.register("emailNotificationsEnabled")}
+                    className="mt-0.5 size-4 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="block text-xs font-semibold text-white">
+                      Enable email notifications for account &amp; campus events
+                    </span>
+                    <span className="block text-[11px] text-[#9ca3af]">
+                      Essential security messages such as password resets are always delivered.
+                    </span>
+                  </div>
+                </label>
+
+                <div className="space-y-2.5 border-t border-white/[0.06] pt-3 pl-7">
+                  <label
+                    className={`flex items-start gap-3 ${
+                      accountForm.watch("emailNotificationsEnabled")
+                        ? "cursor-pointer"
+                        : "cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      disabled={!accountForm.watch("emailNotificationsEnabled")}
+                      {...accountForm.register("receiveLeaderboardDigests")}
+                      className="mt-0.5 size-4 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
+                    />
+                    <span className="text-xs text-white/85">
+                      Receive weekly Leaderboard &amp; Campus News digests
+                    </span>
+                  </label>
+
+                  <label
+                    className={`flex items-start gap-3 ${
+                      accountForm.watch("emailNotificationsEnabled")
+                        ? "cursor-pointer"
+                        : "cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      disabled={!accountForm.watch("emailNotificationsEnabled")}
+                      {...accountForm.register("receiveProjectMatchEmails")}
+                      className="mt-0.5 size-4 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
+                    />
+                    <span className="text-xs text-white/85">
+                      Receive recruiting project matches tailored to my skills &amp; portfolio
+                    </span>
+                  </label>
+                </div>
               </div>
 
               <div className="flex justify-end pt-2">

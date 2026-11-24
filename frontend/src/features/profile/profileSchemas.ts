@@ -34,6 +34,9 @@ export const updateAccountSchema = z.object({
     .min(1, "Academic year must be between 1 and 6.")
     .max(6, "Academic year must be between 1 and 6."),
   showEmailInDirectory: z.boolean(),
+  emailNotificationsEnabled: z.boolean(),
+  receiveLeaderboardDigests: z.boolean(),
+  receiveProjectMatchEmails: z.boolean(),
 });
 
 export type UpdateAccountFormValues = z.infer<typeof updateAccountSchema>;

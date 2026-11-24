@@ -275,6 +275,9 @@ describe("M1 Phase 1 — Auth Pages, Academic Catalog API & AppShell", () => {
         password: "CampusPass1",
         academicYear: 3,
         facultyId: 21,
+        emailNotificationsEnabled: true,
+        receiveLeaderboardDigests: true,
+        receiveProjectMatchEmails: true,
       });
     });
     expect(await screen.findByText("Projects Hub")).toBeInTheDocument();

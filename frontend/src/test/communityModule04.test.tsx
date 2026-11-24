@@ -234,6 +234,78 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
         );
       });
     });
+
+    it("persists email and digest opt-in checkboxes and disables sub-toggles when master switch is off", async () => {
+      const myDetail: StudentDetailDto = {
+        studentId: 10,
+        firstName: "Youssef",
+        lastName: "Adel",
+        email: "youssef@eng.cu.edu.eg",
+        academicYear: 4,
+        role: "Student",
+        facultyId: 2,
+        facultyName: "Faculty of Engineering",
+        universityName: "Cairo University",
+        profile: null,
+        interests: [],
+        showEmailInDirectory: false,
+        emailNotificationsEnabled: true,
+        receiveLeaderboardDigests: true,
+        receiveProjectMatchEmails: true,
+      };
+
+      vi.spyOn(studentsApi, "getMe").mockResolvedValue(myDetail);
+      const patchSpy = vi.spyOn(studentsApi, "updateMe").mockResolvedValue({
+        ...myDetail,
+        receiveProjectMatchEmails: false,
+      });
+
+      render(
+        <MemoryRouter initialEntries={["/profile/me"]}>
+          <AppCoreProviders initialUser={MOCK_STUDENT}>
+            <SelfProfileStudioPage />
+          </AppCoreProviders>
+        </MemoryRouter>,
+      );
+
+      expect(await screen.findByDisplayValue("Youssef")).toBeInTheDocument();
+
+      const masterToggle = screen.getByRole("checkbox", {
+        name: /enable email notifications for account/i,
+      });
+      const leaderboardToggle = screen.getByRole("checkbox", {
+        name: /receive weekly leaderboard/i,
+      });
+      const projectMatchToggle = screen.getByRole("checkbox", {
+        name: /receive recruiting project matches/i,
+      });
+
+      expect(masterToggle).toBeChecked();
+      expect(leaderboardToggle).toBeChecked();
+      expect(projectMatchToggle).toBeChecked();
+
+      fireEvent.click(projectMatchToggle);
+      expect(projectMatchToggle).not.toBeChecked();
+
+      fireEvent.click(masterToggle);
+      expect(leaderboardToggle).toBeDisabled();
+      expect(projectMatchToggle).toBeDisabled();
+
+      fireEvent.click(masterToggle);
+      expect(leaderboardToggle).not.toBeDisabled();
+
+      fireEvent.click(screen.getByRole("button", { name: /save account details/i }));
+
+      await waitFor(() => {
+        expect(patchSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            emailNotificationsEnabled: true,
+            receiveLeaderboardDigests: true,
+            receiveProjectMatchEmails: false,
+          }),
+        );
+      });
+    });
   });
 
   /* -------------------------------------------------------------------------

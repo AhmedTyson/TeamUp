@@ -42,6 +42,9 @@ export interface UpdateStudentRequest {
   lastName?: string;
   academicYear?: number;
   showEmailInDirectory?: boolean;
+  emailNotificationsEnabled?: boolean;
+  receiveLeaderboardDigests?: boolean;
+  receiveProjectMatchEmails?: boolean;
 }
 
 export interface StudentDetailDto {
@@ -57,6 +60,9 @@ export interface StudentDetailDto {
   profile: StudentProfileDto | null;
   interests: string[];
   showEmailInDirectory: boolean;
+  emailNotificationsEnabled?: boolean;
+  receiveLeaderboardDigests?: boolean;
+  receiveProjectMatchEmails?: boolean;
 }
 
 export interface StudentCardDto {

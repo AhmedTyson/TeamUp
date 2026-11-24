@@ -23,7 +23,10 @@ public sealed record UpdateStudentRequest(
     string? FirstName,
     string? LastName,
     int? AcademicYear,
-    bool? ShowEmailInDirectory = null
+    bool? ShowEmailInDirectory = null,
+    bool? EmailNotificationsEnabled = null,
+    bool? ReceiveLeaderboardDigests = null,
+    bool? ReceiveProjectMatchEmails = null
 );
 
 public sealed record StudentDetailDto(
@@ -38,7 +41,10 @@ public sealed record StudentDetailDto(
     string UniversityName,
     StudentProfileDto? Profile,
     IReadOnlyList<string> Interests,
-    bool ShowEmailInDirectory = false
+    bool ShowEmailInDirectory = false,
+    bool EmailNotificationsEnabled = true,
+    bool ReceiveLeaderboardDigests = true,
+    bool ReceiveProjectMatchEmails = true
 );
 
 public sealed record StudentCardDto(

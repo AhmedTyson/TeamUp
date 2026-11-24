@@ -40,7 +40,8 @@ public sealed class ProfileService(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
             student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
-            profileDto, interests, student.ShowEmailInDirectory);
+            profileDto, interests, student.ShowEmailInDirectory,
+            student.EmailNotificationsEnabled, student.ReceiveLeaderboardDigests, student.ReceiveProjectMatchEmails);
     }
 
     public async Task<StudentDetailDto> UpdateMyAccountAsync(int studentId, UpdateStudentRequest req, CancellationToken ct = default)
@@ -59,6 +60,15 @@ public sealed class ProfileService(
 
         if (req.ShowEmailInDirectory.HasValue)
             student.ShowEmailInDirectory = req.ShowEmailInDirectory.Value;
+
+        if (req.EmailNotificationsEnabled.HasValue)
+            student.EmailNotificationsEnabled = req.EmailNotificationsEnabled.Value;
+
+        if (req.ReceiveLeaderboardDigests.HasValue)
+            student.ReceiveLeaderboardDigests = req.ReceiveLeaderboardDigests.Value;
+
+        if (req.ReceiveProjectMatchEmails.HasValue)
+            student.ReceiveProjectMatchEmails = req.ReceiveProjectMatchEmails.Value;
 
         await db.SaveChangesAsync(ct);
 

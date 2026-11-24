@@ -59,6 +59,9 @@ export const registerSchema = z.object({
       const parsed = Number.parseInt(value, 10);
       return Number.isInteger(parsed) && parsed >= 1 && parsed <= 6;
     }, "Academic year must be between 1 and 6."),
+  emailNotificationsEnabled: z.boolean(),
+  receiveLeaderboardDigests: z.boolean(),
+  receiveProjectMatchEmails: z.boolean(),
 });
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
