@@ -173,14 +173,30 @@ test.describe("M1 Authentication E2E Smoke Suite", () => {
     }).toPass();
 
     // Verify Partner Universities directory renders official DB logos and paginates to page 2
+    const catalogRes = await page.request.get("http://localhost:5186/api/v1/universities/catalog");
+    expect(catalogRes.ok()).toBeTruthy();
+    const catalogJson = (await catalogRes.json()) as {
+      data?: Array<{ name: string; logoUrl?: string | null }>;
+    };
+    const cairoItem = catalogJson.data?.find((u) => u.name === "Cairo University");
+    const capitalItem = catalogJson.data?.find((u) => u.name === "Capital University");
+    expect(cairoItem?.logoUrl).toMatch(/^https:\/\//);
+    expect(capitalItem?.logoUrl).toMatch(/Capital_University_Logo\.png/);
+
     const partnerSection = page.locator("#partner-universities");
     await partnerSection.scrollIntoViewIfNeeded();
     const cairoLogo = partnerSection.getByAltText("Cairo University official logo");
     await expect(cairoLogo).toBeVisible();
-    await expect(cairoLogo).toHaveAttribute("src", /^https:\/\//);
+    await expect(cairoLogo).toHaveAttribute(
+      "src",
+      /^(https:\/\/|\/logos\/universities\/official\/cairo-university\.png$)/,
+    );
     const capitalLogo = partnerSection.getByAltText("Capital University official logo");
     await expect(capitalLogo).toBeVisible();
-    await expect(capitalLogo).toHaveAttribute("src", /Capital_University_Logo\.png/);
+    await expect(capitalLogo).toHaveAttribute(
+      "src",
+      /(Capital_University_Logo\.png|\/logos\/universities\/official\/capital-university\.png$)/,
+    );
     await partnerSection.getByRole("button", { name: "Next page" }).click();
     await expect(partnerSection.getByAltText("Zagazig University official logo")).toBeVisible();
 
