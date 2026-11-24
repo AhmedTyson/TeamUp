@@ -3,6 +3,8 @@
 
 using System.Net;
 using System.Net.Mail;
+using System.Net.Mime;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TeamUp.Application.Common.Interfaces;
@@ -60,5 +62,58 @@ public sealed class SmtpEmailSender(
 
         await client.SendMailAsync(message, ct);
         logger.LogInformation("Dispatched password reset email via SMTP to {Email}", toEmail);
+    }
+
+    public async Task SendTemplatedEmailAsync(EmailDispatchRequest request, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(_email.SmtpHost))
+            throw new InvalidOperationException("Email:SmtpHost must be configured when Email:Provider is Smtp.");
+
+        using var message = new MailMessage
+        {
+            From = new MailAddress(_email.FromAddress, _email.FromName),
+            Subject = request.Subject
+        };
+        message.To.Add(new MailAddress(request.ToEmail));
+
+        if (!string.IsNullOrWhiteSpace(request.PlainTextBody))
+        {
+            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(
+                request.PlainTextBody, Encoding.UTF8, MediaTypeNames.Text.Plain));
+            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(
+                request.HtmlBody, Encoding.UTF8, MediaTypeNames.Text.Html));
+        }
+        else
+        {
+            message.Body = request.HtmlBody;
+            message.IsBodyHtml = true;
+        }
+
+        if (request.Attachments is { Count: > 0 })
+        {
+            foreach (var attachment in request.Attachments)
+            {
+                var stream = new MemoryStream(attachment.Content, writable: false);
+                message.Attachments.Add(new Attachment(stream, attachment.FileName, attachment.ContentType));
+            }
+        }
+
+        using var client = new SmtpClient(_email.SmtpHost, _email.SmtpPort)
+        {
+            EnableSsl = _email.UseSsl,
+            DeliveryMethod = SmtpDeliveryMethod.Network
+        };
+
+        if (!string.IsNullOrWhiteSpace(_email.Username))
+        {
+            client.Credentials = new NetworkCredential(_email.Username, _email.Password);
+        }
+
+        await client.SendMailAsync(message, ct);
+        logger.LogInformation(
+            "Dispatched templated email '{Subject}' with {AttachmentCount} attachment(s) via SMTP to {Email}",
+            request.Subject,
+            request.Attachments?.Count ?? 0,
+            request.ToEmail);
     }
 }

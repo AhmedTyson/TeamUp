@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <title>TeamUp Platform Governance Report</title>
+  <style>
+    @media only screen and (max-width: 620px) {
+      .email-shell { padding: 12px 8px !important; }
+      .masthead-pad { padding: 18px 20px !important; }
+      .email-pad { padding: 24px 20px !important; }
+      .stack-cell { display: block !important; width: 100% !important; box-sizing: border-box !important; border-right: none !important; border-bottom: 1px solid #E2E6E0 !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F3F5F2;color:#14151C;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-shell" style="background-color:#F3F5F2;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;margin:0 auto;background-color:#FFFFFF;border:1px solid #E2E6E0;">
+          <tr>
+            <td class="masthead-pad" style="background-color:#14151C;padding:20px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="left" style="vertical-align:middle;">
+                    <span style="display:inline-block;width:8px;height:8px;background-color:#D3FB52;vertical-align:middle;margin-right:10px;"></span>
+                    <span style="font-size:17px;font-weight:800;letter-spacing:-0.02em;color:#FFFFFF;vertical-align:middle;">TeamUp</span>
+                  </td>
+                  <td align="right" style="vertical-align:middle;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:10px;letter-spacing:0.14em;color:#A1A6B4;text-transform:uppercase;">
+                    GOVERNANCE / EXECUTIVE PDF
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#D3FB52;height:3px;line-height:3px;font-size:0;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td class="email-pad" style="padding:32px;">
+              <p style="margin:0 0 6px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:11px;letter-spacing:0.12em;color:#6B7280;text-transform:uppercase;">
+                {{ReportPeriod}} &middot; {{GeneratedAtUtc}}
+              </p>
+              <h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;font-weight:700;letter-spacing:-0.02em;color:#14151C;">
+                Platform Governance Summary Attached
+              </h1>
+              <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:#4B5260;">
+                Prepared for <strong style="color:#14151C;">{{AdminName}}</strong>. Below is the executive snapshot of live TeamUp records matching the attached vector PDF report.
+              </p>
+
+              <!-- 2x2 KPI Metric Grid -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 22px;border:1px solid #E2E6E0;">
+                <tr>
+                  <td width="50%" class="stack-cell" style="padding:14px 16px;border-right:1px solid #E2E6E0;border-bottom:1px solid #E2E6E0;background-color:#F8F9F7;">
+                    <p style="margin:0 0 4px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:10px;letter-spacing:0.1em;color:#6B7280;text-transform:uppercase;">
+                      STUDENTS
+                    </p>
+                    <p style="margin:0;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;color:#14151C;">
+                      {{TotalStudents}}
+                    </p>
+                  </td>
+                  <td width="50%" class="stack-cell" style="padding:14px 16px;border-bottom:1px solid #E2E6E0;background-color:#F8F9F7;">
+                    <p style="margin:0 0 4px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:10px;letter-spacing:0.1em;color:#6B7280;text-transform:uppercase;">
+                      ACTIVE PROJECTS
+                    </p>
+                    <p style="margin:0;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;color:#14151C;">
+                      {{ActiveProjects}}
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="50%" class="stack-cell" style="padding:14px 16px;border-right:1px solid #E2E6E0;background-color:#FFFFFF;">
+                    <p style="margin:0 0 4px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:10px;letter-spacing:0.1em;color:#6B7280;text-transform:uppercase;">
+                      ACTIVE EVENTS
+                    </p>
+                    <p style="margin:0;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;color:#15733F;">
+                      {{ActiveEvents}}
+                    </p>
+                  </td>
+                  <td width="50%" class="stack-cell" style="padding:14px 16px;background-color:#FFFFFF;">
+                    <p style="margin:0 0 4px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:10px;letter-spacing:0.1em;color:#6B7280;text-transform:uppercase;">
+                      AUDIT LOG ENTRIES
+                    </p>
+                    <p style="margin:0;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;color:#14151C;">
+                      {{AuditEventsCount}}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 24px;border:1px solid #BBE5CB;background-color:#EDF8F1;">
+                <tr>
+                  <td style="padding:14px 16px;">
+                    <span style="display:inline-block;padding:2px 6px;background-color:#15733F;color:#FFFFFF;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:10px;font-weight:700;letter-spacing:0.08em;border-radius:2px;margin-right:8px;vertical-align:middle;">PDF</span>
+                    <span style="font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#14151C;vertical-align:middle;word-break:break-all;">{{AttachmentFileName}}</span>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="background-color:#14151C;border-radius:2px;">
+                    <a href="{{AdminConsoleUrl}}" style="display:inline-block;padding:13px 24px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#D3FB52;text-decoration:none;">
+                      OPEN ADMIN CONSOLE
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 32px;border-top:1px solid #E2E6E0;background-color:#F8F9F7;">
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#6B7280;">
+                TeamUp Platform Governance &middot; Restricted to PlatformAdmin recipients &middot; Immutable Audit Log Verified.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
