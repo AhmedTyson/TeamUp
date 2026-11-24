@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TeamUp.Application.Auth;
 using TeamUp.Application.Common.Caching;
@@ -23,8 +24,15 @@ public sealed class AuthService(
     IEmailSender emailSender,
     IOptions<JwtOptions> jwtOptions,
     IOrganizationAuthorizationService orgAuth,
-    ISecurityStampValidator stampValidator) : IAuthService
+    ISecurityStampValidator stampValidator,
+    ILogger<AuthService> logger) : IAuthService
 {
+    /// <summary>Failures allowed before escalating per-account delays start.</summary>
+    public const int FreeFailedLoginAttempts = 5;
+    public static readonly TimeSpan MaxLockout = TimeSpan.FromMinutes(15);
+    /// <summary>A just-rotated token presented again within this window is treated as a client race, not theft.</summary>
+    public static readonly TimeSpan RefreshReuseGrace = TimeSpan.FromSeconds(10);
+
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest req, CancellationToken ct = default)
@@ -91,9 +99,32 @@ public sealed class AuthService(
             .FirstOrDefaultAsync(s => s.Email == email, ct)
             ?? throw new UnauthorizedException("Invalid email or password.");
 
+        // Escalating per-account delay (not a permanent lockout, so it cannot be abused for lasting DoS).
+        // The response is identical to a wrong password so lockout state does not reveal the account.
+        if (student.LockoutEndUtc is { } lockedUntil && lockedUntil > DateTime.UtcNow)
+        {
+            logger.LogWarning("Login rejected for StudentId {StudentId}: account in temporary lockout.", student.StudentId);
+            throw new UnauthorizedException("Invalid email or password.");
+        }
+
         var result = hasher.VerifyHashedPassword(student, student.PasswordHash, req.Password);
         if (result == PasswordVerificationResult.Failed)
+        {
+            student.FailedLoginCount++;
+            if (student.FailedLoginCount > FreeFailedLoginAttempts)
+            {
+                var exponent = Math.Min(student.FailedLoginCount - FreeFailedLoginAttempts - 1, 10);
+                var delay = TimeSpan.FromSeconds(Math.Min(30 * Math.Pow(2, exponent), MaxLockout.TotalSeconds));
+                student.LockoutEndUtc = DateTime.UtcNow.Add(delay);
+                logger.LogWarning("StudentId {StudentId} reached {Count} failed logins; locked for {Seconds}s.",
+                    student.StudentId, student.FailedLoginCount, (int)delay.TotalSeconds);
+            }
+            await db.SaveChangesAsync(ct);
             throw new UnauthorizedException("Invalid email or password.");
+        }
+
+        student.FailedLoginCount = 0;
+        student.LockoutEndUtc = null;
 
         if (student.SecurityStamp == Guid.Empty)
             student.SecurityStamp = Guid.NewGuid();
@@ -110,6 +141,8 @@ public sealed class AuthService(
         var rawRefreshToken = jwt.GenerateRefreshToken();
         student.RefreshToken = jwt.HashToken(rawRefreshToken);
         student.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays);
+        student.PreviousRefreshToken = null;
+        student.PreviousRefreshTokenRotatedAt = null;
         await db.SaveChangesAsync(ct);
 
         var summary = new StudentSummaryDto(
@@ -134,7 +167,13 @@ public sealed class AuthService(
             .Include(s => s.Profile)
             .FirstOrDefaultAsync(s => s.RefreshToken == hashedToken, ct);
 
-        if (student is null || student.RefreshTokenExpiresAt is null || student.RefreshTokenExpiresAt <= DateTime.UtcNow)
+        if (student is null)
+        {
+            await HandlePossibleRefreshReuseAsync(hashedToken, ct);
+            throw new UnauthorizedException("Invalid or expired refresh token.");
+        }
+
+        if (student.RefreshTokenExpiresAt is null || student.RefreshTokenExpiresAt <= DateTime.UtcNow)
             throw new UnauthorizedException("Invalid or expired refresh token.");
 
         if (student.SecurityStamp == Guid.Empty)
@@ -150,6 +189,8 @@ public sealed class AuthService(
             adminOrgIds);
 
         var rawRefreshToken = jwt.GenerateRefreshToken();
+        student.PreviousRefreshToken = student.RefreshToken;
+        student.PreviousRefreshTokenRotatedAt = DateTime.UtcNow;
         student.RefreshToken = jwt.HashToken(rawRefreshToken);
         student.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays);
         await db.SaveChangesAsync(ct);
@@ -163,6 +204,29 @@ public sealed class AuthService(
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
 
+    /// <summary>
+    /// A token that is no longer current but equals the previous generation was already rotated. Outside the short
+    /// race grace window that means a stale copy is being replayed, so the whole session is revoked (RFC 6819 5.2.2.3).
+    /// </summary>
+    private async Task HandlePossibleRefreshReuseAsync(string hashedToken, CancellationToken ct)
+    {
+        var victim = await db.Students.FirstOrDefaultAsync(s => s.PreviousRefreshToken == hashedToken, ct);
+        if (victim is null || victim.PreviousRefreshTokenRotatedAt is null)
+            return;
+
+        if (DateTime.UtcNow - victim.PreviousRefreshTokenRotatedAt.Value <= RefreshReuseGrace)
+            return;
+
+        logger.LogWarning("Refresh token reuse detected for StudentId {StudentId}; session revoked.", victim.StudentId);
+        victim.RefreshToken = null;
+        victim.RefreshTokenExpiresAt = null;
+        victim.PreviousRefreshToken = null;
+        victim.PreviousRefreshTokenRotatedAt = null;
+        victim.SecurityStamp = Guid.NewGuid();
+        await db.SaveChangesAsync(ct);
+        stampValidator.Invalidate(victim.StudentId);
+    }
+
     public async Task LogoutAsync(int studentId, CancellationToken ct = default)
     {
         var student = await db.Students.FirstOrDefaultAsync(s => s.StudentId == studentId, ct);
@@ -170,6 +234,8 @@ public sealed class AuthService(
         {
             student.RefreshToken = null;
             student.RefreshTokenExpiresAt = null;
+            student.PreviousRefreshToken = null;
+            student.PreviousRefreshTokenRotatedAt = null;
             student.SecurityStamp = Guid.NewGuid();
             await db.SaveChangesAsync(ct);
             stampValidator.Invalidate(studentId);
@@ -219,6 +285,10 @@ public sealed class AuthService(
         // Immediately invalidate all active access & refresh tokens on password change (STRIDE THR-E-02)
         student.RefreshToken = null;
         student.RefreshTokenExpiresAt = null;
+        student.PreviousRefreshToken = null;
+        student.PreviousRefreshTokenRotatedAt = null;
+        student.FailedLoginCount = 0;
+        student.LockoutEndUtc = null;
         student.SecurityStamp = Guid.NewGuid();
 
         await db.SaveChangesAsync(ct);
