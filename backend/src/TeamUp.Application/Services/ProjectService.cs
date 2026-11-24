@@ -145,7 +145,7 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
     public async Task RemoveMemberAsync(int studentId, int projectId, int memberStudentId, CancellationToken ct)
     {
         var project = await GetProjectEntityAsync(projectId, ct);
-        if (studentId != project.CreatorId && studentId != memberStudentId) throw new UnauthorizedException("Only the project creator or the member themselves can remove this member.");
+        if (studentId != project.CreatorId && studentId != memberStudentId) throw new ForbiddenException("Only the project creator or the member themselves can remove this member.");
         if (memberStudentId == project.CreatorId) throw new ConflictException("The project creator cannot leave or be removed from their own project.");
         var member = await db.ProjectMembers.FirstOrDefaultAsync(m => m.ProjectId == projectId && m.StudentId == memberStudentId, ct)
             ?? throw new NotFoundException("Project member not found.");
@@ -216,7 +216,7 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
     {
         var application = await db.ProjectApplications.FirstOrDefaultAsync(a => a.ApplicationId == applicationId && a.ProjectId == projectId, ct)
             ?? throw new NotFoundException("Application not found.");
-        if (application.StudentId != studentId) throw new UnauthorizedException("You can only withdraw your own application.");
+        if (application.StudentId != studentId) throw new ForbiddenException("You can only withdraw your own application.");
         if (application.Status != ApplicationStatus.Pending) throw new ConflictException("Only pending applications can be withdrawn.");
         application.Status = ApplicationStatus.Withdrawn;
         application.DeletedAt = DateTime.UtcNow;
@@ -252,6 +252,14 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
             ?? throw new NotFoundException("Task not found.");
         await EnsureMemberAsync(studentId, task.ProjectId, ct);
         var previousStatus = task.Status;
+        if (request.Status.HasValue && request.Status.Value != previousStatus)
+        {
+            // Status drives XP: only the assignee or the project creator may move a task (unassigned tasks stay open to members).
+            var creatorId = await db.Projects.Where(p => p.ProjectId == task.ProjectId).Select(p => p.CreatorId).FirstAsync(ct);
+            var mayChangeStatus = studentId == creatorId || studentId == task.AssignedStudentId || task.AssignedStudentId is null;
+            if (!mayChangeStatus)
+                throw new ForbiddenException("Only the assignee or the project creator can change this task's status.");
+        }
         if (request.Title is not null) task.Title = request.Title.Trim();
         if (request.Description is not null) task.Description = request.Description;
         if (request.Status.HasValue)
@@ -303,9 +311,9 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
     private async Task EnsureMemberAsync(int studentId, int projectId, CancellationToken ct)
     {
         await EnsureProjectExistsAsync(projectId, ct);
-        if (!await db.ProjectMembers.AnyAsync(m => m.ProjectId == projectId && m.StudentId == studentId, ct)) throw new UnauthorizedException("You must be a confirmed project member to access its tasks.");
+        if (!await db.ProjectMembers.AnyAsync(m => m.ProjectId == projectId && m.StudentId == studentId, ct)) throw new ForbiddenException("You must be a confirmed project member to access its tasks.");
     }
-    private static void EnsureCreator(Project project, int studentId) { if (project.CreatorId != studentId) throw new UnauthorizedException("Only the project creator can perform this action."); }
+    private static void EnsureCreator(Project project, int studentId) { if (project.CreatorId != studentId) throw new ForbiddenException("Only the project creator can perform this action."); }
     private static ProjectApplicationDto ToApplicationDto(ProjectApplication a) => new(a.ApplicationId, a.ProjectId, a.StudentId, a.Student.FirstName + " " + a.Student.LastName, a.Message, a.Status, a.AppliedAt);
     private static ProjectTaskDto ToTaskDto(ProjectTask t) => new(t.TaskId, t.Title, t.Description, t.Status, t.Priority, t.DueDate, t.ProjectId, t.AssignedStudentId, t.AssignedStudent is null ? null : t.AssignedStudent.FirstName + " " + t.AssignedStudent.LastName);
 }

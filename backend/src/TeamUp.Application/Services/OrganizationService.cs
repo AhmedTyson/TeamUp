@@ -297,7 +297,7 @@ public sealed class OrganizationService(
             .FirstOrDefaultAsync(x => x.OrganizationId == organizationId && x.ApplicationId == applicationId, ct)
             ?? throw new NotFoundException("Membership application was not found.");
         if (application.StudentId != studentId)
-            throw new UnauthorizedException("You are not allowed to withdraw this application.");
+            throw new ForbiddenException("You are not allowed to withdraw this application.");
         if (application.Status != ApplicationStatus.Pending)
             throw new ConflictException("Only pending applications can be withdrawn.");
 

@@ -86,7 +86,7 @@ public class ProjectsTeamsTasksTests(TeamUpApiFactory factory) : IClassFixture<T
         Assert.Null(afterRemoval.AssignedStudentId);
 
         var removedMemberTaskAccess = await applicant.GetAsync($"/api/v1/tasks/{task.TaskId}");
-        Assert.Equal(HttpStatusCode.Unauthorized, removedMemberTaskAccess.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, removedMemberTaskAccess.StatusCode);
 
         var deleteTask = await creator.DeleteAsync($"/api/v1/tasks/{task.TaskId}");
         Assert.Equal(HttpStatusCode.NoContent, deleteTask.StatusCode);
