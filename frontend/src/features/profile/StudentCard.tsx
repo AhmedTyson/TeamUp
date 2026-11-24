@@ -5,13 +5,17 @@
 import { Link } from "react-router-dom";
 import type { StudentCardDto } from "@/api/students.api";
 import { Avatar, Badge } from "@/components/ui";
+import { useAuth } from "@/features/auth";
 
 export interface StudentCardProps {
   student: StudentCardDto;
 }
 
 export function StudentCard({ student }: StudentCardProps) {
+  const { user } = useAuth();
   const fullName = `${student.firstName} ${student.lastName}`;
+  const isSelfPrivate =
+    user?.studentId === student.studentId && user.showEmailInDirectory === false;
 
   return (
     <article className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#1b1d26] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/40 shadow-sm">
@@ -39,10 +43,22 @@ export function StudentCard({ student }: StudentCardProps) {
         </div>
 
         {/* Email Privacy Mask (STRIDE THR-I-01) */}
-        <div className="rounded-xl border border-white/[0.06] bg-[#14151c] px-3 py-1.5 text-xs">
-          <span className="text-[#9ca3af]">Directory Email: </span>
+        <div className="rounded-xl border border-white/[0.06] bg-[#14151c] px-3 py-1.5 text-xs flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <span className="text-[#9ca3af]">Directory Email:</span>
           {student.email ? (
-            <span className="font-mono text-white/90">{student.email}</span>
+            <>
+              <a
+                href={`mailto:${student.email}`}
+                className="font-mono text-white/90 hover:text-[#d3fb52] hover:underline break-all"
+              >
+                {student.email}
+              </a>
+              {isSelfPrivate && (
+                <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] text-[#9ca3af]">
+                  Only visible to you · Private
+                </span>
+              )}
+            </>
           ) : (
             <span className="italic text-[#9ca3af]/80">Email private</span>
           )}

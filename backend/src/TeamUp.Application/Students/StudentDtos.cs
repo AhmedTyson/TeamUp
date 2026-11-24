@@ -86,7 +86,8 @@ public sealed record StudentPublicProfileDto(
     string FacultyName,
     string UniversityName,
     StudentProfileDto? Profile,
-    IReadOnlyList<string> Interests
+    IReadOnlyList<string> Interests,
+    string? Email = null
 );
 
 public sealed record StudentDirectoryQuery(

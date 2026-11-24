@@ -88,6 +88,7 @@ export interface StudentPublicProfileDto {
   universityName: string;
   profile: StudentProfileDto | null;
   interests: string[];
+  email?: string | null;
 }
 
 export interface StudentDirectoryQueryParams {

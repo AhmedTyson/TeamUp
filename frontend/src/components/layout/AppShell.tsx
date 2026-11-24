@@ -56,6 +56,9 @@ export function AppShell({ xpChipSlot, notificationSlot, children }: AppShellPro
                 <Link to="/leaderboard" className="hover:text-[#d3fb52]">
                   Leaderboard
                 </Link>
+                <Link to="/privacy" className="hover:text-[#d3fb52]">
+                  Privacy &amp; Policy
+                </Link>
               </div>
             </div>
           </footer>

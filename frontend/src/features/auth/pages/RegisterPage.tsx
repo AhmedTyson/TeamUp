@@ -3,7 +3,7 @@
  * @purpose Student onboarding registration screen with live University -> Faculty catalog cascade, Campus Credential Card preview, and focusable error summary.
  */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Eye, EyeOff, GraduationCap, Lock, Mail, UserPlus } from "lucide-react";
+import { Building2, ChevronDown, Eye, EyeOff, GraduationCap, Lock, Mail, UserPlus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -31,6 +31,7 @@ export function RegisterPage() {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [emailPrefsOpen, setEmailPrefsOpen] = useState(false);
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const errorRegionRef = useRef<HTMLDivElement>(null);
@@ -67,10 +68,29 @@ export function RegisterPage() {
   const selectedFacultyId = useWatch({ control, name: "facultyId" }) ?? "";
   const watchedAcademicYear = useWatch({ control, name: "academicYear" }) ?? "1";
   const watchedPassword = useWatch({ control, name: "password" }) ?? "";
-  const watchedEmailNotificationsEnabled = useWatch({
-    control,
-    name: "emailNotificationsEnabled",
-  }) ?? true;
+  const watchedEmailNotificationsEnabled =
+    useWatch({
+      control,
+      name: "emailNotificationsEnabled",
+    }) ?? true;
+  const watchedReceiveLeaderboardDigests =
+    useWatch({
+      control,
+      name: "receiveLeaderboardDigests",
+    }) ?? true;
+  const watchedReceiveProjectMatchEmails =
+    useWatch({
+      control,
+      name: "receiveProjectMatchEmails",
+    }) ?? true;
+
+  const activeDigestCount =
+    (watchedReceiveLeaderboardDigests ? 1 : 0) + (watchedReceiveProjectMatchEmails ? 1 : 0);
+  const emailPrefsSummary = !watchedEmailNotificationsEnabled
+    ? "Paused (security only)"
+    : activeDigestCount > 0
+      ? `${activeDigestCount} of 2 digests`
+      : "Account only";
 
   useEffect(() => {
     if (cooldownSeconds <= 0) {
@@ -368,49 +388,99 @@ export function RegisterPage() {
 
         <PasswordStrengthHints password={watchedPassword} />
 
-        <fieldset className="space-y-2.5 rounded-xl border border-white/[0.08] bg-[#14151c]/65 p-3.5">
-          <legend className="px-1 text-[11px] font-semibold uppercase tracking-wider text-white/75">
-            Email &amp; Digest Preferences
-          </legend>
-          <label className="flex items-start gap-2.5 cursor-pointer text-xs text-white/85">
-            <input
-              type="checkbox"
-              {...register("emailNotificationsEnabled")}
-              className="mt-0.5 size-4 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
-            />
-            <span>Receive email notifications for account &amp; event updates</span>
-          </label>
-          <label
-            className={`flex items-start gap-2.5 pl-6 text-xs ${
-              watchedEmailNotificationsEnabled
-                ? "cursor-pointer text-white/75"
-                : "cursor-not-allowed text-white/40"
-            }`}
+        <div className="rounded-xl border border-white/[0.08] bg-[#14151c]/65 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-3.5">
+            <label className="flex flex-1 min-w-0 items-start gap-2.5 cursor-pointer text-xs text-white/90">
+              <input
+                type="checkbox"
+                {...register("emailNotificationsEnabled")}
+                className="mt-0.5 size-4 shrink-0 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
+              />
+              <span className="min-w-0">
+                <span className="block font-semibold text-white">
+                  Send me email notifications
+                </span>
+                <span className="block text-[11px] text-[#9ca3af]">
+                  Account updates, event notices, and optional digests
+                </span>
+              </span>
+            </label>
+
+            <button
+              type="button"
+              onClick={() => setEmailPrefsOpen((open) => !open)}
+              aria-expanded={emailPrefsOpen}
+              aria-controls="register-email-prefs-panel"
+              aria-label="Customize email notification topics"
+              className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-[#1b1d26] px-2.5 py-1.5 text-[11px] font-semibold text-white/85 transition-colors hover:border-[#d3fb52]/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+            >
+              <span className={watchedEmailNotificationsEnabled ? "text-[#d3fb52]" : "text-[#9ca3af]"}>
+                {emailPrefsSummary}
+              </span>
+              <ChevronDown
+                className={`size-3.5 transition-transform duration-200 ${
+                  emailPrefsOpen ? "rotate-180 text-[#d3fb52]" : "text-white/70"
+                }`}
+                aria-hidden="true"
+              />
+            </button>
+          </div>
+
+          <div
+            id="register-email-prefs-panel"
+            hidden={!emailPrefsOpen}
+            className="space-y-2.5 border-t border-white/[0.08] bg-[#101118]/75 px-3.5 py-3"
           >
-            <input
-              type="checkbox"
-              disabled={!watchedEmailNotificationsEnabled}
-              {...register("receiveLeaderboardDigests")}
-              className="mt-0.5 size-4 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
-            />
-            <span>Leaderboard standings &amp; campus news digest</span>
-          </label>
-          <label
-            className={`flex items-start gap-2.5 pl-6 text-xs ${
-              watchedEmailNotificationsEnabled
-                ? "cursor-pointer text-white/75"
-                : "cursor-not-allowed text-white/40"
-            }`}
+            <label
+              className={`flex items-start gap-2.5 pl-6 text-xs ${
+                watchedEmailNotificationsEnabled
+                  ? "cursor-pointer text-white/80"
+                  : "cursor-not-allowed text-white/40"
+              }`}
+            >
+              <input
+                type="checkbox"
+                disabled={!watchedEmailNotificationsEnabled}
+                {...register("receiveLeaderboardDigests")}
+                className="mt-0.5 size-3.5 shrink-0 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
+              />
+              <span>Leaderboard standings &amp; campus news digest</span>
+            </label>
+
+            <label
+              className={`flex items-start gap-2.5 pl-6 text-xs ${
+                watchedEmailNotificationsEnabled
+                  ? "cursor-pointer text-white/80"
+                  : "cursor-not-allowed text-white/40"
+              }`}
+            >
+              <input
+                type="checkbox"
+                disabled={!watchedEmailNotificationsEnabled}
+                {...register("receiveProjectMatchEmails")}
+                className="mt-0.5 size-3.5 shrink-0 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
+              />
+              <span>Recruiting project recommendations matching my skills</span>
+            </label>
+
+            <p className="pl-6 text-[11px] leading-relaxed text-[#9ca3af]">
+              Essential security messages such as password resets are always delivered. Manage your
+              visibility and notification choices anytime in Profile Studio.
+            </p>
+          </div>
+        </div>
+
+        <p className="text-[11px] leading-relaxed text-[#9ca3af]">
+          Your university email is private by default (THR-I-01) and never shown to other students
+          unless you opt in. Read our{" "}
+          <Link
+            to="/privacy"
+            className="font-semibold text-[#d3fb52] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
           >
-            <input
-              type="checkbox"
-              disabled={!watchedEmailNotificationsEnabled}
-              {...register("receiveProjectMatchEmails")}
-              className="mt-0.5 size-4 rounded border-white/20 bg-[#14151c] text-[#d3fb52] focus:ring-[#d3fb52]"
-            />
-            <span>Recruiting project recommendations matching my skills</span>
-          </label>
-        </fieldset>
+            Privacy &amp; Policy
+          </Link>
+          .
+        </p>
 
         <Button
           type="submit"

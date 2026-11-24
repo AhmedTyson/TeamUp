@@ -311,6 +311,14 @@ public class StrideSecurityAndBackendCompletionTests(TeamUpApiFactory factory) :
         var cardA = Assert.Single(page.Items, s => s.StudentId == authA.Student.StudentId);
         Assert.Null(cardA.Email);
 
+        // Public portfolio also masks Student A's email for peer, while Student A sees their own email
+        var pubPeerBefore = await DataAsync<StudentPublicProfileDto>(
+            await studentB.GetAsync($"/api/v1/students/{authA.Student.StudentId}"));
+        Assert.Null(pubPeerBefore.Email);
+        var pubSelfBefore = await DataAsync<StudentPublicProfileDto>(
+            await studentA.GetAsync($"/api/v1/students/{authA.Student.StudentId}"));
+        Assert.Equal(authA.Student.Email, pubSelfBefore.Email);
+
         // Searching by Student A's private email yields zero matches for Student B
         var emailProbe = await DataAsync<PagedResult<StudentCardDto>>(
             await studentB.GetAsync($"/api/v1/students?search={Uri.EscapeDataString(authA.Student.Email)}"));
@@ -319,11 +327,41 @@ public class StrideSecurityAndBackendCompletionTests(TeamUpApiFactory factory) :
         // Student A opts into email visibility
         var optIn = await studentA.PatchAsJsonAsync("/api/v1/students/me", new UpdateStudentRequest(null, null, null, ShowEmailInDirectory: true));
         Assert.Equal(HttpStatusCode.OK, optIn.StatusCode);
+        var optInDetail = await DataAsync<StudentDetailDto>(optIn);
+        Assert.True(optInDetail.ShowEmailInDirectory);
 
         var afterOptIn = await DataAsync<PagedResult<StudentCardDto>>(
             await studentB.GetAsync($"/api/v1/students?search=privacyA"));
         var visibleCardA = Assert.Single(afterOptIn.Items, s => s.StudentId == authA.Student.StudentId);
         Assert.Equal(authA.Student.Email, visibleCardA.Email);
+
+        var pubPeerAfter = await DataAsync<StudentPublicProfileDto>(
+            await studentB.GetAsync($"/api/v1/students/{authA.Student.StudentId}"));
+        Assert.Equal(authA.Student.Email, pubPeerAfter.Email);
+
+        // Searching by email now finds Student A for peer, and re-logging in includes ShowEmailInDirectory=true
+        var emailProbeVisible = await DataAsync<PagedResult<StudentCardDto>>(
+            await studentB.GetAsync($"/api/v1/students?search={Uri.EscapeDataString(authA.Student.Email)}"));
+        Assert.Contains(emailProbeVisible.Items, s => s.StudentId == authA.Student.StudentId);
+
+        var loginAgainRes = await _anonymous.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest(authA.Student.Email, "P@ssword123!"));
+        Assert.Equal(HttpStatusCode.OK, loginAgainRes.StatusCode);
+        var loginAgain = await DataAsync<AuthResponse>(loginAgainRes);
+        Assert.True(loginAgain.Student.ShowEmailInDirectory);
+
+        // Student A opts back out -> peer sees null again on directory and portfolio, and email search hides them
+        var optOut = await studentA.PatchAsJsonAsync("/api/v1/students/me", new UpdateStudentRequest(null, null, null, ShowEmailInDirectory: false));
+        Assert.Equal(HttpStatusCode.OK, optOut.StatusCode);
+
+        var dirAfterOptOut = await DataAsync<PagedResult<StudentCardDto>>(
+            await studentB.GetAsync($"/api/v1/students?search=privacyA"));
+        Assert.Null(Assert.Single(dirAfterOptOut.Items, s => s.StudentId == authA.Student.StudentId).Email);
+        var pubAfterOptOut = await DataAsync<StudentPublicProfileDto>(
+            await studentB.GetAsync($"/api/v1/students/{authA.Student.StudentId}"));
+        Assert.Null(pubAfterOptOut.Email);
+        var emailProbeAfterOptOut = await DataAsync<PagedResult<StudentCardDto>>(
+            await studentB.GetAsync($"/api/v1/students?search={Uri.EscapeDataString(authA.Student.Email)}"));
+        Assert.DoesNotContain(emailProbeAfterOptOut.Items, s => s.StudentId == authA.Student.StudentId);
     }
 
     [Fact]

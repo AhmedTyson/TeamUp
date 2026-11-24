@@ -45,7 +45,11 @@ public sealed record StudentSummaryDto(
     int FacultyId,
     string FacultyName,
     string UniversityName,
-    string? PhotoUrl = null
+    string? PhotoUrl = null,
+    bool ShowEmailInDirectory = false,
+    bool EmailNotificationsEnabled = true,
+    bool ReceiveLeaderboardDigests = true,
+    bool ReceiveProjectMatchEmails = true
 );
 
 public sealed record AuthResponse(

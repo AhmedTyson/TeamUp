@@ -15,7 +15,11 @@ public interface IStudentAccountService
         int viewerStudentId = 0,
         string? viewerRole = null,
         CancellationToken ct = default);
-    Task<StudentPublicProfileDto> GetStudentPublicProfileByIdAsync(int studentId, CancellationToken ct = default);
+    Task<StudentPublicProfileDto> GetStudentPublicProfileByIdAsync(
+        int studentId,
+        int viewerStudentId = 0,
+        string? viewerRole = null,
+        CancellationToken ct = default);
     Task<IReadOnlyList<PublicStudentShowcaseDto>> GetPublicShowcaseAsync(int limit = 6, CancellationToken ct = default);
     Task DeleteStudentAccountAsync(int studentId, CancellationToken ct = default);
 }

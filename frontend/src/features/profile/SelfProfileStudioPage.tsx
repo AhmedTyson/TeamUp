@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   studentsApi,
@@ -59,6 +59,7 @@ export function SelfProfileStudioPage() {
   const meQuery = useQuery({
     queryKey: queryKeys.auth.me,
     queryFn: ({ signal }) => studentsApi.getMe(signal),
+    staleTime: 0,
   });
 
   const accountForm = useForm<UpdateAccountFormValues>({
@@ -110,10 +111,10 @@ export function SelfProfileStudioPage() {
   // Account Mutation
   const updateAccountMutation = useMutation({
     mutationFn: (values: UpdateAccountFormValues) => studentsApi.updateMe(values),
-    onSuccess: async () => {
+    onSuccess: async (updated) => {
+      queryClient.setQueryData(queryKeys.auth.me, updated);
       toast.success("Account details saved.");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.auth.me }),
         queryClient.invalidateQueries({ queryKey: queryKeys.students.all }),
         refreshSession(),
       ]);
@@ -358,7 +359,32 @@ export function SelfProfileStudioPage() {
               </div>
 
               {/* Prominent Privacy Toggle (STRIDE THR-I-01) */}
-              <div className="rounded-2xl border border-[#d3fb52]/30 bg-[#d3fb52]/[0.06] p-4">
+              <div className="rounded-2xl border border-[#d3fb52]/30 bg-[#d3fb52]/[0.06] p-4 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                      accountForm.watch("showEmailInDirectory")
+                        ? "bg-[#d3fb52]/20 text-[#d3fb52]"
+                        : "bg-white/[0.08] text-white/75"
+                    }`}
+                  >
+                    {accountForm.watch("showEmailInDirectory") ? (
+                      <Eye className="size-3" aria-hidden="true" />
+                    ) : (
+                      <EyeOff className="size-3" aria-hidden="true" />
+                    )}
+                    {accountForm.watch("showEmailInDirectory")
+                      ? "Visible in directory & portfolio"
+                      : 'Hidden — "Email private"'}
+                  </span>
+                  {accountForm.watch("showEmailInDirectory") !==
+                    Boolean(student.showEmailInDirectory) && (
+                    <span className="text-[11px] font-medium text-amber-300">
+                      Unsaved change — click Save Account Details
+                    </span>
+                  )}
+                </div>
+
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -377,7 +403,13 @@ export function SelfProfileStudioPage() {
                     <p className="text-[11px] text-white/70 leading-relaxed">
                       By default, your email address is hidden from public and student directory
                       searches (&quot;Email private&quot;). Check this box if you wish fellow students
-                      and faculty to contact you directly.
+                      and faculty to contact you directly.{" "}
+                      <Link
+                        to="/privacy"
+                        className="font-semibold text-[#d3fb52] hover:underline focus-visible:outline-none focus-visible:underline"
+                      >
+                        Read Privacy &amp; Policy →
+                      </Link>
                     </p>
                   </div>
                 </label>

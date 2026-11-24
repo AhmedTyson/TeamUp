@@ -5,8 +5,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ExternalLink,
+  EyeOff,
   GraduationCap,
   Loader2,
+  Mail,
   Trash2,
   User,
 } from "lucide-react";
@@ -181,8 +183,26 @@ export function StudentPublicProfilePage() {
               <p className="italic text-xs text-[#9ca3af]/70">No biography provided yet.</p>
             )}
 
-            {/* External Links (Safe rel="noopener noreferrer") */}
+            {/* External Links & Contact Privacy Status (THR-I-01) */}
             <div className="flex flex-wrap items-center gap-3 border-t border-white/[0.08] pt-4">
+              {student.email ? (
+                <a
+                  href={`mailto:${student.email}`}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#d3fb52]/30 bg-[#d3fb52]/[0.08] px-3 py-1.5 text-xs font-semibold text-white hover:border-[#d3fb52]/60 hover:text-[#d3fb52] transition-colors break-all"
+                >
+                  <Mail className="size-3.5 shrink-0 text-[#d3fb52]" aria-hidden="true" />
+                  <span>{student.email}</span>
+                  {isMe && user?.showEmailInDirectory === false && (
+                    <span className="text-[10px] font-normal text-white/65">(Private to peers)</span>
+                  )}
+                </a>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-[#14151c] px-3 py-1.5 text-xs italic text-[#9ca3af]">
+                  <EyeOff className="size-3.5 shrink-0 text-[#9ca3af]" aria-hidden="true" />
+                  Email private
+                </span>
+              )}
+
               {profile?.gitHubUrl && isSafeHttpUrl(profile.gitHubUrl) ? (
                 <a
                   href={profile.gitHubUrl}

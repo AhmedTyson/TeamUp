@@ -10,6 +10,9 @@ import { HomePage } from "@/pages/HomePage";
 const ProposedHeroDemo = lazy(() =>
   import("@/components/home/ProposedHeroDemo").then((m) => ({ default: m.ProposedHeroDemo })),
 );
+const PrivacyPolicyPage = lazy(() =>
+  import("@/pages/PrivacyPolicyPage").then((m) => ({ default: m.PrivacyPolicyPage })),
+);
 const StudentDirectoryPage = lazy(() =>
   import("@/features/profile/StudentDirectoryPage").then((m) => ({
     default: m.StudentDirectoryPage,
@@ -49,6 +52,14 @@ export const communityRoutes: RouteObject[] = [
   {
     path: "demo/hero",
     element: <ProposedHeroDemo />,
+  },
+  {
+    path: "privacy",
+    element: <PrivacyPolicyPage />,
+  },
+  {
+    path: "policy",
+    element: <PrivacyPolicyPage />,
   },
   {
     element: <ProtectedRoute />,

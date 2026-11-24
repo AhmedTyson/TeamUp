@@ -16,6 +16,7 @@ import {
 } from "@/api";
 import { AppCoreProviders } from "@/app/providers";
 import { AppShell } from "@/components/layout/AppShell";
+import { PrivacyPolicyPage } from "@/pages/PrivacyPolicyPage";
 import {
   ForgotPasswordPage,
   LoginPage,
@@ -494,5 +495,95 @@ describe("M1 Phase 1 — Auth Pages, Academic Catalog API & AppShell", () => {
     expect(emailInput.value).toBe("admin@teamup.local");
     expect(passwordInput.value).toBe("");
     vi.unstubAllEnvs();
+  });
+
+  it("collapses digest checkboxes in RegisterPage dropdown until toggled and submits updated flags", async () => {
+    vi.spyOn(universitiesApi, "getCatalog").mockResolvedValueOnce(MOCK_CATALOG);
+    const registerSpy = vi.spyOn(authApi, "register").mockResolvedValueOnce({
+      accessToken: "reg-access",
+      refreshToken: "reg-refresh",
+      expiresAt: new Date(Date.now() + 900_000).toISOString(),
+      student: STUDENT_USER,
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/auth/register"]}>
+        <AppCoreProviders initialUser={null}>
+          <Routes>
+            <Route path="/auth/register" element={<RegisterPage />} />
+            <Route path="/projects" element={<h1>Projects Hub</h1>} />
+          </Routes>
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    const universitySelect = await screen.findByLabelText(/^university\*?$/i);
+    await waitFor(() => {
+      expect(universitySelect).not.toBeDisabled();
+    });
+
+    // Dropdown starts collapsed: master checkbox + expand trigger + privacy link visible; small digest panel hidden
+    expect(screen.getByRole("checkbox", { name: /send me email notifications/i })).toBeChecked();
+    const dropdownBtn = screen.getByRole("button", { name: /customize email notification topics/i });
+    expect(dropdownBtn).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("link", { name: /privacy & policy/i })).toHaveAttribute("href", "/privacy");
+
+    const panel = document.getElementById("register-email-prefs-panel");
+    expect(panel).toHaveAttribute("hidden");
+
+    // Expand dropdown to reveal the smaller checkboxes and uncheck project matches
+    fireEvent.click(dropdownBtn);
+    expect(dropdownBtn).toHaveAttribute("aria-expanded", "true");
+    expect(panel).not.toHaveAttribute("hidden");
+
+    const leaderboardBox = screen.getByRole("checkbox", { name: /leaderboard standings/i });
+    const matchBox = screen.getByRole("checkbox", { name: /recruiting project recommendations/i });
+    expect(leaderboardBox).toBeChecked();
+    expect(matchBox).toBeChecked();
+
+    fireEvent.click(matchBox);
+    expect(matchBox).not.toBeChecked();
+
+    // Complete form and submit
+    fireEvent.change(universitySelect, { target: { value: "1" } });
+    fireEvent.change(screen.getByLabelText(/^faculty\*?$/i), { target: { value: "11" } });
+    fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: "Salma" } });
+    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: "Khaled" } });
+    fireEvent.change(screen.getByLabelText(/university email/i), { target: { value: "salma@cu.edu.eg" } });
+    fireEvent.change(screen.getByLabelText(/^password\*?$/i), { target: { value: "CampusPass1" } });
+
+    fireEvent.click(screen.getByRole("button", { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(registerSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          emailNotificationsEnabled: true,
+          receiveLeaderboardDigests: true,
+          receiveProjectMatchEmails: false,
+        }),
+      );
+    });
+  });
+
+  it("renders PrivacyPolicyPage with THR-I-01 directory privacy, security controls, and Profile Studio CTA", () => {
+    render(
+      <MemoryRouter initialEntries={["/privacy"]}>
+        <AppCoreProviders initialUser={null}>
+          <PrivacyPolicyPage />
+        </AppCoreProviders>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole("heading", { name: /privacy & platform policy/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /student directory email privacy \(thr-i-01 opt-in\)/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /security architecture & technical safeguards/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /manage directory email opt-in/i })).toHaveAttribute(
+      "href",
+      "/profile/me",
+    );
   });
 });

@@ -111,8 +111,9 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
 
       // THR-I-01 Check: Salma has null email -> "Email private"
       expect(screen.getByText(/email private/i)).toBeInTheDocument();
-      // Omar has visible email
-      expect(screen.getByText("omar@asu.edu.eg")).toBeInTheDocument();
+      // Omar has visible clickable mailto email
+      const omarEmailLink = screen.getByRole("link", { name: "omar@asu.edu.eg" });
+      expect(omarEmailLink).toHaveAttribute("href", "mailto:omar@asu.edu.eg");
 
       // Verify API was called with capped pageSize <= 20
       expect(getDirSpy).toHaveBeenCalled();
@@ -135,6 +136,7 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
           linkedInUrl: "https://linkedin.com/in/layla",
         },
         interests: ["PyTorch", "Computer Vision"],
+        email: "layla@cu.edu.eg",
       };
 
       vi.spyOn(studentsApi, "getById").mockResolvedValue(mockProfile);
@@ -162,11 +164,54 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
       expect(await screen.findByText("Layla Ibrahim")).toBeInTheDocument();
       expect(screen.getByText(/vision-language models/i)).toBeInTheDocument();
 
+      // Verify opted-in email is rendered as mailto link (THR-I-01)
+      expect(screen.getByRole("link", { name: "layla@cu.edu.eg" })).toHaveAttribute(
+        "href",
+        "mailto:layla@cu.edu.eg",
+      );
+
       // Verify safe external link attributes (THR-T-03)
       const githubLink = screen.getByRole("link", { name: /github/i });
       expect(githubLink).toHaveAttribute("target", "_blank");
       expect(githubLink).toHaveAttribute("rel", "noopener noreferrer");
       expect(githubLink).toHaveAttribute("href", "https://github.com/layla");
+    });
+
+    it("masks Public Portfolio email as private when viewer is not permitted", async () => {
+      vi.spyOn(studentsApi, "getById").mockResolvedValue({
+        studentId: 56,
+        firstName: "Karim",
+        lastName: "Mansour",
+        academicYear: 3,
+        facultyName: "Engineering",
+        universityName: "Ain Shams University",
+        profile: null,
+        interests: [],
+        email: null,
+      });
+      vi.spyOn(gamificationApi, "getStudentScore").mockResolvedValue({
+        studentId: 56,
+        totalPoints: 200,
+        level: 2,
+        currentLevelStart: 100,
+        nextLevelThreshold: 400,
+        pointsToNext: 200,
+        progress: 0.33,
+      });
+      vi.spyOn(badgesApi, "getStudentBadges").mockResolvedValue([]);
+
+      render(
+        <MemoryRouter initialEntries={["/students/56"]}>
+          <AppCoreProviders initialUser={MOCK_STUDENT}>
+            <Routes>
+              <Route path="/students/:id" element={<StudentPublicProfilePage />} />
+            </Routes>
+          </AppCoreProviders>
+        </MemoryRouter>,
+      );
+
+      expect(await screen.findByText("Karim Mansour")).toBeInTheDocument();
+      expect(screen.getByText(/email private/i)).toBeInTheDocument();
     });
   });
 

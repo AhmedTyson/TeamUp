@@ -183,7 +183,11 @@ public sealed class ProfileService(
             .ToList();
     }
 
-    public async Task<StudentPublicProfileDto> GetStudentPublicProfileByIdAsync(int studentId, CancellationToken ct = default)
+    public async Task<StudentPublicProfileDto> GetStudentPublicProfileByIdAsync(
+        int studentId,
+        int viewerStudentId = 0,
+        string? viewerRole = null,
+        CancellationToken ct = default)
     {
         var student = await db.Students
             .AsNoTracking()
@@ -193,6 +197,11 @@ public sealed class ProfileService(
             .Include(s => s.Interests)
             .FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
             ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
+
+        var isAdmin = string.Equals(viewerRole, nameof(UserRole.PlatformAdmin), StringComparison.OrdinalIgnoreCase);
+        var visibleEmail = isAdmin || student.StudentId == viewerStudentId || student.ShowEmailInDirectory
+            ? student.Email
+            : null;
 
         var profileDto = student.Profile is null ? null : new StudentProfileDto(
             student.Profile.Bio, student.Profile.PhotoUrl, student.Profile.GitHubUrl, student.Profile.LinkedInUrl);
@@ -207,7 +216,8 @@ public sealed class ProfileService(
             student.Faculty.Name,
             student.Faculty.University.Name,
             profileDto,
-            interests);
+            interests,
+            visibleEmail);
     }
 
     public async Task DeleteStudentAccountAsync(int studentId, CancellationToken ct = default)

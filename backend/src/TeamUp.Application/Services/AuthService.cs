@@ -83,7 +83,12 @@ public sealed class AuthService(
         var summary = new StudentSummaryDto(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
-            faculty.FacultyId, faculty.Name, faculty.University.Name);
+            faculty.FacultyId, faculty.Name, faculty.University.Name,
+            null,
+            student.ShowEmailInDirectory,
+            student.EmailNotificationsEnabled,
+            student.ReceiveLeaderboardDigests,
+            student.ReceiveProjectMatchEmails);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
@@ -152,7 +157,11 @@ public sealed class AuthService(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
             student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
-            student.Profile?.PhotoUrl);
+            student.Profile?.PhotoUrl,
+            student.ShowEmailInDirectory,
+            student.EmailNotificationsEnabled,
+            student.ReceiveLeaderboardDigests,
+            student.ReceiveProjectMatchEmails);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
@@ -202,7 +211,11 @@ public sealed class AuthService(
             student.StudentId, student.FirstName, student.LastName, student.Email,
             student.AcademicYear, student.Role.ToString(),
             student.Faculty.FacultyId, student.Faculty.Name, student.Faculty.University.Name,
-            student.Profile?.PhotoUrl);
+            student.Profile?.PhotoUrl,
+            student.ShowEmailInDirectory,
+            student.EmailNotificationsEnabled,
+            student.ReceiveLeaderboardDigests,
+            student.ReceiveProjectMatchEmails);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }

@@ -39,7 +39,7 @@ public class StudentsController(IStudentAccountService accountService) : BaseApi
     [ProducesOk<StudentPublicProfileDto>, ProducesNotFound]
     public async Task<IActionResult> GetStudentById([FromRoute] int id, CancellationToken ct)
     {
-        var result = await accountService.GetStudentPublicProfileByIdAsync(id, ct);
+        var result = await accountService.GetStudentPublicProfileByIdAsync(id, CurrentStudentId, CurrentUserRole, ct);
         return OkResponse(result);
     }
 

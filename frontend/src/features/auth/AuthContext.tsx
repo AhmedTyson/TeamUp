@@ -71,7 +71,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       tokenStorage.setTokens(result.accessToken, result.refreshToken);
       setClaims(decodeJwtPayload(result.accessToken));
       setUser(result.student);
-      queryClient.setQueryData(queryKeys.auth.me, result.student);
+      queryClient.removeQueries({ queryKey: queryKeys.auth.me });
     },
     [queryClient],
   );

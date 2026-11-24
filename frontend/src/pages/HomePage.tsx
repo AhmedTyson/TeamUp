@@ -1472,7 +1472,11 @@ export function HomePage() {
                       <li>Student help center</li>
                       <li>Contact</li>
                       <li>Academic integrity</li>
-                      <li>Privacy choices</li>
+                      <li>
+                        <Link to="/privacy" className="hover:text-[#d3fb52]">
+                          Privacy &amp; Policy
+                        </Link>
+                      </li>
                     </ul>
                   </div>
                 </div>
