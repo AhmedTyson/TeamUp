@@ -17,6 +17,7 @@ public sealed class EmailOptions
     public string FromAddress { get; set; } = "no-reply@teamup.edu";
     public string FromName { get; set; } = "TeamUp Platform";
     public string ResetPasswordUrlBase { get; set; } = "https://teamup.edu/reset-password";
+    public string FrontendBaseUrl { get; set; } = "https://teamup-ieee.vercel.app";
 }
 
 public sealed class AdminOptions

@@ -3,26 +3,61 @@
 
 using System.Net;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using TeamUp.Application.Common.Interfaces;
 
 namespace TeamUp.Infrastructure.Services;
 
 public sealed class TemplateRenderer : ITemplateRenderer
 {
+    private const string EmailResourcePrefix = "TeamUp.Infrastructure.Templates.Emails.";
     private static readonly Assembly Assembly = typeof(TemplateRenderer).Assembly;
+    private static readonly Regex TokenPattern = new(
+        @"\{\{\{([A-Za-z0-9_]+)\}\}\}|\{\{([A-Za-z0-9_]+)\}\}",
+        RegexOptions.Compiled);
+
+    public Task<string> RenderEmailAsync(
+        string templateFileName,
+        IReadOnlyDictionary<string, string> values,
+        CancellationToken ct = default) =>
+        RenderEmailAsync(templateFileName, values, null, ct);
 
     public async Task<string> RenderEmailAsync(
         string templateFileName,
-        IReadOnlyDictionary<string, string> values,
+        IReadOnlyDictionary<string, string> scalarValues,
+        IReadOnlyDictionary<string, SafeHtmlFragment>? rawFragments,
         CancellationToken ct = default)
     {
         var template = await LoadTemplateAsync("Emails", templateFileName, ct);
-        foreach (var (key, value) in values)
+        return TokenPattern.Replace(template, match =>
         {
-            template = template.Replace($"{{{{{key}}}}}", WebUtility.HtmlEncode(value), StringComparison.Ordinal);
-        }
-        return template;
+            if (match.Groups[1].Success)
+            {
+                var key = match.Groups[1].Value;
+                if (rawFragments is not null && rawFragments.TryGetValue(key, out var fragment))
+                    return fragment.Html;
+                return match.Value;
+            }
+
+            if (match.Groups[2].Success)
+            {
+                var key = match.Groups[2].Value;
+                if (scalarValues.TryGetValue(key, out var value))
+                    return WebUtility.HtmlEncode(value);
+                return match.Value;
+            }
+
+            return match.Value;
+        });
     }
+
+    public IReadOnlyList<string> GetAvailableEmailTemplates() =>
+        Assembly.GetManifestResourceNames()
+            .Where(n => n.StartsWith(EmailResourcePrefix, StringComparison.Ordinal)
+                && n.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+            .Select(n => n[EmailResourcePrefix.Length..])
+            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     public async Task<string> RenderReportAsync(
         string templateFileName,
