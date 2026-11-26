@@ -13,6 +13,7 @@ using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Gamification;
+using TeamUp.Domain.Common;
 using TeamUp.Domain.Enums;
 using TeamUp.Infrastructure.Templates;
 
@@ -24,9 +25,13 @@ public sealed class AdminReportPdfService(
     ITemplateRenderer templateRenderer,
     IEmailSender emailSender,
     IAuditLogService auditLog,
-    IOptions<EmailOptions> emailOptions) : IAdminReportService
+    IOptions<EmailOptions> emailOptions,
+    TimeProvider? timeProvider = null) : IAdminReportService
 {
     private readonly EmailOptions _email = emailOptions.Value;
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
+    #region PDF Report Generation
 
     public async Task<GeneratedAdminReport> GeneratePlatformSummaryPdfAsync(
         int actorStudentId,
@@ -35,7 +40,7 @@ public sealed class AdminReportPdfService(
     {
         EditorialPdfTheme.EnsureInitialized();
 
-        var generatedAt = DateTime.UtcNow;
+        var generatedAt = _time.GetUtcNow().UtcDateTime;
         var period = string.IsNullOrWhiteSpace(reportPeriod)
             ? $"EXECUTIVE LEDGER · {generatedAt:MMMM yyyy}".ToUpperInvariant()
             : reportPeriod.Trim();
@@ -50,7 +55,7 @@ public sealed class AdminReportPdfService(
         var fileName = $"TeamUp_Platform_Governance_{generatedAt:yyyy-MM-dd}.pdf";
 
         var activeStudents = await db.Students.CountAsync(ct);
-        var softDeletedStudents = await db.Students.IgnoreQueryFilters().CountAsync(s => s.DeletedAt != null, ct);
+        var softDeletedStudents = await db.Students.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).CountAsync(s => s.DeletedAt != null, ct);
         var activeUniversities = await db.Universities.CountAsync(ct);
         var activeFaculties = await db.Faculties.CountAsync(ct);
         var activeProjects = await db.Projects.CountAsync(ct);
@@ -403,6 +408,10 @@ public sealed class AdminReportPdfService(
         return new GeneratedAdminReport(pdfBytes, summary);
     }
 
+    #endregion
+
+    #region Report Email Dispatch
+
     public async Task<AdminReportEmailResultDto> SendPlatformSummaryEmailAsync(
         int actorStudentId,
         string? recipientEmail = null,
@@ -463,6 +472,10 @@ public sealed class AdminReportPdfService(
 
         return new AdminReportEmailResultDto(targetEmail, summary.FileName, generated.PdfBytes.Length, summary);
     }
+
+    #endregion
+
+    #region Template Live Previews
 
     public async Task<string> RenderTemplatePreviewAsync(string templateName, CancellationToken ct = default)
     {
@@ -526,7 +539,7 @@ public sealed class AdminReportPdfService(
                 ["SummaryMessage"] = "Your squad application was accepted by the team lead. Sprint tasks and roster tools are unlocked.",
                 ["ContextLabel"] = "PROJECT",
                 ["ContextValue"] = "Autonomous Rover Telemetry",
-                ["TimestampUtc"] = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm 'UTC'"),
+                ["TimestampUtc"] = _time.GetUtcNow().UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'"),
                 ["ActionLabel"] = "OPEN PROJECT WORKSPACE",
                 ["ActionUrl"] = $"{baseUrl}/projects/7",
                 ["PreferencesUrl"] = $"{baseUrl}/profile/me"
@@ -537,7 +550,7 @@ public sealed class AdminReportPdfService(
                 new Dictionary<string, string>
                 {
                     ["BrandLogoUrl"] = BrandAssets.EmailLogoDataUri,
-                    ["IssueNumber"] = $"ISSUE {DateTime.UtcNow:yyyyMMdd}",
+                    ["IssueNumber"] = $"ISSUE {_time.GetUtcNow().UtcDateTime:yyyyMMdd}",
                     ["PeriodLabel"] = "WEEKLY CAMPUS DIGEST · PREVIEW",
                     ["RecipientName"] = "Salma Khaled",
                     ["MyRank"] = "1",
@@ -563,7 +576,7 @@ public sealed class AdminReportPdfService(
                     ["RecipientName"] = "Salma Khaled",
                     ["MatchCount"] = "2",
                     ["StudentSkillsSummary"] = "Python · Machine Learning · React · TypeScript",
-                    ["GeneratedDate"] = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+                    ["GeneratedDate"] = _time.GetUtcNow().UtcDateTime.ToString("yyyy-MM-dd"),
                     ["ProjectsUrl"] = $"{baseUrl}/projects",
                     ["PreferencesUrl"] = $"{baseUrl}/profile/me"
                 },
@@ -577,13 +590,13 @@ public sealed class AdminReportPdfService(
             {
                 ["BrandLogoUrl"] = BrandAssets.EmailLogoDataUri,
                 ["AdminName"] = "Platform Admin",
-                ["ReportPeriod"] = $"EXECUTIVE LEDGER · {DateTime.UtcNow:MMMM yyyy}".ToUpperInvariant(),
-                ["GeneratedAtUtc"] = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm 'UTC'"),
+                ["ReportPeriod"] = $"EXECUTIVE LEDGER · {_time.GetUtcNow().UtcDateTime:MMMM yyyy}".ToUpperInvariant(),
+                ["GeneratedAtUtc"] = _time.GetUtcNow().UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'"),
                 ["TotalStudents"] = "412",
                 ["ActiveProjects"] = "28",
                 ["ActiveEvents"] = "9",
                 ["AuditEventsCount"] = "15",
-                ["AttachmentFileName"] = $"TeamUp_Platform_Governance_{DateTime.UtcNow:yyyy-MM-dd}.pdf",
+                ["AttachmentFileName"] = $"TeamUp_Platform_Governance_{_time.GetUtcNow().UtcDateTime:yyyy-MM-dd}.pdf",
                 ["AdminConsoleUrl"] = $"{baseUrl}/admin/communications"
             }, ct),
 
@@ -632,4 +645,6 @@ public sealed class AdminReportPdfService(
         + "<p style=\"margin:0 0 12px;font-size:14px;line-height:1.5;color:#4B5260;\">Real-time pedestrian and shuttle lane detection pipeline deployed on edge nodes.</p>"
         + $"<table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\"><tr><td style=\"background-color:#14151C;border-radius:2px;\"><a href=\"{WebUtility.HtmlEncode(baseUrl)}/projects/14\" style=\"display:inline-block;padding:10px 18px;font-family:'SFMono-Regular',Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#D3FB52;text-decoration:none;\">INSPECT &amp; APPLY</a></td></tr></table>"
         + "</td></tr></table>";
+
+    #endregion
 }

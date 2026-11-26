@@ -33,7 +33,7 @@ import {
   useEventMutations,
   useEventRegistrations,
   useEventSessions,
-  useMyEventRegistrations,
+  useMyEventRegistration,
 } from "../hooks/useEventHooks";
 import { myEventRegistrationStorage } from "../utils/attendance";
 
@@ -49,7 +49,6 @@ export function EventDetailPage() {
   const event = eventQuery.data;
 
   const orgQuery = useOrganization(event?.organizationId ?? 0);
-  const orgsQuery = useOrganizations({ page: 1, pageSize: 100 });
   const sessionsQuery = useEventSessions(eventId);
 
   const canManage = Boolean(
@@ -64,7 +63,7 @@ export function EventDetailPage() {
   );
 
   const registrationsQuery = useEventRegistrations(eventId, Boolean(event && canManage));
-  const myRegsQuery = useMyEventRegistrations(Boolean(event && isAuthenticated));
+  const myRegQuery = useMyEventRegistration(eventId, Boolean(event && isAuthenticated));
   const mutations = useEventMutations(eventId);
 
   const [editEventOpen, setEditEventOpen] = useState(false);
@@ -74,11 +73,15 @@ export function EventDetailPage() {
   const [deleteSessionTarget, setDeleteSessionTarget] = useState<number | null>(null);
   const [cancelTargetStudentId, setCancelTargetStudentId] = useState<number | null | "self">(null);
 
+  // Only fetch the organization list when the organizer actually opens the edit modal;
+  // previously every visitor (including anonymous students) pulled 100 organizations per page view.
+  const orgsQuery = useOrganizations({ page: 1, pageSize: 100 }, canManage && editEventOpen);
+
   const [savedStudentStatus, setSavedStudentStatus] = useState<RegistrationStatus | null>(() =>
     myEventRegistrationStorage.get(user?.studentId, eventId)?.status ?? null,
   );
 
-  const backendMyReg = myRegsQuery.data?.find((r) => r.eventId === eventId);
+  const backendMyReg = myRegQuery.data ?? null;
 
   useEffect(() => {
     if (backendMyReg) {
@@ -87,7 +90,7 @@ export function EventDetailPage() {
         registeredAt: backendMyReg.registeredAt,
       });
       setSavedStudentStatus(backendMyReg.status);
-    } else if (myRegsQuery.data !== undefined) {
+    } else if (myRegQuery.data !== undefined) {
       myEventRegistrationStorage.clear(user?.studentId, eventId);
       setSavedStudentStatus(null);
     } else {
@@ -95,7 +98,7 @@ export function EventDetailPage() {
         myEventRegistrationStorage.get(user?.studentId, eventId)?.status ?? null,
       );
     }
-  }, [backendMyReg, myRegsQuery.data, user?.studentId, eventId]);
+  }, [backendMyReg, user?.studentId, eventId]);
 
   if (!isValidId) {
     return (

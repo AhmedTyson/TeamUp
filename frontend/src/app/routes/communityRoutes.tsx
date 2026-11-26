@@ -33,6 +33,9 @@ const CampusLeaderboardPage = lazy(() =>
     default: m.CampusLeaderboardPage,
   })),
 );
+const ExplorePage = lazy(() =>
+  import("@/features/explore/ExplorePage").then((m) => ({ default: m.ExplorePage })),
+);
 const GamificationHubPage = lazy(() =>
   import("@/features/gamification/GamificationHubPage").then((m) => ({
     default: m.GamificationHubPage,
@@ -102,6 +105,10 @@ export const communityRoutes: RouteObject[] = [
       {
         path: "notifications",
         element: <NotificationsInboxPage />,
+      },
+      {
+        path: "explore",
+        element: <ExplorePage />,
       },
       {
         path: "dashboard",

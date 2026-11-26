@@ -156,8 +156,8 @@ public sealed class FlexibleActivitiesAndHierarchyTests(TeamUpApiFactory factory
 
         var myRegsRes = await studentClient.GetAsync("/api/v1/events/my-registrations");
         Assert.Equal(HttpStatusCode.OK, myRegsRes.StatusCode);
-        var myRegs = await Data<List<MyEventRegistrationDto>>(myRegsRes);
-        Assert.Contains(myRegs, r => r.EventId == evt.EventId && r.Status == RegistrationStatus.Confirmed);
+        var myRegs = await Data<PagedResult<MyEventRegistrationDto>>(myRegsRes);
+        Assert.Contains(myRegs.Items, r => r.EventId == evt.EventId && r.Status == RegistrationStatus.Confirmed);
 
         var orgParticipantsRes = await orgAdminClient.GetAsync($"/api/v1/organizations/{org.OrganizationId}/participants");
         Assert.Equal(HttpStatusCode.OK, orgParticipantsRes.StatusCode);

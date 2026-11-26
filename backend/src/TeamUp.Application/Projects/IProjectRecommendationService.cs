@@ -25,4 +25,14 @@ public interface IProjectRecommendationService
         int maxResults = 5,
         int minMatchPercentage = 1,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Batch variant for fan-out scenarios (email digests): loads the recruiting-project pool and all recipients'
+    /// skills/interests once instead of re-querying per student. Semantics are identical to the single-student method.
+    /// </summary>
+    Task<IReadOnlyDictionary<int, IReadOnlyList<ProjectMatchRecommendationDto>>> GetRecommendedProjectsForStudentsAsync(
+        IReadOnlyCollection<int> studentIds,
+        int maxResults = 5,
+        int minMatchPercentage = 1,
+        CancellationToken ct = default);
 }

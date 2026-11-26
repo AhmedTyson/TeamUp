@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -10,6 +11,8 @@ namespace TeamUp.Api.Filters;
 /// </summary>
 public sealed class ValidationFilter : IAsyncActionFilter
 {
+    private static readonly ConcurrentDictionary<Type, Type> ValidatorTypeCache = new();
+
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var services = context.HttpContext.RequestServices;
@@ -18,7 +21,7 @@ public sealed class ValidationFilter : IAsyncActionFilter
         {
             if (arg is null) continue;
 
-            var validatorType = typeof(IValidator<>).MakeGenericType(arg.GetType());
+            var validatorType = ValidatorTypeCache.GetOrAdd(arg.GetType(), static type => typeof(IValidator<>).MakeGenericType(type));
             if (services.GetService(validatorType) is not IValidator validator) continue;
 
             var validationContext = new ValidationContext<object>(arg);

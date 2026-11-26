@@ -1,15 +1,20 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using TeamUp.Api.Controllers.Common;
+using TeamUp.Api.Extensions;
 using TeamUp.Application.Gamification;
 
 namespace TeamUp.Api.Controllers;
 
 [Route("api/v1")]
 [Authorize]
-public class BadgesController(IBadgeService badgeService) : BaseApiController
+public sealed class BadgesController(
+    IBadgeService badgeService,
+    IOutputCacheStore outputCacheStore) : BaseApiController
 {
     [HttpGet("badges")]
+    [OutputCache(PolicyName = OpenApiAndCachingExtensions.CatalogOutputCachePolicyName, Tags = [CatalogOutputCacheTags.Badges])]
     [ProducesOk<IReadOnlyList<BadgeDto>>]
     public async Task<IActionResult> GetBadgeCatalog(CancellationToken ct)
     {
@@ -32,6 +37,7 @@ public class BadgesController(IBadgeService badgeService) : BaseApiController
     public async Task<IActionResult> CreateBadge([FromBody] CreateBadgeRequest request, CancellationToken ct)
     {
         var result = await badgeService.CreateBadgeAsync(request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Badges, ct);
         return CreatedResponse(result, "Badge created successfully in master catalog.");
     }
 
@@ -42,6 +48,7 @@ public class BadgesController(IBadgeService badgeService) : BaseApiController
     public async Task<IActionResult> UpdateBadge([FromRoute] int id, [FromBody] UpdateBadgeRequest request, CancellationToken ct)
     {
         var result = await badgeService.UpdateBadgeAsync(id, request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Badges, ct);
         return OkResponse(result, "Badge updated successfully.");
     }
 
@@ -51,6 +58,7 @@ public class BadgesController(IBadgeService badgeService) : BaseApiController
     public async Task<IActionResult> DeleteBadge([FromRoute] int id, CancellationToken ct)
     {
         await badgeService.DeleteBadgeAsync(id, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Badges, ct);
         return NoContentResponse();
     }
 

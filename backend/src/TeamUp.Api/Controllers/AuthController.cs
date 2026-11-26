@@ -8,7 +8,7 @@ namespace TeamUp.Api.Controllers;
 
 [Route("api/v1/auth")]
 [EnableRateLimiting("auth-policy")]
-public class AuthController(IAuthService authService) : BaseApiController
+public sealed class AuthController(IAuthService authService) : BaseApiController
 {
     [HttpPost("register")]
     [AllowAnonymous]

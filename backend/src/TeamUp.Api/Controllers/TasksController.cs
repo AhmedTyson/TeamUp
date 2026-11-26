@@ -7,7 +7,7 @@ namespace TeamUp.Api.Controllers;
 
 [Route("api/v1/tasks")]
 [Authorize]
-public class TasksController(IProjectTaskService taskService) : BaseApiController
+public sealed class TasksController(IProjectTaskService taskService) : BaseApiController
 {
     [HttpGet("{id:int}")]
     [ProducesOk<ProjectTaskDto>, ProducesNotFound]

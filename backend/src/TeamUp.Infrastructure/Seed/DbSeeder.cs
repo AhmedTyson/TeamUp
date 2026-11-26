@@ -16,6 +16,8 @@ namespace TeamUp.Infrastructure.Seed;
 /// <summary>Idempotent, CIA/AAA-hardened ecosystem catalog & bootstrap seeder.</summary>
 public static class DbSeeder
 {
+    #region Public Entry Points
+
     public const string EcosystemSeedAction = "Seed.EgyptEcosystemSynced";
     public const string EcosystemSeedEntityType = "SystemSeed";
 
@@ -104,7 +106,7 @@ public static class DbSeeder
 
         var ieeeHelwan = await db.Organizations.FirstOrDefaultAsync(o => o.Name == "IEEE Helwan Student Branch", ct);
         if (ieeeHelwan is not null &&
-            !await db.OrganizationMembers.IgnoreQueryFilters()
+            !await db.OrganizationMembers.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .AnyAsync(m => m.OrganizationId == ieeeHelwan.OrganizationId && m.StudentId == existingOrgAdmin.StudentId, ct))
         {
             db.OrganizationMembers.Add(new OrganizationMember
@@ -151,7 +153,7 @@ public static class DbSeeder
         var studentsByEmail = await SyncStudentsAsync(db, data.Students, effectiveDevHash, resetExistingPasswords: effectiveDevHash is not null, ct);
 
         var unisByName = ToSafeDictionary(
-            await db.Universities.IgnoreQueryFilters().ToListAsync(ct),
+            await db.Universities.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).ToListAsync(ct),
             u => u.Name,
             u => u.DeletedAt is null);
 
@@ -195,13 +197,17 @@ public static class DbSeeder
         }
     }
 
+    #endregion
+
+    #region Catalog Sync (Universities, Skills & Badges)
+
     private static async Task SyncUniversitiesAndFacultiesAsync(
         AppDbContext db,
         IReadOnlyList<UniversitySeedItem> universities,
         CancellationToken ct)
     {
         var existingUniversities = ToSafeDictionary(
-            await db.Universities.IgnoreQueryFilters().Include(u => u.Faculties).ToListAsync(ct),
+            await db.Universities.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).Include(u => u.Faculties).ToListAsync(ct),
             u => u.Name,
             u => u.DeletedAt is null);
 
@@ -253,7 +259,7 @@ public static class DbSeeder
         IReadOnlyList<BadgeSeedItem> badges,
         CancellationToken ct)
     {
-        var existingSkills = await db.Skills.IgnoreQueryFilters()
+        var existingSkills = await db.Skills.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
             .Select(s => s.Name)
             .ToListAsync(ct);
         var existingSkillSet = new HashSet<string>(existingSkills, StringComparer.OrdinalIgnoreCase);
@@ -271,7 +277,7 @@ public static class DbSeeder
             }
         }
 
-        var existingBadges = await db.Badges.IgnoreQueryFilters()
+        var existingBadges = await db.Badges.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
             .Select(b => b.Name)
             .ToListAsync(ct);
         var existingBadgeSet = new HashSet<string>(existingBadges, StringComparer.OrdinalIgnoreCase);
@@ -294,6 +300,10 @@ public static class DbSeeder
         await db.SaveChangesAsync(ct);
     }
 
+    #endregion
+
+    #region Identity & Organizations Sync
+
     private static async Task<Dictionary<string, Student>> SyncStudentsAsync(
         AppDbContext db,
         IReadOnlyList<StudentSeedItem> seedStudents,
@@ -302,7 +312,7 @@ public static class DbSeeder
         CancellationToken ct)
     {
         var facultiesByCode = ToSafeDictionary(
-            await db.Faculties.IgnoreQueryFilters()
+            await db.Faculties.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(f => f.DeletedAt == null)
                 .OrderBy(f => f.FacultyId)
                 .ToListAsync(ct),
@@ -310,16 +320,16 @@ public static class DbSeeder
             _ => true);
 
         var skillsByName = ToSafeDictionary(
-            await db.Skills.IgnoreQueryFilters().Where(s => s.DeletedAt == null).ToListAsync(ct),
+            await db.Skills.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).Where(s => s.DeletedAt == null).ToListAsync(ct),
             s => s.Name,
             _ => true);
 
-        var thresholdBadges = await db.Badges.IgnoreQueryFilters()
+        var thresholdBadges = await db.Badges.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
             .Where(b => b.DeletedAt == null && b.CriteriaType == BadgeCriteriaType.PointsThreshold)
             .ToListAsync(ct);
 
         var studentsByEmail = ToSafeDictionary(
-            await db.Students.IgnoreQueryFilters().ToListAsync(ct),
+            await db.Students.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).ToListAsync(ct),
             s => s.Email,
             s => s.DeletedAt is null);
 
@@ -372,7 +382,7 @@ public static class DbSeeder
             .ToHashSet();
 
         var existingProfiles = new Dictionary<int, StudentProfile>();
-        foreach (var profile in await db.StudentProfiles.IgnoreQueryFilters()
+        foreach (var profile in await db.StudentProfiles.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                      .Where(p => seededStudentIds.Contains(p.StudentId))
                      .OrderBy(p => p.DeletedAt == null ? 0 : 1)
                      .ToListAsync(ct))
@@ -380,14 +390,14 @@ public static class DbSeeder
             existingProfiles.TryAdd(profile.StudentId, profile);
         }
 
-        var existingInterests = (await db.StudentInterests.IgnoreQueryFilters()
+        var existingInterests = (await db.StudentInterests.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(i => seededStudentIds.Contains(i.StudentId))
                 .Select(i => new { i.StudentId, i.Interest })
                 .ToListAsync(ct))
             .GroupBy(i => i.StudentId)
             .ToDictionary(g => g.Key, g => g.Select(x => x.Interest).ToHashSet(StringComparer.OrdinalIgnoreCase));
 
-        var existingSkillsByStudent = (await db.StudentSkills.IgnoreQueryFilters()
+        var existingSkillsByStudent = (await db.StudentSkills.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(ss => seededStudentIds.Contains(ss.StudentId))
                 .Select(ss => new { ss.StudentId, ss.SkillId })
                 .ToListAsync(ct))
@@ -401,7 +411,7 @@ public static class DbSeeder
                 .ToListAsync(ct))
             .ToHashSet();
 
-        var existingBadgesByStudent = (await db.StudentBadges.IgnoreQueryFilters()
+        var existingBadgesByStudent = (await db.StudentBadges.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(sb => seededStudentIds.Contains(sb.StudentId))
                 .Select(sb => new { sb.StudentId, sb.BadgeId })
                 .ToListAsync(ct))
@@ -508,7 +518,7 @@ public static class DbSeeder
         CancellationToken ct)
     {
         var orgsByName = ToSafeDictionary(
-            await db.Organizations.IgnoreQueryFilters().ToListAsync(ct),
+            await db.Organizations.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).ToListAsync(ct),
             o => o.Name,
             o => o.DeletedAt is null);
 
@@ -560,7 +570,7 @@ public static class DbSeeder
         var orgIds = orgsByName.Values.Where(o => o.DeletedAt is null).Select(o => o.OrganizationId).ToHashSet();
 
         var existingUnits = new Dictionary<int, Dictionary<string, OrganizationUnit>>();
-        foreach (var unit in await db.OrganizationUnits.IgnoreQueryFilters()
+        foreach (var unit in await db.OrganizationUnits.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                      .Where(u => orgIds.Contains(u.OrganizationId))
                      .OrderBy(u => u.DeletedAt == null ? 0 : 1)
                      .ToListAsync(ct))
@@ -610,7 +620,7 @@ public static class DbSeeder
 
         await db.SaveChangesAsync(ct);
 
-        var existingMemberKeys = (await db.OrganizationMembers.IgnoreQueryFilters()
+        var existingMemberKeys = (await db.OrganizationMembers.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(m => orgIds.Contains(m.OrganizationId))
                 .Select(m => new { m.OrganizationId, m.StudentId })
                 .ToListAsync(ct))
@@ -656,6 +666,10 @@ public static class DbSeeder
         return orgsByName;
     }
 
+    #endregion
+
+    #region Projects, Events & Recruitment Sync
+
     private static async Task SyncProjectsAsync(
         AppDbContext db,
         IReadOnlyList<ProjectSeedItem> projectDefs,
@@ -663,12 +677,12 @@ public static class DbSeeder
         CancellationToken ct)
     {
         var skillsByName = ToSafeDictionary(
-            await db.Skills.IgnoreQueryFilters().Where(s => s.DeletedAt == null).ToListAsync(ct),
+            await db.Skills.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).Where(s => s.DeletedAt == null).ToListAsync(ct),
             s => s.Name,
             _ => true);
 
         var existingProjects = ToSafeDictionary(
-            await db.Projects.IgnoreQueryFilters().ToListAsync(ct),
+            await db.Projects.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).ToListAsync(ct),
             p => p.Title,
             p => p.DeletedAt is null);
 
@@ -701,28 +715,28 @@ public static class DbSeeder
 
         var projectIds = existingProjects.Values.Where(p => p.DeletedAt is null).Select(p => p.ProjectId).ToHashSet();
 
-        var existingReqSkills = (await db.ProjectRequiredSkills.IgnoreQueryFilters()
+        var existingReqSkills = (await db.ProjectRequiredSkills.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(rs => projectIds.Contains(rs.ProjectId))
                 .Select(rs => new { rs.ProjectId, rs.SkillId })
                 .ToListAsync(ct))
             .Select(x => (x.ProjectId, x.SkillId))
             .ToHashSet();
 
-        var existingMembers = (await db.ProjectMembers.IgnoreQueryFilters()
+        var existingMembers = (await db.ProjectMembers.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(pm => projectIds.Contains(pm.ProjectId))
                 .Select(pm => new { pm.ProjectId, pm.StudentId })
                 .ToListAsync(ct))
             .GroupBy(x => x.ProjectId)
             .ToDictionary(g => g.Key, g => g.Select(x => x.StudentId).ToHashSet());
 
-        var existingTaskTitles = (await db.ProjectTasks.IgnoreQueryFilters()
+        var existingTaskTitles = (await db.ProjectTasks.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(t => projectIds.Contains(t.ProjectId))
                 .Select(t => new { t.ProjectId, t.Title })
                 .ToListAsync(ct))
             .GroupBy(x => x.ProjectId)
             .ToDictionary(g => g.Key, g => g.Select(x => x.Title).ToHashSet(StringComparer.OrdinalIgnoreCase));
 
-        var existingApps = (await db.ProjectApplications.IgnoreQueryFilters()
+        var existingApps = (await db.ProjectApplications.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(a => projectIds.Contains(a.ProjectId))
                 .Select(a => new { a.ProjectId, a.StudentId })
                 .ToListAsync(ct))
@@ -854,14 +868,14 @@ public static class DbSeeder
     {
         var orgIds = orgsByName.Values.Where(o => o.DeletedAt is null).Select(o => o.OrganizationId).ToHashSet();
 
-        var unitsByOrgCode = (await db.OrganizationUnits.IgnoreQueryFilters()
+        var unitsByOrgCode = (await db.OrganizationUnits.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(u => orgIds.Contains(u.OrganizationId) && u.DeletedAt == null)
                 .ToListAsync(ct))
             .GroupBy(u => u.OrganizationId)
             .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.Code, x => x.OrganizationUnitId, StringComparer.OrdinalIgnoreCase));
 
         var existingEvents = new Dictionary<(int OrganizationId, string Title), Event>();
-        foreach (var evt in await db.Events.IgnoreQueryFilters()
+        foreach (var evt in await db.Events.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                      .Where(e => orgIds.Contains(e.OrganizationId))
                      .OrderBy(e => e.DeletedAt == null ? 0 : 1)
                      .ToListAsync(ct))
@@ -923,7 +937,7 @@ public static class DbSeeder
         var eventIds = seedEventsList.Select(x => x.Entity.EventId).ToHashSet();
 
         var existingSessions = new Dictionary<(int EventId, int SessionNo), EventSession>();
-        foreach (var session in await db.EventSessions.IgnoreQueryFilters()
+        foreach (var session in await db.EventSessions.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                      .Where(s => eventIds.Contains(s.EventId))
                      .OrderBy(s => s.DeletedAt == null ? 0 : 1)
                      .ToListAsync(ct))
@@ -960,7 +974,7 @@ public static class DbSeeder
 
         await db.SaveChangesAsync(ct);
 
-        var existingRegs = (await db.EventRegistrations.IgnoreQueryFilters()
+        var existingRegs = (await db.EventRegistrations.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(r => eventIds.Contains(r.EventId))
                 .Select(r => new { r.EventId, r.StudentId })
                 .ToListAsync(ct))
@@ -999,7 +1013,7 @@ public static class DbSeeder
         }
 
         var sessionIds = sessionPairs.Select(p => p.Entity.SessionId).ToHashSet();
-        var existingAttendances = (await db.SessionAttendances.IgnoreQueryFilters()
+        var existingAttendances = (await db.SessionAttendances.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(a => sessionIds.Contains(a.SessionId))
                 .Select(a => new { a.SessionId, a.StudentId })
                 .ToListAsync(ct))
@@ -1038,20 +1052,20 @@ public static class DbSeeder
     {
         var orgIds = orgsByName.Values.Where(o => o.DeletedAt is null).Select(o => o.OrganizationId).ToHashSet();
 
-        var unitsByOrgCode = (await db.OrganizationUnits.IgnoreQueryFilters()
+        var unitsByOrgCode = (await db.OrganizationUnits.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(u => orgIds.Contains(u.OrganizationId) && u.DeletedAt == null)
                 .ToListAsync(ct))
             .GroupBy(u => u.OrganizationId)
             .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.Code, x => x.OrganizationUnitId, StringComparer.OrdinalIgnoreCase));
 
-        var existingPendingPairs = (await db.MembershipApplications.IgnoreQueryFilters()
+        var existingPendingPairs = (await db.MembershipApplications.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(a => orgIds.Contains(a.OrganizationId) && a.DeletedAt == null)
                 .Select(a => new { a.OrganizationId, a.StudentId })
                 .ToListAsync(ct))
             .Select(x => (x.OrganizationId, x.StudentId))
             .ToHashSet();
 
-        var existingMemberPairs = (await db.OrganizationMembers.IgnoreQueryFilters()
+        var existingMemberPairs = (await db.OrganizationMembers.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(m => orgIds.Contains(m.OrganizationId) && m.DeletedAt == null)
                 .Select(m => new { m.OrganizationId, m.StudentId })
                 .ToListAsync(ct))
@@ -1122,7 +1136,13 @@ public static class DbSeeder
         return map;
     }
 
+    #endregion
+
+    #region Helpers
+
     private static string CreateUnusablePasswordHash() =>
         new PasswordHasher<Student>().HashPassword(
             null!, Convert.ToBase64String(RandomNumberGenerator.GetBytes(48)));
+
+    #endregion
 }

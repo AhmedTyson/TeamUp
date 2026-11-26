@@ -11,9 +11,12 @@ using TeamUp.Application.Common.Security;
 
 namespace TeamUp.Infrastructure.Services;
 
-public sealed class JwtTokenService(IOptions<JwtOptions> options) : IJwtTokenService
+public sealed class JwtTokenService(IOptions<JwtOptions> options, TimeProvider? timeProvider = null) : IJwtTokenService
 {
+    private static readonly JwtSecurityTokenHandler TokenHandler = new();
+
     private readonly JwtOptions _options = options.Value;
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
 
     public (string Token, DateTime ExpiresAt) GenerateAccessToken(
         int studentId,
@@ -25,7 +28,7 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options) : IJwtTokenSer
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiresAt = DateTime.UtcNow.AddMinutes(_options.AccessTokenMinutes);
+        var expiresAt = _time.GetUtcNow().UtcDateTime.AddMinutes(_options.AccessTokenMinutes);
 
         var claims = new List<Claim>
         {
@@ -60,16 +63,11 @@ public sealed class JwtTokenService(IOptions<JwtOptions> options) : IJwtTokenSer
             signingCredentials: creds
         );
 
-        return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
+        return (TokenHandler.WriteToken(token), expiresAt);
     }
 
-    public string GenerateRefreshToken()
-    {
-        var bytes = new byte[64];
-        using var rng = RandomNumberGenerator.Create();
-        rng.GetBytes(bytes);
-        return Convert.ToBase64String(bytes);
-    }
+    public string GenerateRefreshToken() =>
+        Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
     public string HashToken(string token)
     {

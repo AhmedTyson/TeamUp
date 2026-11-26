@@ -37,7 +37,8 @@ public interface IEventService
     Task<EventSessionDto> CreateSessionAsync(int eventId, int actorStudentId, string? actorRole, CreateEventSessionRequest request, CancellationToken ct = default);
     Task<EventSessionDto> UpdateSessionAsync(int sessionId, int actorStudentId, string? actorRole, UpdateEventSessionRequest request, CancellationToken ct = default);
     Task DeleteSessionAsync(int sessionId, int actorStudentId, string? actorRole, CancellationToken ct = default);
-    Task<IReadOnlyList<MyEventRegistrationDto>> GetMyRegistrationsAsync(int studentId, CancellationToken ct = default);
+    Task<PagedResult<MyEventRegistrationDto>> GetMyRegistrationsAsync(int studentId, PageRequest page, CancellationToken ct = default);
+    Task<MyEventRegistrationDto?> GetMyRegistrationForEventAsync(int eventId, int studentId, CancellationToken ct = default);
     Task<IReadOnlyList<EventRegistrationDto>> GetRegistrationsAsync(int eventId, int actorStudentId, string? actorRole, CancellationToken ct = default);
     Task<EventRegistrationDto> RegisterAsync(int eventId, int studentId, CancellationToken ct = default);
     Task CancelRegistrationAsync(int eventId, int targetStudentId, int actorStudentId, string? actorRole, CancellationToken ct = default);

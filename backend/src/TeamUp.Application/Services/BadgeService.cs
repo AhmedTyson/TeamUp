@@ -2,7 +2,7 @@
 // Purpose: Badge catalog & automated idempotent achievement evaluator (PointsThreshold, EventCount, TaskCount) with IMemoryCache and audit logging.
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Hybrid;
 using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
@@ -15,19 +15,25 @@ namespace TeamUp.Application.Services;
 
 public sealed class BadgeService(
     IAppDbContext db,
-    IMemoryCache cache,
-    IAuditLogService auditLog) : IBadgeService
+    HybridCache cache,
+    IAuditLogService auditLog,
+    TimeProvider? timeProvider = null) : IBadgeService
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
+    #region Student Achievements & Awarding
+
     public async Task<IReadOnlyList<string>> EvaluateStudentBadgesAsync(int studentId, CancellationToken ct = default)
     {
         var newlyAwarded = new List<string>();
 
         var totalPoints = await db.ScoreTransactions
+            .AsNoTracking()
             .Where(t => t.StudentId == studentId)
             .SumAsync(t => (int?)t.Points, ct) ?? 0;
 
         var eventsAttended = await db.SessionAttendances
-            .Include(a => a.Session)
+            .AsNoTracking()
             .Where(a => a.StudentId == studentId)
             .Select(a => a.Session.EventId)
             .Distinct()
@@ -38,11 +44,13 @@ public sealed class BadgeService(
             .CountAsync(t => t.AssignedStudentId == studentId && t.Status == ProjectTaskStatus.Done, ct);
 
         var earnedBadgeIds = await db.StudentBadges
+            .AsNoTracking()
             .Where(sb => sb.StudentId == studentId)
             .Select(sb => sb.BadgeId)
             .ToListAsync(ct);
 
         var unearnedBadges = await db.Badges
+            .AsNoTracking()
             .Where(b => !earnedBadgeIds.Contains(b.BadgeId))
             .ToListAsync(ct);
 
@@ -62,7 +70,7 @@ public sealed class BadgeService(
                 {
                     StudentId = studentId,
                     BadgeId = badge.BadgeId,
-                    AwardedAt = DateTime.UtcNow,
+                    AwardedAt = _time.GetUtcNow().UtcDateTime,
                 });
 
                 db.Notifications.Add(new Notification
@@ -72,7 +80,7 @@ public sealed class BadgeService(
                     Message = $"Congratulations! You earned the '{badge.Name}' achievement badge.",
                     Type = NotificationType.BadgeEarned,
                     IsRead = false,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = _time.GetUtcNow().UtcDateTime,
                 });
 
                 newlyAwarded.Add(badge.Name);
@@ -106,7 +114,7 @@ public sealed class BadgeService(
         {
             StudentId = studentId,
             BadgeId = badgeId,
-            AwardedAt = DateTime.UtcNow,
+            AwardedAt = _time.GetUtcNow().UtcDateTime,
         };
 
         db.StudentBadges.Add(award);
@@ -118,7 +126,7 @@ public sealed class BadgeService(
             Message = $"You were awarded the '{badge.Name}' badge by an administrator.",
             Type = NotificationType.BadgeEarned,
             IsRead = false,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = _time.GetUtcNow().UtcDateTime,
         });
 
         await db.SaveChangesAsync(ct);
@@ -150,7 +158,6 @@ public sealed class BadgeService(
         return await db.StudentBadges
             .AsNoTracking()
             .Where(sb => sb.StudentId == studentId)
-            .Include(sb => sb.Badge)
             .OrderByDescending(sb => sb.AwardedAt)
             .Select(sb => new StudentBadgeDto(
                 sb.StudentId,
@@ -164,26 +171,27 @@ public sealed class BadgeService(
             .ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<BadgeDto>> GetBadgeCatalogAsync(CancellationToken ct = default)
-    {
-        if (cache.TryGetValue(CatalogCacheKeys.BadgeCatalog, out IReadOnlyList<BadgeDto>? cached) && cached is not null)
-            return cached;
+    #endregion
 
-        var items = await db.Badges
-            .AsNoTracking()
-            .OrderBy(b => b.BadgeId)
-            .Select(b => new BadgeDto(
-                b.BadgeId,
-                b.Name,
-                b.Description,
-                b.IconUrl,
-                b.CriteriaType,
-                b.CriteriaValue))
-            .ToListAsync(ct);
+    #region Badge Catalog CRUD
 
-        cache.Set(CatalogCacheKeys.BadgeCatalog, items, CatalogCacheKeys.DefaultTtl);
-        return items;
-    }
+    public Task<IReadOnlyList<BadgeDto>> GetBadgeCatalogAsync(CancellationToken ct = default) =>
+        cache.GetOrCreateAsync(
+            CatalogCacheKeys.BadgeCatalog,
+            async token => (IReadOnlyList<BadgeDto>)await db.Badges
+                .AsNoTracking()
+                .OrderBy(b => b.BadgeId)
+                .Select(b => new BadgeDto(
+                    b.BadgeId,
+                    b.Name,
+                    b.Description,
+                    b.IconUrl,
+                    b.CriteriaType,
+                    b.CriteriaValue))
+                .ToListAsync(token),
+            options: CatalogCacheKeys.CatalogEntryOptions,
+            tags: [CatalogCacheKeys.Tags.BadgeCatalog],
+            cancellationToken: ct).AsTask();
 
     public async Task<BadgeDto> CreateBadgeAsync(CreateBadgeRequest request, CancellationToken ct = default)
     {
@@ -202,7 +210,7 @@ public sealed class BadgeService(
 
         db.Badges.Add(badge);
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.BadgeCatalog);
+        await cache.RemoveAsync(CatalogCacheKeys.BadgeCatalog, ct);
 
         return new BadgeDto(
             badge.BadgeId,
@@ -235,7 +243,7 @@ public sealed class BadgeService(
         if (request.CriteriaValue.HasValue) badge.CriteriaValue = request.CriteriaValue.Value;
 
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.BadgeCatalog);
+        await cache.RemoveAsync(CatalogCacheKeys.BadgeCatalog, ct);
 
         return new BadgeDto(
             badge.BadgeId,
@@ -254,7 +262,7 @@ public sealed class BadgeService(
         var badgeName = badge.Name;
         db.Badges.Remove(badge);
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.BadgeCatalog);
+        await cache.RemoveAsync(CatalogCacheKeys.BadgeCatalog, ct);
 
         await auditLog.RecordAsync(
             "EntitySoftDeleted",
@@ -264,4 +272,6 @@ public sealed class BadgeService(
             newValues: new { DeletedAt = badge.DeletedAt },
             ct: ct);
     }
+
+    #endregion
 }

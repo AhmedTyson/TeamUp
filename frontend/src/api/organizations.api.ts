@@ -251,6 +251,14 @@ export const organizationsApi = {
     return unwrapApiResponse(response);
   },
 
+  async categories(signal?: AbortSignal): Promise<string[]> {
+    const response = await apiClient.get<ApiResponse<string[]>>(
+      API_ENDPOINTS.organizations.publicCategories,
+      { signal },
+    );
+    return unwrapApiResponse(response);
+  },
+
   async detail(id: number, signal?: AbortSignal): Promise<OrganizationDetail> {
     const response = await apiClient.get<ApiResponse<OrganizationDetail>>(
       API_ENDPOINTS.organizations.byId(id),

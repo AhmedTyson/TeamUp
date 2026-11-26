@@ -2,7 +2,7 @@
 
 Deploy **TeamUp** 100% free with persistent **SQL Server**, persistent profile photo uploads (`POST /api/v1/students/me/profile/photo`), and global HTTPS CDN hosting:
 
-- **Backend + Database:** [MonsterASP.NET](https://www.monsterasp.net/) Free Plan (native `.NET 10`, Windows IIS, 5 GB disk, Free SQL Server DB) — *or* **Azure for Students** (`$100` free credit + Azure SQL Free Offer with a `.edu` email).
+- **Backend + Database:** [MonsterASP.NET](https://www.monsterasp.net/) Free Plan (native `.NET 11` or self-contained check, Windows IIS, 5 GB disk, Free SQL Server DB) — *or* **Azure for Students** (`$100` free credit + Azure SQL Free Offer with a `.edu` email).
 - **Frontend SPA:** **Cloudflare Pages**, **Vercel**, or **Netlify** (all free for public static SPAs, zero credit card required).
 
 ---
@@ -11,7 +11,7 @@ Deploy **TeamUp** 100% free with persistent **SQL Server**, persistent profile p
 
 ### 1. Create the Free Website & Database
 1. Sign up on **MonsterASP.NET** (no credit card required) and create a **Free Website** (`https://<your-site>.runasp.net`).
-2. Open **Websites → `<your-site>` → Scripting** and set **ASP.NET Core Runtime** to **`.NET 10`** (In-Process hosting).
+2. Open **Websites → `<your-site>` → Scripting** and set **ASP.NET Core Runtime** to **`.NET 11`** (In-Process hosting).
 3. Go to **Databases → Create MSSQL Database** to provision your free SQL Server database.
 4. Copy the SQL Server **Connection String** (use `dbXXXX.public.databaseasp.net` if migrating remotely, or `dbXXXX.databaseasp.net` when running directly on MonsterASP) and keep strict TLS:
    ```text
@@ -91,6 +91,6 @@ See [`frontend/.env.example`](../frontend/.env.example).
 ## Optional Alternative: Azure for Students (`$100` Free Credit + `.edu`)
 
 If you prefer Microsoft Azure with a verified university email:
-1. Activate **Azure for Students** (no credit card) and create an **Azure SQL Database** (Free offer) + **App Service (Windows or Linux, .NET 10)**.
+1. Activate **Azure for Students** (no credit card) and create an **Azure SQL Database** (Free offer) + **App Service (Windows or Linux, .NET 11)**.
 2. Set `ConnectionStrings:TeamUpDb`, `Jwt:Key`, `Cors:AllowedOrigins`, `Database:AutoMigrate=true`, and `Seed:Enabled=true` in **App Service → Environment variables** (`__` double underscore syntax, e.g., `Jwt__Key`, `Cors__AllowedOrigins__0`, `Seed__AdminPassword`).
 3. Deploy `backend/src/TeamUp.Api` via `az webapp deploy` or GitHub Actions, then connect Cloudflare Pages / Vercel / Netlify as in Part 2.

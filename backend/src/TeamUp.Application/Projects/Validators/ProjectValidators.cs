@@ -3,7 +3,7 @@ using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Projects.Validators;
 
-public class CreateProjectRequestValidator : AbstractValidator<CreateProjectRequest>
+public sealed class CreateProjectRequestValidator : AbstractValidator<CreateProjectRequest>
 {
     public CreateProjectRequestValidator()
     {
@@ -19,7 +19,7 @@ public class CreateProjectRequestValidator : AbstractValidator<CreateProjectRequ
     }
 }
 
-public class UpdateProjectRequestValidator : AbstractValidator<UpdateProjectRequest>
+public sealed class UpdateProjectRequestValidator : AbstractValidator<UpdateProjectRequest>
 {
     public UpdateProjectRequestValidator()
     {
@@ -42,7 +42,7 @@ public class UpdateProjectRequestValidator : AbstractValidator<UpdateProjectRequ
     }
 }
 
-public class UpsertRequiredSkillRequestValidator : AbstractValidator<UpsertRequiredSkillRequest>
+public sealed class UpsertRequiredSkillRequestValidator : AbstractValidator<UpsertRequiredSkillRequest>
 {
     public UpsertRequiredSkillRequestValidator()
     {
@@ -51,7 +51,7 @@ public class UpsertRequiredSkillRequestValidator : AbstractValidator<UpsertRequi
     }
 }
 
-public class UpdateProjectMemberRequestValidator : AbstractValidator<UpdateProjectMemberRequest>
+public sealed class UpdateProjectMemberRequestValidator : AbstractValidator<UpdateProjectMemberRequest>
 {
     public UpdateProjectMemberRequestValidator()
     {
@@ -61,7 +61,7 @@ public class UpdateProjectMemberRequestValidator : AbstractValidator<UpdateProje
     }
 }
 
-public class CreateProjectApplicationRequestValidator : AbstractValidator<CreateProjectApplicationRequest>
+public sealed class CreateProjectApplicationRequestValidator : AbstractValidator<CreateProjectApplicationRequest>
 {
     public CreateProjectApplicationRequestValidator()
     {
@@ -70,7 +70,7 @@ public class CreateProjectApplicationRequestValidator : AbstractValidator<Create
     }
 }
 
-public class ReviewProjectApplicationRequestValidator : AbstractValidator<ReviewProjectApplicationRequest>
+public sealed class ReviewProjectApplicationRequestValidator : AbstractValidator<ReviewProjectApplicationRequest>
 {
     public ReviewProjectApplicationRequestValidator()
     {
@@ -80,7 +80,7 @@ public class ReviewProjectApplicationRequestValidator : AbstractValidator<Review
     }
 }
 
-public class CreateProjectTaskRequestValidator : AbstractValidator<CreateProjectTaskRequest>
+public sealed class CreateProjectTaskRequestValidator : AbstractValidator<CreateProjectTaskRequest>
 {
     public CreateProjectTaskRequestValidator()
     {
@@ -96,7 +96,7 @@ public class CreateProjectTaskRequestValidator : AbstractValidator<CreateProject
     }
 }
 
-public class UpdateProjectTaskRequestValidator : AbstractValidator<UpdateProjectTaskRequest>
+public sealed class UpdateProjectTaskRequestValidator : AbstractValidator<UpdateProjectTaskRequest>
 {
     public UpdateProjectTaskRequestValidator()
     {
@@ -119,7 +119,7 @@ public class UpdateProjectTaskRequestValidator : AbstractValidator<UpdateProject
     }
 }
 
-public class AssignTaskRequestValidator : AbstractValidator<AssignTaskRequest>
+public sealed class AssignTaskRequestValidator : AbstractValidator<AssignTaskRequest>
 {
     public AssignTaskRequestValidator()
     {

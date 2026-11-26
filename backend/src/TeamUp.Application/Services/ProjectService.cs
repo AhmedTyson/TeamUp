@@ -2,16 +2,22 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Images;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Projects;
+using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
 using TeamUp.Domain.Events;
 
 namespace TeamUp.Application.Services;
 
-public sealed class ProjectService(IAppDbContext db) : IProjectService, IProjectSkillService, IProjectMemberService, IProjectTaskService
+public sealed class ProjectService(IAppDbContext db, TimeProvider? timeProvider = null) : IProjectService, IProjectSkillService, IProjectMemberService, IProjectTaskService
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
+    #region Project CRUD
+
     public async Task<PagedResult<ProjectListItemDto>> GetProjectsAsync(string? keyword, string? status, int? skillId, PageRequest page, CancellationToken ct)
     {
         var query = db.Projects.AsNoTracking().AsQueryable();
@@ -32,8 +38,11 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         var total = await query.CountAsync(ct);
         var items = await query.OrderByDescending(p => p.CreatedAt).Skip(page.Skip).Take(page.SafePageSize)
             .Select(p => new ProjectListItemDto(p.ProjectId, p.Title, p.Description, p.Status, p.MaxTeamSize,
-                p.Members.Count(m => m.DeletedAt == null), p.CreatorId, p.Creator.FirstName + " " + p.Creator.LastName, p.CreatedAt))
+                p.Members.Count(m => m.DeletedAt == null), p.CreatorId, p.Creator.FirstName + " " + p.Creator.LastName, p.CreatedAt, p.CoverImageUrl))
             .ToListAsync(ct);
+        items = items
+            .Select(i => i with { CoverImageUrl = i.CoverImageUrl ?? DefaultCoverCatalog.UrlFor($"project:{i.ProjectId}") })
+            .ToList();
         return new PagedResult<ProjectListItemDto>(items, page.SafePage, page.SafePageSize, total);
     }
 
@@ -53,8 +62,19 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
             .FirstOrDefaultAsync(p => p.ProjectId == projectId, ct) ?? throw new NotFoundException("Project not found.");
         var skills = await GetRequiredSkillsAsync(projectId, ct);
         var members = project.Members.Where(m => m.DeletedAt == null).Select(m => new ProjectMemberDto(m.StudentId, m.Student.FirstName, m.Student.LastName, m.Role, m.JoinedAt)).ToList();
-        return new ProjectDetailDto(project.ProjectId, project.Title, project.Description, project.Status, project.MaxTeamSize,
-            members.Count, project.CreatorId, project.Creator.FirstName + " " + project.Creator.LastName, project.CreatedAt, members, skills);
+        return new ProjectDetailDto(
+            project.ProjectId,
+            project.Title,
+            project.Description,
+            project.Status,
+            project.MaxTeamSize,
+            members.Count,
+            project.CreatorId,
+            project.Creator.FirstName + " " + project.Creator.LastName,
+            project.CreatedAt,
+            members,
+            skills,
+            project.CoverImageUrl ?? DefaultCoverCatalog.UrlFor($"project:{project.ProjectId}"));
     }
 
     public async Task<ProjectDetailDto> UpdateProjectAsync(int studentId, int projectId, UpdateProjectRequest request, CancellationToken ct)
@@ -92,14 +112,20 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
     {
         var project = await GetProjectEntityAsync(projectId, ct);
         EnsureCreator(project, studentId);
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
-        var now = DateTime.UtcNow;
-        var tasks = await db.ProjectTasks.Where(t => t.ProjectId == projectId).ToListAsync(ct);
-        foreach (var task in tasks) task.DeletedAt = now;
-        project.DeletedAt = now;
-        await db.SaveChangesAsync(ct);
-        await tx.CommitAsync(ct);
+        await db.ExecuteInTransactionAsync(IsolationLevel.ReadCommitted, async token =>
+        {
+            var trackedProject = await GetProjectEntityAsync(projectId, token);
+            var now = _time.GetUtcNow().UtcDateTime;
+            var tasks = await db.ProjectTasks.Where(t => t.ProjectId == projectId).ToListAsync(token);
+            foreach (var task in tasks) task.DeletedAt = now;
+            trackedProject.DeletedAt = now;
+            await db.SaveChangesAsync(token);
+        }, ct);
     }
+
+    #endregion
+
+    #region Required Skills
 
     public async Task<IReadOnlyList<ProjectSkillDto>> GetRequiredSkillsAsync(int projectId, CancellationToken ct)
     {
@@ -113,7 +139,7 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         var project = await GetProjectEntityAsync(projectId, ct); EnsureCreator(project, studentId);
         if (!Enum.IsDefined(request.RequiredLevel)) throw new BadRequestException("Invalid required proficiency level.");
         if (!await db.Skills.AnyAsync(s => s.SkillId == skillId, ct)) throw new NotFoundException("Skill not found.");
-        var item = await db.ProjectRequiredSkills.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.ProjectId == projectId && x.SkillId == skillId, ct);
+        var item = await db.ProjectRequiredSkills.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).FirstOrDefaultAsync(x => x.ProjectId == projectId && x.SkillId == skillId, ct);
         if (item is null) db.ProjectRequiredSkills.Add(new ProjectRequiredSkill { ProjectId = projectId, SkillId = skillId, RequiredLevel = request.RequiredLevel, IsMandatory = request.IsMandatory });
         else { item.DeletedAt = null; item.RequiredLevel = request.RequiredLevel; item.IsMandatory = request.IsMandatory; }
         await db.SaveChangesAsync(ct);
@@ -124,8 +150,12 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         var project = await GetProjectEntityAsync(projectId, ct); EnsureCreator(project, studentId);
         var item = await db.ProjectRequiredSkills.FirstOrDefaultAsync(x => x.ProjectId == projectId && x.SkillId == skillId, ct)
             ?? throw new NotFoundException("Required skill not found.");
-        item.DeletedAt = DateTime.UtcNow; await db.SaveChangesAsync(ct);
+        item.DeletedAt = _time.GetUtcNow().UtcDateTime; await db.SaveChangesAsync(ct);
     }
+
+    #endregion
+
+    #region Team Members
 
     public async Task<IReadOnlyList<ProjectMemberDto>> GetMembersAsync(int projectId, CancellationToken ct)
     {
@@ -147,14 +177,21 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         var project = await GetProjectEntityAsync(projectId, ct);
         if (studentId != project.CreatorId && studentId != memberStudentId) throw new ForbiddenException("Only the project creator or the member themselves can remove this member.");
         if (memberStudentId == project.CreatorId) throw new ConflictException("The project creator cannot leave or be removed from their own project.");
-        var member = await db.ProjectMembers.FirstOrDefaultAsync(m => m.ProjectId == projectId && m.StudentId == memberStudentId, ct)
-            ?? throw new NotFoundException("Project member not found.");
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
-        member.DeletedAt = DateTime.UtcNow;
-        var assignedTasks = await db.ProjectTasks.Where(t => t.ProjectId == projectId && t.AssignedStudentId == memberStudentId).ToListAsync(ct);
-        foreach (var task in assignedTasks) task.AssignedStudentId = null;
-        await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
+        await db.ExecuteInTransactionAsync(IsolationLevel.ReadCommitted, async token =>
+        {
+            var member = await db.ProjectMembers.FirstOrDefaultAsync(m => m.ProjectId == projectId && m.StudentId == memberStudentId, token)
+                ?? throw new NotFoundException("Project member not found.");
+            member.DeletedAt = _time.GetUtcNow().UtcDateTime;
+            await db.SaveChangesAsync(token);
+            await db.ProjectTasks
+                .Where(t => t.ProjectId == projectId && t.AssignedStudentId == memberStudentId)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.AssignedStudentId, (int?)null), token);
+        }, ct);
     }
+
+    #endregion
+
+    #region Recruitment Applications
 
     public async Task<IReadOnlyList<ProjectApplicationDto>> GetApplicationsAsync(int studentId, int projectId, CancellationToken ct)
     {
@@ -162,6 +199,15 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         var applications = await db.ProjectApplications.AsNoTracking().Where(a => a.ProjectId == projectId).Include(a => a.Student)
             .OrderByDescending(a => a.AppliedAt).ToListAsync(ct);
         return applications.Select(ToApplicationDto).ToList();
+    }
+
+    public async Task<ProjectApplicationDto?> GetMyApplicationAsync(int studentId, int projectId, CancellationToken ct)
+    {
+        await GetProjectEntityAsync(projectId, ct);
+        var application = await db.ProjectApplications.AsNoTracking().Include(a => a.Student)
+            .Where(a => a.ProjectId == projectId && a.StudentId == studentId)
+            .OrderByDescending(a => a.AppliedAt).FirstOrDefaultAsync(ct);
+        return application is null ? null : ToApplicationDto(application);
     }
 
     public async Task<ProjectApplicationDto> ApplyAsync(int studentId, int projectId, CreateProjectApplicationRequest request, CancellationToken ct)
@@ -182,34 +228,53 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
 
     public async Task<ProjectApplicationDto> ReviewApplicationAsync(int studentId, int projectId, int applicationId, ReviewProjectApplicationRequest request, CancellationToken ct)
     {
-        var project = await GetProjectEntityAsync(projectId, ct); EnsureCreator(project, studentId);
-        if (request.Status is not (ApplicationStatus.Accepted or ApplicationStatus.Rejected)) throw new BadRequestException("Application status must be Accepted or Rejected.");
-        var application = await db.ProjectApplications.Include(a => a.Student).FirstOrDefaultAsync(a => a.ApplicationId == applicationId && a.ProjectId == projectId, ct)
-            ?? throw new NotFoundException("Application not found.");
-        if (application.Status != ApplicationStatus.Pending) throw new ConflictException("Only pending applications can be reviewed.");
-        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
-        if (request.Status == ApplicationStatus.Accepted)
+        if (request.Status is not (ApplicationStatus.Accepted or ApplicationStatus.Rejected))
+            throw new BadRequestException("Application status must be Accepted or Rejected.");
+
+        return await db.ExecuteInTransactionAsync(IsolationLevel.Serializable, async token =>
         {
-            if (project.Status != ProjectStatus.Recruiting) throw new ConflictException("This project is not recruiting.");
-            var memberCount = await db.ProjectMembers.CountAsync(m => m.ProjectId == projectId, ct);
-            if (memberCount >= project.MaxTeamSize) throw new ConflictException("The project has reached its maximum team size.");
-            var existingMembership = await db.ProjectMembers.IgnoreQueryFilters()
-                .FirstOrDefaultAsync(m => m.ProjectId == projectId && m.StudentId == application.StudentId, ct);
-            if (existingMembership is not null && existingMembership.DeletedAt is null)
-                throw new ConflictException("Applicant is already a project member.");
-            if (existingMembership is null)
-                db.ProjectMembers.Add(new ProjectMember { ProjectId = projectId, StudentId = application.StudentId, Role = "Member" });
-            else
+            var project = db.Database.ProviderName?.Contains("SqlServer", StringComparison.OrdinalIgnoreCase) == true
+                ? await db.Projects
+                    .FromSql($"SELECT * FROM [Project] WITH (UPDLOCK, ROWLOCK) WHERE [ProjectId] = {projectId} AND [DeletedAt] IS NULL")
+                    .FirstOrDefaultAsync(token)
+                : await db.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId, token);
+
+            if (project is null)
+                throw new NotFoundException("Project not found.");
+            EnsureCreator(project, studentId);
+
+            var application = await db.ProjectApplications.Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.ApplicationId == applicationId && a.ProjectId == projectId, token)
+                ?? throw new NotFoundException("Application not found.");
+            if (application.Status != ApplicationStatus.Pending)
+                throw new ConflictException("Only pending applications can be reviewed.");
+
+            if (request.Status == ApplicationStatus.Accepted)
             {
-                existingMembership.DeletedAt = null;
-                existingMembership.Role = "Member";
-                existingMembership.JoinedAt = DateTime.UtcNow;
+                if (project.Status != ProjectStatus.Recruiting)
+                    throw new ConflictException("This project is not recruiting.");
+                var memberCount = await db.ProjectMembers.CountAsync(m => m.ProjectId == projectId, token);
+                if (memberCount >= project.MaxTeamSize)
+                    throw new ConflictException("The project has reached its maximum team size.");
+                var existingMembership = await db.ProjectMembers.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
+                    .FirstOrDefaultAsync(m => m.ProjectId == projectId && m.StudentId == application.StudentId, token);
+                if (existingMembership is not null && existingMembership.DeletedAt is null)
+                    throw new ConflictException("Applicant is already a project member.");
+                if (existingMembership is null)
+                    db.ProjectMembers.Add(new ProjectMember { ProjectId = projectId, StudentId = application.StudentId, Role = "Member" });
+                else
+                {
+                    existingMembership.DeletedAt = null;
+                    existingMembership.Role = "Member";
+                    existingMembership.JoinedAt = _time.GetUtcNow().UtcDateTime;
+                }
             }
-        }
-        application.Status = request.Status;
-        application.AddDomainEvent(new ApplicationReviewedDomainEvent(application.StudentId, project.Title, "Project", request.Status));
-        await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
-        return ToApplicationDto(application);
+
+            application.Status = request.Status;
+            application.AddDomainEvent(new ApplicationReviewedDomainEvent(application.StudentId, project.Title, "Project", request.Status));
+            await db.SaveChangesAsync(token);
+            return ToApplicationDto(application);
+        }, ct);
     }
 
     public async Task WithdrawApplicationAsync(int studentId, int projectId, int applicationId, CancellationToken ct)
@@ -219,9 +284,13 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
         if (application.StudentId != studentId) throw new ForbiddenException("You can only withdraw your own application.");
         if (application.Status != ApplicationStatus.Pending) throw new ConflictException("Only pending applications can be withdrawn.");
         application.Status = ApplicationStatus.Withdrawn;
-        application.DeletedAt = DateTime.UtcNow;
+        application.DeletedAt = _time.GetUtcNow().UtcDateTime;
         await db.SaveChangesAsync(ct);
     }
+
+    #endregion
+
+    #region Sprint Tasks
 
     public async Task<IReadOnlyList<ProjectTaskDto>> GetProjectTasksAsync(int studentId, int projectId, CancellationToken ct)
     {
@@ -302,8 +371,12 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
     {
         var task = await db.ProjectTasks.FirstOrDefaultAsync(t => t.TaskId == taskId, ct) ?? throw new NotFoundException("Task not found.");
         var project = await GetProjectEntityAsync(task.ProjectId, ct); EnsureCreator(project, studentId);
-        task.DeletedAt = DateTime.UtcNow; await db.SaveChangesAsync(ct);
+        task.DeletedAt = _time.GetUtcNow().UtcDateTime; await db.SaveChangesAsync(ct);
     }
+
+    #endregion
+
+    #region Helpers & Mapping
 
     private async Task<Project> GetProjectEntityAsync(int id, CancellationToken ct) => await db.Projects.FirstOrDefaultAsync(p => p.ProjectId == id, ct) ?? throw new NotFoundException("Project not found.");
     private async Task EnsureProjectExistsAsync(int id, CancellationToken ct) { if (!await db.Projects.AnyAsync(p => p.ProjectId == id, ct)) throw new NotFoundException("Project not found."); }
@@ -316,4 +389,6 @@ public sealed class ProjectService(IAppDbContext db) : IProjectService, IProject
     private static void EnsureCreator(Project project, int studentId) { if (project.CreatorId != studentId) throw new ForbiddenException("Only the project creator can perform this action."); }
     private static ProjectApplicationDto ToApplicationDto(ProjectApplication a) => new(a.ApplicationId, a.ProjectId, a.StudentId, a.Student.FirstName + " " + a.Student.LastName, a.Message, a.Status, a.AppliedAt);
     private static ProjectTaskDto ToTaskDto(ProjectTask t) => new(t.TaskId, t.Title, t.Description, t.Status, t.Priority, t.DueDate, t.ProjectId, t.AssignedStudentId, t.AssignedStudent is null ? null : t.AssignedStudent.FirstName + " " + t.AssignedStudent.LastName);
+
+    #endregion
 }

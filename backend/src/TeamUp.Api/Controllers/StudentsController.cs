@@ -15,7 +15,7 @@ namespace TeamUp.Api.Controllers;
 /// </summary>
 [Route("api/v1/students")]
 [Authorize]
-public class StudentsController(IStudentAccountService accountService) : BaseApiController
+public sealed class StudentsController(IStudentAccountService accountService) : BaseApiController
 {
     [HttpGet("showcase")]
     [AllowAnonymous]

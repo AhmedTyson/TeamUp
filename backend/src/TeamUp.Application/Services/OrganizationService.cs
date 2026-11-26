@@ -1,10 +1,12 @@
 // Date: 2026-11-24
 // Purpose: Organization service supporting Egyptian student-activity scopes, chapters/committees, 4-tier hierarchy, Kanban recruitment, participants, CSV export, and public preview (STRIDE THR-T-01, THR-R-01, THR-E-01).
 
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Images;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Organizations;
@@ -19,8 +21,26 @@ public sealed class OrganizationService(
     IAppDbContext db,
     IOrganizationAuthorizationService orgAuth,
     ISecurityStampValidator stampValidator,
-    IAuditLogService auditLog) : IOrganizationService
+    IAuditLogService auditLog,
+    TimeProvider? timeProvider = null) : IOrganizationService
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
+    #region Discovery & Organization CRUD
+
+    public async Task<IReadOnlyList<string>> GetOrganizationCategoriesAsync(CancellationToken ct = default)
+    {
+        // Distinct categories actually in use, most used first. Categories are free text, so the set can only
+        // come from the data; this feeds the directory filter chips instead of a compiled-in list.
+        return await db.Organizations.AsNoTracking()
+            .Where(x => x.Category != null && x.Category != string.Empty)
+            .GroupBy(x => x.Category)
+            .OrderByDescending(g => g.Count())
+            .ThenBy(g => g.Key)
+            .Select(g => g.Key)
+            .ToListAsync(ct);
+    }
+
     public async Task<PagedResult<OrganizationSummaryDto>> GetOrganizationsAsync(
         string? search,
         string? category,
@@ -79,24 +99,29 @@ public sealed class OrganizationService(
                 x.CurrentSeasonName,
                 db.OrganizationUnits.Count(u => u.OrganizationId == x.OrganizationId)))
             .ToListAsync(ct);
+        items = items
+            .Select(i => i with { CoverImageUrl = i.CoverImageUrl ?? DefaultCoverCatalog.UrlFor($"org:{i.OrganizationId}") })
+            .ToList();
 
         return new PagedResult<OrganizationSummaryDto>(items, page.SafePage, page.SafePageSize, total);
     }
 
-    public Task<OrganizationDetailDto> GetOrganizationByIdAsync(int id, CancellationToken ct = default) =>
-        LoadDetailCoreAsync(id, includeMemberEmails: true, ct);
+    public Task<OrganizationDetailDto> GetOrganizationByIdAsync(
+        int id, int viewerStudentId = 0, string? viewerRole = null, CancellationToken ct = default) =>
+        LoadDetailCoreAsync(id, includeMemberEmails: true, viewerStudentId, viewerRole, ct);
 
     public Task<OrganizationDetailDto> GetPublicOrganizationByIdAsync(int id, CancellationToken ct = default) =>
-        LoadDetailCoreAsync(id, includeMemberEmails: false, ct);
+        LoadDetailCoreAsync(id, includeMemberEmails: false, 0, null, ct);
 
-    private async Task<OrganizationDetailDto> LoadDetailCoreAsync(int id, bool includeMemberEmails, CancellationToken ct)
+    private async Task<OrganizationDetailDto> LoadDetailCoreAsync(
+        int id, bool includeMemberEmails, int viewerStudentId, string? viewerRole, CancellationToken ct)
     {
         var organization = await db.Organizations.AsNoTracking()
             .Include(x => x.University)
             .FirstOrDefaultAsync(x => x.OrganizationId == id, ct)
             ?? throw new NotFoundException($"Organization with ID {id} was not found.");
 
-        var members = await LoadMembersCoreAsync(id, includeMemberEmails, ct);
+        var members = await LoadMembersCoreAsync(id, includeMemberEmails, viewerStudentId, viewerRole, ct);
         var units = await GetUnitsAsync(id, ct);
 
         var eventsQuery = db.Events.AsNoTracking()
@@ -122,7 +147,7 @@ public sealed class OrganizationService(
             organization.UniversityId,
             organization.University?.Name,
             organization.City,
-            organization.CoverImageUrl,
+            organization.CoverImageUrl ?? DefaultCoverCatalog.UrlFor($"org:{organization.OrganizationId}"),
             organization.WebsiteUrl,
             organization.IsRecruiting,
             organization.CurrentSeasonName,
@@ -142,41 +167,43 @@ public sealed class OrganizationService(
             throw new NotFoundException($"University with ID {request.UniversityId.Value} was not found.");
         }
 
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
-
-        var organization = new Organization
+        var organizationId = await db.ExecuteInTransactionAsync(IsolationLevel.ReadCommitted, async token =>
         {
-            Name = name,
-            Description = request.Description.Trim(),
-            Category = request.Category.Trim(),
-            LogoUrl = NormalizeOptional(request.LogoUrl),
-            Scope = request.Scope,
-            UniversityId = request.UniversityId is > 0 ? request.UniversityId : null,
-            City = NormalizeOptional(request.City),
-            CoverImageUrl = NormalizeOptional(request.CoverImageUrl),
-            WebsiteUrl = NormalizeOptional(request.WebsiteUrl),
-            IsRecruiting = request.IsRecruiting,
-            CurrentSeasonName = NormalizeOptional(request.CurrentSeasonName),
-        };
-        db.Organizations.Add(organization);
-        await db.SaveChangesAsync(ct);
-
-        // Assign creator as HighBoard / Admin of THIS organization only (STRIDE THR-T-01 / THR-E-01)
-        if (creatorStudentId > 0 && await db.Students.AnyAsync(s => s.StudentId == creatorStudentId, ct))
-        {
-            db.OrganizationMembers.Add(new OrganizationMember
+            var organization = new Organization
             {
-                OrganizationId = organization.OrganizationId,
-                StudentId = creatorStudentId,
-                Role = OrganizationRoles.Admin,
-                HierarchyTier = OrganizationHierarchyTier.HighBoard,
-                JoinedAt = DateTime.UtcNow
-            });
-            await db.SaveChangesAsync(ct);
-        }
+                Name = name,
+                Description = request.Description.Trim(),
+                Category = request.Category.Trim(),
+                LogoUrl = NormalizeOptional(request.LogoUrl),
+                Scope = request.Scope,
+                UniversityId = request.UniversityId is > 0 ? request.UniversityId : null,
+                City = NormalizeOptional(request.City),
+                CoverImageUrl = NormalizeOptional(request.CoverImageUrl),
+                WebsiteUrl = NormalizeOptional(request.WebsiteUrl),
+                IsRecruiting = request.IsRecruiting,
+                CurrentSeasonName = NormalizeOptional(request.CurrentSeasonName),
+            };
+            db.Organizations.Add(organization);
+            await db.SaveChangesAsync(token);
 
-        await transaction.CommitAsync(ct);
-        return await GetOrganizationByIdAsync(organization.OrganizationId, ct);
+            // Assign creator as HighBoard / Admin of THIS organization only (STRIDE THR-T-01 / THR-E-01)
+            if (creatorStudentId > 0 && await db.Students.AnyAsync(s => s.StudentId == creatorStudentId, token))
+            {
+                db.OrganizationMembers.Add(new OrganizationMember
+                {
+                    OrganizationId = organization.OrganizationId,
+                    StudentId = creatorStudentId,
+                    Role = OrganizationRoles.Admin,
+                    HierarchyTier = OrganizationHierarchyTier.HighBoard,
+                    JoinedAt = _time.GetUtcNow().UtcDateTime
+                });
+                await db.SaveChangesAsync(token);
+            }
+
+            return organization.OrganizationId;
+        }, ct);
+
+        return await GetOrganizationByIdAsync(organizationId, creatorStudentId, null, ct);
     }
 
     public async Task<OrganizationDetailDto> UpdateOrganizationAsync(
@@ -211,48 +238,63 @@ public sealed class OrganizationService(
         organization.CurrentSeasonName = NormalizeOptional(request.CurrentSeasonName);
         await db.SaveChangesAsync(ct);
 
-        return await GetOrganizationByIdAsync(id, ct);
+        return await GetOrganizationByIdAsync(id, actorStudentId, actorRole, ct);
     }
 
     public async Task DeleteOrganizationAsync(int id, CancellationToken ct = default)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var organization = await db.Organizations.FirstOrDefaultAsync(x => x.OrganizationId == id, ct)
-            ?? throw new NotFoundException($"Organization with ID {id} was not found.");
-        var orgName = organization.Name;
-        var members = await db.OrganizationMembers.Where(x => x.OrganizationId == id).ToListAsync(ct);
-        var applications = await db.MembershipApplications.Where(x => x.OrganizationId == id).ToListAsync(ct);
-        var units = await db.OrganizationUnits.Where(x => x.OrganizationId == id).ToListAsync(ct);
-        var events = await db.Events.Include(x => x.Sessions)
-            .Where(x => x.OrganizationId == id).ToListAsync(ct);
+        var (orgName, deletedAt) = await db.ExecuteInTransactionAsync(IsolationLevel.ReadCommitted, async token =>
+        {
+            var organization = await db.Organizations.FirstOrDefaultAsync(x => x.OrganizationId == id, token)
+                ?? throw new NotFoundException($"Organization with ID {id} was not found.");
+            var name = organization.Name;
+            var members = await db.OrganizationMembers.Where(x => x.OrganizationId == id).ToListAsync(token);
+            var applications = await db.MembershipApplications.Where(x => x.OrganizationId == id).ToListAsync(token);
+            var units = await db.OrganizationUnits.Where(x => x.OrganizationId == id).ToListAsync(token);
+            var events = await db.Events.Include(x => x.Sessions)
+                .Where(x => x.OrganizationId == id).ToListAsync(token);
 
-        db.OrganizationMembers.RemoveRange(members);
-        db.MembershipApplications.RemoveRange(applications);
-        foreach (var eventEntity in events)
-            db.EventSessions.RemoveRange(eventEntity.Sessions);
-        db.Events.RemoveRange(events);
-        db.OrganizationUnits.RemoveRange(units);
-        db.Organizations.Remove(organization);
-        await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
+            db.OrganizationMembers.RemoveRange(members);
+            db.MembershipApplications.RemoveRange(applications);
+            foreach (var eventEntity in events)
+                db.EventSessions.RemoveRange(eventEntity.Sessions);
+            db.Events.RemoveRange(events);
+            db.OrganizationUnits.RemoveRange(units);
+            db.Organizations.Remove(organization);
+            await db.SaveChangesAsync(token);
+            return (name, organization.DeletedAt);
+        }, ct);
 
         await auditLog.RecordAsync(
             "EntitySoftDeleted",
             "Organization",
             id.ToString(),
-            oldValues: new { organization.OrganizationId, Name = orgName },
-            newValues: new { DeletedAt = organization.DeletedAt },
+            oldValues: new { OrganizationId = id, Name = orgName },
+            newValues: new { DeletedAt = deletedAt },
             ct: ct);
     }
 
-    public Task<IReadOnlyList<OrganizationMemberDto>> GetMembersAsync(int organizationId, CancellationToken ct = default) =>
-        LoadMembersCoreAsync(organizationId, includeEmail: true, ct);
+    #endregion
+
+    #region Members
+
+    public Task<IReadOnlyList<OrganizationMemberDto>> GetMembersAsync(
+        int organizationId, int viewerStudentId = 0, string? viewerRole = null, CancellationToken ct = default) =>
+        LoadMembersCoreAsync(organizationId, includeEmail: true, viewerStudentId, viewerRole, ct);
 
     private async Task<IReadOnlyList<OrganizationMemberDto>> LoadMembersCoreAsync(
-        int organizationId, bool includeEmail, CancellationToken ct)
+        int organizationId, bool includeEmail, int viewerStudentId, string? viewerRole, CancellationToken ct)
     {
         if (!await db.Organizations.AnyAsync(x => x.OrganizationId == organizationId, ct))
             throw new NotFoundException($"Organization with ID {organizationId} was not found.");
+
+        // Confidentiality: member emails are personal data, not org metadata. Only org managers (who need them to run
+        // the org), the member themselves, and members who opted in via ShowEmailInDirectory are visible. Before this,
+        // any authenticated student could harvest every member's email through the detail/members/hierarchy endpoints,
+        // which made the directory opt-in meaningless (THR-I-01).
+        var viewerIsManager = includeEmail && viewerStudentId > 0
+            && (string.Equals(viewerRole, nameof(UserRole.PlatformAdmin), StringComparison.OrdinalIgnoreCase)
+                || await orgAuth.IsOrgAdminAsync(organizationId, viewerStudentId, ct));
 
         return await db.OrganizationMembers.AsNoTracking()
             .Where(x => x.OrganizationId == organizationId)
@@ -261,7 +303,9 @@ public sealed class OrganizationService(
                 x.StudentId,
                 x.Student.FirstName,
                 x.Student.LastName,
-                includeEmail ? x.Student.Email : string.Empty,
+                includeEmail && (viewerIsManager || x.StudentId == viewerStudentId || x.Student.ShowEmailInDirectory)
+                    ? x.Student.Email
+                    : string.Empty,
                 x.Role,
                 x.JoinedAt,
                 x.OrganizationUnitId,
@@ -302,6 +346,9 @@ public sealed class OrganizationService(
 
         var oldRole = member.Role;
         var nextRole = request.Role.Trim();
+        // Business rule: demoting the last administrator out of every admin role orphans the org.
+        if (!OrganizationRoles.IsAdminRole(nextRole))
+            await EnsureNotLastAdminAsync(organizationId, member, ct);
         member.Role = nextRole;
         member.HierarchyTier = request.HierarchyTier ?? OrganizationRoles.GetHierarchyTier(nextRole);
         await db.SaveChangesAsync(ct);
@@ -338,9 +385,35 @@ public sealed class OrganizationService(
             x => x.OrganizationId == organizationId && x.StudentId == studentId, ct)
             ?? throw new NotFoundException("The requested organization member was not found.");
 
+        // Business rule: an org can never lose its last administrator, otherwise nobody can
+        // manage it (events, members, recruitment) and it is orphaned until a PlatformAdmin steps in.
+        await EnsureNotLastAdminAsync(organizationId, member, ct);
+
         db.OrganizationMembers.Remove(member);
         await db.SaveChangesAsync(ct);
     }
+
+    private async Task EnsureNotLastAdminAsync(int organizationId, OrganizationMember target, CancellationToken ct)
+    {
+        if (!OrganizationRoles.IsAdminRole(target.Role) && target.HierarchyTier != OrganizationHierarchyTier.HighBoard)
+            return;
+
+        var hasOtherAdmin = await db.OrganizationMembers.AsNoTracking()
+            .AnyAsync(
+                x => x.OrganizationId == organizationId
+                    && x.StudentId != target.StudentId
+                    && (x.HierarchyTier == OrganizationHierarchyTier.HighBoard
+                        || OrganizationRoles.AdministrativeRoleNames.Contains(x.Role)),
+                ct);
+
+        if (!hasOtherAdmin)
+            throw new ConflictException(
+                "This member is the organization's last administrator. Promote another member to an admin role first.");
+    }
+
+    #endregion
+
+    #region Units, Hierarchy & Participants
 
     public async Task<IReadOnlyList<OrganizationUnitDto>> GetUnitsAsync(int organizationId, CancellationToken ct = default)
     {
@@ -427,28 +500,29 @@ public sealed class OrganizationService(
     {
         await orgAuth.EnsureCanManageOrganizationAsync(organizationId, actorStudentId, actorRole, ct);
 
-        var unit = await db.OrganizationUnits.FirstOrDefaultAsync(
-            u => u.OrganizationId == organizationId && u.OrganizationUnitId == unitId, ct)
-            ?? throw new NotFoundException($"Organization unit #{unitId} was not found.");
+        await db.ExecuteInTransactionAsync(IsolationLevel.ReadCommitted, async token =>
+        {
+            var unit = await db.OrganizationUnits.FirstOrDefaultAsync(
+                u => u.OrganizationId == organizationId && u.OrganizationUnitId == unitId, token)
+                ?? throw new NotFoundException($"Organization unit #{unitId} was not found.");
 
-        var members = await db.OrganizationMembers
-            .Where(m => m.OrganizationId == organizationId && m.OrganizationUnitId == unitId)
-            .ToListAsync(ct);
-        foreach (var member in members)
-            member.OrganizationUnitId = null;
+            await db.OrganizationMembers
+                .Where(m => m.OrganizationId == organizationId && m.OrganizationUnitId == unitId)
+                .ExecuteUpdateAsync(s => s.SetProperty(m => m.OrganizationUnitId, (int?)null), token);
 
-        db.OrganizationUnits.Remove(unit);
-        await db.SaveChangesAsync(ct);
+            db.OrganizationUnits.Remove(unit);
+            await db.SaveChangesAsync(token);
+        }, ct);
     }
 
     public async Task<OrganizationHierarchyDto> GetHierarchyAsync(
-        int organizationId, bool includeEmails = true, CancellationToken ct = default)
+        int organizationId, bool includeEmails = true, int viewerStudentId = 0, string? viewerRole = null, CancellationToken ct = default)
     {
         var org = await db.Organizations.AsNoTracking()
             .FirstOrDefaultAsync(o => o.OrganizationId == organizationId, ct)
             ?? throw new NotFoundException($"Organization with ID {organizationId} was not found.");
 
-        var members = await LoadMembersCoreAsync(organizationId, includeEmails, ct);
+        var members = await LoadMembersCoreAsync(organizationId, includeEmails, viewerStudentId, viewerRole, ct);
         var units = await GetUnitsAsync(organizationId, ct);
         var participantsCount = await db.EventRegistrations.AsNoTracking()
             .Where(r => r.Event.OrganizationId == organizationId && r.Status == RegistrationStatus.Confirmed)
@@ -484,23 +558,49 @@ public sealed class OrganizationService(
         if (!await db.Organizations.AsNoTracking().AnyAsync(o => o.OrganizationId == organizationId, ct))
             throw new NotFoundException($"Organization with ID {organizationId} was not found.");
 
-        var registrations = await db.EventRegistrations.AsNoTracking()
-            .Where(r => r.Event.OrganizationId == organizationId && r.Status == RegistrationStatus.Confirmed)
-            .Select(r => new
+        // Aggregate in SQL, not in memory: this used to load every confirmed registration row for
+        // every event the org has ever run, which grows without bound as the org's history grows.
+        var registrations = db.EventRegistrations.AsNoTracking()
+            .Where(r => r.Event.OrganizationId == organizationId && r.Status == RegistrationStatus.Confirmed);
+
+        var grouped = registrations
+            .GroupBy(r => r.StudentId)
+            .Select(g => new
             {
-                r.StudentId,
+                StudentId = g.Key,
+                EventsCount = g.Count(),
+                LatestRegisteredAt = g.Max(x => x.RegisteredAt)
+            });
+
+        // Join back on the per-student max timestamp to fetch the latest event's title and the
+        // student's display fields without materializing the whole registration history.
+        var registrationsPage = await (
+            from g in grouped
+            join r in registrations
+                on new { g.StudentId, RegisteredAt = g.LatestRegisteredAt }
+                equals new { r.StudentId, r.RegisteredAt }
+            select new
+            {
+                g.StudentId,
+                g.EventsCount,
+                r.RegisteredAt,
                 r.Student.FirstName,
                 r.Student.LastName,
                 r.Student.AffiliationType,
                 r.Student.City,
                 FacultyName = r.Student.Faculty != null ? r.Student.Faculty.Name : null,
                 UniversityName = r.Student.Faculty != null ? r.Student.Faculty.University.Name : null,
-                EventTitle = r.Event.Title,
-                r.RegisteredAt
+                EventTitle = r.Event.Title
             })
             .ToListAsync(ct);
 
-        if (registrations.Count == 0)
+        // Defensive: identical RegisteredAt timestamps would join twice for one student.
+        var latestRows = registrationsPage
+            .GroupBy(x => x.StudentId)
+            .Select(g => g.First())
+            .ToList();
+
+        if (latestRows.Count == 0)
             return [];
 
         var attendancesByStudent = await db.SessionAttendances.AsNoTracking()
@@ -509,12 +609,10 @@ public sealed class OrganizationService(
             .Select(g => new { StudentId = g.Key, Count = g.Count(), LatestCheckIn = g.Max(x => x.CheckInTime) })
             .ToDictionaryAsync(x => x.StudentId, ct);
 
-        return registrations
-            .GroupBy(r => r.StudentId)
-            .Select(g =>
+        return latestRows
+            .Select(latest =>
             {
-                var latest = g.OrderByDescending(x => x.RegisteredAt).First();
-                attendancesByStudent.TryGetValue(g.Key, out var att);
+                attendancesByStudent.TryGetValue(latest.StudentId, out var att);
                 var affiliationLabel = latest.UniversityName is not null && latest.FacultyName is not null
                     ? $"{latest.FacultyName} · {latest.UniversityName}"
                     : AffiliationFormatting.FormatAffiliationLabel(latest.AffiliationType)
@@ -525,11 +623,11 @@ public sealed class OrganizationService(
                     : latest.RegisteredAt;
 
                 return new OrganizationParticipantDto(
-                    g.Key,
+                    latest.StudentId,
                     latest.FirstName,
                     latest.LastName,
                     affiliationLabel,
-                    g.Count(),
+                    latest.EventsCount,
                     att?.Count ?? 0,
                     latest.EventTitle,
                     lastActive);
@@ -540,12 +638,20 @@ public sealed class OrganizationService(
             .ToList();
     }
 
+    #endregion
+
+    #region Membership Applications & Recruitment
+
     public async Task<IReadOnlyList<MembershipApplicationDto>> GetMyApplicationsAsync(
         int studentId, CancellationToken ct = default)
     {
+        // Bound the history: this list is the caller's own applications across all orgs, and the
+        // consumers use it for per-org "did I apply" lookups plus a dashboard summary. 100 recent
+        // applications covers every realistic account while keeping the query bounded.
         return await db.MembershipApplications.AsNoTracking()
             .Where(x => x.StudentId == studentId)
             .OrderByDescending(x => x.AppliedAt)
+            .Take(100)
             .Select(x => new MembershipApplicationDto(
                 x.ApplicationId,
                 x.OrganizationId,
@@ -633,7 +739,7 @@ public sealed class OrganizationService(
             SeasonName = NormalizeOptional(request.SeasonName) ?? organization.CurrentSeasonName,
             Status = ApplicationStatus.Pending,
             Stage = RecruitmentStage.Applied,
-            AppliedAt = DateTime.UtcNow
+            AppliedAt = _time.GetUtcNow().UtcDateTime
         };
         db.MembershipApplications.Add(application);
         await db.SaveChangesAsync(ct);
@@ -697,70 +803,72 @@ public sealed class OrganizationService(
             throw new NotFoundException($"Organization unit #{request.OrganizationUnitId.Value} was not found.");
         }
 
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var application = await db.MembershipApplications
-            .Include(x => x.Organization)
-            .FirstOrDefaultAsync(x => x.OrganizationId == organizationId && x.ApplicationId == applicationId, ct)
-            ?? throw new NotFoundException("Membership application was not found.");
-
-        if (application.Status != ApplicationStatus.Pending)
-            throw new ConflictException("Only pending applications can be updated.");
-
-        if (request.OrganizationUnitId.HasValue)
-            application.OrganizationUnitId = request.OrganizationUnitId.Value > 0 ? request.OrganizationUnitId.Value : null;
-        if (request.EvaluationScore.HasValue)
-            application.EvaluationScore = request.EvaluationScore.Value;
-        if (request.InterviewNotes is not null)
-            application.InterviewNotes = NormalizeOptional(request.InterviewNotes);
-
-        application.ReviewerStudentId = actorStudentId > 0 ? actorStudentId : null;
-        application.Stage = request.Stage;
-
-        if (request.Stage is RecruitmentStage.Accepted or RecruitmentStage.Rejected)
+        var updatedApplicationId = await db.ExecuteInTransactionAsync(IsolationLevel.ReadCommitted, async token =>
         {
-            var decisionStatus = request.Stage == RecruitmentStage.Accepted
-                ? ApplicationStatus.Accepted
-                : ApplicationStatus.Rejected;
+            var application = await db.MembershipApplications
+                .Include(x => x.Organization)
+                .FirstOrDefaultAsync(x => x.OrganizationId == organizationId && x.ApplicationId == applicationId, token)
+                ?? throw new NotFoundException("Membership application was not found.");
 
-            if (decisionStatus == ApplicationStatus.Accepted)
+            if (application.Status != ApplicationStatus.Pending)
+                throw new ConflictException("Only pending applications can be updated.");
+
+            if (request.OrganizationUnitId.HasValue)
+                application.OrganizationUnitId = request.OrganizationUnitId.Value > 0 ? request.OrganizationUnitId.Value : null;
+            if (request.EvaluationScore.HasValue)
+                application.EvaluationScore = request.EvaluationScore.Value;
+            if (request.InterviewNotes is not null)
+                application.InterviewNotes = NormalizeOptional(request.InterviewNotes);
+
+            application.ReviewerStudentId = actorStudentId > 0 ? actorStudentId : null;
+            application.Stage = request.Stage;
+
+            if (request.Stage is RecruitmentStage.Accepted or RecruitmentStage.Rejected)
             {
-                var previousMembership = await db.OrganizationMembers.IgnoreQueryFilters()
-                    .FirstOrDefaultAsync(x => x.OrganizationId == organizationId && x.StudentId == application.StudentId, ct);
-                if (previousMembership is null)
+                var decisionStatus = request.Stage == RecruitmentStage.Accepted
+                    ? ApplicationStatus.Accepted
+                    : ApplicationStatus.Rejected;
+
+                if (decisionStatus == ApplicationStatus.Accepted)
                 {
-                    db.OrganizationMembers.Add(new OrganizationMember
+                    var previousMembership = await db.OrganizationMembers.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
+                        .FirstOrDefaultAsync(x => x.OrganizationId == organizationId && x.StudentId == application.StudentId, token);
+                    if (previousMembership is null)
                     {
-                        OrganizationId = organizationId,
-                        StudentId = application.StudentId,
-                        Role = OrganizationRoles.Member,
-                        OrganizationUnitId = application.OrganizationUnitId,
-                        HierarchyTier = OrganizationHierarchyTier.OrganizingCrew,
-                        JoinedAt = DateTime.UtcNow
-                    });
+                        db.OrganizationMembers.Add(new OrganizationMember
+                        {
+                            OrganizationId = organizationId,
+                            StudentId = application.StudentId,
+                            Role = OrganizationRoles.Member,
+                            OrganizationUnitId = application.OrganizationUnitId,
+                            HierarchyTier = OrganizationHierarchyTier.OrganizingCrew,
+                            JoinedAt = _time.GetUtcNow().UtcDateTime
+                        });
+                    }
+                    else
+                    {
+                        previousMembership.Role = OrganizationRoles.Member;
+                        previousMembership.OrganizationUnitId = application.OrganizationUnitId;
+                        previousMembership.HierarchyTier = OrganizationHierarchyTier.OrganizingCrew;
+                        previousMembership.JoinedAt = _time.GetUtcNow().UtcDateTime;
+                        previousMembership.DeletedAt = null;
+                    }
                 }
-                else
-                {
-                    previousMembership.Role = OrganizationRoles.Member;
-                    previousMembership.OrganizationUnitId = application.OrganizationUnitId;
-                    previousMembership.HierarchyTier = OrganizationHierarchyTier.OrganizingCrew;
-                    previousMembership.JoinedAt = DateTime.UtcNow;
-                    previousMembership.DeletedAt = null;
-                }
+
+                application.Status = decisionStatus;
+                application.ReviewedAt = _time.GetUtcNow().UtcDateTime;
+                application.AddDomainEvent(new ApplicationReviewedDomainEvent(
+                    application.StudentId,
+                    application.Organization.Name,
+                    "Organization",
+                    decisionStatus));
             }
 
-            application.Status = decisionStatus;
-            application.ReviewedAt = DateTime.UtcNow;
-            application.AddDomainEvent(new ApplicationReviewedDomainEvent(
-                application.StudentId,
-                application.Organization.Name,
-                "Organization",
-                decisionStatus));
-        }
+            await db.SaveChangesAsync(token);
+            return application.ApplicationId;
+        }, ct);
 
-        await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
-
-        return await GetApplicationDtoAsync(application.ApplicationId, ct);
+        return await GetApplicationDtoAsync(updatedApplicationId, ct);
     }
 
     public async Task WithdrawApplicationAsync(int organizationId, int applicationId, int studentId, CancellationToken ct = default)
@@ -775,7 +883,7 @@ public sealed class OrganizationService(
 
         application.Status = ApplicationStatus.Withdrawn;
         application.Stage = RecruitmentStage.Withdrawn;
-        application.DeletedAt = DateTime.UtcNow;
+        application.DeletedAt = _time.GetUtcNow().UtcDateTime;
         await db.SaveChangesAsync(ct);
     }
 
@@ -839,6 +947,10 @@ public sealed class OrganizationService(
             app.Organization.Name);
     }
 
+    #endregion
+
+    #region Organization Creation Proposals
+
     public async Task<OrganizationCreationRequestDto> SubmitOrganizationCreationRequestAsync(
         int requesterStudentId, CreateOrganizationProposalRequest request, CancellationToken ct = default)
     {
@@ -882,7 +994,7 @@ public sealed class OrganizationService(
             CurrentSeasonName = NormalizeOptional(request.CurrentSeasonName),
             Justification = NormalizeOptional(request.Justification),
             Status = ApplicationStatus.Pending,
-            RequestedAt = DateTime.UtcNow,
+            RequestedAt = _time.GetUtcNow().UtcDateTime,
         };
 
         db.OrganizationCreationRequests.Add(proposal);
@@ -908,6 +1020,7 @@ public sealed class OrganizationService(
             .Include(x => x.ReviewedByStudent)
             .Where(x => x.RequesterStudentId == requesterStudentId)
             .OrderByDescending(x => x.RequestedAt)
+            .Take(100)
             .ToListAsync(ct);
 
         return items.Select(MapCreationRequestDto).ToList();
@@ -978,129 +1091,139 @@ public sealed class OrganizationService(
     public async Task<OrganizationCreationRequestDto> ReviewOrganizationCreationRequestAsync(
         int requestId, int reviewerAdminId, ReviewOrganizationProposalRequest review, CancellationToken ct = default)
     {
-        var proposal = await db.OrganizationCreationRequests
-            .Include(x => x.RequesterStudent)
-            .FirstOrDefaultAsync(x => x.RequestId == requestId, ct)
-            ?? throw new NotFoundException($"Organization creation request #{requestId} was not found.");
+        var outcome = await db.ExecuteInTransactionAsync(IsolationLevel.ReadCommitted, async token =>
+        {
+            var proposal = await db.OrganizationCreationRequests
+                .Include(x => x.RequesterStudent)
+                .FirstOrDefaultAsync(x => x.RequestId == requestId, token)
+                ?? throw new NotFoundException($"Organization creation request #{requestId} was not found.");
 
-        if (proposal.Status != ApplicationStatus.Pending)
-            throw new ConflictException($"Request #{requestId} has already been reviewed ({proposal.Status}).");
+            if (proposal.Status != ApplicationStatus.Pending)
+                throw new ConflictException($"Request #{requestId} has already been reviewed ({proposal.Status}).");
 
-        var promotedToOrgAdmin = false;
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            var promoted = false;
+            int? createdOrgId = null;
+            string? orgName = null;
+            string? rejectedNotes = null;
+
+            if (review.Approve)
+            {
+                if (await db.Organizations.AnyAsync(o => o.Name == proposal.Name, token))
+                    throw new ConflictException($"An organization named '{proposal.Name}' already exists.");
+
+                var organization = new Organization
+                {
+                    Name = proposal.Name,
+                    Description = proposal.Description,
+                    Category = proposal.Category,
+                    LogoUrl = proposal.LogoUrl,
+                    Scope = proposal.Scope,
+                    UniversityId = proposal.UniversityId,
+                    City = proposal.City,
+                    CoverImageUrl = proposal.CoverImageUrl,
+                    WebsiteUrl = proposal.WebsiteUrl,
+                    IsRecruiting = true,
+                    CurrentSeasonName = proposal.CurrentSeasonName ?? "Founding Season",
+                };
+                db.Organizations.Add(organization);
+                await db.SaveChangesAsync(token);
+
+                db.OrganizationMembers.Add(new OrganizationMember
+                {
+                    OrganizationId = organization.OrganizationId,
+                    StudentId = proposal.RequesterStudentId,
+                    Role = OrganizationRoles.President,
+                    HierarchyTier = OrganizationHierarchyTier.HighBoard,
+                    JoinedAt = _time.GetUtcNow().UtcDateTime,
+                });
+
+                if (proposal.RequesterStudent.Role == UserRole.Student)
+                {
+                    proposal.RequesterStudent.Role = UserRole.OrgAdmin;
+                    proposal.RequesterStudent.SecurityStamp = Guid.NewGuid();
+                    proposal.RequesterStudent.RefreshToken = null;
+                    proposal.RequesterStudent.RefreshTokenExpiresAt = null;
+                    promoted = true;
+                }
+
+                proposal.Status = ApplicationStatus.Accepted;
+                proposal.ReviewedAt = _time.GetUtcNow().UtcDateTime;
+                proposal.ReviewedByStudentId = reviewerAdminId;
+                proposal.ReviewNotes = NormalizeOptional(review.ReviewNotes);
+                proposal.CreatedOrganizationId = organization.OrganizationId;
+
+                db.Notifications.Add(new Notification
+                {
+                    StudentId = proposal.RequesterStudentId,
+                    Title = "Organization Request Approved",
+                    Message = $"Your request to launch '{proposal.Name}' was approved! You are now its President and have been promoted to Organization Admin.",
+                    Type = NotificationType.ApplicationStatus,
+                    IsRead = false,
+                    CreatedAt = _time.GetUtcNow().UtcDateTime,
+                });
+
+                createdOrgId = organization.OrganizationId;
+                orgName = organization.Name;
+            }
+            else
+            {
+                rejectedNotes = NormalizeOptional(review.ReviewNotes);
+                proposal.Status = ApplicationStatus.Rejected;
+                proposal.ReviewedAt = _time.GetUtcNow().UtcDateTime;
+                proposal.ReviewedByStudentId = reviewerAdminId;
+                proposal.ReviewNotes = rejectedNotes;
+
+                db.Notifications.Add(new Notification
+                {
+                    StudentId = proposal.RequesterStudentId,
+                    Title = "Organization Request Reviewed",
+                    Message = rejectedNotes is null
+                        ? $"Your request to create '{proposal.Name}' was declined by an administrator."
+                        : $"Your request to create '{proposal.Name}' was declined: {rejectedNotes}",
+                    Type = NotificationType.ApplicationStatus,
+                    IsRead = false,
+                    CreatedAt = _time.GetUtcNow().UtcDateTime,
+                });
+            }
+
+            await db.SaveChangesAsync(token);
+            return (proposal.RequestId, proposal.RequesterStudentId, promoted, createdOrgId, orgName, rejectedNotes);
+        }, ct);
 
         if (review.Approve)
         {
-            if (await db.Organizations.AnyAsync(o => o.Name == proposal.Name, ct))
-                throw new ConflictException($"An organization named '{proposal.Name}' already exists.");
-
-            var organization = new Organization
-            {
-                Name = proposal.Name,
-                Description = proposal.Description,
-                Category = proposal.Category,
-                LogoUrl = proposal.LogoUrl,
-                Scope = proposal.Scope,
-                UniversityId = proposal.UniversityId,
-                City = proposal.City,
-                CoverImageUrl = proposal.CoverImageUrl,
-                WebsiteUrl = proposal.WebsiteUrl,
-                IsRecruiting = true,
-                CurrentSeasonName = proposal.CurrentSeasonName ?? "Founding Season",
-            };
-            db.Organizations.Add(organization);
-            await db.SaveChangesAsync(ct);
-
-            db.OrganizationMembers.Add(new OrganizationMember
-            {
-                OrganizationId = organization.OrganizationId,
-                StudentId = proposal.RequesterStudentId,
-                Role = OrganizationRoles.President,
-                HierarchyTier = OrganizationHierarchyTier.HighBoard,
-                JoinedAt = DateTime.UtcNow,
-            });
-
-            if (proposal.RequesterStudent.Role == UserRole.Student)
-            {
-                proposal.RequesterStudent.Role = UserRole.OrgAdmin;
-                proposal.RequesterStudent.SecurityStamp = Guid.NewGuid();
-                proposal.RequesterStudent.RefreshToken = null;
-                proposal.RequesterStudent.RefreshTokenExpiresAt = null;
-                promotedToOrgAdmin = true;
-            }
-
-            proposal.Status = ApplicationStatus.Accepted;
-            proposal.ReviewedAt = DateTime.UtcNow;
-            proposal.ReviewedByStudentId = reviewerAdminId;
-            proposal.ReviewNotes = NormalizeOptional(review.ReviewNotes);
-            proposal.CreatedOrganizationId = organization.OrganizationId;
-
-            db.Notifications.Add(new Notification
-            {
-                StudentId = proposal.RequesterStudentId,
-                Title = "Organization Request Approved",
-                Message = $"Your request to launch '{proposal.Name}' was approved! You are now its President and have been promoted to Organization Admin.",
-                Type = NotificationType.ApplicationStatus,
-                IsRead = false,
-                CreatedAt = DateTime.UtcNow,
-            });
-
-            await db.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
-
-            if (promotedToOrgAdmin)
-                stampValidator.Invalidate(proposal.RequesterStudentId);
+            if (outcome.promoted)
+                stampValidator.Invalidate(outcome.RequesterStudentId);
 
             await auditLog.RecordAsync(
                 "OrganizationRequestApproved",
                 "OrganizationCreationRequest",
-                proposal.RequestId.ToString(),
+                outcome.RequestId.ToString(),
                 oldValues: new { Status = nameof(ApplicationStatus.Pending) },
                 newValues: new
                 {
                     Status = nameof(ApplicationStatus.Accepted),
-                    CreatedOrganizationId = organization.OrganizationId,
-                    OrganizationName = organization.Name,
-                    proposal.RequesterStudentId,
-                    PromotedToOrgAdmin = promotedToOrgAdmin,
+                    CreatedOrganizationId = outcome.createdOrgId,
+                    OrganizationName = outcome.orgName,
+                    outcome.RequesterStudentId,
+                    PromotedToOrgAdmin = outcome.promoted,
                 },
                 actorStudentIdOverride: reviewerAdminId > 0 ? reviewerAdminId : null,
                 ct: ct);
         }
         else
         {
-            var notes = NormalizeOptional(review.ReviewNotes);
-            proposal.Status = ApplicationStatus.Rejected;
-            proposal.ReviewedAt = DateTime.UtcNow;
-            proposal.ReviewedByStudentId = reviewerAdminId;
-            proposal.ReviewNotes = notes;
-
-            db.Notifications.Add(new Notification
-            {
-                StudentId = proposal.RequesterStudentId,
-                Title = "Organization Request Reviewed",
-                Message = notes is null
-                    ? $"Your request to create '{proposal.Name}' was declined by an administrator."
-                    : $"Your request to create '{proposal.Name}' was declined: {notes}",
-                Type = NotificationType.ApplicationStatus,
-                IsRead = false,
-                CreatedAt = DateTime.UtcNow,
-            });
-
-            await db.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
-
             await auditLog.RecordAsync(
                 "OrganizationRequestRejected",
                 "OrganizationCreationRequest",
-                proposal.RequestId.ToString(),
+                outcome.RequestId.ToString(),
                 oldValues: new { Status = nameof(ApplicationStatus.Pending) },
-                newValues: new { Status = nameof(ApplicationStatus.Rejected), ReviewNotes = notes },
+                newValues: new { Status = nameof(ApplicationStatus.Rejected), ReviewNotes = outcome.rejectedNotes },
                 actorStudentIdOverride: reviewerAdminId > 0 ? reviewerAdminId : null,
                 ct: ct);
         }
 
-        return await GetOrganizationCreationRequestDtoAsync(proposal.RequestId, ct);
+        return await GetOrganizationCreationRequestDtoAsync(outcome.RequestId, ct);
     }
 
     private async Task<OrganizationCreationRequestDto> GetOrganizationCreationRequestDtoAsync(int requestId, CancellationToken ct)
@@ -1142,5 +1265,11 @@ public sealed class OrganizationService(
             x.ReviewNotes,
             x.CreatedOrganizationId);
 
+    #endregion
+
+    #region Helpers
+
     private static string? NormalizeOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    #endregion
 }

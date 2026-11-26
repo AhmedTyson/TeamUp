@@ -15,6 +15,7 @@ import {
 import {
   Badge,
   Button,
+  CoverImage,
   EmptyState,
   ErrorBanner,
   Input,
@@ -238,6 +239,11 @@ export function EventsDirectoryPage() {
                   showCornerArrow
                   className="flex flex-col rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 transition hover:-translate-y-0.5 hover:border-[#d3fb52]/30"
                 >
+                  <CoverImage
+                    url={ev.coverImageUrl}
+                    alt={`${ev.title} cover`}
+                    className="-mx-5 -mt-5 mb-4 aspect-[2/1] rounded-t-2xl"
+                  />
                   {/* Reserved pe-12 prevents overlap with top-end corner arrow */}
                   <div className="flex flex-wrap items-center justify-between gap-2 pe-12">
                     <div className="flex flex-wrap items-center gap-1.5">

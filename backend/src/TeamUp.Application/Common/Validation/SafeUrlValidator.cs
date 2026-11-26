@@ -1,14 +1,24 @@
 // Date: 2026-11-21
 // Purpose: Strict URI validator rejecting dangerous schemes (javascript:, file:, data:) and SSRF private/loopback/metadata IP ranges (STRIDE THR-T-03).
 
+using System.Buffers;
+using System.Collections.Frozen;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace TeamUp.Application.Common.Validation;
 
-public static class SafeUrlValidator
+public static partial class SafeUrlValidator
 {
-    private static readonly HashSet<string> ForbiddenHosts = new(StringComparer.OrdinalIgnoreCase)
+    #region Patterns & Restrictions
+
+    [GeneratedRegex(
+        @"^/api/v1/images/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+        RegexOptions.CultureInvariant)]
+    private static partial Regex StoredImagePathRegex();
+
+    private static readonly FrozenSet<string> ForbiddenHosts = new[]
     {
         "localhost",
         "localhost.localdomain",
@@ -17,7 +27,22 @@ public static class SafeUrlValidator
         "metadata.google.internal",
         "metadata",
         "instance-data"
-    };
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+
+    private static readonly SearchValues<char> DisallowedRelativePathChars =
+        SearchValues.Create(BuildDisallowedRelativePathChars());
+
+    private static char[] BuildDisallowedRelativePathChars()
+    {
+        List<char> chars = [with(capacity: 66), '\\'];
+        for (var c = '\u0000'; c <= '\u001F'; c++) chars.Add(c);
+        for (var c = '\u007F'; c <= '\u009F'; c++) chars.Add(c);
+        return [.. chars];
+    }
+
+    #endregion
+
+    #region Public Validators
 
     public static bool IsSafeExternalHttpUrl(string? value)
     {
@@ -33,7 +58,7 @@ public static class SafeUrlValidator
         if (!string.IsNullOrEmpty(uri.UserInfo))
             return false;
 
-        var host = uri.IdnHost;
+        var host = uri.IdnHost.TrimEnd('.');
         if (string.IsNullOrWhiteSpace(host))
             return false;
 
@@ -52,60 +77,78 @@ public static class SafeUrlValidator
             return false;
 
         var trimmed = value.Trim();
-        if (trimmed.StartsWith('/') && !trimmed.StartsWith("//", StringComparison.Ordinal))
+        if (trimmed.StartsWith('/'))
         {
-            return !trimmed.Contains("..", StringComparison.Ordinal)
-                && !trimmed.Any(char.IsControl)
-                && Uri.TryCreate(trimmed, UriKind.Relative, out _);
+            if (trimmed.StartsWith("//", StringComparison.Ordinal)
+                || trimmed.Contains("..", StringComparison.Ordinal)
+                || trimmed.AsSpan().ContainsAny(DisallowedRelativePathChars))
+            {
+                return false;
+            }
+
+            if (StoredImagePathRegex().IsMatch(trimmed))
+                return true;
+
+            var isAllowedStaticFolder =
+                trimmed.StartsWith("/images/", StringComparison.Ordinal)
+                || trimmed.StartsWith("/logos/", StringComparison.Ordinal)
+                || trimmed.StartsWith("/badges/", StringComparison.Ordinal);
+
+            return isAllowedStaticFolder && Uri.TryCreate(trimmed, UriKind.Relative, out _);
         }
 
         return IsSafeExternalHttpUrl(trimmed);
     }
+
+    #endregion
+
+    #region IP CIDR Guards
 
     private static bool IsRestrictedIpAddress(IPAddress address)
     {
         if (address.IsIPv4MappedToIPv6)
             address = address.MapToIPv4();
 
-        if (IPAddress.IsLoopback(address))
-            return true;
-
-        if (address.Equals(IPAddress.Any) || address.Equals(IPAddress.IPv6Any) || address.Equals(IPAddress.None))
-            return true;
-
-        if (address.AddressFamily == AddressFamily.InterNetwork)
+        if (IPAddress.IsLoopback(address)
+            || address.Equals(IPAddress.Any)
+            || address.Equals(IPAddress.IPv6Any)
+            || address.Equals(IPAddress.None))
         {
-            var bytes = address.GetAddressBytes();
-            // 0.0.0.0/8 (this network)
-            if (bytes[0] == 0) return true;
-            // 10.0.0.0/8 (RFC 1918)
-            if (bytes[0] == 10) return true;
-            // 100.64.0.0/10 (Carrier-Grade NAT)
-            if (bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127) return true;
-            // 127.0.0.0/8 (loopback)
-            if (bytes[0] == 127) return true;
-            // 169.254.0.0/16 (link-local & cloud metadata 169.254.169.254)
-            if (bytes[0] == 169 && bytes[1] == 254) return true;
-            // 172.16.0.0/12 (RFC 1918)
-            if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) return true;
-            // 192.168.0.0/16 (RFC 1918)
-            if (bytes[0] == 192 && bytes[1] == 168) return true;
-            // 224.0.0.0/4 (multicast) and 240.0.0.0/4 (reserved/broadcast)
-            if (bytes[0] >= 224) return true;
+            return true;
+        }
+
+        Span<byte> bytes = stackalloc byte[16];
+        if (!address.TryWriteBytes(bytes, out var bytesWritten))
             return false;
-        }
 
-        if (address.AddressFamily == AddressFamily.InterNetworkV6)
-        {
-            if (address.IsIPv6LinkLocal || address.IsIPv6SiteLocal || address.IsIPv6Multicast || address.IsIPv6Teredo)
-                return true;
+        if (address.AddressFamily == AddressFamily.InterNetwork && bytesWritten >= 4)
+            return IsRestrictedIPv4(bytes[..4]);
 
-            var bytes = address.GetAddressBytes();
-            // fc00::/7 (Unique Local Address)
-            if ((bytes[0] & 0xFE) == 0xFC)
-                return true;
-        }
+        if (address.AddressFamily == AddressFamily.InterNetworkV6 && bytesWritten == 16)
+            return IsRestrictedIPv6(address, bytes);
 
         return false;
     }
+
+    private static bool IsRestrictedIPv4(ReadOnlySpan<byte> bytes) =>
+        bytes[0] switch
+        {
+            0 or 10 or 127 or >= 224 => true,
+            100 => bytes[1] is >= 64 and <= 127,
+            169 => bytes[1] == 254,
+            172 => bytes[1] is >= 16 and <= 31,
+            192 => bytes[1] == 168,
+            _ => false
+        };
+
+    private static bool IsRestrictedIPv6(IPAddress address, ReadOnlySpan<byte> bytes)
+    {
+        if (address.IsIPv6LinkLocal || address.IsIPv6SiteLocal || address.IsIPv6Multicast || address.IsIPv6Teredo)
+            return true;
+
+        // fc00::/7 (Unique Local Address)
+        return (bytes[0] & 0xFE) == 0xFC;
+    }
+
+    #endregion
 }

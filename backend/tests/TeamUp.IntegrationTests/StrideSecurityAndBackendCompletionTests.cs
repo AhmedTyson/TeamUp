@@ -170,13 +170,13 @@ public class StrideSecurityAndBackendCompletionTests(TeamUpApiFactory factory) :
             new CreateOrganizationRequest($"QROrg_{Guid.NewGuid():N}", "QR Club", "Technology", null));
         var org = await DataAsync<OrganizationDetailDto>(orgRes);
 
-        var start = DateTime.UtcNow.AddDays(2);
+        var start = DateTime.UtcNow.AddHours(-1);
         var evtRes = await organizer.PostAsJsonAsync("/api/v1/events",
             new CreateEventRequest("QR Workshop", "Hands-on", EventType.Workshop, "Lab 1", start, start.AddDays(1), 10, org.OrganizationId));
         var evt = await DataAsync<EventDto>(evtRes);
 
         var sessRes = await organizer.PostAsJsonAsync($"/api/v1/events/{evt.EventId}/sessions",
-            new CreateEventSessionRequest(1, "Session 1", start.AddHours(1), start.AddHours(3), "Lab 101"));
+            new CreateEventSessionRequest(1, "Session 1", DateTime.UtcNow.AddMinutes(-10), DateTime.UtcNow.AddHours(2), "Lab 101"));
         var sess = await DataAsync<EventSessionDto>(sessRes);
 
         Assert.Equal(HttpStatusCode.Created, (await student1.PostAsync($"/api/v1/events/{evt.EventId}/registrations", null)).StatusCode);
@@ -472,6 +472,35 @@ public class StrideSecurityAndBackendCompletionTests(TeamUpApiFactory factory) :
     }
 
     [Fact]
+    public async Task UploadEndpoint_EnforcesTightUploadRateLimit()
+    {
+        await using var tightFactory = new TightRateLimitFactory();
+        using var client = tightFactory.CreateClient();
+        var token = tightFactory.CreateToken(5610, "uploader@teamup.test", "Student");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        byte[] tinyPng = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
+
+        for (var i = 0; i < 2; i++)
+        {
+            using var form = new MultipartFormDataContent();
+            var content = new ByteArrayContent(tinyPng);
+            content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+            form.Add(content, "file", $"ok-{i}.png");
+            var res = await client.PostAsync("/api/v1/images", form);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        using var thirdForm = new MultipartFormDataContent();
+        var thirdContent = new ByteArrayContent(tinyPng);
+        thirdContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        thirdForm.Add(thirdContent, "file", "throttled.png");
+        var throttled = await client.PostAsync("/api/v1/images", thirdForm);
+        Assert.Equal(HttpStatusCode.TooManyRequests, throttled.StatusCode);
+    }
+
+    [Fact]
     public async Task SsrfAndXssUrlPayloads_AreRejectedByApiValidation()
     {
         using var admin = CreateRoleClient(5601, "PlatformAdmin");
@@ -523,6 +552,7 @@ public class StrideSecurityAndBackendCompletionTests(TeamUpApiFactory factory) :
                     ["RateLimiting:AuthPermitLimit"] = "3",
                     ["RateLimiting:AuthenticatedPermitLimit"] = "5",
                     ["RateLimiting:DirectoryPermitLimit"] = "2",
+                    ["RateLimiting:UploadPermitLimit"] = "2",
                     ["RateLimiting:WindowSeconds"] = "60"
                 });
             });

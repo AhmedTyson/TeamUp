@@ -20,6 +20,7 @@ import { APPLICATION_STATUSES, ORGANIZATION_SCOPES, type OrganizationScope } fro
 import {
   Badge,
   Button,
+  CoverImage,
   EmptyState,
   ErrorBanner,
   Pagination,
@@ -37,10 +38,13 @@ import { OrganizationMark } from "../components/OrganizationMark";
 import { OrganizationRequestModal } from "../components/OrganizationRequestModal";
 import {
   useMyOrganizationCreationRequests,
+  useOrganizationCategories,
   useOrganizationMutations,
   useOrganizations,
 } from "../hooks/useOrganizationHooks";
 import { ORGANIZATION_CATEGORIES } from "../schemas/organizationSchemas";
+
+const MAX_CATEGORY_CHIPS = 10;
 
 const SCOPE_FILTERS: readonly { value: string; label: string; scope?: OrganizationScope; recruitingOnly?: boolean }[] = [
   { value: "", label: "All scopes" },
@@ -65,6 +69,16 @@ export function OrganizationsDirectoryPage() {
   const [requestOpen, setRequestOpen] = useState(params.get("request") === "1");
 
   const { isAuthenticated, isPlatformAdmin } = useAuth();
+  const { data: liveCategories } = useOrganizationCategories();
+  // Data-driven filter chips: categories actually in use (most used first) from the API, topped up with the
+  // built-in suggestions while the request is in flight or for categories nobody used yet.
+  const categoryFilters = useMemo(() => {
+    const merged = [...(liveCategories ?? [])];
+    for (const fallback of ORGANIZATION_CATEGORIES) {
+      if (!merged.includes(fallback)) merged.push(fallback);
+    }
+    return merged.slice(0, MAX_CATEGORY_CHIPS);
+  }, [liveCategories]);
   const canCreate = isPlatformAdmin;
   const canRequest = isAuthenticated && !isPlatformAdmin;
   const { universities } = useUniversityCatalog();
@@ -202,7 +216,7 @@ export function OrganizationsDirectoryPage() {
 
         {/* Single category pill strip */}
         <div className="flex flex-wrap gap-1.5 border-t border-white/[0.07] pt-3" aria-label="Organization category filters">
-          {["", ...ORGANIZATION_CATEGORIES.slice(0, 7)].map((value) => {
+          {["", ...categoryFilters].map((value) => {
             const active = category === value;
             return (
               <button
@@ -238,6 +252,11 @@ export function OrganizationsDirectoryPage() {
                 showCornerArrow
                 className="flex flex-col rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 transition hover:-translate-y-0.5 hover:border-[#d3fb52]/30"
               >
+                <CoverImage
+                  url={org.coverImageUrl}
+                  alt={`${org.name} cover`}
+                  className="-mx-5 -mt-5 mb-4 aspect-[2/1] rounded-t-2xl"
+                />
                 {/* Reserved pe-12 ensures the corner arrow never overlaps category/recruiting pills */}
                 <div className="flex items-start justify-between gap-3 pe-12">
                   <OrganizationMark name={org.name} logoUrl={org.logoUrl} />

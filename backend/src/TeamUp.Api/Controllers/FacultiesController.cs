@@ -1,12 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using TeamUp.Api.Controllers.Common;
+using TeamUp.Api.Extensions;
 using TeamUp.Application.Universities;
 
 namespace TeamUp.Api.Controllers;
 
 [Route("api/v1")]
-public class FacultiesController(IFacultyService facultyService) : BaseApiController
+public sealed class FacultiesController(
+    IFacultyService facultyService,
+    IOutputCacheStore outputCacheStore) : BaseApiController
 {
     [HttpGet("universities/{universityId:int}/faculties")]
     [AllowAnonymous]
@@ -27,6 +31,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
         CancellationToken ct)
     {
         var result = await facultyService.CreateFacultyAsync(universityId, request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Universities, ct);
         return CreatedResponse(nameof(GetFacultyById), new { id = result.FacultyId }, result, "Faculty created successfully.");
     }
 
@@ -49,6 +54,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
         CancellationToken ct)
     {
         var result = await facultyService.UpdateFacultyAsync(id, request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Universities, ct);
         return OkResponse(result, "Faculty updated successfully.");
     }
 
@@ -58,6 +64,7 @@ public class FacultiesController(IFacultyService facultyService) : BaseApiContro
     public async Task<IActionResult> DeleteFaculty([FromRoute] int id, CancellationToken ct)
     {
         await facultyService.DeleteFacultyAsync(id, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Universities, ct);
         return NoContentResponse();
     }
 }

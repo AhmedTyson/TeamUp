@@ -17,6 +17,8 @@ public class Event : BaseEntity
     public EventDeliveryMode DeliveryMode { get; set; } = EventDeliveryMode.InPerson;
     public bool IsPublic { get; set; } = true;
     public string? MeetingUrl { get; set; }
+    /// <summary>Optional custom cover; when null the API serves a generated default cover per event.</summary>
+    public string? CoverImageUrl { get; set; }
     public int? OrganizationUnitId { get; set; }
     public Organization Organization { get; set; } = null!;
     public OrganizationUnit? Unit { get; set; }

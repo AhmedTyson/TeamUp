@@ -15,9 +15,9 @@ public sealed class CreateOrganizationRequestValidator : AbstractValidator<Creat
         RuleFor(x => x.Category).NotEmpty().MaximumLength(50);
         RuleFor(x => x.LogoUrl)
             .MaximumLength(300)
-            .Must(SafeUrlValidator.IsSafeExternalHttpUrl)
+            .Must(SafeUrlValidator.IsSafeAssetOrExternalUrl)
             .When(x => !string.IsNullOrWhiteSpace(x.LogoUrl))
-            .WithMessage("LogoUrl must be a valid public HTTP or HTTPS URL.");
+            .WithMessage("LogoUrl must be a valid asset path or public HTTP/HTTPS URL.");
         RuleFor(x => x.Scope).IsInEnum();
         RuleFor(x => x.City).MaximumLength(100).When(x => !string.IsNullOrWhiteSpace(x.City));
         RuleFor(x => x.CurrentSeasonName).MaximumLength(80).When(x => !string.IsNullOrWhiteSpace(x.CurrentSeasonName));
@@ -43,9 +43,9 @@ public sealed class UpdateOrganizationRequestValidator : AbstractValidator<Updat
         RuleFor(x => x.Category).NotEmpty().MaximumLength(50);
         RuleFor(x => x.LogoUrl)
             .MaximumLength(300)
-            .Must(SafeUrlValidator.IsSafeExternalHttpUrl)
+            .Must(SafeUrlValidator.IsSafeAssetOrExternalUrl)
             .When(x => !string.IsNullOrWhiteSpace(x.LogoUrl))
-            .WithMessage("LogoUrl must be a valid public HTTP or HTTPS URL.");
+            .WithMessage("LogoUrl must be a valid asset path or public HTTP/HTTPS URL.");
         RuleFor(x => x.Scope).IsInEnum();
         RuleFor(x => x.City).MaximumLength(100).When(x => !string.IsNullOrWhiteSpace(x.City));
         RuleFor(x => x.CurrentSeasonName).MaximumLength(80).When(x => !string.IsNullOrWhiteSpace(x.CurrentSeasonName));
@@ -133,9 +133,9 @@ public sealed class CreateOrganizationProposalRequestValidator : AbstractValidat
         RuleFor(x => x.Category).NotEmpty().MaximumLength(50);
         RuleFor(x => x.LogoUrl)
             .MaximumLength(300)
-            .Must(SafeUrlValidator.IsSafeExternalHttpUrl)
+            .Must(SafeUrlValidator.IsSafeAssetOrExternalUrl)
             .When(x => !string.IsNullOrWhiteSpace(x.LogoUrl))
-            .WithMessage("LogoUrl must be a valid public HTTP or HTTPS URL.");
+            .WithMessage("LogoUrl must be a valid asset path or public HTTP/HTTPS URL.");
         RuleFor(x => x.Scope).IsInEnum();
         RuleFor(x => x.City).MaximumLength(100).When(x => !string.IsNullOrWhiteSpace(x.City));
         RuleFor(x => x.CurrentSeasonName).MaximumLength(80).When(x => !string.IsNullOrWhiteSpace(x.CurrentSeasonName));

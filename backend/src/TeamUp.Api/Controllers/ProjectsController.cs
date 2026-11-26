@@ -8,12 +8,14 @@ namespace TeamUp.Api.Controllers;
 
 [Route("api/v1/projects")]
 [Authorize]
-public class ProjectsController(
+public sealed class ProjectsController(
     IProjectService projectService,
     IProjectSkillService skillService,
     IProjectMemberService memberService,
     IProjectTaskService taskService) : BaseApiController
 {
+    #region Project CRUD
+
     [HttpGet]
     [ProducesOk<PagedResult<ProjectListItemDto>>]
     public async Task<IActionResult> GetProjects(
@@ -60,6 +62,10 @@ public class ProjectsController(
         return NoContentResponse();
     }
 
+    #endregion
+
+    #region Required Skills
+
     [HttpGet("{id:int}/required-skills")]
     [ProducesOk<IReadOnlyList<ProjectSkillDto>>, ProducesNotFound]
     public async Task<IActionResult> GetRequiredSkills([FromRoute] int id, CancellationToken ct)
@@ -87,6 +93,10 @@ public class ProjectsController(
         await skillService.RemoveRequiredSkillAsync(CurrentStudentId, id, skillId, ct);
         return NoContentResponse();
     }
+
+    #endregion
+
+    #region Members
 
     [HttpGet("{id:int}/members")]
     [ProducesOk<IReadOnlyList<ProjectMemberDto>>, ProducesNotFound]
@@ -116,12 +126,24 @@ public class ProjectsController(
         return NoContentResponse();
     }
 
+    #endregion
+
+    #region Recruitment Applications
+
     [HttpGet("{id:int}/applications")]
     [ProducesOk<IReadOnlyList<ProjectApplicationDto>>, ProducesNotFound]
     public async Task<IActionResult> GetApplications([FromRoute] int id, CancellationToken ct)
     {
         var result = await memberService.GetApplicationsAsync(CurrentStudentId, id, ct);
         return OkResponse(result);
+    }
+
+    [HttpGet("{id:int}/applications/mine")]
+    [ProducesOk<ProjectApplicationDto>, ProducesNotFound]
+    public async Task<IActionResult> GetMyApplication([FromRoute] int id, CancellationToken ct)
+    {
+        var result = await memberService.GetMyApplicationAsync(CurrentStudentId, id, ct);
+        return OkResponse(result, result is null ? "You have not applied to this project." : "Application retrieved successfully.");
     }
 
     [HttpPost("{id:int}/applications")]
@@ -157,6 +179,10 @@ public class ProjectsController(
         return NoContentResponse();
     }
 
+    #endregion
+
+    #region Sprint Tasks
+
     [HttpGet("{id:int}/tasks")]
     [ProducesOk<IReadOnlyList<ProjectTaskDto>>, ProducesNotFound]
     public async Task<IActionResult> GetTasks([FromRoute] int id, CancellationToken ct)
@@ -175,4 +201,6 @@ public class ProjectsController(
         var result = await taskService.CreateTaskAsync(CurrentStudentId, id, request, ct);
         return CreatedResponse(nameof(TasksController.GetTask), "Tasks", new { id = result.TaskId }, result, "Task created successfully.");
     }
+
+    #endregion
 }

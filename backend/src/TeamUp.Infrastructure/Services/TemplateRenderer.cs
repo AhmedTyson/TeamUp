@@ -11,13 +11,14 @@ using TeamUp.Infrastructure.Templates;
 
 namespace TeamUp.Infrastructure.Services;
 
-public sealed class TemplateRenderer(IOptions<EmailOptions>? emailOptions = null) : ITemplateRenderer
+public sealed partial class TemplateRenderer(IOptions<EmailOptions>? emailOptions = null) : ITemplateRenderer
 {
     private const string EmailResourcePrefix = "TeamUp.Infrastructure.Templates.Emails.";
     private static readonly Assembly Assembly = typeof(TemplateRenderer).Assembly;
-    private static readonly Regex TokenPattern = new(
-        @"\{\{\{([A-Za-z0-9_]+)\}\}\}|\{\{([A-Za-z0-9_]+)\}\}",
-        RegexOptions.Compiled);
+
+    [GeneratedRegex(@"\{\{\{([A-Za-z0-9_]+)\}\}\}|\{\{([A-Za-z0-9_]+)\}\}")]
+    private static partial Regex TokenPatternRegex();
+
     private readonly EmailOptions? _emailOptions = emailOptions?.Value;
 
     public Task<string> RenderEmailAsync(
@@ -33,7 +34,7 @@ public sealed class TemplateRenderer(IOptions<EmailOptions>? emailOptions = null
         CancellationToken ct = default)
     {
         var template = await LoadTemplateAsync("Emails", templateFileName, ct);
-        return TokenPattern.Replace(template, match =>
+        return TokenPatternRegex().Replace(template, match =>
         {
             if (match.Groups[1].Success)
             {
@@ -71,11 +72,12 @@ public sealed class TemplateRenderer(IOptions<EmailOptions>? emailOptions = null
         CancellationToken ct = default)
     {
         var template = await LoadTemplateAsync("Reports", templateFileName, ct);
-        foreach (var (key, value) in encodedValues)
+        return TokenPatternRegex().Replace(template, match =>
         {
-            template = template.Replace($"{{{{{key}}}}}", value, StringComparison.Ordinal);
-        }
-        return template;
+            if (match.Groups[2].Success && encodedValues.TryGetValue(match.Groups[2].Value, out var value))
+                return value;
+            return match.Value;
+        });
     }
 
     private static async Task<string> LoadTemplateAsync(string category, string fileName, CancellationToken ct)

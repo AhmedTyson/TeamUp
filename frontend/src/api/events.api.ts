@@ -35,6 +35,7 @@ export interface EventSummary {
   meetingUrl?: string | null;
   organizationUnitId?: number | null;
   organizationUnitName?: string | null;
+  coverImageUrl?: string | null;
 }
 
 export interface MyEventRegistration {
@@ -136,9 +137,21 @@ export const eventsApi = {
     return unwrapApiResponse(response);
   },
 
-  async myRegistrations(signal?: AbortSignal): Promise<MyEventRegistration[]> {
-    const response = await apiClient.get<ApiResponse<MyEventRegistration[]>>(
+  async myRegistrations(
+    page = 1,
+    pageSize = 20,
+    signal?: AbortSignal,
+  ): Promise<PagedResult<MyEventRegistration>> {
+    const response = await apiClient.get<ApiResponse<PagedResult<MyEventRegistration>>>(
       API_ENDPOINTS.events.myRegistrations,
+      { params: { page, pageSize }, signal },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async myRegistration(id: number, signal?: AbortSignal): Promise<MyEventRegistration | null> {
+    const response = await apiClient.get<ApiResponse<MyEventRegistration | null>>(
+      API_ENDPOINTS.events.myRegistration(id),
       { signal },
     );
     return unwrapApiResponse(response);

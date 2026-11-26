@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TeamUp.Application.Common.Events;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Domain.Common;
@@ -11,6 +12,11 @@ public class AppDbContext(
     DbContextOptions<AppDbContext> options,
     IDomainEventDispatcher? dispatcher = null) : DbContext(options), IAppDbContext
 {
+    private readonly List<IDomainEvent> _deferredDomainEvents = [];
+    private bool _deferDomainEvents;
+
+    #region DbSets
+
     public DbSet<University> Universities => Set<University>();
     public DbSet<Faculty> Faculties => Set<Faculty>();
     public DbSet<Student> Students => Set<Student>();
@@ -40,6 +46,11 @@ public class AppDbContext(
     public DbSet<StudentBadge> StudentBadges => Set<StudentBadge>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<StoredImage> StoredImages => Set<StoredImage>();
+
+    #endregion
+
+    #region Domain Event Dispatching
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -59,11 +70,44 @@ public class AppDbContext(
 
         if (dispatcher is not null && domainEvents.Count > 0)
         {
-            await dispatcher.DispatchAsync(domainEvents, cancellationToken);
+            if (_deferDomainEvents)
+            {
+                _deferredDomainEvents.AddRange(domainEvents);
+            }
+            else
+            {
+                await dispatcher.DispatchAsync(domainEvents, cancellationToken);
+            }
         }
 
         return result;
     }
+
+    public void BeginDeferringDomainEvents() => _deferDomainEvents = true;
+
+    public async Task DispatchDeferredDomainEventsAsync(CancellationToken cancellationToken = default)
+    {
+        _deferDomainEvents = false;
+        if (dispatcher is null || _deferredDomainEvents.Count == 0)
+        {
+            _deferredDomainEvents.Clear();
+            return;
+        }
+
+        var snapshot = _deferredDomainEvents.ToList();
+        _deferredDomainEvents.Clear();
+        await dispatcher.DispatchAsync(snapshot, cancellationToken);
+    }
+
+    public void ClearDeferredDomainEvents()
+    {
+        _deferDomainEvents = false;
+        _deferredDomainEvents.Clear();
+    }
+
+    #endregion
+
+    #region Model Configuration
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,7 +122,7 @@ public class AppDbContext(
             // Soft delete: hide deleted rows (DeletedAt IS NOT NULL).
             if (typeof(ISoftDelete).IsAssignableFrom(entity.ClrType))
             {
-                modelBuilder.Entity(entity.ClrType).HasQueryFilter(SoftDeleteFilter(entity.ClrType));
+                modelBuilder.Entity(entity.ClrType).HasQueryFilter(QueryFilterNames.SoftDelete, SoftDeleteFilter(entity.ClrType));
             }
 
             // Enums are stored as readable strings, guarded by a CHECK constraint.
@@ -88,10 +132,9 @@ public class AppDbContext(
                 prop.SetMaxLength(30);
                 prop.SetIsUnicode(false);
                 prop.SetProviderClrType(typeof(string));
-                var converterType = typeof(Microsoft.EntityFrameworkCore.Storage.ValueConversion.EnumToStringConverter<>)
+                var converterType = typeof(EnumToStringConverter<>)
                     .MakeGenericType(prop.ClrType);
-                prop.SetValueConverter((Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter)
-                    Activator.CreateInstance(converterType)!);
+                prop.SetValueConverter((ValueConverter)Activator.CreateInstance(converterType)!);
                 var list = string.Join(", ", names.Select(n => $"'{n}'"));
                 var table = entity.GetTableName()!;
                 modelBuilder.Entity(entity.ClrType).ToTable(t =>
@@ -104,7 +147,7 @@ public class AppDbContext(
         foreach (var fk in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             fk.DeleteBehavior = DeleteBehavior.Restrict;
 
-        if (Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true)
+        if (Database.IsSqlite())
         {
             modelBuilder.Entity<Project>().Property(p => p.RowVersion).ValueGeneratedNever();
             modelBuilder.Entity<Event>().Property(e => e.RowVersion).ValueGeneratedNever();
@@ -118,4 +161,6 @@ public class AppDbContext(
         var isNull = Expression.Equal(deletedAt, Expression.Constant(null, typeof(DateTime?)));
         return Expression.Lambda(isNull, p);
     }
+
+    #endregion
 }

@@ -19,7 +19,8 @@ public static class ScoreLedger
         string reason,
         ScoreSourceType sourceType,
         int sourceReferenceId,
-        CancellationToken ct)
+        CancellationToken ct,
+        TimeProvider? timeProvider = null)
     {
         if (reason.Length > 200)
             reason = reason[..200];
@@ -37,7 +38,7 @@ public static class ScoreLedger
             Reason = reason,
             SourceType = sourceType,
             SourceReferenceId = sourceReferenceId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = (timeProvider ?? TimeProvider.System).GetUtcNow().UtcDateTime
         };
         db.ScoreTransactions.Add(tx);
 

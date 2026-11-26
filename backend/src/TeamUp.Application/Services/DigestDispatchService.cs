@@ -1,8 +1,7 @@
 // Date: 2026-11-24
 // Purpose: Editorial digest compiler rendering Leaderboard + Campus News and Freelancer-style Project Match emails with strict opt-in filtering.
 
-using System.Net;
-using System.Text;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using TeamUp.Application.Common.Interfaces;
@@ -18,19 +17,28 @@ public sealed class DigestDispatchService(
     IProjectRecommendationService recommendations,
     ITemplateRenderer templateRenderer,
     IEmailSender emailSender,
-    IOptions<EmailOptions> emailOptions) : IDigestDispatchService
+    IOptions<EmailOptions> emailOptions,
+    IOptions<GamificationOptions> gamificationOptions,
+    TimeProvider? timeProvider = null) : IDigestDispatchService
 {
     private readonly EmailOptions _email = emailOptions.Value;
+    private readonly int _leaderboardSize = gamificationOptions.Value.DigestLeaderboardSize > 0
+        ? gamificationOptions.Value.DigestLeaderboardSize
+        : 10;
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
+    #region Leaderboard Digest
 
     public async Task<DigestDispatchResultDto> DispatchLeaderboardDigestAsync(
         LeaderboardDigestRequest request,
         CancellationToken ct = default)
     {
+        var now = _time.GetUtcNow().UtcDateTime;
         var baseUrl = NormalizeBaseUrl(_email.FrontendBaseUrl);
         var periodLabel = string.IsNullOrWhiteSpace(request.PeriodLabel)
-            ? $"WEEKLY CAMPUS DIGEST · {DateTime.UtcNow:MMM dd, yyyy}".ToUpperInvariant()
+            ? $"WEEKLY CAMPUS DIGEST · {now:MMM dd, yyyy}".ToUpperInvariant()
             : request.PeriodLabel.Trim();
-        var issueNumber = $"ISSUE {DateTime.UtcNow:yyyyMMdd}";
+        var issueNumber = $"ISSUE {now:yyyyMMdd}";
 
         var scoreByStudent = await db.ScoreTransactions
             .AsNoTracking()
@@ -58,37 +66,27 @@ public sealed class DigestDispatchService(
             {
                 var xp = scoreByStudent.GetValueOrDefault(s.StudentId, 0);
                 var metrics = gamification.CalculateLevelMetrics(s.StudentId, xp);
-                return new
-                {
-                    s.StudentId,
-                    FullName = $"{s.FirstName} {s.LastName}".Trim(),
-                    s.Email,
-                    s.FacultyCode,
-                    s.UniversityName,
-                    TotalXp = xp,
-                    metrics.Level,
-                    s.EmailNotificationsEnabled,
-                    s.ReceiveLeaderboardDigests
-                };
+                return (s.StudentId, FullName: $"{s.FirstName} {s.LastName}".Trim(), s.Email, s.FacultyCode, s.UniversityName, TotalXp: xp, metrics.Level, s.EmailNotificationsEnabled, s.ReceiveLeaderboardDigests);
             })
             .OrderByDescending(x => x.TotalXp)
             .ThenBy(x => x.StudentId)
-            .Select((row, index) => new
-            {
-                Rank = index + 1,
-                row.StudentId,
-                row.FullName,
-                row.Email,
-                row.FacultyCode,
-                row.UniversityName,
-                row.TotalXp,
-                row.Level,
-                row.EmailNotificationsEnabled,
-                row.ReceiveLeaderboardDigests
-            })
+            .Index()
+            .Select(entry => new LeaderboardDigestRow(
+                entry.Index + 1,
+                entry.Item.StudentId,
+                entry.Item.FullName,
+                entry.Item.Email,
+                entry.Item.FacultyCode,
+                entry.Item.UniversityName,
+                entry.Item.TotalXp,
+                entry.Item.Level,
+                entry.Item.EmailNotificationsEnabled,
+                entry.Item.ReceiveLeaderboardDigests))
             .ToList();
 
-        var leaderboardRowsHtml = BuildLeaderboardRowsHtml(rankedStandings.Take(10));
+        var leaderboardRowsHtml = DigestHtmlBuilder.BuildLeaderboardRowsHtml(
+            rankedStandings.Take(_leaderboardSize)
+                .Select(r => new LeaderboardDigestEntry(r.Rank, r.FullName, r.FacultyCode, r.TotalXp, r.Level)));
         var newsItems = request.NewsItems is { Count: > 0 }
             ? request.NewsItems
             : new[]
@@ -98,7 +96,7 @@ public sealed class DigestDispatchService(
                     "Portfolio-to-Squad Recommendations Are Live",
                     "Claim verified skills and interests in Profile Studio to receive ranked recruiting project matches.")
             };
-        var newsItemsHtml = BuildNewsItemsHtml(newsItems);
+        var newsItemsHtml = DigestHtmlBuilder.BuildNewsItemsHtml(newsItems);
 
         var isTestMode = !string.IsNullOrWhiteSpace(request.TestRecipientEmail);
         var targets = isTestMode
@@ -186,6 +184,10 @@ public sealed class DigestDispatchService(
             PreviewHtml: previewHtml);
     }
 
+    #endregion
+
+    #region Project Match Digest
+
     public async Task<DigestDispatchResultDto> DispatchProjectMatchDigestAsync(
         ProjectMatchDigestRequest request,
         CancellationToken ct = default)
@@ -193,7 +195,7 @@ public sealed class DigestDispatchService(
         var baseUrl = NormalizeBaseUrl(_email.FrontendBaseUrl);
         var maxMatches = Math.Clamp(request.MaxMatchesPerStudent, 1, 10);
         var minScore = Math.Clamp(request.MinMatchPercentage, 0, 100);
-        var generatedDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+        var generatedDate = _time.GetUtcNow().UtcDateTime.ToString("yyyy-MM-dd");
         var isTestMode = !string.IsNullOrWhiteSpace(request.TestRecipientEmail);
 
         var recipientsQuery = db.Students
@@ -207,9 +209,13 @@ public sealed class DigestDispatchService(
                 s.ReceiveProjectMatchEmails
             });
 
+        var testRecipientEmailNormalized = isTestMode
+            ? request.TestRecipientEmail!.Trim().ToLowerInvariant()
+            : null;
+
         var recipients = isTestMode
             ? await recipientsQuery
-                .Where(s => s.Email == request.TestRecipientEmail!.Trim().ToLowerInvariant())
+                .Where(s => s.Email == testRecipientEmailNormalized)
                 .Take(1)
                 .ToListAsync(ct)
             : await recipientsQuery
@@ -232,14 +238,19 @@ public sealed class DigestDispatchService(
         var sentCount = 0;
         var skippedCount = 0;
 
+        // One batched recommendation pass for the whole recipient list (a constant number of queries)
+        // instead of re-reading the same recruiting pool once per recipient.
+        var matchesByStudent = await recommendations.GetRecommendedProjectsForStudentsAsync(
+            studentIds,
+            maxMatches,
+            isTestMode ? 0 : minScore,
+            ct);
+
         foreach (var recipient in recipients)
         {
-            var effectiveMinScore = isTestMode ? 0 : minScore;
-            var matches = await recommendations.GetRecommendedProjectsForStudentAsync(
-                recipient.StudentId,
-                maxMatches,
-                effectiveMinScore,
-                ct);
+            var matches = matchesByStudent.TryGetValue(recipient.StudentId, out var found)
+                ? found
+                : (IReadOnlyList<ProjectMatchRecommendationDto>)[];
 
             if (matches.Count == 0)
             {
@@ -251,7 +262,7 @@ public sealed class DigestDispatchService(
                 ? string.Join(" · ", owned)
                 : "General campus profile (add verified skills in Profile Studio to sharpen scores)";
 
-            var cardsHtml = BuildMatchedProjectCardsHtml(matches, baseUrl);
+            var cardsHtml = DigestHtmlBuilder.BuildMatchedProjectCardsHtml(matches, baseUrl);
             var html = await templateRenderer.RenderEmailAsync(
                 "ProjectMatchDigest.html",
                 new Dictionary<string, string>
@@ -287,37 +298,64 @@ public sealed class DigestDispatchService(
 
         if (previewHtml is null && isTestMode)
         {
-            var fallbackMatches = await db.Projects
+            var fallbackRows = await db.Projects
                 .AsNoTracking()
                 .Where(p => p.Status == Domain.Enums.ProjectStatus.Recruiting)
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(maxMatches)
-                .Select(p => new ProjectMatchRecommendationDto(
+                .Select(p => new
+                {
                     p.ProjectId,
                     p.Title,
                     p.Description,
-                    85,
-                    p.Members.Count(),
+                    MemberCount = p.Members.Count(),
                     p.MaxTeamSize,
-                    Math.Max(p.MaxTeamSize - p.Members.Count(), 0),
-                    p.Creator.FirstName + " " + p.Creator.LastName,
-                    p.Creator.Faculty != null ? p.Creator.Faculty.University.Name : (p.Creator.City != null && p.Creator.City != "" ? p.Creator.City + " Community" : "Egypt Open Community"),
-                    p.Creator.Faculty != null ? p.Creator.Faculty.Code : "IND",
-                    new[] { "React", "TypeScript" },
-                    Array.Empty<string>(),
-                    Array.Empty<string>()))
+                    CreatorName = p.Creator.FirstName + " " + p.Creator.LastName,
+                    UniversityName = p.Creator.Faculty != null
+                        ? p.Creator.Faculty.University.Name
+                        : (p.Creator.City != null && p.Creator.City != "" ? p.Creator.City + " Community" : "Egypt Open Community"),
+                    FacultyCode = p.Creator.Faculty != null ? p.Creator.Faculty.Code : "IND"
+                })
                 .ToListAsync(ct);
 
-            if (fallbackMatches.Count > 0)
+            if (fallbackRows.Count > 0)
             {
-                var cardsHtml = BuildMatchedProjectCardsHtml(fallbackMatches, baseUrl);
+                var fallbackProjectIds = fallbackRows.Select(p => p.ProjectId).ToArray();
+                var requiredSkillsByProject = (await db.ProjectRequiredSkills
+                        .AsNoTracking()
+                        .Where(prs => fallbackProjectIds.Contains(prs.ProjectId))
+                        .Select(prs => new { prs.ProjectId, SkillName = prs.Skill.Name })
+                        .ToListAsync(ct))
+                    .GroupBy(x => x.ProjectId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => (IReadOnlyList<string>)g.Select(x => x.SkillName).OrderBy(n => n).ToList());
+
+                var fallbackMatches = fallbackRows
+                    .Select(p => new ProjectMatchRecommendationDto(
+                        p.ProjectId,
+                        p.Title,
+                        p.Description,
+                        0,
+                        p.MemberCount,
+                        p.MaxTeamSize,
+                        Math.Max(p.MaxTeamSize - p.MemberCount, 0),
+                        p.CreatorName,
+                        p.UniversityName,
+                        p.FacultyCode,
+                        [],
+                        requiredSkillsByProject.GetValueOrDefault(p.ProjectId, []),
+                        []))
+                    .ToList();
+
+                var cardsHtml = DigestHtmlBuilder.BuildMatchedProjectCardsHtml(fallbackMatches, baseUrl);
                 previewHtml = await templateRenderer.RenderEmailAsync(
                     "ProjectMatchDigest.html",
                     new Dictionary<string, string>
                     {
                         ["RecipientName"] = "TeamUp Administrator",
                         ["MatchCount"] = fallbackMatches.Count.ToString(),
-                        ["StudentSkillsSummary"] = "Preview stack · Portfolio Match Simulation",
+                        ["StudentSkillsSummary"] = "No matched student portfolio · Preview of recruiting squads",
                         ["GeneratedDate"] = generatedDate,
                         ["ProjectsUrl"] = $"{baseUrl}/projects",
                         ["PreferencesUrl"] = $"{baseUrl}/profile/me"
@@ -327,19 +365,6 @@ public sealed class DigestDispatchService(
                         ["MatchedProjectCardsHtml"] = cardsHtml
                     },
                     ct);
-
-                if (!request.DryRun)
-                {
-                    await emailSender.SendTemplatedEmailAsync(
-                        new EmailDispatchRequest(
-                            request.TestRecipientEmail!.Trim(),
-                            $"TeamUp Squad Match Preview ({fallbackMatches.Count} project(s))",
-                            previewHtml,
-                            $"TeamUp Squad Match preview with {fallbackMatches.Count} recruiting squad(s)."),
-                        ct);
-                    sentCount++;
-                    skippedCount = Math.Max(0, skippedCount - 1);
-                }
             }
         }
 
@@ -353,102 +378,21 @@ public sealed class DigestDispatchService(
             PreviewHtml: previewHtml);
     }
 
-    private static SafeHtmlFragment BuildLeaderboardRowsHtml(IEnumerable<dynamic> topRows)
-    {
-        var rows = new StringBuilder();
-        var index = 0;
+    #endregion
 
-        foreach (var row in topRows)
-        {
-            var bg = index == 0 ? "#EDF8F1" : index % 2 == 1 ? "#F8F9F7" : "#FFFFFF";
-            var rankColor = index == 0 ? "#15733F" : "#14151C";
-            rows.Append(
-                $"<tr style=\"background-color:{bg};\">"
-                + $"<td style=\"padding:9px 10px;border-top:1px solid #E2E6E0;font-family:'SFMono-Regular',Consolas,monospace;font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;color:{rankColor};\">#{row.Rank:D2}</td>"
-                + $"<td style=\"padding:9px 10px;border-top:1px solid #E2E6E0;font-size:13px;font-weight:600;color:#14151C;\">{WebUtility.HtmlEncode((string)row.FullName)}</td>"
-                + $"<td style=\"padding:9px 10px;border-top:1px solid #E2E6E0;font-family:'SFMono-Regular',Consolas,monospace;font-size:11px;color:#6B7280;\">{WebUtility.HtmlEncode((string)row.FacultyCode)}</td>"
-                + $"<td align=\"right\" style=\"padding:9px 10px;border-top:1px solid #E2E6E0;font-family:'SFMono-Regular',Consolas,monospace;font-variant-numeric:tabular-nums;font-size:12px;color:#4B5260;\">{row.Level}</td>"
-                + $"<td align=\"right\" style=\"padding:9px 10px;border-top:1px solid #E2E6E0;font-family:'SFMono-Regular',Consolas,monospace;font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;color:#14151C;\">{((int)row.TotalXp):N0}</td>"
-                + "</tr>");
-            index++;
-        }
+    #region Internal Models & Helpers
 
-        if (index == 0)
-        {
-            rows.Append("<tr><td colspan=\"5\" style=\"padding:12px;font-size:13px;color:#6B7280;\">No ranked students recorded yet.</td></tr>");
-        }
-
-        return new SafeHtmlFragment(rows.ToString());
-    }
-
-    private static SafeHtmlFragment BuildNewsItemsHtml(IReadOnlyList<CampusNewsItem> newsItems)
-    {
-        var sb = new StringBuilder();
-        for (var i = 0; i < newsItems.Count; i++)
-        {
-            var item = newsItems[i];
-            var marginBottom = i == newsItems.Count - 1 ? "0" : "12px";
-            sb.Append(
-                $"<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin:0 0 {marginBottom};border:1px solid #E2E6E0;background-color:#FFFFFF;\">"
-                + "<tr><td style=\"padding:14px 16px;\">"
-                + $"<p style=\"margin:0 0 4px;font-family:'SFMono-Regular',Consolas,monospace;font-size:10px;letter-spacing:0.1em;color:#15733F;font-weight:700;text-transform:uppercase;\">{WebUtility.HtmlEncode(item.Category)}</p>"
-                + $"<p style=\"margin:0 0 4px;font-size:15px;font-weight:700;color:#14151C;\">{WebUtility.HtmlEncode(item.Headline)}</p>"
-                + $"<p style=\"margin:0;font-size:13px;line-height:1.5;color:#4B5260;\">{WebUtility.HtmlEncode(item.Summary)}</p>"
-                + "</td></tr></table>");
-        }
-
-        return new SafeHtmlFragment(sb.ToString());
-    }
-
-    private static SafeHtmlFragment BuildMatchedProjectCardsHtml(
-        IReadOnlyList<ProjectMatchRecommendationDto> matches,
-        string baseUrl)
-    {
-        var sb = new StringBuilder();
-
-        foreach (var match in matches)
-        {
-            var projectUrl = WebUtility.HtmlEncode($"{baseUrl}/projects/{match.ProjectId}");
-            var summary = match.Description.Length > 150
-                ? match.Description[..147] + "..."
-                : match.Description;
-            var seatsText = $"{match.OpenSeats} / {match.MaxTeamSize} spots open";
-
-            var chips = new StringBuilder();
-            foreach (var skill in match.MatchedSkills)
-            {
-                chips.Append(
-                    $"<span style=\"display:inline-block;margin:0 6px 6px 0;padding:3px 8px;border:1px solid #BBE5CB;background-color:#EDF8F1;color:#15733F;font-family:'SFMono-Regular',Consolas,monospace;font-size:11px;font-weight:600;border-radius:2px;\">+ {WebUtility.HtmlEncode(skill)}</span>");
-            }
-            foreach (var missing in match.MissingSkills)
-            {
-                chips.Append(
-                    $"<span style=\"display:inline-block;margin:0 6px 6px 0;padding:3px 8px;border:1px solid #DDE2E7;background-color:#F4F6F8;color:#475569;font-family:'SFMono-Regular',Consolas,monospace;font-size:11px;font-weight:600;border-radius:2px;\">- {WebUtility.HtmlEncode(missing)}</span>");
-            }
-
-            sb.Append(
-                "<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin:0 0 18px;border:1px solid #E2E6E0;background-color:#FFFFFF;\">"
-                + "<tr><td style=\"padding:18px 20px;\">"
-                + "<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin:0 0 10px;\"><tr>"
-                + $"<td align=\"left\" style=\"vertical-align:middle;\"><span style=\"display:inline-block;padding:3px 9px;background-color:#14151C;color:#D3FB52;font-family:'SFMono-Regular',Consolas,monospace;font-variant-numeric:tabular-nums;font-size:11px;font-weight:700;letter-spacing:0.08em;border-radius:2px;\">{match.MatchPercentage}% MATCH</span></td>"
-                + $"<td align=\"right\" style=\"vertical-align:middle;font-family:'SFMono-Regular',Consolas,monospace;font-variant-numeric:tabular-nums;font-size:11px;color:#15733F;font-weight:700;\">{WebUtility.HtmlEncode(seatsText)}</td>"
-                + "</tr></table>"
-                + "<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin:0 0 12px;background-color:#E5E7EB;height:4px;\"><tr>"
-                + $"<td width=\"{Math.Clamp(match.MatchPercentage, 5, 100)}%\" style=\"background-color:#15733F;height:4px;font-size:0;line-height:4px;\">&nbsp;</td>"
-                + "<td style=\"height:4px;font-size:0;line-height:4px;\">&nbsp;</td>"
-                + "</tr></table>"
-                + $"<h2 style=\"margin:0 0 4px;font-size:18px;line-height:1.3;font-weight:700;color:#14151C;\">{WebUtility.HtmlEncode(match.Title)}</h2>"
-                + $"<p style=\"margin:0 0 10px;font-size:12px;color:#6B7280;\">Lead: <strong style=\"color:#14151C;\">{WebUtility.HtmlEncode(match.CreatorName)}</strong> &middot; {WebUtility.HtmlEncode(match.UniversityName)} &middot; {WebUtility.HtmlEncode(match.FacultyCode)}</p>"
-                + $"<p style=\"margin:0 0 12px;font-size:14px;line-height:1.5;color:#4B5260;\">{WebUtility.HtmlEncode(summary)}</p>"
-                + $"<div style=\"margin:0 0 14px;\">{chips}</div>"
-                + "<table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\"><tr>"
-                + $"<td style=\"background-color:#14151C;border-radius:2px;\"><a href=\"{projectUrl}\" style=\"display:inline-block;padding:10px 18px;font-family:'SFMono-Regular',Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#D3FB52;text-decoration:none;\">INSPECT &amp; APPLY</a></td>"
-                + "</tr></table>"
-                + "</td></tr></table>");
-        }
-
-        return new SafeHtmlFragment(sb.ToString());
-    }
+    private sealed record LeaderboardDigestRow(
+        int Rank,
+        int StudentId,
+        string FullName,
+        string Email,
+        string FacultyCode,
+        string UniversityName,
+        int TotalXp,
+        int Level,
+        bool EmailNotificationsEnabled,
+        bool ReceiveLeaderboardDigests);
 
     private static string NormalizeBaseUrl(string? url) =>
         string.IsNullOrWhiteSpace(url)
@@ -461,4 +405,6 @@ public sealed class DigestDispatchService(
         string Rank,
         string Xp,
         string Level);
+
+    #endregion
 }

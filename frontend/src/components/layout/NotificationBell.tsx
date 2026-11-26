@@ -7,32 +7,16 @@ import { Bell, Check, CheckCheck, ExternalLink } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import {
-  API_ENDPOINTS,
-  apiClient,
-  unwrapApiResponse,
-  unwrapVoidResponse,
-  type ApiResponse,
-  type NotificationType,
-} from "@/api";
+import { notificationsApi } from "@/api";
 import { Badge } from "@/components/ui";
 import { useAuth } from "@/features/auth";
+import { useUnreadNotificationCount } from "@/features/notifications/useUnreadNotificationCount";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 
 export interface NotificationBellProps {
   isScrolled?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
-}
-
-export interface NavbarNotificationItem {
-  notificationId: number;
-  studentId: number;
-  title: string;
-  message: string;
-  type: NotificationType | number;
-  isRead: boolean;
-  createdAt: string;
 }
 
 export function NotificationBell({ isScrolled = false, onOpenChange }: NotificationBellProps) {
@@ -42,43 +26,37 @@ export function NotificationBell({ isScrolled = false, onOpenChange }: Notificat
   const containerRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const notificationsQuery = useQuery({
-    queryKey: queryKeys.notifications.inbox(false),
-    queryFn: async ({ signal }) => {
-      const res = await apiClient.get<ApiResponse<NavbarNotificationItem[]>>(
-        API_ENDPOINTS.gamification.notifications,
-        {
-          params: { unreadOnly: false },
-          signal,
-        },
-      );
-      return unwrapApiResponse(res);
-    },
+  const unreadCountQuery = useUnreadNotificationCount({
     enabled: isAuthenticated,
     refetchInterval: 60_000,
+  });
+
+  const notificationsQuery = useQuery({
+    queryKey: queryKeys.notifications.inbox(false),
+    queryFn: ({ signal }) => notificationsApi.getNotifications(false, 15, signal),
+    enabled: isAuthenticated && isOpen,
+    staleTime: 30_000,
     retry: false,
   });
 
   const markReadMutation = useMutation({
-    mutationFn: async (notificationId: number) => {
-      const res = await apiClient.patch(
-        API_ENDPOINTS.gamification.notificationById(notificationId),
-      );
-      unwrapVoidResponse(res);
-    },
+    mutationFn: (notificationId: number) => notificationsApi.markAsRead(notificationId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to mark notification as read.");
     },
   });
 
   const markAllReadMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiClient.patch(API_ENDPOINTS.gamification.markAllNotificationsRead);
-      unwrapVoidResponse(res);
-    },
+    mutationFn: () => notificationsApi.markAllAsRead(),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
       toast.success("All notifications marked as read.");
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Failed to mark all as read.");
     },
   });
 
@@ -119,7 +97,7 @@ export function NotificationBell({ isScrolled = false, onOpenChange }: Notificat
   }
 
   const items = notificationsQuery.data ?? [];
-  const unreadCount = items.filter((item) => !item.isRead).length;
+  const unreadCount = unreadCountQuery.data ?? items.filter((item) => !item.isRead).length;
   const recentItems = items.slice(0, 5);
 
   return (
@@ -171,7 +149,7 @@ export function NotificationBell({ isScrolled = false, onOpenChange }: Notificat
                 type="button"
                 disabled={markAllReadMutation.isPending}
                 onClick={() => {
-                  void markAllReadMutation.mutateAsync();
+                  markAllReadMutation.mutate();
                 }}
                 className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-[#d3fb52] hover:underline disabled:opacity-50"
               >
@@ -205,7 +183,7 @@ export function NotificationBell({ isScrolled = false, onOpenChange }: Notificat
                       type="button"
                       aria-label={`Mark notification ${item.title} as read`}
                       onClick={() => {
-                        void markReadMutation.mutateAsync(item.notificationId);
+                        markReadMutation.mutate(item.notificationId);
                       }}
                       className="mt-0.5 inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-[#14151c] text-[#d3fb52] hover:border-[#d3fb52]/50"
                     >

@@ -2,6 +2,7 @@
 // Purpose: Centralized IMemoryCache keys and SecurityStamp lookup cache for immediate token revocation (STRIDE THR-E-02 + Phase 18 caching).
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Caching.Memory;
 using TeamUp.Application.Common.Interfaces;
 
@@ -13,6 +14,19 @@ public static class CatalogCacheKeys
     public const string MasterSkills = "catalog:skills:all";
     public const string BadgeCatalog = "catalog:badges:all";
     public static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(1);
+
+    public static readonly HybridCacheEntryOptions CatalogEntryOptions = new()
+    {
+        Expiration = DefaultTtl,
+        LocalCacheExpiration = DefaultTtl
+    };
+
+    public static class Tags
+    {
+        public const string AcademicCatalog = "tag:catalog:universities";
+        public const string MasterSkills = "tag:catalog:skills";
+        public const string BadgeCatalog = "tag:catalog:badges";
+    }
 
     public static string SecurityStampKey(int studentId) => $"auth:security-stamp:{studentId}";
 }

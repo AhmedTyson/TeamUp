@@ -44,6 +44,106 @@ public sealed class OrganizationsTests(TeamUpApiFactory factory) : IClassFixture
     }
 
     [Fact]
+    public async Task MemberEmails_AreHiddenFromNonManagers_UnlessOptedIn()
+    {
+        // OrgAdmin 710 creates an org and becomes its manager; member 711 joins with the default
+        // ShowEmailInDirectory = false; 712 is an unrelated authenticated student.
+        using var orgAdmin = Client("OrgAdmin", 710);
+        var orgRes = await orgAdmin.PostAsJsonAsync("/api/v1/organizations",
+            new CreateOrganizationRequest($"PrivacyOrg_{Guid.NewGuid():N}", "org", "Technology", null));
+        Assert.Equal(HttpStatusCode.Created, orgRes.StatusCode);
+        var org = await Data<OrganizationDetailDto>(orgRes);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            foreach (var id in new[] { 711, 712 })
+            {
+                db.Students.Add(new Student
+                {
+                    StudentId = id,
+                    Email = $"privacy{id}@test.com",
+                    PasswordHash = "test-hash",
+                    FirstName = $"Privacy{id}",
+                    LastName = "Test",
+                    AcademicYear = 2,
+                    FacultyId = factory.SeededFacultyId,
+                    ShowEmailInDirectory = false
+                });
+            }
+            db.OrganizationMembers.Add(new OrganizationMember
+            {
+                OrganizationId = org.OrganizationId,
+                StudentId = 711,
+                Role = "Member",
+                JoinedAt = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync();
+        }
+
+        // An unrelated authenticated student sees NO member emails (detail, members list, hierarchy).
+        using var outsider = Client("Student", 712);
+        var detail = await Data<OrganizationDetailDto>(await outsider.GetAsync($"/api/v1/organizations/{org.OrganizationId}"));
+        Assert.All(detail.Members, m => Assert.Equal(string.Empty, m.Email));
+        var members = await Data<List<OrganizationMemberDto>>(await outsider.GetAsync($"/api/v1/organizations/{org.OrganizationId}/members"));
+        Assert.All(members, m => Assert.Equal(string.Empty, m.Email));
+        var hierarchy = await Data<OrganizationHierarchyDto>(await outsider.GetAsync($"/api/v1/organizations/{org.OrganizationId}/hierarchy"));
+        Assert.All(hierarchy.HighBoard.Concat(hierarchy.CommitteeLeadership).Concat(hierarchy.OrganizingCrew),
+            m => Assert.Equal(string.Empty, m.Email));
+
+        // The org manager still sees member emails.
+        var adminDetail = await Data<OrganizationDetailDto>(await orgAdmin.GetAsync($"/api/v1/organizations/{org.OrganizationId}"));
+        Assert.Contains(adminDetail.Members, m => m.StudentId == 711 && m.Email == "privacy711@test.com");
+
+        // A member always sees their own email.
+        using var member = Client("Student", 711);
+        var selfDetail = await Data<OrganizationDetailDto>(await member.GetAsync($"/api/v1/organizations/{org.OrganizationId}"));
+        Assert.Contains(selfDetail.Members, m => m.StudentId == 711 && m.Email == "privacy711@test.com");
+        Assert.DoesNotContain(selfDetail.Members, m => m.StudentId == 710 && m.Email != string.Empty);
+
+        // Opting in via ShowEmailInDirectory makes the email visible to other authenticated students.
+        var optIn = await member.PatchAsJsonAsync("/api/v1/students/me",
+            new TeamUp.Application.Students.UpdateStudentRequest(null, null, null, ShowEmailInDirectory: true));
+        Assert.Equal(HttpStatusCode.OK, optIn.StatusCode);
+        var afterOptIn = await Data<OrganizationDetailDto>(await outsider.GetAsync($"/api/v1/organizations/{org.OrganizationId}"));
+        Assert.Contains(afterOptIn.Members, m => m.StudentId == 711 && m.Email == "privacy711@test.com");
+    }
+
+    [Fact]
+    public async Task PublicCategories_ReturnsDistinctCategoriesInUse_MostUsedFirst()
+    {
+        // Round 4 flexibility: category is free text, so the directory filter chips must come from the data,
+        // not a compiled-in list. Seed a unique custom category and confirm the endpoint reports it.
+        using var adminClient = Client("OrgAdmin");
+        var customCategory = $"Cat_{Guid.NewGuid():N}"[..20];
+        var createA = await adminClient.PostAsJsonAsync("/api/v1/organizations",
+            new CreateOrganizationRequest($"CatA_{Guid.NewGuid():N}", "desc", customCategory, null));
+        Assert.Equal(HttpStatusCode.Created, createA.StatusCode);
+
+        using var anonymous = factory.CreateClient();
+        var response = await anonymous.GetAsync("/api/v1/organizations/public/categories");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var categories = await Data<List<string>>(response);
+
+        Assert.Contains(customCategory, categories);
+        Assert.Equal(categories.Count, categories.Distinct().Count());
+        Assert.All(categories, c => Assert.False(string.IsNullOrWhiteSpace(c)));
+    }
+
+    [Fact]
+    public async Task CreateOrganization_AcceptsFreeTextCategory_NotLimitedToPresetList()
+    {
+        // The backend never limited categories; this pins that so the frontend list stays a suggestion only.
+        using var adminClient = Client("OrgAdmin");
+        var customCategory = "Marine Biology & Diving";
+        var response = await adminClient.PostAsJsonAsync("/api/v1/organizations",
+            new CreateOrganizationRequest($"FreeCat_{Guid.NewGuid():N}", "desc", customCategory, null));
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var created = await Data<OrganizationDetailDto>(response);
+        Assert.Equal(customCategory, created.Category);
+    }
+
+    [Fact]
     public async Task Student_CannotCreateOrganization()
     {
         using var client = Client("Student");

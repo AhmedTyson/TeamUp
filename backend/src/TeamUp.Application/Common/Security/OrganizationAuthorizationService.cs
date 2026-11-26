@@ -23,6 +23,8 @@ public interface IOrganizationAuthorizationService
 
 public sealed class OrganizationAuthorizationService(IAppDbContext db) : IOrganizationAuthorizationService
 {
+    #region Membership Role Checks
+
     private static bool IsPlatformAdmin(string? role) =>
         string.Equals(role, nameof(UserRole.PlatformAdmin), StringComparison.OrdinalIgnoreCase);
 
@@ -59,6 +61,10 @@ public sealed class OrganizationAuthorizationService(IAppDbContext db) : IOrgani
             .Distinct()
             .ToList();
     }
+
+    #endregion
+
+    #region Scoped Resource Guards
 
     public async Task EnsureCanManageOrganizationAsync(
         int organizationId, int actorStudentId, string? actorRole, CancellationToken ct = default)
@@ -132,6 +138,10 @@ public sealed class OrganizationAuthorizationService(IAppDbContext db) : IOrgani
         if (!await IsOrgAdminAsync(orgId.Value, actorStudentId, ct))
             throw new ForbiddenException("You do not have administrative authority over the organization hosting this session.");
     }
+
+    #endregion
+
+    #region Recruitment Review Guards
 
     public async Task<bool> CanReviewRecruitmentAsync(
         int organizationId, int actorStudentId, string? actorRole, int? targetUnitId = null, CancellationToken ct = default)
@@ -212,4 +222,6 @@ public sealed class OrganizationAuthorizationService(IAppDbContext db) : IOrgani
 
         return (false, false, membership.OrganizationUnitId);
     }
+
+    #endregion
 }

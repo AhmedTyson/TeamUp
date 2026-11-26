@@ -505,6 +505,7 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
       ];
 
       vi.spyOn(notificationsApi, "getNotifications").mockResolvedValue(mockNotifications);
+      vi.spyOn(notificationsApi, "getUnreadCount").mockResolvedValue(1);
       const markAllSpy = vi.spyOn(notificationsApi, "markAllAsRead").mockResolvedValue(undefined);
 
       render(

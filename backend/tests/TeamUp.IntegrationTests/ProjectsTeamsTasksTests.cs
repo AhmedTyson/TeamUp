@@ -115,4 +115,47 @@ public class ProjectsTeamsTasksTests(TeamUpApiFactory factory) : IClassFixture<T
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", envelope.Data.AccessToken);
         return client;
     }
+
+    [Fact]
+    public async Task GetMyApplication_ReturnsOwnApplication_ToApplicantOnly()
+    {
+        var creator = await RegisterClientAsync("mine-creator");
+        var applicant = await RegisterClientAsync("mine-applicant");
+        var outsider = await RegisterClientAsync("mine-outsider");
+
+        var createProject = await creator.PostAsJsonAsync("/api/v1/projects", new CreateProjectRequest(
+            "Mine Endpoint Project", "Integration test project", 3));
+        Assert.Equal(HttpStatusCode.Created, createProject.StatusCode);
+        var project = await GetDataAsync<ProjectDetailDto>(createProject);
+
+        var beforeRes = await applicant.GetAsync($"/api/v1/projects/{project.ProjectId}/applications/mine");
+        Assert.Equal(HttpStatusCode.OK, beforeRes.StatusCode);
+        var before = await beforeRes.Content.ReadFromJsonAsync<BaseResponse<ProjectApplicationDto>>(JsonOptions);
+        Assert.NotNull(before);
+        Assert.True(before.Success);
+        Assert.Null(before.Data);
+
+        var apply = await applicant.PostAsJsonAsync($"/api/v1/projects/{project.ProjectId}/applications",
+            new CreateProjectApplicationRequest("I can help."));
+        Assert.Equal(HttpStatusCode.Created, apply.StatusCode);
+        var application = await GetDataAsync<ProjectApplicationDto>(apply);
+
+        var mine = await applicant.GetAsync($"/api/v1/projects/{project.ProjectId}/applications/mine");
+        var mineData = await GetDataAsync<ProjectApplicationDto>(mine);
+        Assert.Equal(application.ApplicationId, mineData.ApplicationId);
+        Assert.Equal(TeamUp.Domain.Enums.ApplicationStatus.Pending, mineData.Status);
+
+        var outsiderRes = await outsider.GetAsync($"/api/v1/projects/{project.ProjectId}/applications/mine");
+        Assert.Equal(HttpStatusCode.OK, outsiderRes.StatusCode);
+        var outsiderEnv = await outsiderRes.Content.ReadFromJsonAsync<BaseResponse<ProjectApplicationDto>>(JsonOptions);
+        Assert.NotNull(outsiderEnv);
+        Assert.Null(outsiderEnv.Data);
+
+        var withdraw = await applicant.DeleteAsync($"/api/v1/projects/{project.ProjectId}/applications/{application.ApplicationId}");
+        Assert.True(withdraw.IsSuccessStatusCode);
+        var afterRes = await applicant.GetAsync($"/api/v1/projects/{project.ProjectId}/applications/mine");
+        var after = await afterRes.Content.ReadFromJsonAsync<BaseResponse<ProjectApplicationDto>>(JsonOptions);
+        Assert.NotNull(after);
+        Assert.Null(after.Data);
+    }
 }

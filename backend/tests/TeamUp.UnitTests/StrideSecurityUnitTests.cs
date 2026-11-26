@@ -42,6 +42,12 @@ public class StrideSecurityUnitTests
 
         var shortKey = missingKey with { JwtKey = "TooShortKey123!" };
         Assert.Throws<InvalidOperationException>(() => SecurityStartupValidator.Validate(shortKey));
+
+        var devMarkerKey = missingKey with { JwtKey = "DevelopmentOnlyLocalSigningKey-12345678901234567890" };
+        Assert.Throws<InvalidOperationException>(() => SecurityStartupValidator.Validate(devMarkerKey));
+
+        var prodMarkerKey = missingKey with { JwtKey = "MustBeOverriddenInProd-12345678901234567890" };
+        Assert.Throws<InvalidOperationException>(() => SecurityStartupValidator.Validate(prodMarkerKey));
     }
 
     [Fact]
@@ -76,10 +82,17 @@ public class StrideSecurityUnitTests
 
         var secureProd = insecureSql with
         {
-            ConnectionString = "Server=db;Database=TeamUp;User Id=sa;Password=Strong!;Encrypt=True;TrustServerCertificate=False;"
+            ConnectionString = "Server=db;Database=TeamUp;User Id=sa;Password=Strong!;Encrypt=True;TrustServerCertificate=False;",
+            EmailSmtpHost = "smtp.teamup.edu"
         };
         var ex = Record.Exception(() => SecurityStartupValidator.Validate(secureProd));
         Assert.Null(ex);
+
+        var missingSmtpHost = secureProd with { EmailSmtpHost = "" };
+        Assert.Throws<InvalidOperationException>(() => SecurityStartupValidator.Validate(missingSmtpHost));
+
+        var sqliteProd = secureProd with { DatabaseProvider = "Sqlite" };
+        Assert.Throws<InvalidOperationException>(() => SecurityStartupValidator.Validate(sqliteProd));
     }
 
     [Theory]
@@ -99,6 +112,8 @@ public class StrideSecurityUnitTests
     [InlineData("http://[::1]/", false)]
     [InlineData("http://[::ffff:169.254.169.254]/", false)]
     [InlineData("https://user:pass@example.com/secret", false)]
+    [InlineData("http://localhost./admin", false)]
+    [InlineData("http://metadata.google.internal./", false)]
     public void SafeUrlValidator_ExternalHttpUrl_BlocksDangerousSchemesAndSsrf(string url, bool expected)
     {
         Assert.Equal(expected, SafeUrlValidator.IsSafeExternalHttpUrl(url));
@@ -106,9 +121,15 @@ public class StrideSecurityUnitTests
 
     [Theory]
     [InlineData("/badges/first-steps.png", true)]
+    [InlineData("/api/v1/images/c0e70000-0000-4000-8000-000000000001", true)]
+    [InlineData("/images/people/student-1-abc.png", true)]
+    [InlineData("/logos/teamup-logo.png", true)]
     [InlineData("https://cdn.teamup.edu/badge.png", true)]
     [InlineData("//evil.example.com/badge.png", false)]
+    [InlineData("/\\evil.example.com/badge.png", false)]
     [InlineData("/badges/../secret.png", false)]
+    [InlineData("/api/v1/admin/dashboard", false)]
+    [InlineData("/api/v1/images/not-a-guid", false)]
     [InlineData("javascript:alert(1)", false)]
     [InlineData("http://169.254.169.254/badge.png", false)]
     public void SafeUrlValidator_AssetOrExternalUrl_ValidatesBadgeIcons(string url, bool expected)
@@ -122,6 +143,15 @@ public class StrideSecurityUnitTests
         var orgValidator = new CreateOrganizationRequestValidator();
         Assert.False(orgValidator.Validate(new CreateOrganizationRequest("Org", "Desc", "Tech", "http://169.254.169.254/meta")).IsValid);
         Assert.False(orgValidator.Validate(new CreateOrganizationRequest("Org", "Desc", "Tech", "javascript:alert(1)")).IsValid);
+        Assert.False(orgValidator.Validate(new CreateOrganizationRequest("Org", "Desc", "Tech", "/api/v1/admin")).IsValid);
+        Assert.True(orgValidator.Validate(new CreateOrganizationRequest("Org", "Desc", "Tech", "/api/v1/images/c0e70000-0000-4000-8000-000000000001")).IsValid);
+
+        var updateOrgValidator = new UpdateOrganizationRequestValidator();
+        Assert.True(updateOrgValidator.Validate(new UpdateOrganizationRequest("Org", "Desc", "Tech", "/api/v1/images/c0e70000-0000-4000-8000-000000000001")).IsValid);
+        Assert.False(updateOrgValidator.Validate(new UpdateOrganizationRequest("Org", "Desc", "Tech", "/api/v1/admin")).IsValid);
+
+        var proposalValidator = new CreateOrganizationProposalRequestValidator();
+        Assert.True(proposalValidator.Validate(new CreateOrganizationProposalRequest("Org", "Desc", "Tech", "/api/v1/images/c0e70000-0000-4000-8000-000000000001")).IsValid);
 
         var badgeValidator = new CreateBadgeRequestValidator();
         Assert.False(badgeValidator.Validate(new CreateBadgeRequest("Badge", "Desc", "javascript:alert(1)", BadgeCriteriaType.PointsThreshold, 10)).IsValid);
@@ -132,6 +162,18 @@ public class StrideSecurityUnitTests
 
         var profileValidator = new UpsertProfileRequestValidator();
         Assert.False(profileValidator.Validate(new UpsertProfileRequest("Bio", "http://192.168.1.5/pic.png", null, null)).IsValid);
+    }
+
+    [Fact]
+    public void ImageFileValidator_RequiresMinimum12BytesAndValidSignature()
+    {
+        byte[] truncatedJpeg = [0xFF, 0xD8, 0xFF, 0xE0];
+        Assert.False(ImageFileValidator.TryValidateImagePayload(truncatedJpeg, out _, out _));
+
+        byte[] paddedJpeg = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01];
+        Assert.True(ImageFileValidator.TryValidateImagePayload(paddedJpeg, out var ext, out var contentType));
+        Assert.Equal(".jpg", ext);
+        Assert.Equal("image/jpeg", contentType);
     }
 
     [Fact]
@@ -249,5 +291,52 @@ public class StrideSecurityUnitTests
         Assert.Contains("Ada", reportHtml);
         Assert.Contains("<svg", reportHtml, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("TeamUp", reportHtml);
+    }
+
+    [Fact]
+    public async Task TemplateRenderer_RenderReportAsync_PreventsSecondOrderPlaceholderInjection()
+    {
+        var renderer = new TemplateRenderer();
+        var attendanceRow = "<tr><td>1</td><td>Ada</td><td>QRCode</td><td>now</td><td>1</td></tr>";
+
+        var reportHtml = await renderer.RenderReportAsync("SessionAttendanceReport.html", new Dictionary<string, string>
+        {
+            ["OrganizationName"] = "IEEE",
+            ["EventTitle"] = "{{AttendanceRows}}",
+            ["SessionTitle"] = "#1",
+            ["Room"] = "Hall A",
+            ["SessionWindow"] = "2026-11-22 10:00 UTC",
+            ["CheckedInCount"] = "1",
+            ["ConfirmedCount"] = "1",
+            ["GeneratedAtUtc"] = "2026-11-22 12:00:00 UTC",
+            ["AttendanceRows"] = attendanceRow
+        });
+
+        Assert.Contains("{{AttendanceRows}}", reportHtml);
+        var occurrences = reportHtml.Split(attendanceRow, StringSplitOptions.None).Length - 1;
+        Assert.Equal(1, occurrences);
+    }
+
+    [Fact]
+    public void SecurityStartupValidator_RejectsSpacedTrustServerCertificateSynonymInProduction()
+    {
+        var spacedTrust = new SecurityStartupSettings(
+            IsDevelopment: false,
+            IsProduction: true,
+            JwtKey: new string('K', 64),
+            JwtIssuer: "TeamUp",
+            JwtAudience: "TeamUp.Clients",
+            EmailProvider: "Smtp",
+            EmailSmtpHost: "smtp.teamup.edu",
+            DatabaseProvider: "SqlServer",
+            ConnectionString: "Server=prod.db;Database=TeamUp;Encrypt=True;Trust Server Certificate=True;");
+
+        Assert.Throws<InvalidOperationException>(() => SecurityStartupValidator.Validate(spacedTrust));
+
+        var encryptNo = spacedTrust with
+        {
+            ConnectionString = "Server=prod.db;Database=TeamUp;Encrypt=no;TrustServerCertificate=False;"
+        };
+        Assert.Throws<InvalidOperationException>(() => SecurityStartupValidator.Validate(encryptNo));
     }
 }

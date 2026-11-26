@@ -2,13 +2,18 @@
  * @date 2026-11-21
  * @purpose Unit tests for TeamUp's shared Handshake UI primitive kit (Button, Input, SearchInput, Modal, ConfirmDialog, Tabs, DataTable, Pagination, Avatar, ErrorBanner).
  */
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { ApiClientError } from "@/api";
+import { ApiClientError, badgesApi } from "@/api";
+import * as urlValidation from "@/lib/urlValidation";
+import { BadgesGallery } from "@/features/gamification/BadgesGallery";
+import { OrganizationMark } from "@/features/organizations/components/OrganizationMark";
 import {
   Avatar,
   Button,
   ConfirmDialog,
+  CoverImage,
   DataTable,
   EmptyState,
   ErrorBanner,
@@ -201,5 +206,97 @@ describe("Handshake UI primitive kit", () => {
     rerender(<UniversityLogo name="Cairo University" logoUrl="javascript:alert(1)" />);
     expect(screen.queryByAltText("Cairo University official logo")).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Cairo University crest" })).toBeInTheDocument();
+  });
+
+  it("resets CoverImage error state when url prop changes", () => {
+    const { rerender } = render(
+      <CoverImage url="/api/v1/images/c0e70000-0000-4000-8000-000000000001" alt="Cover A" />,
+    );
+    const img = screen.getByAltText("Cover A");
+    fireEvent.error(img);
+    expect(screen.queryByAltText("Cover A")).not.toBeInTheDocument();
+
+    rerender(
+      <CoverImage url="/api/v1/images/c0e70000-0000-4000-8000-000000000002" alt="Cover B" />,
+    );
+    expect(screen.getByAltText("Cover B")).toHaveAttribute(
+      "src",
+      "/api/v1/images/c0e70000-0000-4000-8000-000000000002",
+    );
+  });
+
+  it("resolves stored-image UniversityLogo URLs via resolveMediaUrl and resets OrganizationMark error state on URL change", () => {
+    const storedUrl = "/api/v1/images/c0e70000-0000-4000-8000-000000000001";
+    const resolveSpy = vi.spyOn(urlValidation, "resolveMediaUrl");
+
+    render(<UniversityLogo name="Helwan University" logoUrl={storedUrl} />);
+    expect(resolveSpy).toHaveBeenCalledWith(storedUrl);
+    expect(screen.getByAltText("Helwan University official logo")).toHaveAttribute(
+      "referrerpolicy",
+      "no-referrer",
+    );
+    resolveSpy.mockRestore();
+
+    const { rerender } = render(
+      <OrganizationMark
+        name="IEEE SB"
+        logoUrl="/api/v1/images/c0e70000-0000-4000-8000-000000000003"
+      />,
+    );
+    fireEvent.error(screen.getByAltText("IEEE SB logo"));
+    expect(screen.queryByAltText("IEEE SB logo")).not.toBeInTheDocument();
+
+    rerender(
+      <OrganizationMark
+        name="IEEE SB"
+        logoUrl="/api/v1/images/c0e70000-0000-4000-8000-000000000004"
+      />,
+    );
+    expect(screen.getByAltText("IEEE SB logo")).toHaveAttribute(
+      "src",
+      "/api/v1/images/c0e70000-0000-4000-8000-000000000004",
+    );
+  });
+
+  it("renders BadgesGallery icons for relative /badges/ and stored-image URLs via resolveMediaUrl", async () => {
+    vi.spyOn(badgesApi, "getBadgeCatalog").mockResolvedValue([
+      {
+        badgeId: 1,
+        name: "Pioneer Asset",
+        description: "Relative asset badge",
+        iconUrl: "/badges/pioneer.png",
+        criteriaType: "PointsThreshold",
+        criteriaValue: 100,
+      },
+      {
+        badgeId: 2,
+        name: "Stored Upload",
+        description: "Database image badge",
+        iconUrl: "/api/v1/images/c0e70000-0000-4000-8000-000000000005",
+        criteriaType: "EventCount",
+        criteriaValue: 3,
+      },
+    ]);
+    vi.spyOn(badgesApi, "getStudentBadges").mockResolvedValue([]);
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BadgesGallery studentId={10} />
+      </QueryClientProvider>,
+    );
+
+    const pioneerImg = await screen.findByAltText("Pioneer Asset");
+    expect(pioneerImg).toHaveAttribute("src", "/badges/pioneer.png");
+    expect(pioneerImg).toHaveAttribute("referrerpolicy", "no-referrer");
+
+    const storedImg = await screen.findByAltText("Stored Upload");
+    expect(storedImg).toHaveAttribute(
+      "src",
+      "/api/v1/images/c0e70000-0000-4000-8000-000000000005",
+    );
   });
 });

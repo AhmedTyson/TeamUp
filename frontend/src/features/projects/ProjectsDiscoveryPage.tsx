@@ -2,9 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, Plus, Users } from "lucide-react";
-import { projectsApi, skillsApi, type ProjectStatus } from "@/api";
-import { PROJECT_STATUSES } from "@/api";
-import { Button, ErrorBanner, Pagination, SearchInput, SpotlightCard, StatusPill } from "@/components/ui";
+import { PROJECT_STATUSES, projectsApi, skillsApi, type ProjectStatus } from "@/api";
+import { Button, CoverImage, ErrorBanner, Pagination, SearchInput, SpotlightCard, StatusPill } from "@/components/ui";
 import { queryKeys } from "@/lib/queryKeys";
 
 const PROJECT_STATUS_OPTIONS: readonly (ProjectStatus | "")[] = [
@@ -117,6 +116,11 @@ export function ProjectsDiscoveryPage() {
             return (
               <SpotlightCard key={project.projectId} className="flex flex-col justify-between rounded-2xl border border-white/10 bg-[#1b1d26] p-5 transition-colors hover:border-[#d3fb52]/40" showCornerArrow>
                 <div>
+                  <CoverImage
+                    url={project.coverImageUrl}
+                    alt={`${project.title} cover`}
+                    className="-mx-5 -mt-5 mb-4 aspect-[2/1] rounded-t-2xl"
+                  />
                   <div className="flex items-start justify-between gap-3 pr-12">
                     <StatusPill status={project.status} />
                     <span className="text-xs text-white/50 tabular-nums">{new Date(project.createdAt).toLocaleDateString()}</span>

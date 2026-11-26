@@ -9,96 +9,104 @@ internal static class Sql
     public const string NotDeleted = "[DeletedAt] IS NULL";
 }
 
-public class UniversityConfig : IEntityTypeConfiguration<University>
+#region Academic Catalog
+
+public sealed class UniversityConfig : IEntityTypeConfiguration<University>
 {
-    public void Configure(EntityTypeBuilder<University> b)
+    public void Configure(EntityTypeBuilder<University> builder)
     {
-        b.HasKey(x => x.UniversityId);
-        b.Property(x => x.Name).HasMaxLength(150).IsRequired();
-        b.Property(x => x.City).HasMaxLength(100).IsRequired();
-        b.Property(x => x.Country).HasMaxLength(100).IsRequired();
-        b.Property(x => x.Website).HasMaxLength(200);
-        b.Property(x => x.LogoUrl).HasMaxLength(500);
-        b.HasIndex(x => x.Name).IsUnique().HasFilter(Sql.NotDeleted);
+        builder.HasKey(x => x.UniversityId);
+        builder.Property(x => x.Name).HasMaxLength(150).IsRequired();
+        builder.Property(x => x.City).HasMaxLength(100).IsRequired();
+        builder.Property(x => x.Country).HasMaxLength(100).IsRequired();
+        builder.Property(x => x.Website).HasMaxLength(200);
+        builder.Property(x => x.LogoUrl).HasMaxLength(500);
+        builder.HasIndex(x => x.Name).IsUnique().HasFilter(Sql.NotDeleted);
     }
 }
 
-public class FacultyConfig : IEntityTypeConfiguration<Faculty>
+public sealed class FacultyConfig : IEntityTypeConfiguration<Faculty>
 {
-    public void Configure(EntityTypeBuilder<Faculty> b)
+    public void Configure(EntityTypeBuilder<Faculty> builder)
     {
-        b.HasKey(x => x.FacultyId);
-        b.Property(x => x.Name).HasMaxLength(150).IsRequired();
-        b.Property(x => x.Code).HasMaxLength(20).IsRequired();
-        b.HasOne(x => x.University).WithMany(u => u.Faculties).HasForeignKey(x => x.UniversityId);
-        b.HasIndex(x => new { x.UniversityId, x.Code }).IsUnique().HasFilter(Sql.NotDeleted);
+        builder.HasKey(x => x.FacultyId);
+        builder.Property(x => x.Name).HasMaxLength(150).IsRequired();
+        builder.Property(x => x.Code).HasMaxLength(20).IsRequired();
+        builder.HasOne(x => x.University).WithMany(u => u.Faculties).HasForeignKey(x => x.UniversityId);
+        builder.HasIndex(x => new { x.UniversityId, x.Code }).IsUnique().HasFilter(Sql.NotDeleted);
     }
 }
 
-public class StudentConfig : IEntityTypeConfiguration<Student>
+#endregion
+
+#region Student Profiles & Governance
+
+public sealed class StudentConfig : IEntityTypeConfiguration<Student>
 {
-    public void Configure(EntityTypeBuilder<Student> b)
+    public void Configure(EntityTypeBuilder<Student> builder)
     {
-        b.HasKey(x => x.StudentId);
-        b.Property(x => x.Email).HasMaxLength(150).IsRequired();
-        b.Property(x => x.PasswordHash).HasMaxLength(256).IsRequired();
-        b.Property(x => x.FirstName).HasMaxLength(50).IsRequired();
-        b.Property(x => x.LastName).HasMaxLength(50).IsRequired();
-        b.Property(x => x.Role).HasDefaultValue(Domain.Enums.UserRole.Student);
-        b.Property(x => x.SecurityStamp).IsRequired();
-        b.Property(x => x.ShowEmailInDirectory).HasDefaultValue(false);
-        b.Property(x => x.EmailNotificationsEnabled).HasDefaultValue(true);
-        b.Property(x => x.ReceiveLeaderboardDigests).HasDefaultValue(true);
-        b.Property(x => x.ReceiveProjectMatchEmails).HasDefaultValue(true);
-        b.Property(x => x.RefreshToken).HasMaxLength(256);
-        b.Property(x => x.PreviousRefreshToken).HasMaxLength(256);
-        b.Property(x => x.PasswordResetToken).HasMaxLength(256);
-        b.Property(x => x.AffiliationType).HasDefaultValue(Domain.Enums.AffiliationType.UniversityStudent);
-        b.Property(x => x.City).HasMaxLength(100);
-        b.HasOne(x => x.Faculty).WithMany(f => f.Students).HasForeignKey(x => x.FacultyId).IsRequired(false);
-        b.HasIndex(x => x.Email).IsUnique().HasFilter(Sql.NotDeleted);
-        b.ToTable(t => t.HasCheckConstraint("CK_Student_AcademicYear", "[AcademicYear] BETWEEN 1 AND 7"));
+        builder.HasKey(x => x.StudentId);
+        builder.Property(x => x.Email).HasMaxLength(150).IsRequired();
+        builder.Property(x => x.PasswordHash).HasMaxLength(256).IsRequired();
+        builder.Property(x => x.FirstName).HasMaxLength(50).IsRequired();
+        builder.Property(x => x.LastName).HasMaxLength(50).IsRequired();
+        builder.Property(x => x.Role).HasDefaultValue(Domain.Enums.UserRole.Student);
+        builder.Property(x => x.SecurityStamp).IsRequired();
+        builder.Property(x => x.ShowEmailInDirectory).HasDefaultValue(false);
+        builder.Property(x => x.EmailNotificationsEnabled).HasDefaultValue(true).HasSentinel(true);
+        builder.Property(x => x.ReceiveLeaderboardDigests).HasDefaultValue(true).HasSentinel(true);
+        builder.Property(x => x.ReceiveProjectMatchEmails).HasDefaultValue(true).HasSentinel(true);
+        builder.Property(x => x.RefreshToken).HasMaxLength(256);
+        builder.Property(x => x.PreviousRefreshToken).HasMaxLength(256);
+        builder.Property(x => x.PasswordResetToken).HasMaxLength(256);
+        builder.Property(x => x.AffiliationType).HasDefaultValue(Domain.Enums.AffiliationType.UniversityStudent);
+        builder.Property(x => x.City).HasMaxLength(100);
+        builder.HasOne(x => x.Faculty).WithMany(f => f.Students).HasForeignKey(x => x.FacultyId).IsRequired(false);
+        builder.HasIndex(x => x.Email).IsUnique().HasFilter(Sql.NotDeleted);
+        builder.ToTable(t => t.HasCheckConstraint("CK_Student_AcademicYear", "[AcademicYear] BETWEEN 1 AND 7"));
     }
 }
 
-public class StudentInterestConfig : IEntityTypeConfiguration<StudentInterest>
+public sealed class StudentInterestConfig : IEntityTypeConfiguration<StudentInterest>
 {
-    public void Configure(EntityTypeBuilder<StudentInterest> b)
+    public void Configure(EntityTypeBuilder<StudentInterest> builder)
     {
-        b.HasKey(x => new { x.StudentId, x.Interest });
-        b.Property(x => x.Interest).HasMaxLength(50).IsRequired();
-        b.HasOne(x => x.Student).WithMany(s => s.Interests).HasForeignKey(x => x.StudentId);
+        builder.HasKey(x => new { x.StudentId, x.Interest });
+        builder.Property(x => x.Interest).HasMaxLength(50).IsRequired();
+        builder.HasOne(x => x.Student).WithMany(s => s.Interests).HasForeignKey(x => x.StudentId);
     }
 }
 
-public class StudentProfileConfig : IEntityTypeConfiguration<StudentProfile>
+public sealed class StudentProfileConfig : IEntityTypeConfiguration<StudentProfile>
 {
-    public void Configure(EntityTypeBuilder<StudentProfile> b)
+    public void Configure(EntityTypeBuilder<StudentProfile> builder)
     {
-        b.HasKey(x => x.ProfileId);
-        b.Property(x => x.Bio).HasMaxLength(1000);
-        b.Property(x => x.PhotoUrl).HasMaxLength(300);
-        b.Property(x => x.GitHubUrl).HasMaxLength(200);
-        b.Property(x => x.LinkedInUrl).HasMaxLength(200);
-        b.HasOne(x => x.Student).WithOne(s => s.Profile).HasForeignKey<StudentProfile>(x => x.StudentId);
-        b.HasIndex(x => x.StudentId).IsUnique().HasFilter(Sql.NotDeleted);
+        builder.HasKey(x => x.ProfileId);
+        builder.Property(x => x.Bio).HasMaxLength(1000);
+        builder.Property(x => x.PhotoUrl).HasMaxLength(300);
+        builder.Property(x => x.GitHubUrl).HasMaxLength(200);
+        builder.Property(x => x.LinkedInUrl).HasMaxLength(200);
+        builder.HasOne(x => x.Student).WithOne(s => s.Profile).HasForeignKey<StudentProfile>(x => x.StudentId);
+        builder.HasIndex(x => x.StudentId).IsUnique().HasFilter(Sql.NotDeleted);
     }
 }
 
-public class AuditLogConfig : IEntityTypeConfiguration<AuditLog>
+public sealed class AuditLogConfig : IEntityTypeConfiguration<AuditLog>
 {
-    public void Configure(EntityTypeBuilder<AuditLog> b)
+    public void Configure(EntityTypeBuilder<AuditLog> builder)
     {
-        b.HasKey(x => x.AuditLogId);
-        b.Property(x => x.ActorEmail).HasMaxLength(150);
-        b.Property(x => x.Action).HasMaxLength(80).IsRequired();
-        b.Property(x => x.EntityType).HasMaxLength(60).IsRequired();
-        b.Property(x => x.EntityId).HasMaxLength(64).IsRequired();
-        b.Property(x => x.ClientIp).HasMaxLength(64);
-        b.Property(x => x.OccurredAt).HasDefaultValueSql("SYSUTCDATETIME()");
-        b.HasOne(x => x.ActorStudent).WithMany().HasForeignKey(x => x.ActorStudentId).IsRequired(false);
-        b.HasIndex(x => x.OccurredAt);
-        b.HasIndex(x => new { x.EntityType, x.EntityId });
-        b.HasIndex(x => x.ActorStudentId);
+        builder.HasKey(x => x.AuditLogId);
+        builder.Property(x => x.ActorEmail).HasMaxLength(150);
+        builder.Property(x => x.Action).HasMaxLength(80).IsRequired();
+        builder.Property(x => x.EntityType).HasMaxLength(60).IsRequired();
+        builder.Property(x => x.EntityId).HasMaxLength(64).IsRequired();
+        builder.Property(x => x.ClientIp).HasMaxLength(64);
+        builder.Property(x => x.OccurredAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        builder.HasOne(x => x.ActorStudent).WithMany().HasForeignKey(x => x.ActorStudentId).IsRequired(false);
+        builder.HasIndex(x => x.OccurredAt);
+        builder.HasIndex(x => new { x.EntityType, x.EntityId });
+        builder.HasIndex(x => x.ActorStudentId);
     }
 }
+
+#endregion

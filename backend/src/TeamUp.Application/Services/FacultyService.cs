@@ -2,7 +2,7 @@
 // Purpose: Faculty catalog service with academic catalog cache invalidation and audited soft-delete.
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Hybrid;
 using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
@@ -14,9 +14,11 @@ namespace TeamUp.Application.Services;
 
 public sealed class FacultyService(
     IAppDbContext db,
-    IMemoryCache cache,
+    HybridCache cache,
     IAuditLogService auditLog) : IFacultyService
 {
+    #region Queries
+
     public async Task<IReadOnlyList<FacultyDto>> GetFacultiesByUniversityIdAsync(int universityId, CancellationToken ct = default)
     {
         var uniExists = await db.Universities.AnyAsync(u => u.UniversityId == universityId, ct);
@@ -39,20 +41,25 @@ public sealed class FacultyService(
 
     public async Task<FacultyDto> GetFacultyByIdAsync(int id, CancellationToken ct = default)
     {
-        var faculty = await db.Faculties
+        var dto = await db.Faculties
             .AsNoTracking()
-            .Include(f => f.University)
-            .FirstOrDefaultAsync(f => f.FacultyId == id, ct)
+            .Where(f => f.FacultyId == id)
+            .Select(f => new FacultyDto(
+                f.FacultyId,
+                f.Name,
+                f.Code,
+                f.UniversityId,
+                f.University.Name,
+                f.Students.Count))
+            .FirstOrDefaultAsync(ct)
             ?? throw new NotFoundException($"Faculty with ID {id} was not found.");
 
-        return new FacultyDto(
-            faculty.FacultyId,
-            faculty.Name,
-            faculty.Code,
-            faculty.UniversityId,
-            faculty.University.Name,
-            faculty.Students.Count);
+        return dto;
     }
+
+    #endregion
+
+    #region Mutations
 
     public async Task<FacultyDto> CreateFacultyAsync(int universityId, CreateFacultyRequest req, CancellationToken ct = default)
     {
@@ -74,7 +81,7 @@ public sealed class FacultyService(
 
         db.Faculties.Add(faculty);
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.AcademicCatalog);
+        await cache.RemoveAsync(CatalogCacheKeys.AcademicCatalog, ct);
 
         return new FacultyDto(
             faculty.FacultyId,
@@ -105,7 +112,9 @@ public sealed class FacultyService(
         faculty.Code = code;
 
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.AcademicCatalog);
+        await cache.RemoveAsync(CatalogCacheKeys.AcademicCatalog, ct);
+
+        var studentsCount = await db.Students.AsNoTracking().CountAsync(s => s.FacultyId == faculty.FacultyId, ct);
 
         return new FacultyDto(
             faculty.FacultyId,
@@ -113,7 +122,7 @@ public sealed class FacultyService(
             faculty.Code,
             faculty.UniversityId,
             faculty.University.Name,
-            faculty.Students.Count);
+            studentsCount);
     }
 
     public async Task DeleteFacultyAsync(int id, CancellationToken ct = default)
@@ -125,7 +134,7 @@ public sealed class FacultyService(
         var name = faculty.Name;
         db.Faculties.Remove(faculty);
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.AcademicCatalog);
+        await cache.RemoveAsync(CatalogCacheKeys.AcademicCatalog, ct);
 
         await auditLog.RecordAsync(
             "EntitySoftDeleted",
@@ -135,4 +144,6 @@ public sealed class FacultyService(
             newValues: new { DeletedAt = faculty.DeletedAt },
             ct: ct);
     }
+
+    #endregion
 }

@@ -26,5 +26,6 @@ export {
   useEvents,
   useEventSessions,
   useMyEventRegistrations,
+  useMyEventRegistration,
   useSessionAttendance,
 } from "./hooks/useEventHooks";

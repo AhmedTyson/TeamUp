@@ -16,39 +16,24 @@ public sealed class LocalProfilePhotoStorage(IWebHostEnvironment env) : IProfile
         long contentLength,
         CancellationToken ct = default)
     {
-        if (contentLength <= 0 || contentLength > ImageFileValidator.MaxProfilePhotoBytes)
-            throw new BadRequestException("Profile photo must be between 1 byte and 2 MB.");
-
-        using var buffer = new MemoryStream((int)contentLength);
-        var chunk = new byte[16 * 1024];
-        long totalRead = 0;
-        int read;
-        while ((read = await content.ReadAsync(chunk, ct)) > 0)
-        {
-            totalRead += read;
-            if (totalRead > ImageFileValidator.MaxProfilePhotoBytes)
-                throw new BadRequestException("Profile photo must not exceed 2 MB.");
-
-            buffer.Write(chunk, 0, read);
-        }
-
-        var bytes = buffer.GetBuffer().AsSpan(0, (int)totalRead);
-        if (bytes.Length == 0 || !ImageFileValidator.TryDetectImageExtension(bytes, out var ext, out _))
-            throw new BadRequestException("Only valid JPEG, PNG, or WebP images up to 2 MB are supported.");
+        var validated = await ImageFileValidator.ReadAndValidateImageAsync(content, contentLength, "Profile photo", ct);
 
         var webRoot = string.IsNullOrWhiteSpace(env.WebRootPath)
             ? Path.Combine(env.ContentRootPath, "wwwroot")
             : env.WebRootPath;
 
         var peopleDir = Path.Combine(webRoot, "images", "people");
-        Directory.CreateDirectory(peopleDir);
+        var peopleDirFull = Path.GetFullPath(peopleDir);
+        Directory.CreateDirectory(peopleDirFull);
 
-        var fileName = $"student-{studentId}-{Guid.NewGuid():N}{ext}";
-        var fullPath = Path.Combine(peopleDir, fileName);
+        var fileName = $"student-{studentId}-{Guid.NewGuid():N}{validated.Extension}";
+        var fullPath = Path.GetFullPath(Path.Combine(peopleDirFull, fileName));
+        if (!fullPath.StartsWith(peopleDirFull + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            throw new BadRequestException("Invalid target photo path.");
 
         await using (var fs = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
         {
-            await fs.WriteAsync(buffer.GetBuffer().AsMemory(0, (int)totalRead), ct);
+            await fs.WriteAsync(validated.Bytes, ct);
         }
 
         return $"/images/people/{fileName}";

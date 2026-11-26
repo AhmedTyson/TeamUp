@@ -243,3 +243,17 @@ export function useOrganizationMutations(organizationId?: number) {
     withdrawCreationRequest,
   };
 }
+
+/**
+ * Distinct organization categories in use, most used first. Feeds the directory filter chips so a new
+ * category appears automatically instead of waiting for a frontend constant to be updated.
+ */
+const CATEGORIES_STALE_TIME_MS = 5 * 60_000;
+
+export function useOrganizationCategories() {
+  return useQuery({
+    queryKey: queryKeys.organizations.categories,
+    queryFn: ({ signal }) => organizationsApi.categories(signal),
+    staleTime: CATEGORIES_STALE_TIME_MS,
+  });
+}

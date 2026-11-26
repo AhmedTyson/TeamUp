@@ -3,7 +3,7 @@
  * @purpose Zod validation schemas and Egyptian ecosystem constants aligned with OrganizationValidators.
  */
 import { ORGANIZATION_SCOPES, ORGANIZATION_UNIT_TYPES } from "@/api";
-import { optionalSafeUrlSchema } from "@/lib/urlValidation";
+import { optionalSafeAssetOrUrlSchema, optionalSafeUrlSchema } from "@/lib/urlValidation";
 import { z } from "@/lib/zodCspConfig";
 
 export const ORGANIZATION_CATEGORIES = [
@@ -29,6 +29,14 @@ export const ORGANIZATION_SCOPE_VALUES = [
   ORGANIZATION_SCOPES.NationalNetwork,
 ] as const;
 
+export const ORGANIZATION_SCOPE_OPTIONS = [
+  { value: ORGANIZATION_SCOPES.UniversityBranch, label: "University Student Branch (e.g. IEEE SB)" },
+  { value: ORGANIZATION_SCOPES.FacultyChapter, label: "Faculty Chapter (e.g. FCAI / BIS Club)" },
+  { value: ORGANIZATION_SCOPES.CrossUniversity, label: "Cross-University Initiative (e.g. STP Egypt)" },
+  { value: ORGANIZATION_SCOPES.Independent, label: "Open / Independent Community (e.g. GDG)" },
+  { value: ORGANIZATION_SCOPES.NationalNetwork, label: "National Network" },
+] as const;
+
 export const ORGANIZATION_UNIT_TYPE_VALUES = [
   ORGANIZATION_UNIT_TYPES.TechnicalChapter,
   ORGANIZATION_UNIT_TYPES.OperationalCommittee,
@@ -52,7 +60,7 @@ export const organizationFormSchema = z.object({
     .trim()
     .min(2, "Category must be at least 2 characters.")
     .max(50, "Category cannot exceed 50 characters."),
-  logoUrl: optionalSafeUrlSchema.refine(
+  logoUrl: optionalSafeAssetOrUrlSchema.refine(
     (val) => !val || val.length <= 300,
     "Logo URL cannot exceed 300 characters.",
   ),
@@ -113,3 +121,28 @@ export const membershipApplicationSchema = z.object({
 });
 
 export type MembershipApplicationValues = z.infer<typeof membershipApplicationSchema>;
+
+export const proposalFormSchema = z.object({
+  name: z.string().trim().min(2, "Organization name is required.").max(120),
+  category: z.string().trim().min(2, "Category is required.").max(50),
+  scope: z.enum(ORGANIZATION_SCOPE_VALUES),
+  universityId: z.string().optional(),
+  city: z.string().trim().max(100).optional(),
+  description: z
+    .string()
+    .trim()
+    .min(10, "Please describe the club mission (at least 10 characters).")
+    .max(4000),
+  websiteUrl: optionalSafeUrlSchema.refine(
+    (v) => !v || v.length <= 300,
+    "Website URL cannot exceed 300 characters.",
+  ),
+  logoUrl: optionalSafeAssetOrUrlSchema.refine(
+    (v) => !v || v.length <= 300,
+    "Logo URL cannot exceed 300 characters.",
+  ),
+  currentSeasonName: z.string().trim().max(80).optional(),
+  justification: z.string().trim().max(1000).optional(),
+});
+
+export type ProposalFormValues = z.infer<typeof proposalFormSchema>;

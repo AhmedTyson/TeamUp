@@ -12,7 +12,9 @@ import { decodeJwtPayload, isTokenExpired } from "@/lib/jwt";
 import { createAppQueryClient, shouldRetryApiError } from "@/lib/queryClient";
 import { invalidateGamification, queryKeys } from "@/lib/queryKeys";
 import {
+  isSafeAssetOrHttpUrl,
   isSafeHttpUrl,
+  optionalSafeAssetOrUrlSchema,
   optionalSafeUrlSchema,
   resolveMediaUrl,
   safeUrlSchema,
@@ -81,6 +83,22 @@ describe("Safe URL validation (STRIDE THR-T-03)", () => {
     expect(safeUrlSchema.safeParse("https://linkedin.com/in/student").success).toBe(true);
     expect(safeUrlSchema.safeParse("javascript:void(0)").success).toBe(false);
     expect(optionalSafeUrlSchema.safeParse("").success).toBe(true);
+
+    expect(isSafeAssetOrHttpUrl("/api/v1/images/c0e70000-0000-4000-8000-000000000001")).toBe(true);
+    expect(isSafeAssetOrHttpUrl("/images/people/a.jpg")).toBe(true);
+    expect(isSafeAssetOrHttpUrl("/logos/x.png")).toBe(true);
+    expect(isSafeAssetOrHttpUrl("/badges/first.png")).toBe(true);
+    expect(isSafeAssetOrHttpUrl("https://cdn.example.com/logo.png")).toBe(true);
+    expect(isSafeAssetOrHttpUrl("/\\evil.com/a.png")).toBe(false);
+    expect(isSafeAssetOrHttpUrl("/api/v1/admin")).toBe(false);
+    expect(isSafeAssetOrHttpUrl("/api/v1/images/bad-id")).toBe(false);
+    expect(isSafeAssetOrHttpUrl("http://localhost./x.png")).toBe(false);
+    expect(optionalSafeAssetOrUrlSchema.safeParse("").success).toBe(true);
+    expect(
+      optionalSafeAssetOrUrlSchema.safeParse("/api/v1/images/c0e70000-0000-4000-8000-000000000001")
+        .success,
+    ).toBe(true);
+    expect(optionalSafeAssetOrUrlSchema.safeParse("/api/v1/admin").success).toBe(false);
   });
 
   it("resolves uploaded backend portrait paths against VITE_API_BASE_URL while keeping seeded paths local", () => {
@@ -93,8 +111,20 @@ describe("Safe URL validation (STRIDE THR-T-03)", () => {
     expect(resolveMediaUrl("/images/people/student-10-abc.jpg", "")).toBe(
       "/images/people/student-10-abc.jpg",
     );
+    expect(
+      resolveMediaUrl("/api/v1/images/c0e70000-0000-4000-8000-000000000001", "https://teamup-api.runasp.net/api"),
+    ).toBe("https://teamup-api.runasp.net/api/v1/images/c0e70000-0000-4000-8000-000000000001");
     expect(resolveMediaUrl("//evil.example.com/a.jpg", "https://teamup-api.runasp.net")).toBeNull();
     expect(resolveMediaUrl("/images/../secret.jpg", "https://teamup-api.runasp.net")).toBeNull();
+  });
+
+  it("handles relative /api bases, trailing slashes, and non-HTTP bases safely in resolveMediaUrl", () => {
+    const sampleCover = "/api/v1/images/c0e70000-0000-4000-8000-000000000001";
+    expect(resolveMediaUrl(sampleCover, "/api")).toBe(sampleCover);
+    expect(resolveMediaUrl(sampleCover, "https://api.example.com///")).toBe(
+      `https://api.example.com${sampleCover}`,
+    );
+    expect(resolveMediaUrl(sampleCover, "javascript:alert(1)")).toBe(sampleCover);
   });
 });
 

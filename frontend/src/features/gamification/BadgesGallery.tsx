@@ -9,6 +9,7 @@ import { badgesApi } from "@/api";
 import { Badge } from "@/components/ui";
 import { formatDateTime } from "@/lib/formatters";
 import { queryKeys } from "@/lib/queryKeys";
+import { resolveMediaUrl } from "@/lib/urlValidation";
 
 export interface BadgesGalleryProps {
   studentId: number;
@@ -102,78 +103,83 @@ export function BadgesGallery({ studentId }: BadgesGalleryProps) {
 
       {/* Badges Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((badge) => (
-          <div
-            key={badge.badgeId}
-            className={`relative flex flex-col justify-between rounded-2xl border p-5 transition-all ${
-              badge.isUnlocked
-                ? "border-[#d3fb52]/40 bg-[#14151c] shadow-[0_0_20px_rgba(211,251,82,0.08)]"
-                : "border-white/[0.06] bg-[#14151c]/60 opacity-80"
-            }`}
-          >
-            <div className="space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div
-                  className={`flex size-11 items-center justify-center rounded-xl ${
-                    badge.isUnlocked
-                      ? "bg-[#d3fb52] text-[#14151c]"
-                      : "bg-white/10 text-white/40"
-                  }`}
-                >
-                  {badge.iconUrl && badge.iconUrl.startsWith("http") ? (
-                    <img
-                      src={badge.iconUrl}
-                      alt={badge.name}
-                      className="size-7 rounded-lg object-contain"
-                    />
-                  ) : badge.isUnlocked ? (
-                    <Award className="size-6" aria-hidden="true" />
+        {filtered.map((badge) => {
+          const resolvedIconUrl = resolveMediaUrl(badge.iconUrl);
+          return (
+            <div
+              key={badge.badgeId}
+              className={`relative flex flex-col justify-between rounded-2xl border p-5 transition-all ${
+                badge.isUnlocked
+                  ? "border-[#d3fb52]/40 bg-[#14151c] shadow-[0_0_20px_rgba(211,251,82,0.08)]"
+                  : "border-white/[0.06] bg-[#14151c]/60 opacity-80"
+              }`}
+            >
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div
+                    className={`flex size-11 items-center justify-center rounded-xl ${
+                      badge.isUnlocked
+                        ? "bg-[#d3fb52] text-[#14151c]"
+                        : "bg-white/10 text-white/40"
+                    }`}
+                  >
+                    {resolvedIconUrl ? (
+                      <img
+                        src={resolvedIconUrl}
+                        alt={badge.name}
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                        className="size-7 rounded-lg object-contain"
+                      />
+                    ) : badge.isUnlocked ? (
+                      <Award className="size-6" aria-hidden="true" />
+                    ) : (
+                      <Lock className="size-5" aria-hidden="true" />
+                    )}
+                  </div>
+                  {badge.isUnlocked ? (
+                    <Badge variant="accent" size="sm" className="gap-1">
+                      <CheckCircle2 className="size-3" aria-hidden="true" />
+                      Unlocked
+                    </Badge>
                   ) : (
-                    <Lock className="size-5" aria-hidden="true" />
+                    <Badge variant="default" size="sm" className="gap-1">
+                      <Lock className="size-3" aria-hidden="true" />
+                      Locked
+                    </Badge>
                   )}
                 </div>
 
-                {badge.isUnlocked ? (
-                  <Badge variant="accent" size="sm" className="gap-1">
-                    <CheckCircle2 className="size-3" aria-hidden="true" />
-                    Unlocked
-                  </Badge>
+                <div>
+                  <h3 className="text-base font-bold text-white">{badge.name}</h3>
+                  <p className="mt-1 text-xs text-[#9ca3af] leading-relaxed">
+                    {badge.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Criteria & Awarded Footer */}
+              <div className="mt-4 border-t border-white/[0.06] pt-3 text-[11px]">
+                {badge.isUnlocked && badge.awardedAt ? (
+                  <div className="flex items-center justify-between text-white/70">
+                    <span>Awarded:</span>
+                    <span className="font-mono text-[#d3fb52]">
+                      {formatDateTime(badge.awardedAt)}
+                    </span>
+                  </div>
                 ) : (
-                  <Badge variant="default" size="sm" className="gap-1">
-                    <Lock className="size-3" aria-hidden="true" />
-                    Locked
-                  </Badge>
+                  <div className="flex items-center justify-between text-[#9ca3af]">
+                    <span>Criterion:</span>
+                    <span className="font-mono font-semibold text-white/90">
+                      {badge.criteriaType}: {badge.criteriaValue}
+                    </span>
+                  </div>
                 )}
               </div>
-
-              <div>
-                <h3 className="text-base font-bold text-white">{badge.name}</h3>
-                <p className="mt-1 text-xs text-[#9ca3af] leading-relaxed">
-                  {badge.description}
-                </p>
-              </div>
             </div>
-
-            {/* Criteria & Awarded Footer */}
-            <div className="mt-4 border-t border-white/[0.06] pt-3 text-[11px]">
-              {badge.isUnlocked && badge.awardedAt ? (
-                <div className="flex items-center justify-between text-white/70">
-                  <span>Awarded:</span>
-                  <span className="font-mono text-[#d3fb52]">
-                    {formatDateTime(badge.awardedAt)}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between text-[#9ca3af]">
-                  <span>Criterion:</span>
-                  <span className="font-mono font-semibold text-white/90">
-                    {badge.criteriaType}: {badge.criteriaValue}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

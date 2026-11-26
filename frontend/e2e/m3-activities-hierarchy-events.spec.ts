@@ -89,7 +89,7 @@ test.describe("M3 Activities, Hierarchy, Recruitment & Events E2E", () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test("authenticates Chair nour@cu.edu.eg for IEEE Helwan Kanban, Ctrl+K CommandPalette, and Arabic RTL mode", async ({
+  test("authenticates Chair nour@cu.edu.eg for IEEE Helwan Kanban, Ctrl+K CommandPalette, and Org Leadership Dashboard", async ({
     page,
   }) => {
     const pageErrors: string[] = [];

@@ -14,7 +14,7 @@ public sealed record AssignTaskRequest(int StudentId);
 
 public sealed record ProjectSkillDto(int SkillId, string Name, string Category, ProficiencyLevel RequiredLevel, bool IsMandatory);
 public sealed record ProjectMemberDto(int StudentId, string FirstName, string LastName, string Role, DateTime JoinedAt);
-public sealed record ProjectListItemDto(int ProjectId, string Title, string Description, ProjectStatus Status, int MaxTeamSize, int TeamSize, int CreatorId, string CreatorName, DateTime CreatedAt);
-public sealed record ProjectDetailDto(int ProjectId, string Title, string Description, ProjectStatus Status, int MaxTeamSize, int TeamSize, int CreatorId, string CreatorName, DateTime CreatedAt, IReadOnlyList<ProjectMemberDto> Members, IReadOnlyList<ProjectSkillDto> RequiredSkills);
+public sealed record ProjectListItemDto(int ProjectId, string Title, string Description, ProjectStatus Status, int MaxTeamSize, int TeamSize, int CreatorId, string CreatorName, DateTime CreatedAt, string? CoverImageUrl = null);
+public sealed record ProjectDetailDto(int ProjectId, string Title, string Description, ProjectStatus Status, int MaxTeamSize, int TeamSize, int CreatorId, string CreatorName, DateTime CreatedAt, IReadOnlyList<ProjectMemberDto> Members, IReadOnlyList<ProjectSkillDto> RequiredSkills, string? CoverImageUrl = null);
 public sealed record ProjectApplicationDto(int ApplicationId, int ProjectId, int StudentId, string StudentName, string? Message, ApplicationStatus Status, DateTime AppliedAt);
 public sealed record ProjectTaskDto(int TaskId, string Title, string? Description, ProjectTaskStatus Status, TaskPriority Priority, DateTime? DueDate, int ProjectId, int? AssignedStudentId, string? AssignedStudentName);

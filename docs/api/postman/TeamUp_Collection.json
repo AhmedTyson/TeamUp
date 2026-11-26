@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "7db0ac8f-6ec8-498d-9bd5-a9aa11ed6fde",
+    "_postman_id": "b46af3c2-75fa-4eb4-bd6e-95b6efc4da52",
     "name": "TeamUp API Collection",
-    "description": "Comprehensive API collection for TeamUp Student Collaboration \u0026 Gamification Platform (.NET 10).",
+    "description": "Comprehensive API collection for TeamUp Student Collaboration \u0026 Gamification Platform (.NET 11).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -16,6 +16,86 @@
     ]
   },
   "item": [
+    {
+      "name": "00. Health \u0026 Images",
+      "item": [
+        {
+          "name": "Health Aggregate",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health"
+            }
+          }
+        },
+        {
+          "name": "Health Liveness",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health/live"
+            }
+          }
+        },
+        {
+          "name": "Health Readiness",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health/ready"
+            }
+          }
+        },
+        {
+          "name": "Upload Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/images"
+            }
+          }
+        },
+        {
+          "name": "Get Default Cover Image",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/images/c0e70000-0000-4000-8000-000000000001"
+            }
+          }
+        }
+      ]
+    },
     {
       "name": "01. Auth \u0026 Identity",
       "item": [
@@ -400,6 +480,36 @@
       "name": "06. Organizations \u0026 Activities",
       "item": [
         {
+          "name": "List Public Organizations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations/public"
+            }
+          }
+        },
+        {
+          "name": "List Public Organization Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/organizations/public/categories"
+            }
+          }
+        },
+        {
           "name": "List Organizations",
           "request": {
             "method": "GET",
@@ -632,6 +742,21 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/notifications"
+            }
+          }
+        },
+        {
+          "name": "Get Unread Notifications Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/unread-count"
             }
           }
         }

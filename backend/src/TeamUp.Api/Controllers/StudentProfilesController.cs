@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TeamUp.Api.Controllers.Common;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
@@ -12,7 +13,7 @@ namespace TeamUp.Api.Controllers;
 /// </summary>
 [Route("api/v1/students")]
 [Authorize]
-public class StudentProfilesController(
+public sealed class StudentProfilesController(
     IStudentProfileService profileService,
     IProfilePhotoStorage photoStorage) : BaseApiController
 {
@@ -33,6 +34,7 @@ public class StudentProfilesController(
     }
 
     [HttpPost("me/profile/photo")]
+    [EnableRateLimiting("upload-policy")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(3 * 1024 * 1024)]
     [RequestFormLimits(MultipartBodyLengthLimit = 3 * 1024 * 1024)]

@@ -16,6 +16,7 @@ import {
   EmptyState,
   ErrorBanner,
   Pagination,
+  type BadgeVariant,
   type DataTableColumn,
 } from "@/components/ui";
 import { formatDateTime } from "@/lib/formatters";
@@ -25,19 +26,21 @@ export interface ScoreLedgerTableProps {
   studentId: number;
 }
 
+const SOURCE_PILL_MAP: Record<ScoreSourceType, { variant: BadgeVariant; label: string }> = {
+  EventAttendance: { variant: "success", label: "Event Attendance" },
+  TaskCompleted: { variant: "accent", label: "Task Completed" },
+  ProjectDelivered: { variant: "default", label: "Project Delivered" },
+  Manual: { variant: "warning", label: "Manual Adjustment" },
+  AttendanceRevocation: { variant: "danger", label: "Attendance Revoked" },
+};
+
 function renderSourcePill(source: ScoreSourceType) {
-  switch (source) {
-    case "EventAttendance":
-      return <Badge variant="success" size="sm">Event Attendance</Badge>;
-    case "TaskCompleted":
-      return <Badge variant="accent" size="sm">Task Completed</Badge>;
-    case "ProjectDelivered":
-      return <Badge variant="default" size="sm">Project Delivered</Badge>;
-    case "Manual":
-      return <Badge variant="warning" size="sm">Manual Adjustment</Badge>;
-    default:
-      return <Badge variant="default" size="sm">{source}</Badge>;
-  }
+  const meta = SOURCE_PILL_MAP[source];
+  return (
+    <Badge variant={meta?.variant ?? "default"} size="sm">
+      {meta?.label ?? source}
+    </Badge>
+  );
 }
 
 export function ScoreLedgerTable({ studentId }: ScoreLedgerTableProps) {

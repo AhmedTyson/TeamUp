@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy-backend:
-    name: Publish & WebDeploy .NET 10 API
+    name: Publish & WebDeploy .NET 11 API
     runs-on: windows-latest
     environment: production
 
@@ -40,11 +40,11 @@ jobs:
         if: steps.secrets-check.outputs.configured == 'true'
         uses: actions/checkout@v4
 
-      - name: Setup .NET 10 SDK
+      - name: Setup .NET 11 SDK
         if: steps.secrets-check.outputs.configured == 'true'
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
 
       - name: Publish Release package
         if: steps.secrets-check.outputs.configured == 'true'
@@ -53,6 +53,10 @@ jobs:
           Remove-Item -Path "${{ github.workspace }}\publish\appsettings.Development.json" -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "${{ github.workspace }}\publish\appsettings.Production.example.json" -Force -ErrorAction SilentlyContinue
           Get-ChildItem -Path "${{ github.workspace }}\publish" -Filter "*.dev.db*" -ErrorAction SilentlyContinue | Remove-Item -Force
+          1..10 | ForEach-Object {
+            $coverFile = Join-Path "${{ github.workspace }}\publish" ("SeedImages\cover-{0:D2}.png" -f $_)
+            if (-not (Test-Path $coverFile)) { throw "Required SeedImages asset missing: $coverFile" }
+          }
           $runtimesDir = "${{ github.workspace }}\publish\runtimes"
           if (Test-Path $runtimesDir) {
             $keepRuntimes = @("win", "win-x64", "win-x86")

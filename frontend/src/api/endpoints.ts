@@ -1,6 +1,6 @@
 /**
- * @date 2026-11-21
- * @purpose Centralized, strongly-typed route definitions matching all 67 paths in TeamUp.Api OpenAPI v1 spec.
+ * @date 2026-11-26
+ * @purpose Centralized, strongly-typed route definitions matching TeamUp.Api OpenAPI v1 spec (.NET 11).
  */
 import type { RestorableEntityType } from "./enums";
 
@@ -63,6 +63,7 @@ export const API_ENDPOINTS = {
     members: (id: number) => `${V1}/projects/${id}/members`,
     member: (id: number, studentId: number) => `${V1}/projects/${id}/members/${studentId}`,
     applications: (id: number) => `${V1}/projects/${id}/applications`,
+    myApplication: (id: number) => `${V1}/projects/${id}/applications/mine`,
     application: (id: number, appId: number) => `${V1}/projects/${id}/applications/${appId}`,
     tasks: (id: number) => `${V1}/projects/${id}/tasks`,
   },
@@ -75,6 +76,7 @@ export const API_ENDPOINTS = {
   organizations: {
     list: `${V1}/organizations`,
     publicList: `${V1}/organizations/public`,
+    publicCategories: `${V1}/organizations/public/categories`,
     publicById: (id: number) => `${V1}/organizations/public/${id}`,
     publicHierarchy: (id: number) => `${V1}/organizations/public/${id}/hierarchy`,
     myApplications: `${V1}/organizations/my-applications`,
@@ -103,6 +105,7 @@ export const API_ENDPOINTS = {
     byId: (id: number) => `${V1}/events/${id}`,
     sessions: (id: number) => `${V1}/events/${id}/sessions`,
     registrations: (id: number) => `${V1}/events/${id}/registrations`,
+    myRegistration: (id: number) => `${V1}/events/${id}/registrations/mine`,
   },
 
   sessions: {
@@ -123,6 +126,7 @@ export const API_ENDPOINTS = {
     notifications: `${V1}/notifications`,
     notificationById: (id: number) => `${V1}/notifications/${id}`,
     markAllNotificationsRead: `${V1}/notifications/mark-all-read`,
+    notificationsUnreadCount: `${V1}/notifications/unread-count`,
   },
 
   admin: {

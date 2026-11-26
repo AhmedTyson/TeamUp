@@ -3,7 +3,7 @@ using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Auth.Validators;
 
-public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
+public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
     public RegisterRequestValidator()
     {
@@ -44,7 +44,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
     }
 }
 
-public class LoginRequestValidator : AbstractValidator<LoginRequest>
+public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
     {
@@ -58,7 +58,7 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
     }
 }
 
-public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
+public sealed class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
 {
     public RefreshTokenRequestValidator()
     {
@@ -67,7 +67,7 @@ public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenReques
     }
 }
 
-public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
+public sealed class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
 {
     public ForgotPasswordRequestValidator()
     {
@@ -77,7 +77,7 @@ public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRe
     }
 }
 
-public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
+public sealed class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
 {
     public ResetPasswordRequestValidator()
     {

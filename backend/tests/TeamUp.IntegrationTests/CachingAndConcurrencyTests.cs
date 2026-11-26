@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TeamUp.Application.Common.Models;
+using TeamUp.Application.Organizations;
+using TeamUp.Application.Skills;
 using TeamUp.Application.Universities;
 using TeamUp.Domain.Entities;
 using TeamUp.Infrastructure.Persistence;
@@ -71,6 +73,60 @@ public class CachingAndConcurrencyTests(TeamUpApiFactory factory) : IClassFixtur
     }
 
     [Fact]
+    public async Task OrganizationCategories_AreOutputCachedAndEvictedOnMutation()
+    {
+        var admin = CreateClientWithRole(998, "PlatformAdmin");
+
+        var initialRes = await _client.GetAsync("/api/v1/organizations/public/categories");
+        Assert.Equal(HttpStatusCode.OK, initialRes.StatusCode);
+        var initialCategories = await GetDataAsync<List<string>>(initialRes);
+        Assert.NotNull(initialCategories);
+
+        var secondRes = await _client.GetAsync("/api/v1/organizations/public/categories");
+        Assert.Equal(HttpStatusCode.OK, secondRes.StatusCode);
+
+        var newCategory = $"Cat_{Guid.NewGuid():N}"[..12];
+        var createOrgRes = await admin.PostAsJsonAsync(
+            "/api/v1/organizations",
+            new CreateOrganizationRequest(
+                $"CacheOrg_{Guid.NewGuid():N}"[..16],
+                "Testing output cache eviction for organization categories.",
+                newCategory,
+                null));
+        Assert.Equal(HttpStatusCode.Created, createOrgRes.StatusCode);
+
+        var refreshedRes = await _client.GetAsync("/api/v1/organizations/public/categories");
+        Assert.Equal(HttpStatusCode.OK, refreshedRes.StatusCode);
+        var refreshedCategories = await GetDataAsync<List<string>>(refreshedRes);
+        Assert.Contains(newCategory, refreshedCategories);
+    }
+
+    [Fact]
+    public async Task SkillsCatalog_IsOutputCachedAndEvictedOnMutation()
+    {
+        var admin = CreateClientWithRole(998, "PlatformAdmin");
+
+        var initialRes = await admin.GetAsync("/api/v1/skills");
+        Assert.Equal(HttpStatusCode.OK, initialRes.StatusCode);
+        var initialSkills = await GetDataAsync<List<SkillDto>>(initialRes);
+        Assert.NotNull(initialSkills);
+
+        var secondRes = await admin.GetAsync("/api/v1/skills");
+        Assert.Equal(HttpStatusCode.OK, secondRes.StatusCode);
+
+        var newSkillName = $"Skill_{Guid.NewGuid():N}"[..16];
+        var createSkillRes = await admin.PostAsJsonAsync(
+            "/api/v1/skills",
+            new CreateSkillRequest(newSkillName, "Technical", "OutputCache eviction test skill"));
+        Assert.Equal(HttpStatusCode.Created, createSkillRes.StatusCode);
+
+        var refreshedRes = await admin.GetAsync("/api/v1/skills");
+        Assert.Equal(HttpStatusCode.OK, refreshedRes.StatusCode);
+        var refreshedSkills = await GetDataAsync<List<SkillDto>>(refreshedRes);
+        Assert.Contains(refreshedSkills, s => s.Name == newSkillName);
+    }
+
+    [Fact]
     public async Task ProjectAndEvent_RowVersion_UpdatesOnModification()
     {
         int projectId;
@@ -117,5 +173,36 @@ public class CachingAndConcurrencyTests(TeamUpApiFactory factory) : IClassFixtur
             Assert.NotEmpty(project.RowVersion);
             Assert.NotEqual(initialRowVersion, project.RowVersion); // RowVersion changed on update
         }
+    }
+
+    [Fact]
+    public async Task AdminRestore_WithPluralEntityType_EvictsSkillsOutputCache()
+    {
+        var admin = CreateClientWithRole(998, "PlatformAdmin");
+        var skillName = $"PluralRestore_{Guid.NewGuid():N}"[..20];
+
+        var createRes = await admin.PostAsJsonAsync(
+            "/api/v1/skills",
+            new CreateSkillRequest(skillName, "Technical", "Plural restore cache eviction check"));
+        Assert.Equal(HttpStatusCode.Created, createRes.StatusCode);
+        var created = await GetDataAsync<SkillDto>(createRes);
+
+        var deleteRes = await admin.DeleteAsync($"/api/v1/skills/{created.SkillId}");
+        Assert.Equal(HttpStatusCode.NoContent, deleteRes.StatusCode);
+
+        // Warm OutputCache while the skill is soft-deleted.
+        var cachedBeforeRestore = await admin.GetAsync("/api/v1/skills");
+        Assert.Equal(HttpStatusCode.OK, cachedBeforeRestore.StatusCode);
+        var skillsBeforeRestore = await GetDataAsync<List<SkillDto>>(cachedBeforeRestore);
+        Assert.DoesNotContain(skillsBeforeRestore, s => s.SkillId == created.SkillId);
+
+        // Restore using plural entityType route.
+        var restoreRes = await admin.PostAsync($"/api/v1/admin/restore/skills/{created.SkillId}", null);
+        Assert.Equal(HttpStatusCode.OK, restoreRes.StatusCode);
+
+        var afterRestoreRes = await admin.GetAsync("/api/v1/skills");
+        Assert.Equal(HttpStatusCode.OK, afterRestoreRes.StatusCode);
+        var skillsAfterRestore = await GetDataAsync<List<SkillDto>>(afterRestoreRes);
+        Assert.Contains(skillsAfterRestore, s => s.SkillId == created.SkillId);
     }
 }

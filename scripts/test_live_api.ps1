@@ -1,7 +1,7 @@
 ﻿$ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$baseUrl = "http://localhost:5199"
+$baseUrl = if (-not [string]::IsNullOrWhiteSpace($env:TEAMUP_API_BASE_URL)) { $env:TEAMUP_API_BASE_URL.TrimEnd('/') } else { "http://localhost:5199" }
 $reportPath = Join-Path $repoRoot "docs\api\AUTH-PROFILE-TEST-REPORT.md"
 $logLines = [System.Collections.Generic.List[string]]::new()
 
@@ -148,7 +148,7 @@ Write-Host "Server is HEALTHY. Starting test execution..." -ForegroundColor Gree
 Add-ReportLine "# TeamUp — Live API Endpoint Validation & Response Evidence Report"
 Add-ReportLine ""
 Add-ReportLine "> **Execution Timestamp:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')"  
-Add-ReportLine "> **Target Environment:** ASP.NET Core 10 Web API (`http://localhost:5199`)"  
+Add-ReportLine "> **Target Environment:** ASP.NET Core 11 Web API (``$baseUrl``)"  
 Add-ReportLine "> **Database Engine:** Microsoft SQL Server 2022 (Docker container `teamup-sql:14333`)"  
 Add-ReportLine "> **Architecture Standards:** RFC 7807 ProblemDetails, JWT Bearer Token, Single-Column Soft Delete (`DeletedAt`), `BaseResponse<T>` Envelope"  
 Add-ReportLine "> **Payload Ordering Rule:** Personal identity properties first (`firstName`, `lastName`, `email`, `password`), followed by academic and institutional affiliations."  
@@ -158,7 +158,7 @@ Add-ReportLine ""
 
 # Test execution variables
 $testEmail = "live_student_$(Get-Random)@teamup.edu"
-$password = "StrongP@ssw0rd2026!"
+$password = if (-not [string]::IsNullOrWhiteSpace($env:TEAMUP_TEST_PASSWORD)) { $env:TEAMUP_TEST_PASSWORD } else { "StrongP@ssw0rd2026!" }
 $jwtToken = ""
 $refreshToken = ""
 $studentId = 0
@@ -328,7 +328,11 @@ Send-HttpReq -Name "23. Verify Both Interest Tags Active" -Method "GET" -Path "/
 
 # ----------------- Module 2: Universities & Faculties Tests -----------------
 # Get Admin Token
-$adminPass = ([regex]::Match(((dotnet user-secrets list --project backend/src/TeamUp.Api | Select-String "Seed:AdminPassword").ToString()),'Seed:AdminPassword = (.*)')).Groups[1].Value.Trim()
+$adminPass = if (-not [string]::IsNullOrWhiteSpace($env:TEAMUP_ADMIN_PASSWORD)) {
+    $env:TEAMUP_ADMIN_PASSWORD.Trim()
+} else {
+    ([regex]::Match(((dotnet user-secrets list --project backend/src/TeamUp.Api | Select-String "Seed:AdminPassword").ToString()), 'Seed:AdminPassword = (.*)')).Groups[1].Value.Trim()
+}
 $adminLoginRes = Send-HttpReq -Name "24. PlatformAdmin Authentication" -Method "POST" -Path "/api/v1/auth/login" `
     -Body ([ordered]@{
         email = "admin@teamup.local"

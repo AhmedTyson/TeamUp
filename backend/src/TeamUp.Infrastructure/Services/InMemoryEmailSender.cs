@@ -20,10 +20,18 @@ public sealed record RecordedEmailDispatch(
     IReadOnlyList<RecordedEmailAttachment> Attachments,
     DateTime SentAtUtc);
 
-public class InMemoryEmailSender(ILogger<InMemoryEmailSender> logger) : IEmailSender
+public sealed partial class InMemoryEmailSender(ILogger<InMemoryEmailSender> logger, TimeProvider? timeProvider = null) : IEmailSender
 {
     private const int MaxRecordedMessages = 100;
     private static readonly TimeSpan TokenRetentionWindow = TimeSpan.FromMinutes(15);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Dispatched password reset message via development sink to {Email}")]
+    private static partial void LogPasswordResetDispatched(ILogger logger, string email);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Recorded templated email '{Subject}' with {AttachmentCount} attachment(s) via development sink to {Email}")]
+    private static partial void LogTemplatedEmailRecorded(ILogger logger, string subject, int attachmentCount, string email);
+
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
     private readonly ConcurrentDictionary<string, (string Token, DateTime ExpiresAtUtc)> _lastResetTokens =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<RecordedEmailDispatch> _sentMessages = new();
@@ -31,8 +39,8 @@ public class InMemoryEmailSender(ILogger<InMemoryEmailSender> logger) : IEmailSe
     public Task SendPasswordResetEmailAsync(string toEmail, string resetToken, CancellationToken ct = default)
     {
         PurgeExpired();
-        _lastResetTokens[toEmail] = (resetToken, DateTime.UtcNow.Add(TokenRetentionWindow));
-        logger.LogInformation("Dispatched password reset message via development sink to {Email}", toEmail);
+        _lastResetTokens[toEmail] = (resetToken, _time.GetUtcNow().UtcDateTime.Add(TokenRetentionWindow));
+        LogPasswordResetDispatched(logger, toEmail);
         return Task.CompletedTask;
     }
 
@@ -48,16 +56,12 @@ public class InMemoryEmailSender(ILogger<InMemoryEmailSender> logger) : IEmailSe
             request.HtmlBody,
             request.PlainTextBody,
             attachments,
-            DateTime.UtcNow));
+            _time.GetUtcNow().UtcDateTime));
 
         while (_sentMessages.Count > MaxRecordedMessages)
             _sentMessages.TryDequeue(out _);
 
-        logger.LogInformation(
-            "Recorded templated email '{Subject}' with {AttachmentCount} attachment(s) via development sink to {Email}",
-            request.Subject,
-            attachments.Length,
-            request.ToEmail);
+        LogTemplatedEmailRecorded(logger, request.Subject, attachments.Length, request.ToEmail);
 
         return Task.CompletedTask;
     }
@@ -77,7 +81,7 @@ public class InMemoryEmailSender(ILogger<InMemoryEmailSender> logger) : IEmailSe
     public string? GetLastResetToken(string email)
     {
         PurgeExpired();
-        if (_lastResetTokens.TryGetValue(email, out var entry) && entry.ExpiresAtUtc > DateTime.UtcNow)
+        if (_lastResetTokens.TryGetValue(email, out var entry) && entry.ExpiresAtUtc > _time.GetUtcNow().UtcDateTime)
             return entry.Token;
 
         _lastResetTokens.TryRemove(email, out _);
@@ -94,7 +98,7 @@ public class InMemoryEmailSender(ILogger<InMemoryEmailSender> logger) : IEmailSe
 
     private void PurgeExpired()
     {
-        var now = DateTime.UtcNow;
+        var now = _time.GetUtcNow().UtcDateTime;
         foreach (var kvp in _lastResetTokens)
         {
             if (kvp.Value.ExpiresAtUtc <= now)

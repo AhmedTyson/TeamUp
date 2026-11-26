@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace TeamUp.Application.Admin.Validators;
 
-public class UpdateUserRoleRequestValidator : AbstractValidator<UpdateUserRoleRequest>
+public sealed class UpdateUserRoleRequestValidator : AbstractValidator<UpdateUserRoleRequest>
 {
     public UpdateUserRoleRequestValidator()
     {
@@ -11,7 +11,7 @@ public class UpdateUserRoleRequestValidator : AbstractValidator<UpdateUserRoleRe
     }
 }
 
-public class SendAdminReportRequestValidator : AbstractValidator<SendAdminReportRequest>
+public sealed class SendAdminReportRequestValidator : AbstractValidator<SendAdminReportRequest>
 {
     public SendAdminReportRequestValidator()
     {
@@ -24,7 +24,7 @@ public class SendAdminReportRequestValidator : AbstractValidator<SendAdminReport
     }
 }
 
-public class AdminLeaderboardDigestCommandValidator : AbstractValidator<AdminLeaderboardDigestCommand>
+public sealed class AdminLeaderboardDigestCommandValidator : AbstractValidator<AdminLeaderboardDigestCommand>
 {
     public AdminLeaderboardDigestCommandValidator()
     {
@@ -46,7 +46,7 @@ public class AdminLeaderboardDigestCommandValidator : AbstractValidator<AdminLea
     }
 }
 
-public class AdminProjectMatchDigestCommandValidator : AbstractValidator<AdminProjectMatchDigestCommand>
+public sealed class AdminProjectMatchDigestCommandValidator : AbstractValidator<AdminProjectMatchDigestCommand>
 {
     public AdminProjectMatchDigestCommandValidator()
     {

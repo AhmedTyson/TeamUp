@@ -69,6 +69,7 @@ const NAV_OPTIONS: readonly NavOptionGroup[] = [
     imageAlt: "University students collaborating around laptops in a sunlit campus lab",
     imagePosition: "object-center",
     subOptions: [
+      { label: "Discover Feed", to: "/explore" },
       { label: "Explore Projects", to: "/projects" },
       { label: "Create a Project", to: "/projects/new" },
       { label: "Publish Required Skills", to: "/skills" },
@@ -163,6 +164,7 @@ const MOBILE_NAV_MODULES: readonly MobileNavModuleGroup[] = [
     label: "Team Formation",
     highlightTag: "Cross-Faculty Squads",
     items: [
+      { label: "Discover Feed", to: "/explore" },
       { label: "Explore Projects", to: "/projects" },
       { label: "Create a Project", to: "/projects/new" },
       { label: "Skills Catalog", to: "/skills" },

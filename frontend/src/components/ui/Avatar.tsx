@@ -1,6 +1,6 @@
 /**
  * @date 2026-11-22
- * @purpose Safe Avatar primitive validating public relative asset paths and external HTTP URLs via isSafeAssetOrHttpUrl with Handshake monogram fallback.
+ * @purpose Safe Avatar primitive resolving relative asset paths, stored image URLs (/api/v1/images/{id}), and public HTTP URLs via resolveMediaUrl with monogram fallback.
  */
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
@@ -61,6 +61,8 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
         <img
           src={resolvedSrc}
           alt={name}
+          loading="lazy"
+          decoding="async"
           onError={() => setFailed(true)}
           className="size-full object-cover"
           referrerPolicy="no-referrer"

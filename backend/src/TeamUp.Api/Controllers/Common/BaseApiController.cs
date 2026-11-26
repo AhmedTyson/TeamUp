@@ -5,13 +5,13 @@ using TeamUp.Application.Common.Security;
 namespace TeamUp.Api.Controllers.Common;
 
 [ApiController]
-[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status401Unauthorized)]
 [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status400BadRequest)]
 [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status500InternalServerError)]
 public abstract class BaseApiController : ControllerBase
 {
-    protected int CurrentStudentId => User.GetStudentId();
-    protected string? CurrentUserRole => User.GetUserRole();
+    protected int CurrentStudentId => User.StudentId;
+    protected string? CurrentUserRole => User.UserRole;
 
     protected IActionResult OkResponse<T>(T data, string message = "Success") =>
         Ok(BaseResponse<T>.Ok(data, message, StatusCodes.Status200OK));

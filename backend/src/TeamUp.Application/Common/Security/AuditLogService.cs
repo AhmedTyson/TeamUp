@@ -35,9 +35,11 @@ public interface IAuditLogService
         CancellationToken ct = default);
 }
 
-public sealed class AuditLogService(IAppDbContext db, IRequestContext requestContext) : IAuditLogService
+public sealed class AuditLogService(IAppDbContext db, IRequestContext requestContext, TimeProvider? timeProvider = null)
+    : IAuditLogService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
 
     public async Task RecordAsync(
         string action,
@@ -59,7 +61,7 @@ public sealed class AuditLogService(IAppDbContext db, IRequestContext requestCon
             OldValues = oldValues is null ? null : JsonSerializer.Serialize(oldValues, JsonOptions),
             NewValues = newValues is null ? null : JsonSerializer.Serialize(newValues, JsonOptions),
             ClientIp = requestContext.ClientIp,
-            OccurredAt = DateTime.UtcNow
+            OccurredAt = _time.GetUtcNow().UtcDateTime
         };
 
         db.AuditLogs.Add(entry);

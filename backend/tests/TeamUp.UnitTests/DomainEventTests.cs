@@ -23,7 +23,7 @@ public class TestStudentRegisteredHandler : IDomainEventHandler<StudentRegistere
     }
 }
 
-public class DomainEventTests : IDisposable
+public sealed class DomainEventTests : IDisposable
 {
     private readonly SqliteConnection _conn = new("DataSource=:memory:");
 
@@ -76,5 +76,18 @@ public class DomainEventTests : IDisposable
         Assert.Empty(uni.DomainEvents);
         Assert.Single(TestStudentRegisteredHandler.HandledEvents);
         Assert.Equal(42, TestStudentRegisteredHandler.HandledEvents.First().StudentId);
+    }
+
+    [Fact]
+    public async Task ActivityDomainEvent_OccurredOn_IsCapturedOnceAtInstantiation()
+    {
+        var evt = new TeamUp.Domain.Events.TaskCompletedDomainEvent(1, 2, 3, "Build API");
+        var firstRead = evt.OccurredOn;
+        await Task.Delay(25);
+        var secondRead = evt.OccurredOn;
+
+        Assert.Equal(firstRead, secondRead);
+        Assert.True(OrganizationRoles.IsAdminRole("chair"));
+        Assert.True(OrganizationRoles.IsCommitteeLeaderRole("Head of Media"));
     }
 }

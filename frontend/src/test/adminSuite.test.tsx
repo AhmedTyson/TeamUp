@@ -602,6 +602,7 @@ describe("M1 Phase 2 — PlatformAdmin Governance Suite", () => {
       totalPages: 1,
     });
     vi.spyOn(organizationsApi, "myCreationRequests").mockResolvedValue([]);
+    vi.spyOn(organizationsApi, "categories").mockResolvedValue(["Technology", "Community"]);
     vi.spyOn(universitiesApi, "getCatalog").mockResolvedValue([
       {
         universityId: 13,
@@ -656,6 +657,10 @@ describe("M1 Phase 2 — PlatformAdmin Governance Suite", () => {
     });
     fireEvent.change(screen.getByLabelText(/Mission & chapters overview/i), {
       target: { value: "Financial systems & BI workshops at Helwan BIS." },
+    });
+    // Category is now a free-text input with suggestions (flexibility round 4), not a pre-filled select.
+    fireEvent.change(screen.getByLabelText(/^Category\s*\*?$/i), {
+      target: { value: "Technology" },
     });
     fireEvent.click(screen.getByRole("button", { name: /Submit request/i }));
 

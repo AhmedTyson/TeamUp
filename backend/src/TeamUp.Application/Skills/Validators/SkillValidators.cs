@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace TeamUp.Application.Skills.Validators;
 
-public class CreateSkillRequestValidator : AbstractValidator<CreateSkillRequest>
+public sealed class CreateSkillRequestValidator : AbstractValidator<CreateSkillRequest>
 {
     public CreateSkillRequestValidator()
     {
@@ -20,7 +20,7 @@ public class CreateSkillRequestValidator : AbstractValidator<CreateSkillRequest>
     }
 }
 
-public class UpdateSkillRequestValidator : AbstractValidator<UpdateSkillRequest>
+public sealed class UpdateSkillRequestValidator : AbstractValidator<UpdateSkillRequest>
 {
     public UpdateSkillRequestValidator()
     {
@@ -38,7 +38,7 @@ public class UpdateSkillRequestValidator : AbstractValidator<UpdateSkillRequest>
     }
 }
 
-public class ClaimSkillRequestValidator : AbstractValidator<ClaimSkillRequest>
+public sealed class ClaimSkillRequestValidator : AbstractValidator<ClaimSkillRequest>
 {
     public ClaimSkillRequestValidator()
     {

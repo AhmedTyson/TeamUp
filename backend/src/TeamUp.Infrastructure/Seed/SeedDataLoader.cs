@@ -1,23 +1,23 @@
 // Date: 2026-11-25
 // Purpose: Loads and validates the embedded Egyptian campus ecosystem JSON dataset with strict integrity and SSRF guards.
 
-using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using TeamUp.Domain.Enums;
 using TeamUp.Infrastructure.Seed.Models;
 
 namespace TeamUp.Infrastructure.Seed;
 
+[JsonSourceGenerationOptions(
+    PropertyNameCaseInsensitive = true,
+    ReadCommentHandling = JsonCommentHandling.Skip,
+    AllowTrailingCommas = true)]
+[JsonSerializable(typeof(EgyptCampusSeedData))]
+internal sealed partial class SeedJsonSerializerContext : JsonSerializerContext;
+
 internal static class SeedDataLoader
 {
     private const string ResourceName = "TeamUp.Infrastructure.Seed.Data.egypt-campus-seed.json";
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        AllowTrailingCommas = true,
-    };
 
     private static readonly Lazy<EgyptCampusSeedData> CachedData = new(LoadAndValidateInternal);
 
@@ -29,7 +29,7 @@ internal static class SeedDataLoader
         using var stream = assembly.GetManifestResourceStream(ResourceName)
             ?? throw new InvalidOperationException($"Embedded seed resource '{ResourceName}' was not found.");
 
-        var data = JsonSerializer.Deserialize<EgyptCampusSeedData>(stream, JsonOptions)
+        var data = JsonSerializer.Deserialize(stream, SeedJsonSerializerContext.Default.EgyptCampusSeedData)
             ?? throw new InvalidOperationException($"Embedded seed resource '{ResourceName}' deserialized to null.");
 
         Validate(data);
@@ -41,7 +41,7 @@ internal static class SeedDataLoader
         if (string.IsNullOrWhiteSpace(data.Version))
             throw new InvalidOperationException("Seed dataset version is required.");
 
-        var uniNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> uniNames = [with(StringComparer.OrdinalIgnoreCase)];
         foreach (var uni in data.Universities)
         {
             RequireLength(uni.Name, 150, $"University.Name:{uni.Name}");
@@ -53,7 +53,7 @@ internal static class SeedDataLoader
             if (!uniNames.Add(uni.Name))
                 throw new InvalidOperationException($"Duplicate seeded university name '{uni.Name}'.");
 
-            var facCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> facCodes = [with(StringComparer.OrdinalIgnoreCase)];
             foreach (var fac in uni.Faculties)
             {
                 RequireLength(fac.Name, 150, $"Faculty.Name:{fac.Code}");

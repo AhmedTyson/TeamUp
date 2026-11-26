@@ -2,14 +2,18 @@
 // Purpose: Event, session, waitlist-locking registration, student cross-device registration summary, public preview, CSV attendance export, and email dispatch events (STRIDE THR-T-01, THR-T-02, THR-R-02, THR-D-02).
 
 using System.Data;
+using System.Linq.Expressions;
 using System.Net;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Exceptions;
+using TeamUp.Application.Common.Images;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Events;
+using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
 using TeamUp.Domain.Events;
@@ -21,8 +25,13 @@ public sealed class EventService(
     IOrganizationAuthorizationService orgAuth,
     IAttendanceCodeService attendanceCodes,
     ITemplateRenderer templateRenderer,
-    Microsoft.Extensions.Options.IOptions<AttendanceOptions> attendanceOptions) : IEventService
+    IOptions<AttendanceOptions> attendanceOptions,
+    TimeProvider? timeProvider = null) : IEventService
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
+    #region Event Discovery & CRUD
+
     public Task<PagedResult<EventDto>> GetEventsAsync(
         string? search,
         int? organizationId,
@@ -81,6 +90,7 @@ public sealed class EventService(
             .Include(x => x.Organization)
             .Include(x => x.Unit)
             .Include(x => x.Sessions)
+            .AsSplitQuery()
             .ToListAsync(ct);
 
         var ids = events.Select(x => x.EventId).ToArray();
@@ -227,16 +237,21 @@ public sealed class EventService(
     {
         await orgAuth.EnsureCanManageEventAsync(id, actorStudentId, actorRole, ct);
 
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var entity = await db.Events.Include(x => x.Sessions)
-            .FirstOrDefaultAsync(x => x.EventId == id, ct)
-            ?? throw new NotFoundException($"Event with ID {id} was not found.");
-        foreach (var session in entity.Sessions)
-            db.EventSessions.Remove(session);
-        db.Events.Remove(entity);
-        await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
+        await db.ExecuteInTransactionAsync(IsolationLevel.ReadCommitted, async token =>
+        {
+            var entity = await db.Events.Include(x => x.Sessions)
+                .FirstOrDefaultAsync(x => x.EventId == id, token)
+                ?? throw new NotFoundException($"Event with ID {id} was not found.");
+            foreach (var session in entity.Sessions)
+                db.EventSessions.Remove(session);
+            db.Events.Remove(entity);
+            await db.SaveChangesAsync(token);
+        }, ct);
     }
+
+    #endregion
+
+    #region Event Sessions
 
     public async Task<IReadOnlyList<EventSessionDto>> GetSessionsAsync(int eventId, CancellationToken ct = default)
     {
@@ -304,29 +319,77 @@ public sealed class EventService(
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task<IReadOnlyList<MyEventRegistrationDto>> GetMyRegistrationsAsync(
-        int studentId, CancellationToken ct = default)
+    #endregion
+
+    #region Registrations & Waitlist
+
+    public async Task<PagedResult<MyEventRegistrationDto>> GetMyRegistrationsAsync(
+        int studentId, PageRequest page, CancellationToken ct = default)
     {
-        var regs = await db.EventRegistrations.AsNoTracking()
-            .Where(r => r.StudentId == studentId && r.Status != RegistrationStatus.Cancelled)
+        var query = db.EventRegistrations.AsNoTracking()
+            .Where(r => r.StudentId == studentId && r.Status != RegistrationStatus.Cancelled);
+
+        var total = await query.CountAsync(ct);
+        var regs = await query
             .OrderByDescending(r => r.RegisteredAt)
-            .Select(r => new
-            {
-                r.EventId,
-                r.Event.Title,
-                r.Event.OrganizationId,
-                OrganizationName = r.Event.Organization.Name,
-                r.Event.Type,
-                r.Event.DeliveryMode,
-                r.Event.Location,
-                r.Event.StartDate,
-                r.Event.EndDate,
-                r.Status,
-                r.RegisteredAt,
-                TotalSessions = r.Event.Sessions.Count()
-            })
+            .Skip(page.Skip).Take(page.SafePageSize)
+            .Select(MyRegistrationProjection)
             .ToListAsync(ct);
 
+        var items = await AttachAttendanceCountsAsync(studentId, regs, ct);
+        return new PagedResult<MyEventRegistrationDto>(items, page.SafePage, page.SafePageSize, total);
+    }
+
+    // Single-event lookup for the event detail page. Paging the inbox list above must not break
+    // "am I registered for THIS event": a user whose registration fell off page 1 would otherwise
+    // see a false "not registered" state and could try to register again.
+    public async Task<MyEventRegistrationDto?> GetMyRegistrationForEventAsync(
+        int eventId, int studentId, CancellationToken ct = default)
+    {
+        var reg = await db.EventRegistrations.AsNoTracking()
+            .Where(r => r.StudentId == studentId && r.EventId == eventId && r.Status != RegistrationStatus.Cancelled)
+            .Select(MyRegistrationProjection)
+            .FirstOrDefaultAsync(ct);
+
+        if (reg is null)
+            return null;
+
+        var items = await AttachAttendanceCountsAsync(studentId, [reg], ct);
+        return items[0];
+    }
+
+    private static readonly Expression<Func<EventRegistration, MyRegistrationRow>> MyRegistrationProjection =
+        r => new MyRegistrationRow(
+            r.EventId,
+            r.Event.Title,
+            r.Event.OrganizationId,
+            r.Event.Organization.Name,
+            r.Event.Type,
+            r.Event.DeliveryMode,
+            r.Event.Location,
+            r.Event.StartDate,
+            r.Event.EndDate,
+            r.Status,
+            r.RegisteredAt,
+            r.Event.Sessions.Count());
+
+    private sealed record MyRegistrationRow(
+        int EventId,
+        string Title,
+        int OrganizationId,
+        string OrganizationName,
+        EventType Type,
+        EventDeliveryMode DeliveryMode,
+        string Location,
+        DateTime StartDate,
+        DateTime EndDate,
+        RegistrationStatus Status,
+        DateTime RegisteredAt,
+        int TotalSessions);
+
+    private async Task<List<MyEventRegistrationDto>> AttachAttendanceCountsAsync(
+        int studentId, IReadOnlyCollection<MyRegistrationRow> regs, CancellationToken ct)
+    {
         if (regs.Count == 0)
             return [];
 
@@ -368,45 +431,50 @@ public sealed class EventService(
 
     public async Task<EventRegistrationDto> RegisterAsync(int eventId, int studentId, CancellationToken ct = default)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
-        var eventEntity = await LoadEventWithRowLockAsync(eventId, ct)
-            ?? throw new NotFoundException($"Event with ID {eventId} was not found.");
-        var student = await db.Students.FirstOrDefaultAsync(x => x.StudentId == studentId, ct)
-            ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
-        var existing = await db.EventRegistrations.IgnoreQueryFilters().FirstOrDefaultAsync(
-            x => x.EventId == eventId && x.StudentId == studentId, ct);
-        if (existing is not null && existing.DeletedAt is null && existing.Status != RegistrationStatus.Cancelled)
-            throw new ConflictException("You already have an active registration for this event.");
-
-        var confirmedCount = await db.EventRegistrations.CountAsync(
-            x => x.EventId == eventId && x.Status == RegistrationStatus.Confirmed, ct);
-        var status = confirmedCount < eventEntity.Capacity
-            ? RegistrationStatus.Confirmed
-            : RegistrationStatus.Waitlisted;
-
-        if (existing is null)
+        return await db.ExecuteInTransactionAsync(IsolationLevel.Serializable, async token =>
         {
-            existing = new EventRegistration
+            var eventEntity = await LoadEventWithRowLockAsync(eventId, token)
+                ?? throw new NotFoundException($"Event with ID {eventId} was not found.");
+            // Business rule: registration closes when the event is over. Before this check a student
+            // could claim a confirmed seat (and later attendance XP) in an event that already ended.
+            if (eventEntity.EndDate <= _time.GetUtcNow().UtcDateTime)
+                throw new ConflictException("Registration is closed because this event has already ended.");
+            var student = await db.Students.FirstOrDefaultAsync(x => x.StudentId == studentId, token)
+                ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
+            var existing = await db.EventRegistrations.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).FirstOrDefaultAsync(
+                x => x.EventId == eventId && x.StudentId == studentId, token);
+            if (existing is not null && existing.DeletedAt is null && existing.Status != RegistrationStatus.Cancelled)
+                throw new ConflictException("You already have an active registration for this event.");
+
+            var confirmedCount = await db.EventRegistrations.CountAsync(
+                x => x.EventId == eventId && x.Status == RegistrationStatus.Confirmed, token);
+            var status = confirmedCount < eventEntity.Capacity
+                ? RegistrationStatus.Confirmed
+                : RegistrationStatus.Waitlisted;
+
+            if (existing is null)
             {
-                EventId = eventId,
-                StudentId = studentId,
-                RegisteredAt = DateTime.UtcNow,
-                Status = status
-            };
-            db.EventRegistrations.Add(existing);
-        }
-        else
-        {
-            existing.DeletedAt = null;
-            existing.RegisteredAt = DateTime.UtcNow;
-            existing.Status = status;
-        }
+                existing = new EventRegistration
+                {
+                    EventId = eventId,
+                    StudentId = studentId,
+                    RegisteredAt = _time.GetUtcNow().UtcDateTime,
+                    Status = status
+                };
+                db.EventRegistrations.Add(existing);
+            }
+            else
+            {
+                existing.DeletedAt = null;
+                existing.RegisteredAt = _time.GetUtcNow().UtcDateTime;
+                existing.Status = status;
+            }
 
-        existing.AddDomainEvent(new EventRegisteredDomainEvent(eventId, studentId, eventEntity.Title, status));
-        await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
-        return new EventRegistrationDto(eventId, studentId, student.FirstName, student.LastName,
-            student.Email, existing.RegisteredAt, existing.Status);
+            existing.AddDomainEvent(new EventRegisteredDomainEvent(eventId, studentId, eventEntity.Title, status));
+            await db.SaveChangesAsync(token);
+            return new EventRegistrationDto(eventId, studentId, student.FirstName, student.LastName,
+                student.Email, existing.RegisteredAt, existing.Status);
+        }, ct);
     }
 
     public async Task CancelRegistrationAsync(
@@ -416,34 +484,39 @@ public sealed class EventService(
             await orgAuth.EnsureCanManageEventAsync(eventId, actorStudentId, actorRole, ct);
 
         // STRIDE THR-D-02: Serializable transaction + explicit SQL Server UPDLOCK/ROWLOCK preventing waitlist race conditions
-        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
-        var eventEntity = await LoadEventWithRowLockAsync(eventId, ct)
-            ?? throw new NotFoundException($"Event with ID {eventId} was not found.");
-
-        var registration = await db.EventRegistrations.FirstOrDefaultAsync(
-            x => x.EventId == eventId && x.StudentId == targetStudentId, ct)
-            ?? throw new NotFoundException("Event registration was not found.");
-        if (registration.Status == RegistrationStatus.Cancelled)
-            throw new ConflictException("This event registration has already been cancelled.");
-
-        var wasConfirmed = registration.Status == RegistrationStatus.Confirmed;
-        registration.Status = RegistrationStatus.Cancelled;
-        registration.DeletedAt = DateTime.UtcNow;
-        if (wasConfirmed)
+        await db.ExecuteInTransactionAsync(IsolationLevel.Serializable, async token =>
         {
-            var next = await db.EventRegistrations
-                .Where(x => x.EventId == eventId && x.Status == RegistrationStatus.Waitlisted)
-                .OrderBy(x => x.RegisteredAt)
-                .FirstOrDefaultAsync(ct);
-            if (next is not null)
+            var eventEntity = await LoadEventWithRowLockAsync(eventId, token)
+                ?? throw new NotFoundException($"Event with ID {eventId} was not found.");
+
+            var registration = await db.EventRegistrations.FirstOrDefaultAsync(
+                x => x.EventId == eventId && x.StudentId == targetStudentId, token)
+                ?? throw new NotFoundException("Event registration was not found.");
+            if (registration.Status == RegistrationStatus.Cancelled)
+                throw new ConflictException("This event registration has already been cancelled.");
+
+            var wasConfirmed = registration.Status == RegistrationStatus.Confirmed;
+            registration.Status = RegistrationStatus.Cancelled;
+            registration.DeletedAt = _time.GetUtcNow().UtcDateTime;
+            if (wasConfirmed)
             {
-                next.Status = RegistrationStatus.Confirmed;
-                next.AddDomainEvent(new WaitlistPromotedDomainEvent(eventId, next.StudentId, eventEntity.Title));
+                var next = await db.EventRegistrations
+                    .Where(x => x.EventId == eventId && x.Status == RegistrationStatus.Waitlisted)
+                    .OrderBy(x => x.RegisteredAt)
+                    .FirstOrDefaultAsync(token);
+                if (next is not null)
+                {
+                    next.Status = RegistrationStatus.Confirmed;
+                    next.AddDomainEvent(new WaitlistPromotedDomainEvent(eventId, next.StudentId, eventEntity.Title));
+                }
             }
-        }
-        await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
+            await db.SaveChangesAsync(token);
+        }, ct);
     }
+
+    #endregion
+
+    #region Attendance & Check-In
 
     public async Task<IReadOnlyList<SessionAttendanceDto>> GetAttendanceAsync(
         int sessionId, int actorStudentId, string? actorRole, CancellationToken ct = default)
@@ -511,8 +584,8 @@ public sealed class EventService(
             throw new BadRequestException("Invalid or expired session check-in code.");
 
         // Detective control for a relayed code: cap self check-ins per code window (revoked rows still count).
-        var windowStart = DateTime.UtcNow.AddSeconds(-AttendanceCodeService.WindowSeconds);
-        var recentSelfCheckIns = await db.SessionAttendances.IgnoreQueryFilters().CountAsync(
+        var windowStart = _time.GetUtcNow().UtcDateTime.AddSeconds(-AttendanceCodeService.WindowSeconds);
+        var recentSelfCheckIns = await db.SessionAttendances.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).CountAsync(
             a => a.SessionId == sessionId && a.RecordedByStudentId == a.StudentId && a.CheckInTime >= windowStart, ct);
         if (recentSelfCheckIns >= attendanceOptions.Value.MaxSelfCheckInsPerWindow)
             throw new ConflictException("Too many check-ins for this session right now. Ask the organizer to verify you manually.");
@@ -534,6 +607,30 @@ public sealed class EventService(
             x => x.SessionId == sessionId && x.StudentId == studentId, ct)
             ?? throw new NotFoundException("Session attendance record was not found.");
         db.SessionAttendances.Remove(attendance);
+
+        // Integrity: revoking attendance must claw back the XP the check-in awarded, otherwise a student keeps points
+        // for a session they never attended. ScoreTransaction is an append-only ledger (see SoftDeleteInterceptor), so
+        // the claw-back is a compensating negative row, not a delete. Its (StudentId, SourceType, SourceReferenceId)
+        // unique slot also collapses a concurrent double-revoke into a single compensation.
+        var awardedPoints = await db.ScoreTransactions.AsNoTracking()
+            .Where(t => t.StudentId == studentId
+                && t.SourceType == ScoreSourceType.EventAttendance
+                && t.SourceReferenceId == sessionId)
+            .Select(t => (int?)t.Points)
+            .FirstOrDefaultAsync(ct);
+        if (awardedPoints is > 0)
+        {
+            db.ScoreTransactions.Add(new ScoreTransaction
+            {
+                StudentId = studentId,
+                Points = -awardedPoints.Value,
+                Reason = $"Revoked attendance for session #{sessionId}",
+                SourceType = ScoreSourceType.AttendanceRevocation,
+                SourceReferenceId = sessionId,
+                CreatedAt = _time.GetUtcNow().UtcDateTime
+            });
+        }
+
         await db.SaveChangesAsync(ct);
     }
 
@@ -592,7 +689,7 @@ public sealed class EventService(
             ["SessionWindow"] = WebUtility.HtmlEncode($"{session.StartTime:yyyy-MM-dd HH:mm} – {session.EndTime:HH:mm} UTC"),
             ["CheckedInCount"] = attendees.Count.ToString(),
             ["ConfirmedCount"] = confirmedCount.ToString(),
-            ["GeneratedAtUtc"] = WebUtility.HtmlEncode(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss 'UTC'")),
+            ["GeneratedAtUtc"] = WebUtility.HtmlEncode(_time.GetUtcNow().UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'")),
             ["AttendanceRows"] = rows.ToString()
         };
 
@@ -631,8 +728,18 @@ public sealed class EventService(
             && x.StudentId == studentId && x.Status == RegistrationStatus.Confirmed, ct);
         if (!isRegistered)
             throw new BadRequestException("Only students with a confirmed event registration can check in.");
-        if (await db.SessionAttendances.IgnoreQueryFilters().AnyAsync(x => x.SessionId == sessionId && x.StudentId == studentId, ct))
+        if (await db.SessionAttendances.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).AnyAsync(x => x.SessionId == sessionId && x.StudentId == studentId, ct))
             throw new ConflictException("The student has already checked in to this session.");
+
+        // Check-in is only meaningful while the session is actually happening. Without this window a student can claim
+        // attendance (and its XP) days before or after the session. The margin lets organizers open the room a little
+        // early and record stragglers just after the end; both bounds are configurable via Attendance options.
+        var now = _time.GetUtcNow().UtcDateTime;
+        var earliest = session.StartTime.AddMinutes(-attendanceOptions.Value.EarlyCheckInMinutes);
+        var latest = session.EndTime.AddMinutes(attendanceOptions.Value.LateCheckInMinutes);
+        if (now < earliest || now > latest)
+            throw new BadRequestException(
+                $"Check-in for this session is only open from {earliest:yyyy-MM-dd HH:mm} to {latest:yyyy-MM-dd HH:mm} UTC.");
 
         // Ensure RecordedByStudentId satisfies FK if provided
         int? safeRecorderId = null;
@@ -643,7 +750,7 @@ public sealed class EventService(
         {
             SessionId = sessionId,
             StudentId = studentId,
-            CheckInTime = DateTime.UtcNow,
+            CheckInTime = now,
             VerificationMethod = verificationMethod,
             RecordedByStudentId = safeRecorderId
         };
@@ -662,12 +769,16 @@ public sealed class EventService(
             attendance.RecordedByStudentId);
     }
 
+    #endregion
+
+    #region Helpers & Mapping
+
     private async Task<Event?> LoadEventWithRowLockAsync(int eventId, CancellationToken ct)
     {
         if (db.Database.ProviderName?.Contains("SqlServer", StringComparison.OrdinalIgnoreCase) == true)
         {
             return await db.Events
-                .FromSqlInterpolated($"SELECT * FROM [Event] WITH (UPDLOCK, ROWLOCK) WHERE [EventId] = {eventId} AND [DeletedAt] IS NULL")
+                .FromSql($"SELECT * FROM [Event] WITH (UPDLOCK, ROWLOCK) WHERE [EventId] = {eventId} AND [DeletedAt] IS NULL")
                 .FirstOrDefaultAsync(ct);
         }
 
@@ -699,11 +810,14 @@ public sealed class EventService(
         entity.IsPublic,
         exposeMeetingUrl ? entity.MeetingUrl : null,
         entity.OrganizationUnitId,
-        entity.Unit?.Name);
+        entity.Unit?.Name,
+        entity.CoverImageUrl ?? DefaultCoverCatalog.UrlFor($"event:{entity.EventId}"));
 
     private static EventSessionDto ToSessionDto(EventSession session) => new(
         session.SessionId, session.EventId, session.SessionNo, session.Title,
         session.StartTime, session.EndTime, session.Room);
 
     private static string? NormalizeOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    #endregion
 }

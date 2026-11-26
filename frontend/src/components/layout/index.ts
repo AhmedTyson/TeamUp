@@ -9,4 +9,3 @@ export type { NavbarProps } from "./Navbar";
 export { XpLevelChip } from "./XpLevelChip";
 export type { NavbarStudentScore } from "./XpLevelChip";
 export { NotificationBell } from "./NotificationBell";
-export type { NavbarNotificationItem } from "./NotificationBell";

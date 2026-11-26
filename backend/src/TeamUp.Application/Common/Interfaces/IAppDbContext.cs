@@ -1,3 +1,6 @@
+// Date: 2026-11-26
+// Purpose: EF Core DbContext contract with deferred post-commit domain event lifecycle helpers.
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -36,9 +39,13 @@ public interface IAppDbContext
     DbSet<StudentBadge> StudentBadges { get; }
     DbSet<Notification> Notifications { get; }
     DbSet<AuditLog> AuditLogs { get; }
+    DbSet<StoredImage> StoredImages { get; }
 
     DatabaseFacade Database { get; }
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    void BeginDeferringDomainEvents();
+    Task DispatchDeferredDomainEventsAsync(CancellationToken cancellationToken = default);
+    void ClearDeferredDomainEvents();
 }

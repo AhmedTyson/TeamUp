@@ -6,7 +6,7 @@ using TeamUp.Application.Common.Validation;
 
 namespace TeamUp.Application.Students.Validators;
 
-public class UpdateStudentRequestValidator : AbstractValidator<UpdateStudentRequest>
+public sealed class UpdateStudentRequestValidator : AbstractValidator<UpdateStudentRequest>
 {
     public UpdateStudentRequestValidator()
     {
@@ -32,7 +32,7 @@ public class UpdateStudentRequestValidator : AbstractValidator<UpdateStudentRequ
     }
 }
 
-public class UpsertProfileRequestValidator : AbstractValidator<UpsertProfileRequest>
+public sealed class UpsertProfileRequestValidator : AbstractValidator<UpsertProfileRequest>
 {
     public UpsertProfileRequestValidator()
     {
@@ -57,7 +57,7 @@ public class UpsertProfileRequestValidator : AbstractValidator<UpsertProfileRequ
     }
 }
 
-public class AddInterestRequestValidator : AbstractValidator<AddInterestRequest>
+public sealed class AddInterestRequestValidator : AbstractValidator<AddInterestRequest>
 {
     public AddInterestRequestValidator()
     {

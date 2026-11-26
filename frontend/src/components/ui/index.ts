@@ -30,6 +30,9 @@ export type { CardProps, CardVariant } from "./Card";
 export { SpotlightCard } from "./SpotlightCard";
 export type { SpotlightCardProps } from "./SpotlightCard";
 
+export { CoverImage } from "./CoverImage";
+export type { CoverImageProps } from "./CoverImage";
+
 export { Badge } from "./Badge";
 export type { BadgeProps, BadgeSize, BadgeVariant } from "./Badge";
 

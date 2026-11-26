@@ -185,7 +185,8 @@ describe("20-Item Plan & Role Dashboards Suite", () => {
       pointsToNext: 250,
       progress: 0.58,
     });
-    vi.spyOn(eventsApi, "myRegistrations").mockResolvedValueOnce([
+    vi.spyOn(eventsApi, "myRegistrations").mockResolvedValueOnce({
+      items: [
       {
         eventId: 1,
         eventTitle: "Auxilio Engineering & AI Bootcamp 2026",
@@ -201,7 +202,12 @@ describe("20-Item Plan & Role Dashboards Suite", () => {
         sessionsAttendedCount: 1,
         totalSessionsCount: 3,
       },
-    ]);
+      ],
+      page: 1,
+      pageSize: 20,
+      totalCount: 1,
+      totalPages: 1,
+    });
     vi.spyOn(organizationsApi, "myApplications").mockResolvedValueOnce([]);
     vi.spyOn(notificationsApi, "getNotifications").mockResolvedValueOnce([]);
     vi.spyOn(projectsApi, "list").mockResolvedValueOnce({

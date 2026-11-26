@@ -18,13 +18,25 @@ export interface NotificationDto {
 }
 
 export const notificationsApi = {
-  async getNotifications(unreadOnly = false, signal?: AbortSignal): Promise<NotificationDto[]> {
+  async getNotifications(
+    unreadOnly = false,
+    take = 15,
+    signal?: AbortSignal,
+  ): Promise<NotificationDto[]> {
     const res = await apiClient.get<ApiResponse<NotificationDto[]>>(
       API_ENDPOINTS.gamification.notifications,
       {
-        params: { unreadOnly },
+        params: { unreadOnly, take },
         signal,
       },
+    );
+    return unwrapApiResponse(res);
+  },
+
+  async getUnreadCount(signal?: AbortSignal): Promise<number> {
+    const res = await apiClient.get<ApiResponse<number>>(
+      API_ENDPOINTS.gamification.notificationsUnreadCount,
+      { signal },
     );
     return unwrapApiResponse(res);
   },

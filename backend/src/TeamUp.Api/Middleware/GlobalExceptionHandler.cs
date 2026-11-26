@@ -1,3 +1,4 @@
+using System.Buffers;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using TeamUp.Application.Common.Exceptions;
@@ -8,11 +9,21 @@ namespace TeamUp.Api.Middleware;
 /// <summary>
 /// Catches unhandled and domain exceptions, returning a clean, human-readable BaseResponse error payload.
 /// </summary>
-public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+public sealed partial class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
+    [LoggerMessage(Level = LogLevel.Error, Message = "Unhandled server error for {Method} {Path}")]
+    private static partial void LogUnhandledServerError(ILogger logger, Exception ex, string method, PathString path);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Handled exception ({Status}) for {Method} {Path}: {Message}")]
+    private static partial void LogHandledException(ILogger logger, int status, string method, PathString path, string message);
+
+    private static readonly SearchValues<string> UniqueConstraintMarkers = SearchValues.Create(
+        ["UNIQUE KEY", "duplicate key", "UNIQUE constraint failed"],
+        StringComparison.OrdinalIgnoreCase);
+
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        var (status, message, errors) = ex switch
+        var (status, message, errors) = exception switch
         {
             ValidationException valEx => (StatusCodes.Status400BadRequest, valEx.Message, (IReadOnlyList<ErrorDetail>?)valEx.Errors),
             NotFoundException notFound => (StatusCodes.Status404NotFound, notFound.Message, null),
@@ -28,23 +39,21 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         };
 
         if (status == StatusCodes.Status500InternalServerError)
-            logger.LogError(ex, "Unhandled server error for {Method} {Path}", ctx.Request.Method, ctx.Request.Path);
+            LogUnhandledServerError(logger, exception, httpContext.Request.Method, httpContext.Request.Path);
         else
-            logger.LogWarning("Handled exception ({Status}) for {Method} {Path}: {Message}", status, ctx.Request.Method, ctx.Request.Path, ex.Message);
+            LogHandledException(logger, status, httpContext.Request.Method, httpContext.Request.Path, exception.Message);
 
-        ctx.Response.StatusCode = status;
-        ctx.Response.ContentType = "application/json; charset=utf-8";
+        httpContext.Response.StatusCode = status;
+        httpContext.Response.ContentType = "application/json; charset=utf-8";
 
         var response = BaseResponse.Fail(message, status, errors);
-        await ctx.Response.WriteAsJsonAsync(response, ct);
+        await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
         return true;
     }
 
     private static bool IsUniqueConstraintViolation(DbUpdateException ex)
     {
         var msg = ex.InnerException?.Message ?? ex.Message;
-        return msg.Contains("UNIQUE KEY", StringComparison.OrdinalIgnoreCase)
-            || msg.Contains("duplicate key", StringComparison.OrdinalIgnoreCase)
-            || msg.Contains("UNIQUE constraint failed", StringComparison.OrdinalIgnoreCase);
+        return msg.AsSpan().ContainsAny(UniqueConstraintMarkers);
     }
 }

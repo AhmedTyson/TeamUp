@@ -6,7 +6,7 @@ using TeamUp.Application.Common.Validation;
 
 namespace TeamUp.Application.Gamification.Validators;
 
-public class CreateBadgeRequestValidator : AbstractValidator<CreateBadgeRequest>
+public sealed class CreateBadgeRequestValidator : AbstractValidator<CreateBadgeRequest>
 {
     public CreateBadgeRequestValidator()
     {
@@ -32,7 +32,7 @@ public class CreateBadgeRequestValidator : AbstractValidator<CreateBadgeRequest>
     }
 }
 
-public class UpdateBadgeRequestValidator : AbstractValidator<UpdateBadgeRequest>
+public sealed class UpdateBadgeRequestValidator : AbstractValidator<UpdateBadgeRequest>
 {
     public UpdateBadgeRequestValidator()
     {
@@ -63,7 +63,7 @@ public class UpdateBadgeRequestValidator : AbstractValidator<UpdateBadgeRequest>
     }
 }
 
-public class CreateScoreTransactionRequestValidator : AbstractValidator<CreateScoreTransactionRequest>
+public sealed class CreateScoreTransactionRequestValidator : AbstractValidator<CreateScoreTransactionRequest>
 {
     public CreateScoreTransactionRequestValidator()
     {
@@ -79,7 +79,7 @@ public class CreateScoreTransactionRequestValidator : AbstractValidator<CreateSc
     }
 }
 
-public class CreateNotificationRequestValidator : AbstractValidator<CreateNotificationRequest>
+public sealed class CreateNotificationRequestValidator : AbstractValidator<CreateNotificationRequest>
 {
     public CreateNotificationRequestValidator()
     {

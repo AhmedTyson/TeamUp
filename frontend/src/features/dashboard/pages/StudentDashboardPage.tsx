@@ -32,6 +32,7 @@ import {
 } from "@/components/ui";
 import { useAuth } from "@/features/auth";
 import { useMyEventRegistrations } from "@/features/events";
+import { useUnreadNotificationCount } from "@/features/notifications/useUnreadNotificationCount";
 import { useMyOrganizationApplications } from "@/features/organizations";
 import { queryKeys } from "@/lib/queryKeys";
 import { DashboardRoleSwitcher } from "../components/DashboardRoleSwitcher";
@@ -64,9 +65,11 @@ export function StudentDashboardPage() {
 
   const notificationsQuery = useQuery({
     queryKey: queryKeys.notifications.inbox(false),
-    queryFn: ({ signal }) => notificationsApi.getNotifications(false, signal),
+    queryFn: ({ signal }) => notificationsApi.getNotifications(false, 15, signal),
     enabled: studentId > 0,
   });
+
+  const unreadCountQuery = useUnreadNotificationCount({ enabled: studentId > 0 });
 
   const openProjectsQuery = useQuery({
     queryKey: queryKeys.projects.list({ status: PROJECT_STATUSES.Recruiting, page: 1, pageSize: 4 }),
@@ -74,10 +77,10 @@ export function StudentDashboardPage() {
       projectsApi.list({ status: PROJECT_STATUSES.Recruiting, page: 1, pageSize: 4 }, signal),
   });
 
-  const registrations = myEventsQuery.data ?? [];
+  const registrations = myEventsQuery.data?.items ?? [];
   const applications = myAppsQuery.data ?? [];
   const notifications = notificationsQuery.data ?? [];
-  const unreadNotifications = notifications.filter((n) => !n.isRead);
+  const unreadNotificationsCount = unreadCountQuery.data ?? notifications.filter((n) => !n.isRead).length;
   const openProjects = openProjectsQuery.data?.items ?? [];
 
   const affiliationText = user?.universityName
@@ -150,7 +153,7 @@ export function StudentDashboardPage() {
           >
             <p className="text-xs font-medium text-[#9ca3af]">My Event Passes</p>
             <p className="mt-1.5 font-mono text-lg font-bold text-white sm:text-2xl">
-              {myEventsQuery.isLoading ? "…" : registrations.length}
+              {myEventsQuery.isLoading ? "…" : (myEventsQuery.data?.totalCount ?? 0)}
             </p>
           </Link>
 
@@ -170,7 +173,7 @@ export function StudentDashboardPage() {
           >
             <p className="text-xs font-medium text-[#9ca3af]">Unread Alerts</p>
             <p className="mt-1.5 font-mono text-lg font-bold text-sky-300 sm:text-2xl">
-              {notificationsQuery.isLoading ? "…" : unreadNotifications.length}
+              {unreadCountQuery.isLoading ? "…" : unreadNotificationsCount}
             </p>
           </Link>
         </div>

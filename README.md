@@ -4,19 +4,19 @@
   <br />
 
   # TeamUp — Student Collaboration &amp; Gamification Platform
-  **Clean Architecture .NET 10 Web API &amp; React 19 SPA · Cross-Faculty Team Formation, Student Organizations &amp; Gamification Engine**
+  **Clean Architecture .NET 11 Web API &amp; React 19 SPA · Cross-Faculty Team Formation, Student Organizations &amp; Gamification Engine**
 
   <br />
 
-  [![.NET 10](https://img.shields.io/badge/.NET-10.0-15733f?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-  [![C# 14](https://img.shields.io/badge/C%23-14.0-239120?style=for-the-badge&logo=c-sharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
+  [![.NET 11](https://img.shields.io/badge/.NET-11.0-15733f?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+  [![C# 15](https://img.shields.io/badge/C%23-15.0-239120?style=for-the-badge&logo=c-sharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
   [![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-Web_API-15733f?style=for-the-badge&logo=dotnet&logoColor=white)](https://asp.net/)
-  [![EF Core 10](https://img.shields.io/badge/EF_Core-10.0-15733f?style=for-the-badge&logo=dotnet&logoColor=white)](https://learn.microsoft.com/en-us/ef/core/)
+  [![EF Core 11](https://img.shields.io/badge/EF_Core-11.0-15733f?style=for-the-badge&logo=dotnet&logoColor=white)](https://learn.microsoft.com/en-us/ef/core/)
   [![React 19](https://img.shields.io/badge/React-19-10b981?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
   [![SQL Server 2022](https://img.shields.io/badge/Database-SQL_Server_2022-22c55e?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)](https://www.microsoft.com/en-us/sql-server/)
   [![JWT Auth](https://img.shields.io/badge/Auth-JWT_Bearer-10b981?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io/)
   [![Docker](https://img.shields.io/badge/Container-Docker-15733f?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-  [![Tests 263/263](https://img.shields.io/badge/Tests-263%2F263_Passing-10b981?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/AhmedTyson/TeamUp)
+  [![Tests 348/348](https://img.shields.io/badge/Tests-348%2F348_Passing-10b981?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/AhmedTyson/TeamUp)
   ![Status](https://img.shields.io/badge/status-active_|_v1.0.0-10b981?style=flat-square)
   ![Architecture](https://img.shields.io/badge/architecture-Clean_Architecture_Grade_A-10b981?style=flat-square)
 
@@ -31,7 +31,7 @@
 > ### *"LET'S FIND YOUR NEXT TEAM"*
 > **Build your skills, find your team, join student activities, and grow together from your first year at university.**
 
-Welcome to the **TeamUp** repository! **TeamUp** is an enterprise-grade academic collaboration and gamification platform engineered with **.NET 10 / C# 14** and a decoupled **React 19 / TypeScript / Tailwind CSS v4** SPA. It bridges higher-education academic programs and real-world project execution by connecting students across universities and faculties into cross-functional teams, facilitating student organization recruitment, scheduling campus workshops, verifying attendance via rotating 60-second HMAC-SHA256 QR/PIN check-ins, and rewarding active student engagement through an immutable scoring ledger, progressive levels, and verifiable achievement badges.
+Welcome to the **TeamUp** repository! **TeamUp** is an enterprise-grade academic collaboration and gamification platform engineered with **.NET 11 / C# 15** and a decoupled **React 19 / TypeScript / Tailwind CSS v4** SPA. It bridges higher-education academic programs and real-world project execution by connecting students across universities and faculties into cross-functional teams, facilitating student organization recruitment, scheduling campus workshops, verifying attendance via rotating 60-second HMAC-SHA256 QR/PIN check-ins, and rewarding active student engagement through an immutable scoring ledger, progressive levels, and verifiable achievement badges.
 
 ---
 
@@ -41,18 +41,19 @@ Welcome to the **TeamUp** repository! **TeamUp** is an enterprise-grade academic
 TeamUp/
 ├── .github/
 │   └── workflows/                     # GitHub Actions CI (backend, frontend, Playwright E2E) & MonsterASP.NET CD
-├── backend/                           # ⚙️ .NET 10 Clean Architecture Backend & Pure JSON REST API (Zero MVC Views)
-│   ├── TeamUp.sln                     # Visual Studio / Rider .NET 10 solution file
-│   ├── Directory.Build.props          # Shared .NET build settings (Nullable, TreatWarningsAsErrors)
+├── backend/                           # ⚙️ .NET 11 Clean Architecture Backend & Pure JSON REST API (Zero MVC Views)
+│   ├── TeamUp.sln                     # Visual Studio / Rider .NET 11 solution file
+│   ├── Directory.Build.props          # Shared .NET 11 build settings (net11.0, LangVersion 15.0, Nullable)
+│   ├── Directory.Packages.props       # Central Package Management (EF Core 11, ASP.NET Core 11)
 │   ├── src/
 │   │   ├── TeamUp.Domain/             # Enterprise Entities, Invariants, Enums, Base Contracts (0 dependencies)
 │   │   ├── TeamUp.Application/        # Application Services, DTOs, FluentValidators, Domain Event Handlers
-│   │   ├── TeamUp.Infrastructure/     # EF Core 10 AppDbContext, 9 Migrations, Interceptors, Seeders, QuestPDF
+│   │   ├── TeamUp.Infrastructure/     # EF Core 11 AppDbContext, Migrations, Interceptors, Seeders, QuestPDF
 │   │   │   └── Templates/             # Embedded HTML templates (Emails/ & Reports/) and Brand Assets (no MVC views)
-│   │   └── TeamUp.Api/                # ASP.NET Core 10 Pure REST API (/api/v1/* + /health), Thin Controllers, OpenAPI
+│   │   └── TeamUp.Api/                # ASP.NET Core 11 Pure REST API (/api/v1/* + /health/*), Thin Controllers, OpenAPI 3.2
 │   └── tests/
-│       ├── TeamUp.UnitTests/          # 117 Unit tests (Gamification math, FluentValidators, Interceptors, Security)
-│       └── TeamUp.IntegrationTests/   # 75 End-to-end integration tests (WebApplicationFactory, Auth, OpenAPI export)
+│       ├── TeamUp.UnitTests/          # 144 Unit tests (Gamification math, FluentValidators, Interceptors, Security, Services)
+│       └── TeamUp.IntegrationTests/   # 109 End-to-end integration tests (WebApplicationFactory, Auth, Caching, OpenAPI 3.2 export)
 ├── frontend/                          # 🎨 React 19 + Vite 8 + TypeScript + Tailwind CSS v4 SPA (create-vrtw stack)
 │   ├── src/
 │   │   ├── api/                       # Typed Axios HTTP client, JWT interceptors & /api/v1/* endpoint modules
@@ -62,13 +63,14 @@ TeamUp/
 │   │   ├── hooks/                     # Custom React hooks (useApiHealth, useInViewOnce)
 │   │   ├── lib/                       # Env config, JWT decoding, Zod CSP helpers & token storage
 │   │   ├── pages/                     # Top-level routed pages (Home, Projects, Activities, Events, Privacy Policy)
-│   │   └── test/                      # 71 Vitest + Testing Library unit/component tests
+│   │   └── test/                      # 95 Vitest + Testing Library unit/component tests
 │   ├── e2e/                           # Playwright Chromium E2E smoke suite (m1-auth.smoke.spec.ts)
 │   ├── vite.config.ts                 # Vite + Tailwind v4 + /api, /health, /openapi & portrait dev proxy to :5186
 │   └── package.json                   # Frontend dependencies & scripts
 ├── docs/
-│   ├── api/                           # OpenAPI v3 spec (openapi.json), Postman collection/env, API reports
+│   ├── api/                           # OpenAPI 3.2 spec (openapi.json), Postman collection/env, API reports
 │   ├── architecture/                  # Clean Architecture, N-Tier SOLID design specs & query reviews
+│   ├── audit/dotnet11/                # 10-phase .NET 11 audit specifications & final execution report
 │   ├── database/                      # Idempotent SQL Server schema script (teamup-sqlserver-idempotent.sql)
 │   ├── prototypes/                    # Archived static HTML landing prototype (landing-static.html)
 │   ├── research/                      # Adaptable AI engine research pillars (future roadmap)
@@ -81,8 +83,9 @@ TeamUp/
 ├── tasks/                             # 20-Phase backend & frontend implementation roadmap and checklists
 ├── scripts/                           # PowerShell API verification (test_live_api.ps1) & publish-monsterasp.ps1
 ├── CONTRIBUTING.md                    # Team ownership split, branching rules & DB/EF Core engineering standards
+├── global.json                        # .NET 11 SDK pin (11.0.100, rollForward: latestFeature)
 ├── netlify.toml                       # Netlify SPA build, redirects & Content-Security-Policy configuration
-└── dotnet-tools.json                  # Local dotnet-ef 10.0.14 tool manifest (usable from repo root or backend/)
+└── dotnet-tools.json                  # Local dotnet-ef 11.0.0 tool manifest (usable from repo root or backend/)
 ```
 
 ---
@@ -91,13 +94,13 @@ TeamUp/
 
 | Domain / Layer | Technology | Key Capabilities & Highlights |
 |---|---|---|
-| **Frontend Web App** | React 19, Vite 8, TypeScript, Tailwind CSS v4 | Decoupled SPA (`frontend/`) with React Router v7, TanStack Query v5, Axios JWT refresh interceptors, Zod v4 + React Hook Form validation, Privacy & Policy opt-in controls, Vitest (71 tests), and Playwright E2E smoke tests. |
-| **Identity & Governance** | .NET 10, PBKDF2, JWT Bearer, STRIDE | Student registration with faculty affiliation, HMAC-SHA256 JWT with `SecurityStamp` validation, SHA-256 hashed refresh token rotation (10s reuse grace & replay revocation), escalating login lockout, 15-min password resets (redacted from HTTP payloads), privacy-filtered directory, immutable `AuditLog`, and QuestPDF governance reports. |
-| **Academic Catalog** | In-Memory Caching (`IMemoryCache`) | Multi-tenant university & faculty hierarchy, 1-hour cached anonymous lookup (`/api/v1/universities/catalog`) for sub-5ms registration UX, administrative CRUD with automatic cache invalidation. |
+| **Frontend Web App** | React 19, Vite 8, TypeScript, Tailwind CSS v4 | Decoupled SPA (`frontend/`) with React Router v7, TanStack Query v5, Axios JWT refresh interceptors, Zod v4 + React Hook Form validation, Privacy & Policy opt-in controls, Vitest (95 tests), and Playwright E2E smoke tests. |
+| **Identity & Governance** | .NET 11, PBKDF2, JWT Bearer, STRIDE | Student registration with faculty affiliation, HMAC-SHA256 JWT with `SecurityStamp` validation, SHA-256 hashed refresh token rotation (10s reuse grace & replay revocation), escalating login lockout, 15-min password resets (redacted from HTTP payloads), privacy-filtered directory, immutable `AuditLog`, and QuestPDF governance reports. |
+| **Academic Catalog** | `IMemoryCache` + ASP.NET Core `OutputCache` | Multi-tenant university & faculty hierarchy, output-cached anonymous lookup (`/api/v1/universities/catalog`) plus tag-evicted catalog caches across universities, skills, badges, and organization categories. |
 | **Projects & Sprint Tasks** | Clean DDD, ISP Services | Cross-functional project creation (`+100 pts / delivered project`, `+50 pts / completed task`), required skills matrix, vacancy recruitment, applicant vetting workflow, skill-based recommendations, and Kanban task boards (`Todo` ➔ `InProgress` ➔ `InReview` ➔ `Done`). |
 | **Organizations & Events** | Relational Schemas, Concurrency Tokens | Campus student clubs directory (IEEE, GDG, Enactus), scoped `OrgAdmin` board governance, multi-session event timetables, seat capacity limits with optimistic `RowVersion` & automatic waitlist promotion, rotating 60s HMAC-SHA256 QR/PIN self check-ins (`+25 pts / session`), and printable HTML attendance reports. |
 | **Gamification Engine** | Domain Events, Append-Only Ledger | Idempotent `ScoreLedger` backed by immutable `ScoreTransaction` (`IAppendOnly`), deterministic level progression formula $\lfloor 1 + \sqrt{\text{pts}/100} \rfloor$, campus leaderboard, automated badge evaluator (*First Steps*, *Rising Star*, *Champion*, *Workshop Marathoner*, *Task Master*), notifications inbox, and opt-in email digests. |
-| **Database Integrity** | SQL Server 2022, EF Core 10 (SQLite Dev Fallback) | **24 runtime tables** (23 core domain tables + `AuditLog`), **31 foreign keys** with **100% Zero Cascades** (`ON DELETE NO ACTION`), 22 soft-delete tables (`DeletedAt`) + 2 `IAppendOnly` ledgers, **11 filtered unique indexes**, and **20 CHECK constraints**. |
+| **Database Integrity** | SQL Server 2022, EF Core 11 (SQLite Dev Fallback) | **100% Zero Cascades** (`ON DELETE Restrict`), soft-delete tables (`DeletedAt`) + `IAppendOnly` ledgers (`ScoreTransaction`, `AuditLog`), DB-backed image storage (`StoredImage`), filtered unique indexes, and CHECK constraints. |
 
 ---
 
@@ -173,10 +176,10 @@ The password is whatever you set in `Seed:AdminPassword`; no production password
 
 ## <img src="https://api.iconify.design/lucide/flask-conical.svg?color=%2310B981" width="22" align="top" /> Testing & Verification
 
-Execute the complete automated test suite (**117 Unit + 75 Integration + 71 Frontend = 263 Automated Tests** + Playwright E2E smoke suite):
+Execute the complete automated test suite (**144 Unit + 109 Integration + 95 Frontend = 348 Automated Tests** + Playwright E2E smoke suite):
 
 ```bash
-# Run all backend automated tests (117 Unit + 75 Integration)
+# Run all backend automated tests (144 Unit + 109 Integration)
 dotnet test backend/TeamUp.sln
 
 # Run unit tests only
@@ -185,7 +188,7 @@ dotnet test backend/tests/TeamUp.UnitTests
 # Run integration tests only (in-memory SQLite WebApplicationFactory)
 dotnet test backend/tests/TeamUp.IntegrationTests
 
-# Run frontend tests & production build check (71 Vitest tests)
+# Run frontend tests & production build check (95 Vitest tests)
 cd frontend && npm run test && npm run build
 
 # Run Playwright E2E smoke suite
@@ -196,10 +199,10 @@ pwsh scripts/test_live_api.ps1
 ```
 
 ```text
-Passed!  - Failed:     0, Passed:   117, Skipped:     0, Total:   117 (TeamUp.UnitTests.dll)
-Passed!  - Failed:     0, Passed:    75, Skipped:     0, Total:    75 (TeamUp.IntegrationTests.dll)
-Test Files  9 passed (9) | Tests  71 passed (71) (Vitest frontend suite)
-Total: 263 / 263 Passing Automated Tests (100% Pass Rate)
+Passed!  - Failed:     0, Passed:   144, Skipped:     0, Total:   144 (TeamUp.UnitTests.dll)
+Passed!  - Failed:     0, Passed:   109, Skipped:     0, Total:   109 (TeamUp.IntegrationTests.dll)
+Test Files  12 passed (12) | Tests  95 passed (95) (Vitest frontend suite)
+Total: 348 / 348 Passing Automated Tests (100% Pass Rate)
 ```
 
 ---

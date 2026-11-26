@@ -55,6 +55,7 @@ export const queryKeys = {
     requiredSkills: (id: number) => ["projects", id, "required-skills"] as const,
     members: (id: number) => ["projects", id, "members"] as const,
     applications: (id: number) => ["projects", id, "applications"] as const,
+    myApplication: (id: number, studentId: number | undefined) => ["projects", id, "my-application", studentId ?? 0] as const,
     tasks: (id: number) => ["projects", id, "tasks"] as const,
     taskDetail: (taskId: number) => ["tasks", "detail", taskId] as const,
   },
@@ -62,6 +63,7 @@ export const queryKeys = {
   organizations: {
     all: ["organizations"] as const,
     list: (params?: QueryParams) => ["organizations", "list", params ?? {}] as const,
+    categories: ["organizations", "categories"] as const,
     myApplications: ["organizations", "my-applications"] as const,
     myCreationRequests: ["organizations", "my-creation-requests"] as const,
     detail: (id: number) => ["organizations", "detail", id] as const,
@@ -75,7 +77,9 @@ export const queryKeys = {
   events: {
     all: ["events"] as const,
     list: (params?: QueryParams) => ["events", "list", params ?? {}] as const,
-    myRegistrations: ["events", "my-registrations"] as const,
+    myRegistrations: (page = 1, pageSize = 20) =>
+      ["events", "my-registrations", { page, pageSize }] as const,
+    myRegistration: (id: number) => ["events", id, "my-registration"] as const,
     detail: (id: number) => ["events", "detail", id] as const,
     sessions: (id: number) => ["events", id, "sessions"] as const,
     registrations: (id: number) => ["events", id, "registrations"] as const,
@@ -103,6 +107,7 @@ export const queryKeys = {
   notifications: {
     all: ["notifications"] as const,
     inbox: (unreadOnly = false) => ["notifications", "inbox", { unreadOnly }] as const,
+    unreadCount: ["notifications", "unread-count"] as const,
   },
 } as const;
 

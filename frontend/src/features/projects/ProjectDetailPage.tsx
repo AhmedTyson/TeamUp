@@ -42,10 +42,6 @@ function isLeadRole(role: string | undefined): boolean {
   return Boolean(role && /lead/i.test(role));
 }
 
-function isApiForbidden(error: unknown): boolean {
-  return error instanceof ApiClientError && error.isForbidden;
-}
-
 function dateInputValue(value: string | null): string {
   return value ? value.slice(0, 10) : "";
 }
@@ -86,6 +82,7 @@ export function ProjectDetailPage() {
   const isLead = Boolean(
     project && user && (project.creatorId === user.studentId || isLeadRole(currentMember?.role)),
   );
+  const isCreator = Boolean(project && user && project.creatorId === user.studentId);
   const isMember = Boolean(currentMember);
 
   const requiredSkillsQuery = useQuery({
@@ -98,10 +95,17 @@ export function ProjectDetailPage() {
     queryFn: ({ signal }) => projectsApi.getMembers(projectId, signal),
     enabled: validProjectId,
   });
+  // The applications list is creator-only on the backend; non-creators used to fire it on every
+  // page view, always got 403, and therefore could never see or withdraw their own application.
   const applicationsQuery = useQuery({
     queryKey: queryKeys.projects.applications(projectId),
     queryFn: ({ signal }) => projectsApi.getApplications(projectId, signal),
-    enabled: validProjectId,
+    enabled: validProjectId && isCreator,
+  });
+  const myApplicationQuery = useQuery({
+    queryKey: queryKeys.projects.myApplication(projectId, user?.studentId),
+    queryFn: ({ signal }) => projectsApi.getMyApplication(projectId, signal),
+    enabled: validProjectId && Boolean(project) && !isCreator && Boolean(user),
   });
   const tasksQuery = useQuery({
     queryKey: queryKeys.projects.tasks(projectId),
@@ -134,6 +138,7 @@ export function ProjectDetailPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.requiredSkills(projectId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.members(projectId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.applications(projectId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.myApplication(projectId, user?.studentId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.tasks(projectId) }),
     ]);
   };
@@ -208,7 +213,7 @@ export function ProjectDetailPage() {
     mutationFn: () => projectsApi.apply(projectId, applicationMessage.trim()),
     onSuccess: async () => {
       setApplicationMessage("");
-      await queryClient.invalidateQueries({ queryKey: queryKeys.projects.applications(projectId) });
+      await invalidateProjectData();
       toast.success("Your application was sent.");
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not apply to this project."),
@@ -302,9 +307,9 @@ export function ProjectDetailPage() {
     }
     return groups;
   }, [tasksQuery.data]);
-  const myApplication = (applicationsQuery.data ?? []).find(
-    (application) => application.studentId === user?.studentId,
-  );
+  const myApplication = isCreator
+    ? (applicationsQuery.data ?? []).find((application) => application.studentId === user?.studentId)
+    : (myApplicationQuery.data ?? undefined);
   const availableSkills = (skillsQuery.data ?? []).filter(
     (skill) => !(requiredSkillsQuery.data ?? []).some((required) => required.skillId === skill.skillId),
   );
@@ -342,8 +347,7 @@ export function ProjectDetailPage() {
     return <ErrorBanner error={projectQuery.error} onRetry={() => void projectQuery.refetch()} />;
   }
 
-  const applicationsError = applicationsQuery.isError && !isApiForbidden(applicationsQuery.error);
-  const applicationForbidden = applicationsQuery.isError && isApiForbidden(applicationsQuery.error);
+  const applicationsError = applicationsQuery.isError;
 
   return (
     <div className="space-y-6">
@@ -492,7 +496,12 @@ export function ProjectDetailPage() {
               <p className="mt-3 text-sm text-[#d3fb52]">Your application was accepted.</p>
             ) : (
               <div className="mt-3 space-y-3">
-                {applicationsQuery.isError && !applicationForbidden && <ErrorBanner error={applicationsQuery.error} />}
+                {myApplicationQuery.isError && (
+                  <ErrorBanner
+                    error={myApplicationQuery.error}
+                    onRetry={() => void myApplicationQuery.refetch()}
+                  />
+                )}
                 <Button onClick={() => setApplicationModalOpen(true)} disabled={project.teamSize >= project.maxTeamSize}>Apply to join</Button>
                 {project.teamSize >= project.maxTeamSize && <p className="text-xs text-amber-200">This team has reached its capacity.</p>}
               </div>
@@ -544,25 +553,35 @@ export function ProjectDetailPage() {
       {tab === "applications" && (
         <section className="space-y-4">
           <div>
-            <h2 className="text-xl font-semibold text-white">{isLead ? "Applicant queue" : "Your application"}</h2>
-            <p className="mt-1 text-sm text-white/50">{isLead ? "Review applicants and manage team capacity." : "Track your request to join this team."}</p>
+            <h2 className="text-xl font-semibold text-white">{isCreator ? "Applicant queue" : "Your application"}</h2>
+            <p className="mt-1 text-sm text-white/50">{isCreator ? "Review applicants and manage team capacity." : "Track your request to join this team."}</p>
           </div>
           {applicationsError && <ErrorBanner error={applicationsQuery.error} onRetry={() => void applicationsQuery.refetch()} />}
-          {applicationForbidden && <p className="rounded-xl border border-white/10 p-4 text-sm text-white/55">Apply to this project to access your application status.</p>}
-          {(applicationsQuery.data ?? [])
-            .filter((application) => isLead || application.studentId === user?.studentId)
-            .map((application) => (
+          {myApplicationQuery.isError && <ErrorBanner error={myApplicationQuery.error} onRetry={() => void myApplicationQuery.refetch()} />}
+          {isCreator &&
+            (applicationsQuery.data ?? []).map((application) => (
               <ApplicationRow
                 key={application.applicationId}
                 application={application}
-                isLead={isLead}
+                canReview
                 isBusy={updateApplication.isPending || withdraw.isPending}
                 onStatus={(nextStatus) => updateApplication.mutate({ appId: application.applicationId, nextStatus })}
                 onWithdraw={() => withdraw.mutate(application.applicationId)}
               />
             ))}
-          {!applicationsQuery.isLoading && !applicationsError && !applicationForbidden && (applicationsQuery.data ?? []).filter((application) => isLead || application.studentId === user?.studentId).length === 0 && (
-            <p className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-white/55">{isLead ? "No applications yet." : "You have not applied to this project."}</p>
+          {isCreator && !applicationsQuery.isLoading && !applicationsError && (applicationsQuery.data ?? []).length === 0 && (
+            <p className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-white/55">No applications yet.</p>
+          )}
+          {!isCreator && myApplication && (
+            <ApplicationRow
+              application={myApplication}
+              canReview={false}
+              isBusy={withdraw.isPending}
+              onWithdraw={() => withdraw.mutate(myApplication.applicationId)}
+            />
+          )}
+          {!isCreator && !myApplicationQuery.isLoading && !myApplicationQuery.isError && !myApplication && (
+            <p className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-white/55">You have not applied to this project.</p>
           )}
         </section>
       )}
@@ -670,15 +689,15 @@ export function ProjectDetailPage() {
 
 function ApplicationRow({
   application,
-  isLead,
+  canReview,
   isBusy,
   onStatus,
   onWithdraw,
 }: {
   application: ProjectApplicationDto;
-  isLead: boolean;
+  canReview: boolean;
   isBusy: boolean;
-  onStatus: (status: Extract<ApplicationStatus, "Accepted" | "Rejected">) => void;
+  onStatus?: (status: Extract<ApplicationStatus, "Accepted" | "Rejected">) => void;
   onWithdraw: () => void;
 }) {
   return (
@@ -689,13 +708,13 @@ function ApplicationRow({
         <p className="mt-1 text-xs text-white/40">{new Date(application.appliedAt).toLocaleDateString()} · {application.status}</p>
       </div>
       <div className="flex gap-2">
-        {isLead && application.status === APPLICATION_STATUSES.Pending && (
+        {canReview && onStatus && application.status === APPLICATION_STATUSES.Pending && (
           <>
             <Button size="sm" isLoading={isBusy} onClick={() => onStatus(APPLICATION_STATUSES.Accepted)}>Accept</Button>
             <Button size="sm" variant="outline" disabled={isBusy} onClick={() => onStatus(APPLICATION_STATUSES.Rejected)}>Reject</Button>
           </>
         )}
-        {!isLead && application.status === APPLICATION_STATUSES.Pending && (
+        {!canReview && application.status === APPLICATION_STATUSES.Pending && (
           <Button size="sm" variant="outline" isLoading={isBusy} onClick={onWithdraw}>Withdraw</Button>
         )}
       </div>

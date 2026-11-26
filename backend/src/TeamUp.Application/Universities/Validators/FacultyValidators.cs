@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace TeamUp.Application.Universities.Validators;
 
-public class CreateFacultyRequestValidator : AbstractValidator<CreateFacultyRequest>
+public sealed class CreateFacultyRequestValidator : AbstractValidator<CreateFacultyRequest>
 {
     public CreateFacultyRequestValidator()
     {
@@ -17,7 +17,7 @@ public class CreateFacultyRequestValidator : AbstractValidator<CreateFacultyRequ
     }
 }
 
-public class UpdateFacultyRequestValidator : AbstractValidator<UpdateFacultyRequest>
+public sealed class UpdateFacultyRequestValidator : AbstractValidator<UpdateFacultyRequest>
 {
     public UpdateFacultyRequestValidator()
     {

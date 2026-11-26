@@ -2,7 +2,7 @@
 // Purpose: University catalog service with IMemoryCache read-through caching, automatic invalidation, and audited soft-delete.
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Hybrid;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
@@ -15,9 +15,11 @@ namespace TeamUp.Application.Services;
 
 public sealed class UniversityService(
     IAppDbContext db,
-    IMemoryCache cache,
+    HybridCache cache,
     IAuditLogService auditLog) : IUniversityService
 {
+    #region Queries
+
     public async Task<PagedResult<UniversityDto>> GetUniversitiesAsync(string? search, PageRequest page, CancellationToken ct = default)
     {
         var query = db.Universities.AsNoTracking();
@@ -47,33 +49,27 @@ public sealed class UniversityService(
         return new PagedResult<UniversityDto>(items, page.SafePage, page.SafePageSize, total);
     }
 
-    public async Task<IReadOnlyList<UniversityDetailDto>> GetAcademicCatalogAsync(CancellationToken ct = default)
-    {
-        if (cache.TryGetValue(CatalogCacheKeys.AcademicCatalog, out IReadOnlyList<UniversityDetailDto>? cached)
-            && cached is not null)
-        {
-            return cached;
-        }
-
-        var catalog = await db.Universities
-            .AsNoTracking()
-            .OrderBy(u => u.Name)
-            .Select(u => new UniversityDetailDto(
-                u.UniversityId,
-                u.Name,
-                u.City,
-                u.Country,
-                u.Website,
-                u.LogoUrl,
-                u.Faculties
-                    .OrderBy(f => f.Name)
-                    .Select(f => new FacultySummaryDto(f.FacultyId, f.Name, f.Code))
-                    .ToList()))
-            .ToListAsync(ct);
-
-        cache.Set(CatalogCacheKeys.AcademicCatalog, catalog, CatalogCacheKeys.DefaultTtl);
-        return catalog;
-    }
+    public Task<IReadOnlyList<UniversityDetailDto>> GetAcademicCatalogAsync(CancellationToken ct = default) =>
+        cache.GetOrCreateAsync(
+            CatalogCacheKeys.AcademicCatalog,
+            async token => (IReadOnlyList<UniversityDetailDto>)await db.Universities
+                .AsNoTracking()
+                .OrderBy(u => u.Name)
+                .Select(u => new UniversityDetailDto(
+                    u.UniversityId,
+                    u.Name,
+                    u.City,
+                    u.Country,
+                    u.Website,
+                    u.LogoUrl,
+                    u.Faculties
+                        .OrderBy(f => f.Name)
+                        .Select(f => new FacultySummaryDto(f.FacultyId, f.Name, f.Code))
+                        .ToList()))
+                .ToListAsync(token),
+            options: CatalogCacheKeys.CatalogEntryOptions,
+            tags: [CatalogCacheKeys.Tags.AcademicCatalog],
+            cancellationToken: ct).AsTask();
 
     public async Task<UniversityDetailDto> GetUniversityByIdAsync(int id, CancellationToken ct = default)
     {
@@ -90,6 +86,10 @@ public sealed class UniversityService(
 
         return new UniversityDetailDto(uni.UniversityId, uni.Name, uni.City, uni.Country, uni.Website, uni.LogoUrl, faculties);
     }
+
+    #endregion
+
+    #region Mutations
 
     public async Task<UniversityDetailDto> CreateUniversityAsync(CreateUniversityRequest req, CancellationToken ct = default)
     {
@@ -109,7 +109,7 @@ public sealed class UniversityService(
 
         db.Universities.Add(uni);
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.AcademicCatalog);
+        await cache.RemoveAsync(CatalogCacheKeys.AcademicCatalog, ct);
 
         return new UniversityDetailDto(uni.UniversityId, uni.Name, uni.City, uni.Country, uni.Website, uni.LogoUrl, []);
     }
@@ -135,7 +135,7 @@ public sealed class UniversityService(
         uni.LogoUrl = string.IsNullOrWhiteSpace(req.LogoUrl) ? null : req.LogoUrl.Trim();
 
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.AcademicCatalog);
+        await cache.RemoveAsync(CatalogCacheKeys.AcademicCatalog, ct);
 
         var faculties = uni.Faculties
             .OrderBy(f => f.Name)
@@ -162,7 +162,7 @@ public sealed class UniversityService(
 
         db.Universities.Remove(uni);
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.AcademicCatalog);
+        await cache.RemoveAsync(CatalogCacheKeys.AcademicCatalog, ct);
 
         await auditLog.RecordAsync(
             "EntitySoftDeleted",
@@ -172,4 +172,6 @@ public sealed class UniversityService(
             newValues: new { DeletedAt = uni.DeletedAt },
             ct: ct);
     }
+
+    #endregion
 }

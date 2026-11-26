@@ -5,10 +5,13 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.OutputCaching;
 using TeamUp.Api.Controllers.Common;
+using TeamUp.Api.Extensions;
 using TeamUp.Application.Admin;
 using TeamUp.Application.Auth;
 using TeamUp.Application.Common;
+using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Gamification;
@@ -23,14 +26,17 @@ namespace TeamUp.Api.Controllers;
 [Route("api/v1/admin")]
 [Authorize(Roles = "PlatformAdmin")]
 [ProducesForbidden]
-public class AdminController(
+public sealed class AdminController(
     IAdminService adminService,
     IOrganizationService organizationService,
     IAdminReportService reportService,
     IDigestDispatchService digestService,
     ITemplateRenderer templateRenderer,
-    IAuditLogService auditLog) : BaseApiController
+    IAuditLogService auditLog,
+    IOutputCacheStore outputCacheStore) : BaseApiController
 {
+    #region Dashboard, Roles & Recycle Bin
+
     [HttpGet("dashboard")]
     [ProducesOk<AdminDashboardDto>]
     public async Task<IActionResult> GetDashboard(CancellationToken ct)
@@ -66,20 +72,28 @@ public class AdminController(
         CancellationToken ct)
     {
         await adminService.RestoreEntityAsync(entityType, id, ct);
+
+        var tagToEvict = CatalogOutputCacheTags.ForRestoredEntityType(entityType);
+        if (tagToEvict is not null)
+        {
+            await outputCacheStore.EvictByTagAsync(tagToEvict, ct);
+        }
+
         return OkMessage($"{entityType} with ID {id} has been restored successfully.");
     }
+
+    #endregion
+
+    #region Audit Logs & Governance Reports
 
     [HttpGet("audit-logs")]
     [ProducesOk<PagedResult<AuditLogDto>>]
     public async Task<IActionResult> GetAuditLogs(
-        [FromQuery] string? action,
-        [FromQuery] string? entityType,
-        [FromQuery] int? actorStudentId,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] AuditLogFilterQuery filter,
         CancellationToken ct = default)
     {
-        var result = await adminService.GetAuditLogsAsync(action, entityType, actorStudentId, new PageRequest(page, pageSize), ct);
+        var result = await adminService.GetAuditLogsAsync(
+            filter.Action, filter.EntityType, filter.ActorStudentId, filter.ToPageRequest(), ct);
         return OkResponse(result);
     }
 
@@ -107,6 +121,10 @@ public class AdminController(
             ct);
         return OkResponse(result, "Governance PDF report dispatched.");
     }
+
+    #endregion
+
+    #region Templates & Editorial Digests
 
     [HttpGet("templates")]
     [ProducesOk<IReadOnlyList<string>>]
@@ -173,6 +191,10 @@ public class AdminController(
         return OkResponse(result, "Project match digest processed.");
     }
 
+    #endregion
+
+    #region Organization Creation Proposals
+
     [HttpGet("organization-requests")]
     [ProducesOk<PagedResult<OrganizationCreationRequestDto>>]
     public async Task<IActionResult> GetOrganizationRequests(
@@ -196,6 +218,11 @@ public class AdminController(
     {
         var result = await organizationService.ReviewOrganizationCreationRequestAsync(
             requestId, CurrentStudentId, request, ct);
+        if (request.Approve)
+        {
+            await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.OrganizationCategories, ct);
+        }
+
         var message = request.Approve
             ? "Organization approved and requester promoted to Organization Admin."
             : "Organization request rejected.";
@@ -205,5 +232,7 @@ public class AdminController(
     private string ResolveActorEmail() =>
         User.FindFirstValue(ClaimTypes.Email)
         ?? User.FindFirstValue("email")
-        ?? "admin@teamup.local";
+        ?? throw new UnauthorizedException("Authenticated user email claim is missing.");
+
+    #endregion
 }

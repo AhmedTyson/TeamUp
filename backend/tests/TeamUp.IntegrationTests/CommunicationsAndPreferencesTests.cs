@@ -70,9 +70,11 @@ public class CommunicationsAndPreferencesTests(TeamUpApiFactory factory) : IClas
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var sOff = db.Students.Single(s => s.Email == digestOffEmail.ToLowerInvariant());
+            var normalizedDigestOff = digestOffEmail.ToLowerInvariant();
+            var normalizedMasterOff = masterOffEmail.ToLowerInvariant();
+            var sOff = db.Students.Single(s => s.Email == normalizedDigestOff);
             sOff.ReceiveLeaderboardDigests = false;
-            var sMaster = db.Students.Single(s => s.Email == masterOffEmail.ToLowerInvariant());
+            var sMaster = db.Students.Single(s => s.Email == normalizedMasterOff);
             sMaster.EmailNotificationsEnabled = false;
 
             db.ScoreTransactions.Add(new ScoreTransaction

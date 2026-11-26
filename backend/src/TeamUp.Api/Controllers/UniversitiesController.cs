@@ -1,13 +1,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using TeamUp.Api.Controllers.Common;
+using TeamUp.Api.Extensions;
 using TeamUp.Application.Common;
 using TeamUp.Application.Universities;
 
 namespace TeamUp.Api.Controllers;
 
 [Route("api/v1/universities")]
-public class UniversitiesController(IUniversityService universityService) : BaseApiController
+public sealed class UniversitiesController(
+    IUniversityService universityService,
+    IOutputCacheStore outputCacheStore) : BaseApiController
 {
     [HttpGet]
     [AllowAnonymous]
@@ -24,6 +28,7 @@ public class UniversitiesController(IUniversityService universityService) : Base
 
     [HttpGet("catalog")]
     [AllowAnonymous]
+    [OutputCache(PolicyName = OpenApiAndCachingExtensions.CatalogOutputCachePolicyName, Tags = [CatalogOutputCacheTags.Universities])]
     [ProducesOk<IReadOnlyList<UniversityDetailDto>>]
     public async Task<IActionResult> GetAcademicCatalog(CancellationToken ct = default)
     {
@@ -47,6 +52,7 @@ public class UniversitiesController(IUniversityService universityService) : Base
     public async Task<IActionResult> CreateUniversity([FromBody] CreateUniversityRequest request, CancellationToken ct)
     {
         var result = await universityService.CreateUniversityAsync(request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Universities, ct);
         return CreatedResponse(nameof(GetUniversityById), new { id = result.UniversityId }, result, "University created successfully.");
     }
 
@@ -60,6 +66,7 @@ public class UniversitiesController(IUniversityService universityService) : Base
         CancellationToken ct)
     {
         var result = await universityService.UpdateUniversityAsync(id, request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Universities, ct);
         return OkResponse(result, "University updated successfully.");
     }
 
@@ -69,6 +76,7 @@ public class UniversitiesController(IUniversityService universityService) : Base
     public async Task<IActionResult> DeleteUniversity([FromRoute] int id, CancellationToken ct)
     {
         await universityService.DeleteUniversityAsync(id, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Universities, ct);
         return NoContentResponse();
     }
 }

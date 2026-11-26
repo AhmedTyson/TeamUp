@@ -24,7 +24,7 @@ import {
   Textarea,
   type DataTableColumn,
 } from "@/components/ui";
-import { isSafeHttpUrl } from "@/lib/urlValidation";
+import { isSafeAssetOrHttpUrl } from "@/lib/urlValidation";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function AdminGamificationGovernance() {
@@ -58,19 +58,22 @@ export function AdminGamificationGovernance() {
   const [adjustReason, setAdjustReason] = useState("");
   const [adjustSourceType, setAdjustSourceType] = useState<ScoreSourceType>("Manual");
 
+  const buildBadgePayload = (requireIcon: boolean) => {
+    const trimmedIcon = badgeIcon.trim();
+    if ((requireIcon || trimmedIcon.length > 0) && !isSafeAssetOrHttpUrl(trimmedIcon)) {
+      throw new Error("Badge icon URL must be a valid asset path or public HTTP/HTTPS URL.");
+    }
+    return {
+      name: badgeName.trim(),
+      description: badgeDesc.trim(),
+      iconUrl: trimmedIcon,
+      criteriaType,
+      criteriaValue: Number(criteriaValue),
+    };
+  };
+
   const createBadgeMutation = useMutation({
-    mutationFn: async () => {
-      if (!isSafeHttpUrl(badgeIcon)) {
-        throw new Error("Badge icon URL must be a valid safe URL starting with http:// or https://");
-      }
-      return badgesApi.createBadge({
-        name: badgeName.trim(),
-        description: badgeDesc.trim(),
-        iconUrl: badgeIcon.trim(),
-        criteriaType,
-        criteriaValue: Number(criteriaValue),
-      });
-    },
+    mutationFn: async () => badgesApi.createBadge(buildBadgePayload(true)),
     onSuccess: async () => {
       toast.success("Badge created in catalog.");
       setIsCreateModalOpen(false);
@@ -86,16 +89,7 @@ export function AdminGamificationGovernance() {
   const updateBadgeMutation = useMutation({
     mutationFn: async () => {
       if (!editingBadge) return;
-      if (badgeIcon && !isSafeHttpUrl(badgeIcon)) {
-        throw new Error("Badge icon URL must be a valid safe URL starting with http:// or https://");
-      }
-      return badgesApi.updateBadge(editingBadge.badgeId, {
-        name: badgeName.trim(),
-        description: badgeDesc.trim(),
-        iconUrl: badgeIcon.trim(),
-        criteriaType,
-        criteriaValue: Number(criteriaValue),
-      });
+      return badgesApi.updateBadge(editingBadge.badgeId, buildBadgePayload(false));
     },
     onSuccess: async () => {
       toast.success("Badge updated.");
@@ -458,10 +452,10 @@ export function AdminGamificationGovernance() {
             />
 
             <Input
-              label="Icon URL (https://...)"
+              label="Icon URL or asset path"
               value={badgeIcon}
               onChange={(e) => setBadgeIcon(e.target.value)}
-              placeholder="https://example.com/badge.svg"
+              placeholder="/badges/pioneer.svg or https://example.com/badge.svg"
               required
             />
 

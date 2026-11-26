@@ -17,13 +17,16 @@ public interface IOrganizationService
         bool? recruitingOnly = null,
         CancellationToken ct = default);
 
-    Task<OrganizationDetailDto> GetOrganizationByIdAsync(int id, CancellationToken ct = default);
+    /// <summary>Distinct organization categories in use, most used first, so directory filters are data-driven.</summary>
+    Task<IReadOnlyList<string>> GetOrganizationCategoriesAsync(CancellationToken ct = default);
+
+    Task<OrganizationDetailDto> GetOrganizationByIdAsync(int id, int viewerStudentId = 0, string? viewerRole = null, CancellationToken ct = default);
     Task<OrganizationDetailDto> GetPublicOrganizationByIdAsync(int id, CancellationToken ct = default);
     Task<OrganizationDetailDto> CreateOrganizationAsync(int creatorStudentId, CreateOrganizationRequest request, CancellationToken ct = default);
     Task<OrganizationDetailDto> UpdateOrganizationAsync(int id, int actorStudentId, string? actorRole, UpdateOrganizationRequest request, CancellationToken ct = default);
     Task DeleteOrganizationAsync(int id, CancellationToken ct = default);
 
-    Task<IReadOnlyList<OrganizationMemberDto>> GetMembersAsync(int organizationId, CancellationToken ct = default);
+    Task<IReadOnlyList<OrganizationMemberDto>> GetMembersAsync(int organizationId, int viewerStudentId = 0, string? viewerRole = null, CancellationToken ct = default);
     Task<OrganizationMemberDto> UpdateMemberRoleAsync(int organizationId, int studentId, int actorStudentId, string? actorRole, UpdateOrganizationMemberRequest request, CancellationToken ct = default);
     Task RemoveMemberAsync(int organizationId, int studentId, int actorStudentId, string? actorRole, CancellationToken ct = default);
 
@@ -32,7 +35,8 @@ public interface IOrganizationService
     Task<OrganizationUnitDto> UpdateUnitAsync(int organizationId, int unitId, int actorStudentId, string? actorRole, UpdateOrganizationUnitRequest request, CancellationToken ct = default);
     Task DeleteUnitAsync(int organizationId, int unitId, int actorStudentId, string? actorRole, CancellationToken ct = default);
 
-    Task<OrganizationHierarchyDto> GetHierarchyAsync(int organizationId, bool includeEmails = true, CancellationToken ct = default);
+    Task<OrganizationHierarchyDto> GetHierarchyAsync(
+        int organizationId, bool includeEmails = true, int viewerStudentId = 0, string? viewerRole = null, CancellationToken ct = default);
     Task<IReadOnlyList<OrganizationParticipantDto>> GetParticipantsAsync(int organizationId, CancellationToken ct = default);
 
     Task<IReadOnlyList<MembershipApplicationDto>> GetMyApplicationsAsync(int studentId, CancellationToken ct = default);

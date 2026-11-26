@@ -1,15 +1,20 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using TeamUp.Api.Controllers.Common;
+using TeamUp.Api.Extensions;
 using TeamUp.Application.Skills;
 
 namespace TeamUp.Api.Controllers;
 
 [Route("api/v1/skills")]
 [Authorize]
-public class SkillsController(ISkillService skillService) : BaseApiController
+public sealed class SkillsController(
+    ISkillService skillService,
+    IOutputCacheStore outputCacheStore) : BaseApiController
 {
     [HttpGet]
+    [OutputCache(PolicyName = OpenApiAndCachingExtensions.CatalogOutputCachePolicyName, Tags = [CatalogOutputCacheTags.Skills])]
     [ProducesOk<IReadOnlyList<SkillDto>>]
     public async Task<IActionResult> GetSkills(
         [FromQuery] string? category,
@@ -35,6 +40,7 @@ public class SkillsController(ISkillService skillService) : BaseApiController
     public async Task<IActionResult> CreateSkill([FromBody] CreateSkillRequest request, CancellationToken ct)
     {
         var result = await skillService.CreateSkillAsync(request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Skills, ct);
         return CreatedResponse(nameof(GetSkillById), new { id = result.SkillId }, result, "Skill added to master catalog successfully.");
     }
 
@@ -45,6 +51,7 @@ public class SkillsController(ISkillService skillService) : BaseApiController
     public async Task<IActionResult> UpdateSkill([FromRoute] int id, [FromBody] UpdateSkillRequest request, CancellationToken ct)
     {
         var result = await skillService.UpdateSkillAsync(id, request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Skills, ct);
         return OkResponse(result, "Skill updated successfully.");
     }
 
@@ -54,6 +61,7 @@ public class SkillsController(ISkillService skillService) : BaseApiController
     public async Task<IActionResult> DeleteSkill([FromRoute] int id, CancellationToken ct)
     {
         await skillService.DeleteSkillAsync(id, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.Skills, ct);
         return NoContentResponse();
     }
 }

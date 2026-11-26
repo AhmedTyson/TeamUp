@@ -1,7 +1,9 @@
 // Date: 2026-11-21
 // Purpose: Student account, extended profile, privacy-filtered directory, and audited soft-delete service (STRIDE THR-I-01, THR-R-01, THR-E-02).
 
+using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using TeamUp.Application.Common;
 using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
@@ -9,6 +11,7 @@ using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Common.Validation;
 using TeamUp.Application.Students;
+using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
 
@@ -17,9 +20,12 @@ namespace TeamUp.Application.Services;
 public sealed class ProfileService(
     IAppDbContext db,
     ISecurityStampValidator stampValidator,
-    IAuditLogService auditLog)
+    IAuditLogService auditLog,
+    IOptions<GamificationOptions>? gamificationOptions = null)
     : IStudentAccountService, IStudentProfileService, IStudentInterestService
 {
+    #region Account Management & Directory
+
     public async Task<StudentDetailDto> GetMyAccountAsync(int studentId, CancellationToken ct = default)
     {
         var student = await db.Students
@@ -210,10 +216,14 @@ public sealed class ProfileService(
             .Take(safeLimit)
             .ToListAsync(ct);
 
+        var levelStep = gamificationOptions?.Value.LevelStepPoints > 0
+            ? (double)gamificationOptions.Value.LevelStepPoints
+            : 100.0;
+
         return candidates
             .Select(row =>
             {
-                var level = (int)Math.Floor(Math.Sqrt(Math.Max(row.TotalPoints, 0) / 100.0)) + 1;
+                var level = (int)Math.Floor(Math.Sqrt(Math.Max(row.TotalPoints, 0) / levelStep)) + 1;
                 return new PublicStudentShowcaseDto(
                     row.StudentId,
                     row.FirstName,
@@ -274,37 +284,45 @@ public sealed class ProfileService(
 
     public async Task DeleteStudentAccountAsync(int studentId, CancellationToken ct = default)
     {
-        var student = await db.Students.FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
-            ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
-
-        var snapshot = new { student.StudentId, student.Email, Role = student.Role.ToString() };
-
-        student.RefreshToken = null;
-        student.RefreshTokenExpiresAt = null;
-        student.SecurityStamp = Guid.NewGuid();
-
-        // Clean task assignments for soft-deleted student
-        var assignedTasks = await db.ProjectTasks.Where(t => t.AssignedStudentId == studentId).ToListAsync(ct);
-        foreach (var task in assignedTasks)
+        var deletedSummary = await db.ExecuteInTransactionAsync(IsolationLevel.ReadCommitted, async token =>
         {
-            task.AssignedStudentId = null;
-        }
+            var student = await db.Students.FirstOrDefaultAsync(s => s.StudentId == studentId, token)
+                ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
 
-        // Persist security stamp rotation & task unassignment before soft-delete interceptor freezes non-DeletedAt props
-        await db.SaveChangesAsync(ct);
+            var snapshot = new { student.StudentId, student.Email, Role = student.Role.ToString() };
 
-        db.Students.Remove(student);
-        await db.SaveChangesAsync(ct);
+            student.RefreshToken = null;
+            student.RefreshTokenExpiresAt = null;
+            student.SecurityStamp = Guid.NewGuid();
+
+            // Clean task assignments for soft-deleted student in a single set-based update.
+            await db.ProjectTasks
+                .Where(t => t.AssignedStudentId == studentId)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.AssignedStudentId, (int?)null), token);
+
+            // Persist security stamp rotation before soft-delete interceptor freezes non-DeletedAt props.
+            await db.SaveChangesAsync(token);
+
+            db.Students.Remove(student);
+            await db.SaveChangesAsync(token);
+
+            return (Snapshot: snapshot, DeletedAt: student.DeletedAt);
+        }, ct);
+
         stampValidator.Invalidate(studentId);
 
         await auditLog.RecordAsync(
             "EntitySoftDeleted",
             "Student",
             studentId.ToString(),
-            oldValues: snapshot,
-            newValues: new { DeletedAt = student.DeletedAt },
+            oldValues: deletedSummary.Snapshot,
+            newValues: new { deletedSummary.DeletedAt },
             ct: ct);
     }
+
+    #endregion
+
+    #region Extended Portfolio Profile
 
     public async Task<StudentProfileDto> GetExtendedProfileAsync(int studentId, CancellationToken ct = default)
     {
@@ -377,6 +395,10 @@ public sealed class ProfileService(
         return new StudentProfileDto(profile.Bio, profile.PhotoUrl, profile.GitHubUrl, profile.LinkedInUrl);
     }
 
+    #endregion
+
+    #region Interests
+
     public async Task<IReadOnlyList<string>> GetInterestsAsync(int studentId, CancellationToken ct = default)
     {
         return await db.StudentInterests
@@ -394,7 +416,7 @@ public sealed class ProfileService(
         var tag = interest.Trim();
 
         var existing = await db.StudentInterests
-            .IgnoreQueryFilters()
+            .IgnoreQueryFilters([QueryFilterNames.SoftDelete])
             .FirstOrDefaultAsync(i => i.StudentId == studentId && i.Interest == tag, ct);
 
         if (existing is not null)
@@ -423,4 +445,6 @@ public sealed class ProfileService(
             await db.SaveChangesAsync(ct);
         }
     }
+
+    #endregion
 }

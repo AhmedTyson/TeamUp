@@ -18,7 +18,7 @@ using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Services;
 
-public sealed class AuthService(
+public sealed partial class AuthService(
     IAppDbContext db,
     IJwtTokenService jwt,
     IPasswordHasher<Student> hasher,
@@ -26,15 +26,36 @@ public sealed class AuthService(
     IOptions<JwtOptions> jwtOptions,
     IOrganizationAuthorizationService orgAuth,
     ISecurityStampValidator stampValidator,
-    ILogger<AuthService> logger) : IAuthService
+    ILogger<AuthService> logger,
+    TimeProvider? timeProvider = null) : IAuthService
 {
+    #region Logging & Configuration
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Login rejected for StudentId {StudentId}: account in temporary lockout.")]
+    private static partial void LogLoginRejectedLocked(ILogger logger, int studentId);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "StudentId {StudentId} reached {Count} failed logins; locked for {Seconds}s.")]
+    private static partial void LogAccountLockedOut(ILogger logger, int studentId, int count, int seconds);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Refresh token reuse detected for StudentId {StudentId}; session revoked.")]
+    private static partial void LogRefreshTokenReuseDetected(ILogger logger, int studentId);
+
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
     /// <summary>Failures allowed before escalating per-account delays start.</summary>
     public const int FreeFailedLoginAttempts = 5;
     public static readonly TimeSpan MaxLockout = TimeSpan.FromMinutes(15);
     /// <summary>A just-rotated token presented again within this window is treated as a client race, not theft.</summary>
     public static readonly TimeSpan RefreshReuseGrace = TimeSpan.FromSeconds(10);
 
+    private static readonly Student DummyStudent = new() { Email = "dummy@teamup.invalid" };
+    private static readonly string DummyPasswordHash =
+        new PasswordHasher<Student>().HashPassword(DummyStudent, "DummyConstantTimePaddingPassword!2026");
+
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+
+    #endregion
+
+    #region Registration & Login
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest req, CancellationToken ct = default)
     {
@@ -65,7 +86,6 @@ public sealed class AuthService(
         var student = new Student
         {
             Email = email,
-            PasswordHash = hasher.HashPassword(null!, req.Password),
             FirstName = req.FirstName.Trim(),
             LastName = req.LastName.Trim(),
             AcademicYear = req.AcademicYear,
@@ -78,8 +98,9 @@ public sealed class AuthService(
             ReceiveProjectMatchEmails = req.EmailNotificationsEnabled && req.ReceiveProjectMatchEmails,
             SecurityStamp = Guid.NewGuid(),
             RefreshToken = jwt.HashToken(rawRefreshToken),
-            RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays),
+            RefreshTokenExpiresAt = _time.GetUtcNow().UtcDateTime.AddDays(_jwtOptions.RefreshTokenDays),
         };
+        student.PasswordHash = hasher.HashPassword(student, req.Password);
 
         db.Students.Add(student);
         await db.SaveChangesAsync(ct);
@@ -122,14 +143,20 @@ public sealed class AuthService(
             .Include(s => s.Faculty!)
             .ThenInclude(f => f.University)
             .Include(s => s.Profile)
-            .FirstOrDefaultAsync(s => s.Email == email, ct)
-            ?? throw new UnauthorizedException("Invalid email or password.");
+            .FirstOrDefaultAsync(s => s.Email == email, ct);
+
+        if (student is null)
+        {
+            hasher.VerifyHashedPassword(DummyStudent, DummyPasswordHash, req.Password);
+            throw new UnauthorizedException("Invalid email or password.");
+        }
 
         // Escalating per-account delay (not a permanent lockout, so it cannot be abused for lasting DoS).
         // The response is identical to a wrong password so lockout state does not reveal the account.
-        if (student.LockoutEndUtc is { } lockedUntil && lockedUntil > DateTime.UtcNow)
+        if (student.LockoutEndUtc is { } lockedUntil && lockedUntil > _time.GetUtcNow().UtcDateTime)
         {
-            logger.LogWarning("Login rejected for StudentId {StudentId}: account in temporary lockout.", student.StudentId);
+            hasher.VerifyHashedPassword(DummyStudent, DummyPasswordHash, req.Password);
+            LogLoginRejectedLocked(logger, student.StudentId);
             throw new UnauthorizedException("Invalid email or password.");
         }
 
@@ -141,9 +168,8 @@ public sealed class AuthService(
             {
                 var exponent = Math.Min(student.FailedLoginCount - FreeFailedLoginAttempts - 1, 10);
                 var delay = TimeSpan.FromSeconds(Math.Min(30 * Math.Pow(2, exponent), MaxLockout.TotalSeconds));
-                student.LockoutEndUtc = DateTime.UtcNow.Add(delay);
-                logger.LogWarning("StudentId {StudentId} reached {Count} failed logins; locked for {Seconds}s.",
-                    student.StudentId, student.FailedLoginCount, (int)delay.TotalSeconds);
+                student.LockoutEndUtc = _time.GetUtcNow().UtcDateTime.Add(delay);
+                LogAccountLockedOut(logger, student.StudentId, student.FailedLoginCount, (int)delay.TotalSeconds);
             }
             await db.SaveChangesAsync(ct);
             throw new UnauthorizedException("Invalid email or password.");
@@ -166,7 +192,7 @@ public sealed class AuthService(
 
         var rawRefreshToken = jwt.GenerateRefreshToken();
         student.RefreshToken = jwt.HashToken(rawRefreshToken);
-        student.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays);
+        student.RefreshTokenExpiresAt = _time.GetUtcNow().UtcDateTime.AddDays(_jwtOptions.RefreshTokenDays);
         student.PreviousRefreshToken = null;
         student.PreviousRefreshTokenRotatedAt = null;
         await db.SaveChangesAsync(ct);
@@ -188,6 +214,10 @@ public sealed class AuthService(
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
 
+    #endregion
+
+    #region Session Refresh & Logout
+
     public async Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest req, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(req.RefreshToken))
@@ -207,7 +237,7 @@ public sealed class AuthService(
             throw new UnauthorizedException("Invalid or expired refresh token.");
         }
 
-        if (student.RefreshTokenExpiresAt is null || student.RefreshTokenExpiresAt <= DateTime.UtcNow)
+        if (student.RefreshTokenExpiresAt is null || student.RefreshTokenExpiresAt <= _time.GetUtcNow().UtcDateTime)
             throw new UnauthorizedException("Invalid or expired refresh token.");
 
         if (student.SecurityStamp == Guid.Empty)
@@ -224,9 +254,9 @@ public sealed class AuthService(
 
         var rawRefreshToken = jwt.GenerateRefreshToken();
         student.PreviousRefreshToken = student.RefreshToken;
-        student.PreviousRefreshTokenRotatedAt = DateTime.UtcNow;
+        student.PreviousRefreshTokenRotatedAt = _time.GetUtcNow().UtcDateTime;
         student.RefreshToken = jwt.HashToken(rawRefreshToken);
-        student.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenDays);
+        student.RefreshTokenExpiresAt = _time.GetUtcNow().UtcDateTime.AddDays(_jwtOptions.RefreshTokenDays);
         await db.SaveChangesAsync(ct);
 
         var summary = new StudentSummaryDto(
@@ -256,10 +286,10 @@ public sealed class AuthService(
         if (victim is null || victim.PreviousRefreshTokenRotatedAt is null)
             return;
 
-        if (DateTime.UtcNow - victim.PreviousRefreshTokenRotatedAt.Value <= RefreshReuseGrace)
+        if (_time.GetUtcNow().UtcDateTime - victim.PreviousRefreshTokenRotatedAt.Value <= RefreshReuseGrace)
             return;
 
-        logger.LogWarning("Refresh token reuse detected for StudentId {StudentId}; session revoked.", victim.StudentId);
+        LogRefreshTokenReuseDetected(logger, victim.StudentId);
         victim.RefreshToken = null;
         victim.RefreshTokenExpiresAt = null;
         victim.PreviousRefreshToken = null;
@@ -284,6 +314,10 @@ public sealed class AuthService(
         }
     }
 
+    #endregion
+
+    #region Password Recovery
+
     public async Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest req, CancellationToken ct = default)
     {
         var email = req.Email.Trim().ToLowerInvariant();
@@ -293,7 +327,7 @@ public sealed class AuthService(
         {
             var rawResetToken = jwt.GenerateRefreshToken();
             student.PasswordResetToken = jwt.HashToken(rawResetToken);
-            student.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(Math.Clamp(_jwtOptions.PasswordResetTokenMinutes, 5, 60));
+            student.PasswordResetTokenExpiresAt = _time.GetUtcNow().UtcDateTime.AddMinutes(Math.Clamp(_jwtOptions.PasswordResetTokenMinutes, 5, 60));
             await db.SaveChangesAsync(ct);
 
             await emailSender.SendPasswordResetEmailAsync(student.Email, rawResetToken, ct);
@@ -315,7 +349,7 @@ public sealed class AuthService(
                 Encoding.UTF8.GetBytes(student.PasswordResetToken),
                 Encoding.UTF8.GetBytes(incomingHash)) ||
             student.PasswordResetTokenExpiresAt is null ||
-            student.PasswordResetTokenExpiresAt <= DateTime.UtcNow)
+            student.PasswordResetTokenExpiresAt <= _time.GetUtcNow().UtcDateTime)
         {
             throw new UnauthorizedException("Invalid or expired password reset token.");
         }
@@ -336,4 +370,6 @@ public sealed class AuthService(
         await db.SaveChangesAsync(ct);
         stampValidator.Invalidate(student.StudentId);
     }
+
+    #endregion
 }

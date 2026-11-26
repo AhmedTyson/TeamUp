@@ -1,12 +1,12 @@
 # TeamUp — Environment Variables & Configuration Reference
 
-> **Single Source of Truth** for all configuration settings consumed by the TeamUp ASP.NET Core 10 Web API and React 19 Vite SPA.
+> **Single Source of Truth** for all configuration settings consumed by the TeamUp ASP.NET Core 11 Web API and React 19 Vite SPA.
 
 > **Sources:**
 > - [backend/src/TeamUp.Api/appsettings.json](../backend/src/TeamUp.Api/appsettings.json)
 > - [backend/src/TeamUp.Api/appsettings.Development.json](../backend/src/TeamUp.Api/appsettings.Development.json)
 > - [backend/src/TeamUp.Api/appsettings.Production.example.json](../backend/src/TeamUp.Api/appsettings.Production.example.json)
-> - [backend/src/TeamUp.Api/Program.cs](../backend/src/TeamUp.Api/Program.cs)
+> - [backend/src/TeamUp.Api/Extensions/SecurityPipelineExtensions.cs](../backend/src/TeamUp.Api/Extensions/SecurityPipelineExtensions.cs)
 > - [backend/src/TeamUp.Application/Common/Security/SecurityOptions.cs](../backend/src/TeamUp.Application/Common/Security/SecurityOptions.cs)
 > - [frontend/.env.example](../frontend/.env.example)
 
@@ -94,6 +94,7 @@
 | `RateLimiting:AnonymousPermitLimit` | `30` | Global fixed-window limit per sanitized `RemoteIpAddress`. |
 | `RateLimiting:AuthPermitLimit` | `30` | Fixed-window limit on `/api/v1/auth/*` per `RemoteIpAddress`. |
 | `RateLimiting:DirectoryPermitLimit` | `30` | Fixed-window limit on `GET /api/v1/students` per authenticated user (max 20 rows/page). |
+| `RateLimiting:UploadPermitLimit` | `10` | Fixed-window limit on multipart upload endpoints (`POST /api/v1/images`, `POST /api/v1/students/me/profile/photo`). |
 
 ---
 

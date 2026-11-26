@@ -2,7 +2,7 @@
 // Purpose: Platform admin service with guarded role escalation, immediate SecurityStamp revocation, universal restore, and immutable audit logs (STRIDE THR-R-01, THR-E-02, THR-E-03).
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using TeamUp.Application.Admin;
 using TeamUp.Application.Auth;
@@ -11,6 +11,7 @@ using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
+using TeamUp.Domain.Common;
 using TeamUp.Domain.Enums;
 
 namespace TeamUp.Application.Services;
@@ -20,17 +21,19 @@ public sealed class AdminService(
     IOptions<AdminOptions> adminOptions,
     ISecurityStampValidator stampValidator,
     IAuditLogService auditLog,
-    IMemoryCache cache) : IAdminService
+    HybridCache cache) : IAdminService
 {
+    #region Dashboard & Role Governance
+
     public async Task<AdminDashboardDto> GetDashboardStatsAsync(CancellationToken ct = default)
     {
         var activeStudents = await db.Students.CountAsync(ct);
         var activeUnis = await db.Universities.CountAsync(ct);
         var activeFaculties = await db.Faculties.CountAsync(ct);
 
-        var deletedStudents = await db.Students.IgnoreQueryFilters().CountAsync(s => s.DeletedAt != null, ct);
-        var deletedUnis = await db.Universities.IgnoreQueryFilters().CountAsync(u => u.DeletedAt != null, ct);
-        var deletedFaculties = await db.Faculties.IgnoreQueryFilters().CountAsync(f => f.DeletedAt != null, ct);
+        var deletedStudents = await db.Students.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).CountAsync(s => s.DeletedAt != null, ct);
+        var deletedUnis = await db.Universities.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).CountAsync(u => u.DeletedAt != null, ct);
+        var deletedFaculties = await db.Faculties.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).CountAsync(f => f.DeletedAt != null, ct);
         var pendingOrgRequests = await db.OrganizationCreationRequests.CountAsync(r => r.Status == ApplicationStatus.Pending, ct);
 
         var roles = await db.Students
@@ -119,6 +122,14 @@ public sealed class AdminService(
             student.City);
     }
 
+    #endregion
+
+    #region Recycle Bin & Restore
+
+    // Admin restore previews show only the most recent deletions per type; unbounded listings
+    // grow forever in a long-lived database. The cap is configurable via Admin:SoftDeletedPreviewLimit.
+    private int SoftDeletedPreviewLimit => Math.Max(adminOptions.Value.SoftDeletedPreviewLimit, 1);
+
     public async Task<IReadOnlyList<SoftDeletedItemDto>> GetSoftDeletedRecordsAsync(string? entityType, CancellationToken ct = default)
     {
         var list = new List<SoftDeletedItemDto>();
@@ -126,64 +137,72 @@ public sealed class AdminService(
 
         if (string.IsNullOrEmpty(type) || type is "student" or "students")
         {
-            list.AddRange(await db.Students.AsNoTracking().IgnoreQueryFilters()
+            list.AddRange(await db.Students.AsNoTracking().IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(s => s.DeletedAt != null)
+                .OrderByDescending(s => s.DeletedAt).Take(SoftDeletedPreviewLimit)
                 .Select(s => new SoftDeletedItemDto(s.StudentId, "Student", $"{s.FirstName} {s.LastName} ({s.Email})", s.DeletedAt!.Value))
                 .ToListAsync(ct));
         }
 
         if (string.IsNullOrEmpty(type) || type is "university" or "universities")
         {
-            list.AddRange(await db.Universities.AsNoTracking().IgnoreQueryFilters()
+            list.AddRange(await db.Universities.AsNoTracking().IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(u => u.DeletedAt != null)
+                .OrderByDescending(u => u.DeletedAt).Take(SoftDeletedPreviewLimit)
                 .Select(u => new SoftDeletedItemDto(u.UniversityId, "University", u.Name, u.DeletedAt!.Value))
                 .ToListAsync(ct));
         }
 
         if (string.IsNullOrEmpty(type) || type is "faculty" or "faculties")
         {
-            list.AddRange(await db.Faculties.AsNoTracking().IgnoreQueryFilters()
+            list.AddRange(await db.Faculties.AsNoTracking().IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(f => f.DeletedAt != null)
+                .OrderByDescending(f => f.DeletedAt).Take(SoftDeletedPreviewLimit)
                 .Select(f => new SoftDeletedItemDto(f.FacultyId, "Faculty", $"{f.Name} ({f.Code})", f.DeletedAt!.Value))
                 .ToListAsync(ct));
         }
 
         if (string.IsNullOrEmpty(type) || type is "skill" or "skills")
         {
-            list.AddRange(await db.Skills.AsNoTracking().IgnoreQueryFilters()
+            list.AddRange(await db.Skills.AsNoTracking().IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(s => s.DeletedAt != null)
+                .OrderByDescending(s => s.DeletedAt).Take(SoftDeletedPreviewLimit)
                 .Select(s => new SoftDeletedItemDto(s.SkillId, "Skill", $"{s.Name} ({s.Category})", s.DeletedAt!.Value))
                 .ToListAsync(ct));
         }
 
         if (string.IsNullOrEmpty(type) || type is "project" or "projects")
         {
-            list.AddRange(await db.Projects.AsNoTracking().IgnoreQueryFilters()
+            list.AddRange(await db.Projects.AsNoTracking().IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(p => p.DeletedAt != null)
+                .OrderByDescending(p => p.DeletedAt).Take(SoftDeletedPreviewLimit)
                 .Select(p => new SoftDeletedItemDto(p.ProjectId, "Project", p.Title, p.DeletedAt!.Value))
                 .ToListAsync(ct));
         }
 
         if (string.IsNullOrEmpty(type) || type is "organization" or "organizations")
         {
-            list.AddRange(await db.Organizations.AsNoTracking().IgnoreQueryFilters()
+            list.AddRange(await db.Organizations.AsNoTracking().IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(o => o.DeletedAt != null)
+                .OrderByDescending(o => o.DeletedAt).Take(SoftDeletedPreviewLimit)
                 .Select(o => new SoftDeletedItemDto(o.OrganizationId, "Organization", o.Name, o.DeletedAt!.Value))
                 .ToListAsync(ct));
         }
 
         if (string.IsNullOrEmpty(type) || type is "event" or "events")
         {
-            list.AddRange(await db.Events.AsNoTracking().IgnoreQueryFilters()
+            list.AddRange(await db.Events.AsNoTracking().IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(e => e.DeletedAt != null)
+                .OrderByDescending(e => e.DeletedAt).Take(SoftDeletedPreviewLimit)
                 .Select(e => new SoftDeletedItemDto(e.EventId, "Event", e.Title, e.DeletedAt!.Value))
                 .ToListAsync(ct));
         }
 
         if (string.IsNullOrEmpty(type) || type is "badge" or "badges")
         {
-            list.AddRange(await db.Badges.AsNoTracking().IgnoreQueryFilters()
+            list.AddRange(await db.Badges.AsNoTracking().IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                 .Where(b => b.DeletedAt != null)
+                .OrderByDescending(b => b.DeletedAt).Take(SoftDeletedPreviewLimit)
                 .Select(b => new SoftDeletedItemDto(b.BadgeId, "Badge", b.Name, b.DeletedAt!.Value))
                 .ToListAsync(ct));
         }
@@ -200,7 +219,7 @@ public sealed class AdminService(
         switch (type)
         {
             case "student" or "students":
-                var student = await db.Students.IgnoreQueryFilters().FirstOrDefaultAsync(s => s.StudentId == id, ct)
+                var student = await db.Students.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).FirstOrDefaultAsync(s => s.StudentId == id, ct)
                     ?? throw new NotFoundException($"Student with ID {id} was not found.");
                 canonicalType = "Student";
                 previousDeletedAt = student.DeletedAt;
@@ -214,7 +233,7 @@ public sealed class AdminService(
                 break;
 
             case "university" or "universities":
-                var uni = await db.Universities.IgnoreQueryFilters()
+                var uni = await db.Universities.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                     .Include(u => u.Faculties)
                     .FirstOrDefaultAsync(u => u.UniversityId == id, ct)
                     ?? throw new NotFoundException($"University with ID {id} was not found.");
@@ -226,12 +245,12 @@ public sealed class AdminService(
                     foreach (var f in uni.Faculties)
                         f.DeletedAt = null;
                     await db.SaveChangesAsync(ct);
-                    cache.Remove(CatalogCacheKeys.AcademicCatalog);
+                    await cache.RemoveAsync(CatalogCacheKeys.AcademicCatalog, ct);
                 }
                 break;
 
             case "faculty" or "faculties":
-                var faculty = await db.Faculties.IgnoreQueryFilters()
+                var faculty = await db.Faculties.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                     .Include(f => f.University)
                     .FirstOrDefaultAsync(f => f.FacultyId == id, ct)
                     ?? throw new NotFoundException($"Faculty with ID {id} was not found.");
@@ -246,12 +265,12 @@ public sealed class AdminService(
                 {
                     faculty.DeletedAt = null;
                     await db.SaveChangesAsync(ct);
-                    cache.Remove(CatalogCacheKeys.AcademicCatalog);
+                    await cache.RemoveAsync(CatalogCacheKeys.AcademicCatalog, ct);
                 }
                 break;
 
             case "skill" or "skills":
-                var skill = await db.Skills.IgnoreQueryFilters().FirstOrDefaultAsync(s => s.SkillId == id, ct)
+                var skill = await db.Skills.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).FirstOrDefaultAsync(s => s.SkillId == id, ct)
                     ?? throw new NotFoundException($"Skill with ID {id} was not found.");
                 canonicalType = "Skill";
                 previousDeletedAt = skill.DeletedAt;
@@ -259,12 +278,12 @@ public sealed class AdminService(
                 {
                     skill.DeletedAt = null;
                     await db.SaveChangesAsync(ct);
-                    cache.Remove(CatalogCacheKeys.MasterSkills);
+                    await cache.RemoveAsync(CatalogCacheKeys.MasterSkills, ct);
                 }
                 break;
 
             case "project" or "projects":
-                var project = await db.Projects.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.ProjectId == id, ct)
+                var project = await db.Projects.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).FirstOrDefaultAsync(p => p.ProjectId == id, ct)
                     ?? throw new NotFoundException($"Project with ID {id} was not found.");
                 canonicalType = "Project";
                 previousDeletedAt = project.DeletedAt;
@@ -276,7 +295,7 @@ public sealed class AdminService(
                 break;
 
             case "organization" or "organizations":
-                var org = await db.Organizations.IgnoreQueryFilters().FirstOrDefaultAsync(o => o.OrganizationId == id, ct)
+                var org = await db.Organizations.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).FirstOrDefaultAsync(o => o.OrganizationId == id, ct)
                     ?? throw new NotFoundException($"Organization with ID {id} was not found.");
                 canonicalType = "Organization";
                 previousDeletedAt = org.DeletedAt;
@@ -288,7 +307,7 @@ public sealed class AdminService(
                 break;
 
             case "event" or "events":
-                var evt = await db.Events.IgnoreQueryFilters()
+                var evt = await db.Events.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                     .Include(e => e.Organization)
                     .Include(e => e.Sessions)
                     .FirstOrDefaultAsync(e => e.EventId == id, ct)
@@ -308,7 +327,7 @@ public sealed class AdminService(
                 break;
 
             case "badge" or "badges":
-                var badge = await db.Badges.IgnoreQueryFilters().FirstOrDefaultAsync(b => b.BadgeId == id, ct)
+                var badge = await db.Badges.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).FirstOrDefaultAsync(b => b.BadgeId == id, ct)
                     ?? throw new NotFoundException($"Badge with ID {id} was not found.");
                 canonicalType = "Badge";
                 previousDeletedAt = badge.DeletedAt;
@@ -316,7 +335,7 @@ public sealed class AdminService(
                 {
                     badge.DeletedAt = null;
                     await db.SaveChangesAsync(ct);
-                    cache.Remove(CatalogCacheKeys.BadgeCatalog);
+                    await cache.RemoveAsync(CatalogCacheKeys.BadgeCatalog, ct);
                 }
                 break;
 
@@ -336,6 +355,10 @@ public sealed class AdminService(
                 ct: ct);
         }
     }
+
+    #endregion
+
+    #region Audit Logs
 
     public async Task<PagedResult<AuditLogDto>> GetAuditLogsAsync(
         string? action,
@@ -382,4 +405,6 @@ public sealed class AdminService(
 
         return new PagedResult<AuditLogDto>(items, page.SafePage, page.SafePageSize, total);
     }
+
+    #endregion
 }

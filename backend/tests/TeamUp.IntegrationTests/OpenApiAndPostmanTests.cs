@@ -4,8 +4,9 @@ using System.Text.Json.Nodes;
 
 namespace TeamUp.IntegrationTests;
 
-public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<TeamUpApiFactory>
+public sealed class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<TeamUpApiFactory>
 {
+    private static readonly JsonSerializerOptions IndentedJsonOptions = new() { WriteIndented = true };
     private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
@@ -20,6 +21,13 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
         var jsonDoc = JsonNode.Parse(jsonString);
         Assert.NotNull(jsonDoc);
 
+        var openApiVersion = jsonDoc["openapi"]?.ToString();
+        Assert.NotNull(openApiVersion);
+        Assert.StartsWith("3.2", openApiVersion, StringComparison.Ordinal);
+
+        var bearerScheme = jsonDoc["components"]?["securitySchemes"]?["Bearer"];
+        Assert.NotNull(bearerScheme);
+
         var info = jsonDoc["info"];
         Assert.NotNull(info);
         Assert.Contains("TeamUp", info["title"]?.ToString());
@@ -33,7 +41,7 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
         var outputPath = Path.Combine(DocsApiRoot(), "openapi.json");
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
-        var formattedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+        var formattedJson = JsonSerializer.Serialize(jsonDoc, IndentedJsonOptions);
         await File.WriteAllTextAsync(outputPath, formattedJson);
 
         Assert.True(File.Exists(outputPath));
@@ -70,7 +78,7 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
             {
                 ["_postman_id"] = Guid.NewGuid().ToString(),
                 ["name"] = "TeamUp API Collection",
-                ["description"] = "Comprehensive API collection for TeamUp Student Collaboration & Gamification Platform (.NET 10).",
+                ["description"] = "Comprehensive API collection for TeamUp Student Collaboration & Gamification Platform (.NET 11).",
                 ["schema"] = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
             },
             ["auth"] = new JsonObject
@@ -83,6 +91,13 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
             },
             ["item"] = new JsonArray
             {
+                CreateFolder("00. Health & Images", [
+                    CreateRequest("Health Aggregate", "GET", "{{baseUrl}}/health"),
+                    CreateRequest("Health Liveness", "GET", "{{baseUrl}}/health/live"),
+                    CreateRequest("Health Readiness", "GET", "{{baseUrl}}/health/ready"),
+                    CreateRequest("Upload Image", "POST", "{{baseUrl}}/api/v1/images"),
+                    CreateRequest("Get Default Cover Image", "GET", "{{baseUrl}}/api/v1/images/c0e70000-0000-4000-8000-000000000001")
+                ]),
                 CreateFolder("01. Auth & Identity", [
                     CreateRequest("Register Student", "POST", "{{baseUrl}}/api/v1/auth/register", "{\"firstName\":\"Ahmed\",\"lastName\":\"Tyson\",\"email\":\"tyson@teamup.edu\",\"password\":\"P@ssword123!\",\"academicYear\":3,\"facultyId\":1}"),
                     CreateRequest("Login", "POST", "{{baseUrl}}/api/v1/auth/login", "{\"email\":\"tyson@teamup.edu\",\"password\":\"P@ssword123!\"}"),
@@ -115,6 +130,8 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
                     CreateRequest("Create Task", "POST", "{{baseUrl}}/api/v1/projects/1/tasks", "{\"title\":\"Train YOLOv11 Model\",\"priority\":\"High\"}")
                 ]),
                 CreateFolder("06. Organizations & Activities", [
+                    CreateRequest("List Public Organizations", "GET", "{{baseUrl}}/api/v1/organizations/public"),
+                    CreateRequest("List Public Organization Categories", "GET", "{{baseUrl}}/api/v1/organizations/public/categories"),
                     CreateRequest("List Organizations", "GET", "{{baseUrl}}/api/v1/organizations"),
                     CreateRequest("Create Organization", "POST", "{{baseUrl}}/api/v1/organizations", "{\"name\":\"IEEE Student Chapter\",\"description\":\"Technical society\",\"category\":\"Engineering\"}"),
                     CreateRequest("Apply for Membership", "POST", "{{baseUrl}}/api/v1/organizations/1/applications", "{\"message\":\"Ready to participate in IEEE.\"}")
@@ -132,7 +149,8 @@ public class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFixture<Te
                     CreateRequest("Get Score Ledger", "GET", "{{baseUrl}}/api/v1/students/{{studentId}}/score-transactions"),
                     CreateRequest("Campus Leaderboard", "GET", "{{baseUrl}}/api/v1/gamification/leaderboard"),
                     CreateRequest("Get Badge Catalog", "GET", "{{baseUrl}}/api/v1/badges"),
-                    CreateRequest("Get My Notifications", "GET", "{{baseUrl}}/api/v1/notifications")
+                    CreateRequest("Get My Notifications", "GET", "{{baseUrl}}/api/v1/notifications"),
+                    CreateRequest("Get Unread Notifications Count", "GET", "{{baseUrl}}/api/v1/notifications/unread-count")
                 ]),
                 CreateFolder("09. Platform Admin & Governance", [
                     CreateRequest("Admin Dashboard", "GET", "{{baseUrl}}/api/v1/admin/dashboard"),

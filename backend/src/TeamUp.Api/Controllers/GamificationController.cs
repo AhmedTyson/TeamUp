@@ -11,7 +11,7 @@ namespace TeamUp.Api.Controllers;
 
 [Route("api/v1")]
 [Authorize]
-public class GamificationController(IGamificationService gamificationService) : BaseApiController
+public sealed class GamificationController(IGamificationService gamificationService) : BaseApiController
 {
     [HttpGet("students/{id:int}/score")]
     [ProducesOk<StudentScoreDto>, ProducesNotFound]

@@ -1,6 +1,6 @@
-# Appendix — Full API Route List (116 routes)
+# Appendix — Full API Route List
 
-> Complete audit matrix for all **116 RESTful routes** in TeamUp (1 `/health` endpoint + 115 controller actions across 19 controllers), verified against `TeamUp.Api` controllers and [`docs/api/openapi.json`](../docs/api/openapi.json).
+> Historical 116-route matrix preserved below alongside newly added platform endpoints. The authoritative current **OpenAPI 3.2** specification exposes **100 paths / 143 operations** plus `/health/live` and `/health/ready` in [`docs/api/openapi.json`](../docs/api/openapi.json).
 
 | # | Method | URI | Controller Action | Middleware / Auth | Module | Owner | Status |
 |---|---|---|---|---|---|---|---|
@@ -120,3 +120,9 @@
 | 114 | GET | `/api/v1/admin/templates/preview/{templateName}` | `AdminController.PreviewEmailTemplate` | 👑 PlatformAdmin (`text/html`) | M1: Admin | Tyson | ✅ Done |
 | 115 | POST | `/api/v1/admin/communications/leaderboard-digest` | `AdminController.DispatchLeaderboardDigest` | 👑 PlatformAdmin | M1: Admin | Tyson | ✅ Done |
 | 116 | POST | `/api/v1/admin/communications/project-matches` | `AdminController.DispatchProjectMatchDigest` | 👑 PlatformAdmin | M1: Admin | Tyson | ✅ Done |
+| + | GET | `/health/live` | Health Check (`HealthCheckExtensions`) | 🌐 Public (rate-limit exempt) | System | Platform | ✅ Done |
+| + | GET | `/health/ready` | Health Check (`HealthCheckExtensions`) | 🌐 Public (rate-limit exempt) | System | Platform | ✅ Done |
+| + | POST | `/api/v1/images` | `ImagesController.UploadImage` | 🔒 Auth (`upload-policy`, 2 MB) | System | Platform | ✅ Done |
+| + | GET | `/api/v1/images/{id}` | `ImagesController.GetImage` | 🌐 Public (`cross-origin`) | System | Platform | ✅ Done |
+| + | GET | `/api/v1/organizations/public/categories` | `OrganizationsController.GetPublicOrganizationCategories` | 🌐 Public (OutputCache) | M3: Orgs | Platform | ✅ Done |
+| + | GET | `/api/v1/notifications/unread-count` | `NotificationsController.GetUnreadCount` | 👤 Owner | M4: Alerts | Platform | ✅ Done |

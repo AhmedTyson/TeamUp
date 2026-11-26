@@ -49,7 +49,8 @@ public sealed record EventDto(
     bool IsPublic = true,
     string? MeetingUrl = null,
     int? OrganizationUnitId = null,
-    string? OrganizationUnitName = null);
+    string? OrganizationUnitName = null,
+    string? CoverImageUrl = null);
 
 public sealed record MyEventRegistrationDto(
     int EventId,

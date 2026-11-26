@@ -35,12 +35,23 @@ export function useEvent(eventId: number) {
   });
 }
 
-export function useMyEventRegistrations(enabled = true) {
+export function useMyEventRegistrations(enabled = true, page = 1, pageSize = 20) {
   const { isAuthenticated } = useAuth();
   return useQuery({
-    queryKey: queryKeys.events.myRegistrations,
-    queryFn: ({ signal }) => eventsApi.myRegistrations(signal),
+    queryKey: queryKeys.events.myRegistrations(page, pageSize),
+    queryFn: ({ signal }) => eventsApi.myRegistrations(page, pageSize, signal),
     enabled: isAuthenticated && enabled,
+  });
+}
+
+// Per-event "am I registered?" lookup. The paginated my-registrations list cannot answer this:
+// a registration older than page 1 would look like "not registered".
+export function useMyEventRegistration(eventId: number, enabled = true) {
+  const { isAuthenticated } = useAuth();
+  return useQuery({
+    queryKey: queryKeys.events.myRegistration(eventId),
+    queryFn: ({ signal }) => eventsApi.myRegistration(eventId, signal),
+    enabled: isAuthenticated && enabled && Number.isInteger(eventId) && eventId > 0,
   });
 }
 

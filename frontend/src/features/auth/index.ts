@@ -34,7 +34,7 @@ export type {
   ResetPasswordFormValues,
   PasswordStrengthResult,
 } from "./schemas/authSchemas";
-export { LoginPage } from "./pages/LoginPage";
-export { RegisterPage } from "./pages/RegisterPage";
-export { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
-export { ResetPasswordPage } from "./pages/ResetPasswordPage";
+// Pages are intentionally NOT re-exported here: this barrel is imported by main-chunk modules
+// (providers, Navbar, guards), and re-exporting the pages pulls them into the main bundle,
+// defeating the React.lazy() route splitting in app/routes/authRoutes.tsx.
+// Import pages directly from "./pages/<Page>" (tests) or via lazy routes (app).

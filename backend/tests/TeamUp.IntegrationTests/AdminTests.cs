@@ -14,7 +14,7 @@ public class AdminTests(TeamUpApiFactory factory) : IClassFixture<TeamUpApiFacto
     private HttpClient CreateClientWithRole(string role)
     {
         var client = factory.CreateClient();
-        var token = factory.CreateToken(900, $"{role.ToLower()}@teamup.test", role);
+        var token = factory.CreateToken(900, $"{role.ToLowerInvariant()}@teamup.test", role);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return client;
     }

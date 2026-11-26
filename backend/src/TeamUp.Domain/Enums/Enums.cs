@@ -20,7 +20,7 @@ public enum RegistrationStatus { Confirmed, Waitlisted, Cancelled }
 
 public enum VerificationMethod { QRCode, RFID, ManualByOrganizer }
 
-public enum ScoreSourceType { EventAttendance, TaskCompleted, ProjectDelivered, Manual }
+public enum ScoreSourceType { EventAttendance, TaskCompleted, ProjectDelivered, Manual, AttendanceRevocation }
 
 public enum BadgeCriteriaType { PointsThreshold, EventCount, TaskCount }
 

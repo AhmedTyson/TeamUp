@@ -24,6 +24,7 @@ import {
 import { Badge, Button, EmptyState, ErrorBanner } from "@/components/ui";
 import { formatDateTime } from "@/lib/formatters";
 import { queryKeys } from "@/lib/queryKeys";
+import { useUnreadNotificationCount } from "./useUnreadNotificationCount";
 
 function renderNotificationIcon(type: NotificationType) {
   switch (type) {
@@ -61,8 +62,10 @@ export function NotificationsInboxPage() {
 
   const notificationsQuery = useQuery({
     queryKey: queryKeys.notifications.inbox(unreadOnly),
-    queryFn: ({ signal }) => notificationsApi.getNotifications(unreadOnly, signal),
+    queryFn: ({ signal }) => notificationsApi.getNotifications(unreadOnly, 15, signal),
   });
+
+  const unreadCountQuery = useUnreadNotificationCount();
 
   const markReadMutation = useMutation({
     mutationFn: (id: number) => notificationsApi.markAsRead(id),
@@ -100,7 +103,7 @@ export function NotificationsInboxPage() {
   });
 
   const notifications = notificationsQuery.data ?? [];
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = unreadCountQuery.data ?? notifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="space-y-6">
@@ -147,7 +150,7 @@ export function NotificationsInboxPage() {
             !unreadOnly ? "bg-[#d3fb52] text-[#14151c]" : "text-white/70 hover:text-white"
           }`}
         >
-          All Notifications ({notifications.length})
+          All Notifications
         </button>
         <button
           type="button"

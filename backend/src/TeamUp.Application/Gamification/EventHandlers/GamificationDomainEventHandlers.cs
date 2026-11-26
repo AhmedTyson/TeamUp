@@ -13,9 +13,17 @@ using TeamUp.Domain.Events;
 
 namespace TeamUp.Application.Gamification.EventHandlers;
 
-public sealed class TaskCompletedDomainEventHandler(IAppDbContext db, IBadgeService badgeService)
+#region XP & Badge Handlers
+
+public sealed class TaskCompletedDomainEventHandler(
+    IAppDbContext db,
+    IBadgeService badgeService,
+    IOptions<GamificationOptions>? gamificationOptions = null)
     : IDomainEventHandler<TaskCompletedDomainEvent>
 {
+    private int PointsPerCompletedTaskValue => gamificationOptions?.Value.PointsPerCompletedTask ?? 50;
+
+    [Obsolete("Use GamificationOptions.PointsPerCompletedTask; the value is configurable via the Gamification section.")]
     public const int PointsPerCompletedTask = 50;
 
     public async Task HandleAsync(TaskCompletedDomainEvent domainEvent, CancellationToken cancellationToken = default)
@@ -28,7 +36,7 @@ public sealed class TaskCompletedDomainEventHandler(IAppDbContext db, IBadgeServ
             return;
 
         var awarded = await ScoreLedger.TryAwardAsync(
-            db, domainEvent.AssignedStudentId, PointsPerCompletedTask,
+            db, domainEvent.AssignedStudentId, PointsPerCompletedTaskValue,
             $"Completed task #{domainEvent.TaskId}: {domainEvent.TaskTitle}",
             ScoreSourceType.TaskCompleted, domainEvent.TaskId, cancellationToken);
 
@@ -37,15 +45,21 @@ public sealed class TaskCompletedDomainEventHandler(IAppDbContext db, IBadgeServ
     }
 }
 
-public sealed class SessionAttendedDomainEventHandler(IAppDbContext db, IBadgeService badgeService)
+public sealed class SessionAttendedDomainEventHandler(
+    IAppDbContext db,
+    IBadgeService badgeService,
+    IOptions<GamificationOptions>? gamificationOptions = null)
     : IDomainEventHandler<SessionAttendedDomainEvent>
 {
+    private int PointsPerSessionValue => gamificationOptions?.Value.PointsPerSession ?? 25;
+
+    [Obsolete("Use GamificationOptions.PointsPerSession; the value is configurable via the Gamification section.")]
     public const int PointsPerSession = 25;
 
     public async Task HandleAsync(SessionAttendedDomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
         var awarded = await ScoreLedger.TryAwardAsync(
-            db, domainEvent.StudentId, PointsPerSession,
+            db, domainEvent.StudentId, PointsPerSessionValue,
             $"Attended session #{domainEvent.SessionId}: {domainEvent.SessionTitle}",
             ScoreSourceType.EventAttendance, domainEvent.SessionId, cancellationToken);
 
@@ -54,9 +68,15 @@ public sealed class SessionAttendedDomainEventHandler(IAppDbContext db, IBadgeSe
     }
 }
 
-public sealed class ProjectCompletedDomainEventHandler(IAppDbContext db, IBadgeService badgeService)
+public sealed class ProjectCompletedDomainEventHandler(
+    IAppDbContext db,
+    IBadgeService badgeService,
+    IOptions<GamificationOptions>? gamificationOptions = null)
     : IDomainEventHandler<ProjectCompletedDomainEvent>
 {
+    private int PointsPerProjectDeliveredValue => gamificationOptions?.Value.PointsPerProjectDelivered ?? 100;
+
+    [Obsolete("Use GamificationOptions.PointsPerProjectDelivered; the value is configurable via the Gamification section.")]
     public const int PointsPerProjectDelivered = 100;
 
     public async Task HandleAsync(ProjectCompletedDomainEvent domainEvent, CancellationToken cancellationToken = default)
@@ -65,7 +85,7 @@ public sealed class ProjectCompletedDomainEventHandler(IAppDbContext db, IBadgeS
         foreach (var studentId in domainEvent.MemberStudentIds.Distinct())
         {
             var awarded = await ScoreLedger.TryAwardAsync(
-                db, studentId, PointsPerProjectDelivered, reason,
+                db, studentId, PointsPerProjectDeliveredValue, reason,
                 ScoreSourceType.ProjectDelivered, domainEvent.ProjectId, cancellationToken);
 
             if (awarded)
@@ -74,9 +94,15 @@ public sealed class ProjectCompletedDomainEventHandler(IAppDbContext db, IBadgeS
     }
 }
 
-public sealed class TaskAssignedDomainEventHandler(IAppDbContext db)
+#endregion
+
+#region Notification & Email Handlers
+
+public sealed class TaskAssignedDomainEventHandler(IAppDbContext db, TimeProvider? timeProvider = null)
     : IDomainEventHandler<TaskAssignedDomainEvent>
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
     public async Task HandleAsync(TaskAssignedDomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
         db.Notifications.Add(new Notification
@@ -86,15 +112,17 @@ public sealed class TaskAssignedDomainEventHandler(IAppDbContext db)
             Message = $"You have been assigned task '{domainEvent.TaskTitle}'.",
             Type = NotificationType.TaskAssigned,
             IsRead = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = _time.GetUtcNow().UtcDateTime
         });
         await db.SaveChangesAsync(cancellationToken);
     }
 }
 
-public sealed class ApplicationReviewedDomainEventHandler(IAppDbContext db)
+public sealed class ApplicationReviewedDomainEventHandler(IAppDbContext db, TimeProvider? timeProvider = null)
     : IDomainEventHandler<ApplicationReviewedDomainEvent>
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
     public async Task HandleAsync(ApplicationReviewedDomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
         var decisionWord = domainEvent.Decision == ApplicationStatus.Accepted ? "accepted" : "rejected";
@@ -105,7 +133,7 @@ public sealed class ApplicationReviewedDomainEventHandler(IAppDbContext db)
             Message = $"Your application to join '{domainEvent.TargetName}' was {decisionWord}.",
             Type = NotificationType.ApplicationStatus,
             IsRead = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = _time.GetUtcNow().UtcDateTime
         });
         await db.SaveChangesAsync(cancellationToken);
     }
@@ -115,9 +143,12 @@ public sealed class WaitlistPromotedDomainEventHandler(
     IAppDbContext db,
     ITemplateRenderer? templateRenderer = null,
     IEmailSender? emailSender = null,
-    IOptions<EmailOptions>? emailOptions = null)
+    IOptions<EmailOptions>? emailOptions = null,
+    TimeProvider? timeProvider = null)
     : IDomainEventHandler<WaitlistPromotedDomainEvent>
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
     public async Task HandleAsync(WaitlistPromotedDomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
         db.Notifications.Add(new Notification
@@ -127,7 +158,7 @@ public sealed class WaitlistPromotedDomainEventHandler(
             Message = $"A seat opened up and your registration for '{domainEvent.EventTitle}' is now confirmed.",
             Type = NotificationType.EventReminder,
             IsRead = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = _time.GetUtcNow().UtcDateTime
         });
         await db.SaveChangesAsync(cancellationToken);
 
@@ -238,3 +269,5 @@ internal static class EventNotificationEmailHelper
             ct);
     }
 }
+
+#endregion

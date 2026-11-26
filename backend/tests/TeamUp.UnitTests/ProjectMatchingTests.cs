@@ -91,6 +91,29 @@ public class ProjectMatchingTests
     }
 
     [Fact]
+    public void OptionalOnlyProject_CanReachFullSkillsBucket()
+    {
+        var studentSkills = new Dictionary<int, (string, ProficiencyLevel)>
+        {
+            [1] = ("React", ProficiencyLevel.Advanced),
+            [2] = ("TypeScript", ProficiencyLevel.Intermediate),
+        };
+
+        // A project that lists only nice-to-have skills should still be able to reach the top of the ranking
+        // for a student who matches all of them (80 skills bucket + 10 proficiency bucket).
+        var result = ProjectRecommendationService.ComputeMatchScore(
+            studentSkills,
+            [],
+            [(1, "React", ProficiencyLevel.Intermediate, false), (2, "TypeScript", ProficiencyLevel.Beginner, false)],
+            "Design System",
+            "Component library");
+
+        Assert.Equal(90, result.Score);
+        Assert.Equal(new[] { "React", "TypeScript" }, result.MatchedSkills);
+        Assert.Empty(result.MissingSkills);
+    }
+
+    [Fact]
     public async Task GetRecommendedProjects_ExcludesFullJoinedCreatedAndAppliedProjects()
     {
         using var conn = new SqliteConnection("DataSource=:memory:");
@@ -147,5 +170,65 @@ public class ProjectMatchingTests
         Assert.Equal(eligible.ProjectId, match.ProjectId);
         Assert.Equal(3, match.OpenSeats);
         Assert.Equal(90, match.MatchPercentage);
+    }
+
+    [Fact]
+    public async Task GetRecommendedProjectsBatch_MatchesSingleStudentSemantics()
+    {
+        using var conn = new SqliteConnection("DataSource=:memory:");
+        conn.Open();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(conn).Options;
+        using var db = new AppDbContext(options);
+        db.Database.EnsureCreated();
+
+        var uni = new University { Name = "Cairo University", City = "Giza", Country = "Egypt" };
+        var faculty = new Faculty { Name = "FCAI", Code = "FCAI", University = uni };
+        db.Universities.Add(uni);
+        db.Faculties.Add(faculty);
+        await db.SaveChangesAsync();
+
+        var seeker = new Student { Email = "seeker@cu.edu.eg", PasswordHash = "h", FirstName = "A", LastName = "B", AcademicYear = 3, FacultyId = faculty.FacultyId };
+        var lead = new Student { Email = "lead2@cu.edu.eg", PasswordHash = "h", FirstName = "Lead", LastName = "Dev", AcademicYear = 4, FacultyId = faculty.FacultyId };
+        var skill = new Skill { Name = "TypeScript", Category = "Frontend" };
+        db.Students.AddRange(seeker, lead);
+        db.Skills.Add(skill);
+        await db.SaveChangesAsync();
+
+        db.StudentSkills.Add(new StudentSkill { StudentId = seeker.StudentId, SkillId = skill.SkillId, ProficiencyLevel = ProficiencyLevel.Advanced, YearsOfExperience = 2 });
+
+        var eligible = new Project { Title = "Eligible Squad", Description = "Needs TS", MaxTeamSize = 4, CreatorId = lead.StudentId, Status = ProjectStatus.Recruiting };
+        var appliedProject = new Project { Title = "Applied Squad", Description = "Pending app", MaxTeamSize = 5, CreatorId = lead.StudentId, Status = ProjectStatus.Recruiting };
+        var fullProject = new Project { Title = "Full Squad", Description = "No seats", MaxTeamSize = 1, CreatorId = lead.StudentId, Status = ProjectStatus.Recruiting };
+        var closedProject = new Project { Title = "Closed Squad", Description = "Done", MaxTeamSize = 5, CreatorId = lead.StudentId, Status = ProjectStatus.Completed };
+        db.Projects.AddRange(eligible, appliedProject, fullProject, closedProject);
+        await db.SaveChangesAsync();
+
+        db.ProjectMembers.AddRange(
+            new ProjectMember { ProjectId = eligible.ProjectId, StudentId = lead.StudentId, Role = "Team Lead" },
+            new ProjectMember { ProjectId = appliedProject.ProjectId, StudentId = lead.StudentId, Role = "Team Lead" },
+            new ProjectMember { ProjectId = fullProject.ProjectId, StudentId = lead.StudentId, Role = "Team Lead" },
+            new ProjectMember { ProjectId = closedProject.ProjectId, StudentId = lead.StudentId, Role = "Team Lead" });
+        db.ProjectApplications.Add(new ProjectApplication { ProjectId = appliedProject.ProjectId, StudentId = seeker.StudentId, Status = ApplicationStatus.Pending });
+        foreach (var p in new[] { eligible, appliedProject, fullProject, closedProject })
+        {
+            db.ProjectRequiredSkills.Add(new ProjectRequiredSkill { ProjectId = p.ProjectId, SkillId = skill.SkillId, RequiredLevel = ProficiencyLevel.Intermediate, IsMandatory = true });
+        }
+        await db.SaveChangesAsync();
+
+        var svc = new ProjectRecommendationService(db);
+        var batch = await svc.GetRecommendedProjectsForStudentsAsync(
+            new[] { seeker.StudentId, lead.StudentId }, maxResults: 10, minMatchPercentage: 1);
+
+        // The seeker only sees the eligible project (applied/full/closed are excluded), exactly like the single-student call.
+        var single = await svc.GetRecommendedProjectsForStudentAsync(seeker.StudentId, maxResults: 10, minMatchPercentage: 1);
+        Assert.Equal(
+            single.Select(x => x.ProjectId),
+            batch[seeker.StudentId].Select(x => x.ProjectId));
+        var match = Assert.Single(batch[seeker.StudentId]);
+        Assert.Equal(eligible.ProjectId, match.ProjectId);
+        Assert.Equal(90, match.MatchPercentage);
+
+        // The lead created or joined every project, so nothing is recommended to them.
+        Assert.Empty(batch[lead.StudentId]);
     }
 }

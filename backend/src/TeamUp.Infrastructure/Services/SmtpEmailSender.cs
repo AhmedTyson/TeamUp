@@ -13,14 +13,26 @@ using TeamUp.Infrastructure.Templates;
 
 namespace TeamUp.Infrastructure.Services;
 
-public sealed class SmtpEmailSender(
+public sealed partial class SmtpEmailSender(
     IOptions<EmailOptions> emailOptions,
     IOptions<JwtOptions> jwtOptions,
     ITemplateRenderer templateRenderer,
     ILogger<SmtpEmailSender> logger) : IEmailSender
 {
+    #region Logging
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Dispatched password reset email via SMTP to {Email}")]
+    private static partial void LogPasswordResetSent(ILogger logger, string email);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Dispatched templated email '{Subject}' with {AttachmentCount} attachment(s) via SMTP to {Email}")]
+    private static partial void LogTemplatedEmailSent(ILogger logger, string subject, int attachmentCount, string email);
+
     private readonly EmailOptions _email = emailOptions.Value;
     private readonly JwtOptions _jwt = jwtOptions.Value;
+
+    #endregion
+
+    #region Email Dispatch
 
     public async Task SendPasswordResetEmailAsync(string toEmail, string resetToken, CancellationToken ct = default)
     {
@@ -65,7 +77,7 @@ public sealed class SmtpEmailSender(
         }
 
         await client.SendMailAsync(message, ct);
-        logger.LogInformation("Dispatched password reset email via SMTP to {Email}", toEmail);
+        LogPasswordResetSent(logger, toEmail);
     }
 
     public async Task SendTemplatedEmailAsync(EmailDispatchRequest request, CancellationToken ct = default)
@@ -95,12 +107,12 @@ public sealed class SmtpEmailSender(
         }
 
         await client.SendMailAsync(message, ct);
-        logger.LogInformation(
-            "Dispatched templated email '{Subject}' with {AttachmentCount} attachment(s) via SMTP to {Email}",
-            request.Subject,
-            request.Attachments?.Count ?? 0,
-            request.ToEmail);
+        LogTemplatedEmailSent(logger, request.Subject, request.Attachments?.Count ?? 0, request.ToEmail);
     }
+
+    #endregion
+
+    #region Message Construction
 
     internal static MailMessage BuildMailMessage(
         string fromAddress,
@@ -117,46 +129,56 @@ public sealed class SmtpEmailSender(
             From = new MailAddress(fromAddress, fromName),
             Subject = subject
         };
-        message.To.Add(new MailAddress(toEmail));
-
-        if (!string.IsNullOrWhiteSpace(plainTextBody))
+        try
         {
-            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(
-                plainTextBody, Encoding.UTF8, MediaTypeNames.Text.Plain));
-        }
+            message.To.Add(new MailAddress(toEmail));
 
-        var cidUrl = $"cid:{BrandAssets.EmailLogoContentId}";
-        var publicLogoUrl = BrandAssets.BuildPublicEmailLogoUrl(frontendBaseUrl);
-        var processedHtml = htmlBody
-            .Replace(publicLogoUrl, cidUrl, StringComparison.OrdinalIgnoreCase)
-            .Replace(BrandAssets.EmailLogoDataUri, cidUrl, StringComparison.Ordinal);
-
-        var htmlView = AlternateView.CreateAlternateViewFromString(
-            processedHtml, Encoding.UTF8, MediaTypeNames.Text.Html);
-
-        if (processedHtml.Contains(cidUrl, StringComparison.OrdinalIgnoreCase))
-        {
-            var logoStream = new MemoryStream(BrandAssets.EmailLogoPngBytes, writable: false);
-            var inlineLogo = new LinkedResource(logoStream, MediaTypeNames.Image.Png)
+            if (!string.IsNullOrWhiteSpace(plainTextBody))
             {
-                ContentId = BrandAssets.EmailLogoContentId,
-                TransferEncoding = TransferEncoding.Base64
-            };
-            inlineLogo.ContentType.Name = "teamup-logo.png";
-            htmlView.LinkedResources.Add(inlineLogo);
-        }
-
-        message.AlternateViews.Add(htmlView);
-
-        if (attachments is { Count: > 0 })
-        {
-            foreach (var attachment in attachments)
-            {
-                var stream = new MemoryStream(attachment.Content, writable: false);
-                message.Attachments.Add(new Attachment(stream, attachment.FileName, attachment.ContentType));
+                message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(
+                    plainTextBody, Encoding.UTF8, MediaTypeNames.Text.Plain));
             }
-        }
 
-        return message;
+            var cidUrl = $"cid:{BrandAssets.EmailLogoContentId}";
+            var publicLogoUrl = BrandAssets.BuildPublicEmailLogoUrl(frontendBaseUrl);
+            var processedHtml = htmlBody
+                .Replace(publicLogoUrl, cidUrl, StringComparison.OrdinalIgnoreCase)
+                .Replace(BrandAssets.EmailLogoDataUri, cidUrl, StringComparison.Ordinal);
+
+            var htmlView = AlternateView.CreateAlternateViewFromString(
+                processedHtml, Encoding.UTF8, MediaTypeNames.Text.Html);
+
+            if (processedHtml.Contains(cidUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                var logoStream = new MemoryStream(BrandAssets.EmailLogoPngBytes, writable: false);
+                var inlineLogo = new LinkedResource(logoStream, MediaTypeNames.Image.Png)
+                {
+                    ContentId = BrandAssets.EmailLogoContentId,
+                    TransferEncoding = TransferEncoding.Base64
+                };
+                inlineLogo.ContentType.Name = "teamup-logo.png";
+                htmlView.LinkedResources.Add(inlineLogo);
+            }
+
+            message.AlternateViews.Add(htmlView);
+
+            if (attachments is { Count: > 0 })
+            {
+                foreach (var attachment in attachments)
+                {
+                    var stream = new MemoryStream(attachment.Content, writable: false);
+                    message.Attachments.Add(new Attachment(stream, attachment.FileName, attachment.ContentType));
+                }
+            }
+
+            return message;
+        }
+        catch
+        {
+            message.Dispose();
+            throw;
+        }
     }
+
+    #endregion
 }

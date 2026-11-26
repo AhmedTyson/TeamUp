@@ -2,27 +2,40 @@
 // Purpose: Master skills catalog and student skill claims service with IMemoryCache caching and audited soft-delete.
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Hybrid;
 using TeamUp.Application.Common.Caching;
 using TeamUp.Application.Common.Exceptions;
 using TeamUp.Application.Common.Interfaces;
 using TeamUp.Application.Common.Security;
 using TeamUp.Application.Skills;
+using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
 
 namespace TeamUp.Application.Services;
 
 public sealed class SkillService(
     IAppDbContext db,
-    IMemoryCache cache,
+    HybridCache cache,
     IAuditLogService auditLog) : ISkillService
 {
+    #region Master Skill Catalog
+
     public async Task<IReadOnlyList<SkillDto>> GetSkillsAsync(string? category, string? search, CancellationToken ct = default)
     {
         var isUnfiltered = string.IsNullOrWhiteSpace(category) && string.IsNullOrWhiteSpace(search);
-        if (isUnfiltered && cache.TryGetValue(CatalogCacheKeys.MasterSkills, out IReadOnlyList<SkillDto>? cached) && cached is not null)
+        if (isUnfiltered)
         {
-            return cached;
+            return await cache.GetOrCreateAsync(
+                CatalogCacheKeys.MasterSkills,
+                async token => (IReadOnlyList<SkillDto>)await db.Skills
+                    .AsNoTracking()
+                    .OrderBy(s => s.Category)
+                    .ThenBy(s => s.Name)
+                    .Select(s => new SkillDto(s.SkillId, s.Name, s.Category, s.Description))
+                    .ToListAsync(token),
+                options: CatalogCacheKeys.CatalogEntryOptions,
+                tags: [CatalogCacheKeys.Tags.MasterSkills],
+                cancellationToken: ct);
         }
 
         var query = db.Skills.AsNoTracking();
@@ -39,16 +52,11 @@ public sealed class SkillService(
             query = query.Where(s => s.Name.Contains(term) || s.Category.Contains(term));
         }
 
-        var results = await query
+        return await query
             .OrderBy(s => s.Category)
             .ThenBy(s => s.Name)
             .Select(s => new SkillDto(s.SkillId, s.Name, s.Category, s.Description))
             .ToListAsync(ct);
-
-        if (isUnfiltered)
-            cache.Set(CatalogCacheKeys.MasterSkills, results, CatalogCacheKeys.DefaultTtl);
-
-        return results;
     }
 
     public async Task<SkillDto> GetSkillByIdAsync(int id, CancellationToken ct = default)
@@ -62,7 +70,7 @@ public sealed class SkillService(
     public async Task<SkillDto> CreateSkillAsync(CreateSkillRequest request, CancellationToken ct = default)
     {
         var name = request.Name.Trim();
-        var existing = await db.Skills.IgnoreQueryFilters().FirstOrDefaultAsync(s => s.Name == name, ct);
+        var existing = await db.Skills.IgnoreQueryFilters([QueryFilterNames.SoftDelete]).FirstOrDefaultAsync(s => s.Name == name, ct);
 
         if (existing is not null)
         {
@@ -73,7 +81,7 @@ public sealed class SkillService(
             existing.Category = request.Category.Trim();
             existing.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
             await db.SaveChangesAsync(ct);
-            cache.Remove(CatalogCacheKeys.MasterSkills);
+            await cache.RemoveAsync(CatalogCacheKeys.MasterSkills, ct);
             return new SkillDto(existing.SkillId, existing.Name, existing.Category, existing.Description);
         }
 
@@ -86,7 +94,7 @@ public sealed class SkillService(
 
         db.Skills.Add(skill);
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.MasterSkills);
+        await cache.RemoveAsync(CatalogCacheKeys.MasterSkills, ct);
 
         return new SkillDto(skill.SkillId, skill.Name, skill.Category, skill.Description);
     }
@@ -108,7 +116,7 @@ public sealed class SkillService(
         skill.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
 
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.MasterSkills);
+        await cache.RemoveAsync(CatalogCacheKeys.MasterSkills, ct);
 
         return new SkillDto(skill.SkillId, skill.Name, skill.Category, skill.Description);
     }
@@ -121,7 +129,7 @@ public sealed class SkillService(
         var name = skill.Name;
         db.Skills.Remove(skill);
         await db.SaveChangesAsync(ct);
-        cache.Remove(CatalogCacheKeys.MasterSkills);
+        await cache.RemoveAsync(CatalogCacheKeys.MasterSkills, ct);
 
         await auditLog.RecordAsync(
             "EntitySoftDeleted",
@@ -132,6 +140,10 @@ public sealed class SkillService(
             ct: ct);
     }
 
+    #endregion
+
+    #region Student Skill Claims
+
     public async Task<IReadOnlyList<StudentSkillDto>> GetStudentSkillsAsync(int studentId, CancellationToken ct = default)
     {
         var studentExists = await db.Students.AnyAsync(s => s.StudentId == studentId, ct);
@@ -141,7 +153,6 @@ public sealed class SkillService(
         return await db.StudentSkills
             .AsNoTracking()
             .Where(ss => ss.StudentId == studentId)
-            .Include(ss => ss.Skill)
             .OrderBy(ss => ss.Skill.Category)
             .ThenBy(ss => ss.Skill.Name)
             .Select(ss => new StudentSkillDto(
@@ -163,7 +174,7 @@ public sealed class SkillService(
             ?? throw new NotFoundException($"Skill with ID {skillId} was not found in the master catalog.");
 
         var studentSkill = await db.StudentSkills
-            .IgnoreQueryFilters()
+            .IgnoreQueryFilters([QueryFilterNames.SoftDelete])
             .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SkillId == skillId, ct);
 
         if (studentSkill is null)
@@ -205,4 +216,6 @@ public sealed class SkillService(
             await db.SaveChangesAsync(ct);
         }
     }
+
+    #endregion
 }

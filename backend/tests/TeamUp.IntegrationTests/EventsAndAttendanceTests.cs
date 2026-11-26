@@ -82,14 +82,14 @@ public sealed class EventsAndAttendanceTests(TeamUpApiFactory factory) : IClassF
         Assert.Equal(HttpStatusCode.Created, orgResponse.StatusCode);
         var organization = await Data<OrganizationDetailDto>(orgResponse);
 
-        var eventStart = DateTime.UtcNow.Date.AddDays(5);
+        var eventStart = DateTime.UtcNow.AddHours(-1);
         var eventRequest = new CreateEventRequest("TeamUp Workshop", "Workshop description", EventType.Workshop,
             "Helwan University", eventStart, eventStart.AddDays(1), 1, organization.OrganizationId);
         var eventResponse = await orgAdmin.PostAsJsonAsync("/api/v1/events", eventRequest);
         Assert.Equal(HttpStatusCode.Created, eventResponse.StatusCode);
         var createdEvent = await Data<EventDto>(eventResponse);
 
-        var sessionRequest = new CreateEventSessionRequest(1, "Opening", eventStart.AddHours(1), eventStart.AddHours(2), "Hall A");
+        var sessionRequest = new CreateEventSessionRequest(1, "Opening", DateTime.UtcNow.AddMinutes(-10), DateTime.UtcNow.AddHours(2), "Hall A");
         var sessionResponse = await orgAdmin.PostAsJsonAsync($"/api/v1/events/{createdEvent.EventId}/sessions", sessionRequest);
         Assert.Equal(HttpStatusCode.Created, sessionResponse.StatusCode);
         var session = await Data<EventSessionDto>(sessionResponse);

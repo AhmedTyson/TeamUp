@@ -10,7 +10,7 @@ namespace TeamUp.Api.Controllers;
 /// </summary>
 [Route("api/v1/students")]
 [Authorize]
-public class StudentInterestsController(IStudentInterestService interestService) : BaseApiController
+public sealed class StudentInterestsController(IStudentInterestService interestService) : BaseApiController
 {
     [HttpGet("{id:int}/interests")]
     [ProducesOk<IReadOnlyList<string>>]

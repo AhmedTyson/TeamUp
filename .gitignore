@@ -15,6 +15,9 @@ artifacts/
 node_modules/
 frontend/dist/
 frontend/coverage/
+.env
+*.env
+backend/.env
 frontend/.env
 frontend/.env.local
 frontend/.env.*.local

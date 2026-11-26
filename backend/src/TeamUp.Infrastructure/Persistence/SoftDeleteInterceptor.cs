@@ -8,8 +8,10 @@ namespace TeamUp.Infrastructure.Persistence;
 /// <summary>
 /// Turns physical deletes into soft deletes and blocks changes to append-only ledgers.
 /// </summary>
-public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
+public sealed class SoftDeleteInterceptor(TimeProvider? timeProvider = null) : SaveChangesInterceptor
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
         Apply(eventData.Context);
@@ -23,10 +25,10 @@ public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private static void Apply(DbContext? context)
+    private void Apply(DbContext? context)
     {
         if (context is null) return;
-        var now = DateTime.UtcNow;
+        var now = _time.GetUtcNow().UtcDateTime;
 
         foreach (var entry in context.ChangeTracker.Entries().ToList())
         {
@@ -44,7 +46,7 @@ public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
             if (entry.State is EntityState.Added or EntityState.Modified)
             {
                 var rowVersionProp = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "RowVersion");
-                if (rowVersionProp is not null && context.Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true)
+                if (rowVersionProp is not null && context.Database.IsSqlite())
                 {
                     rowVersionProp.CurrentValue = Guid.NewGuid().ToByteArray();
                 }
@@ -53,7 +55,7 @@ public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
     }
 
     // Deleted entries are reset to Modified; make sure only the soft-delete columns are written.
-    private static void MarkOnly(EntityEntry entry, params string[] props)
+    private static void MarkOnly(EntityEntry entry, params ReadOnlySpan<string> props)
     {
         foreach (var p in entry.Properties)
             p.IsModified = props.Contains(p.Metadata.Name);

@@ -21,7 +21,7 @@ public class AuthAbuseProtectionTests(TeamUpApiFactory factory) : IClassFixture<
         factory.CreateClient().PostAsJsonAsync("/api/v1/auth/refresh", new RefreshTokenRequest(token), ApiHelper.Json);
 
     private static string Message(string json) =>
-        System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("message").GetString()!;
+        System.Text.Json.JsonElement.Parse(json).GetProperty("message").GetString()!;
 
     [Fact]
     public async Task RepeatedWrongPasswords_TriggerPerAccountDelay_EvenForCorrectPassword_WithIdenticalResponse()
@@ -43,7 +43,8 @@ public class AuthAbuseProtectionTests(TeamUpApiFactory factory) : IClassFixture<
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var s = await db.Students.SingleAsync(x => x.Email == email.ToLowerInvariant());
+            var normalizedEmail = email.ToLowerInvariant();
+            var s = await db.Students.SingleAsync(x => x.Email == normalizedEmail);
             Assert.True(s.LockoutEndUtc > DateTime.UtcNow);
             s.LockoutEndUtc = DateTime.UtcNow.AddSeconds(-1);
             await db.SaveChangesAsync();

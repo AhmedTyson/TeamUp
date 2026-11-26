@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using TeamUp.Application.Common.Models;
 
 namespace TeamUp.IntegrationTests;
@@ -13,6 +14,28 @@ public class HealthTests(TeamUpApiFactory factory) : IClassFixture<TeamUpApiFact
     {
         var res = await _client.GetAsync("/health");
         Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+
+        var body = await res.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(body);
+        Assert.Equal("Healthy", body["status"]?.ToString());
+        Assert.Equal("Connected", body["database"]?.ToString());
+    }
+
+    [Fact]
+    public async Task HealthLiveAndReady_ReturnOkWithExpectedPayload()
+    {
+        var liveRes = await _client.GetAsync("/health/live");
+        Assert.Equal(HttpStatusCode.OK, liveRes.StatusCode);
+        var liveJson = await liveRes.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(liveJson);
+        Assert.Equal("Healthy", liveJson["status"]?.ToString());
+
+        var readyRes = await _client.GetAsync("/health/ready");
+        Assert.Equal(HttpStatusCode.OK, readyRes.StatusCode);
+        var readyJson = await readyRes.Content.ReadFromJsonAsync<JsonObject>();
+        Assert.NotNull(readyJson);
+        Assert.Equal("Healthy", readyJson["status"]?.ToString());
+        Assert.Equal("Connected", readyJson["database"]?.ToString());
     }
 
     [Fact]

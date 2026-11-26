@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Publishes TeamUp.Api (.NET 10) for free IIS hosting on MonsterASP.NET.
+    Publishes TeamUp.Api (.NET 11) for free IIS hosting on MonsterASP.NET.
 .DESCRIPTION
-    Date: 2026-11-22
+    Date: 2026-11-26
     Purpose: Builds a Release package in artifacts/monsterasp-publish, strips dev config & SQLite files,
-    validates required runtime assets (TeamUp.Api.dll, web.config, seeded people portraits),
-    and compresses the package to artifacts/teamup-api-monsterasp.zip.
+    prunes non-Windows runtime folders, validates required runtime assets (TeamUp.Api.dll, web.config,
+    SeedImages cover-01..10.png, and seeded people portraits), and compresses the package to artifacts/teamup-api-monsterasp.zip.
 #>
 [CmdletBinding()]
 param()
@@ -44,12 +44,19 @@ foreach ($file in $devArtifacts) {
 }
 Get-ChildItem -Path $publishDir -Filter "*.dev.db*" -ErrorAction SilentlyContinue | Remove-Item -Force
 
+# Prune non-Windows native runtime folders to keep MonsterASP.NET WebDeploy ZIP compact
+$runtimesDir = Join-Path $publishDir "runtimes"
+if (Test-Path $runtimesDir) {
+    $keepRuntimes = @("win", "win-x64", "win-x86")
+    Get-ChildItem -Path $runtimesDir -Directory | Where-Object { $keepRuntimes -notcontains $_.Name } | Remove-Item -Recurse -Force
+}
+
 # Validate required runtime deliverables
 $requiredFiles = @(
     (Join-Path $publishDir "TeamUp.Api.dll"),
     (Join-Path $publishDir "web.config"),
     (Join-Path $publishDir "wwwroot\images\people\salma-khaled.jpg")
-)
+) + (1..10 | ForEach-Object { Join-Path $publishDir ("SeedImages\cover-{0:D2}.png" -f $_) })
 foreach ($req in $requiredFiles) {
     if (-not (Test-Path $req)) {
         throw "Required publish deliverable missing: $req"
@@ -66,4 +73,4 @@ Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "  1. Copy backend/src/TeamUp.Api/appsettings.Production.example.json -> appsettings.Production.json and fill in real secrets."
 Write-Host "  2. Extract teamup-api-monsterasp.zip + upload appsettings.Production.json into your MonsterASP.NET wwwroot folder (or upload & unzip in Control Panel)."
-Write-Host "  3. Set ASP.NET Core Hosting Version to .NET 10 in MonsterASP.NET Control Panel -> Websites -> Scripting and restart the site."
+Write-Host "  3. Set ASP.NET Core Hosting Version to .NET 11 in MonsterASP.NET Control Panel -> Websites -> Scripting and restart the site."

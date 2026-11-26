@@ -1,10 +1,12 @@
 // Date: 2026-11-21
 // Purpose: Student organizations and membership endpoints with scoped per-organization BOLA authorization (STRIDE THR-T-01, THR-E-01).
 
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text;
+using Microsoft.AspNetCore.OutputCaching;
 using TeamUp.Api.Controllers.Common;
+using TeamUp.Api.Extensions;
 using TeamUp.Application.Common;
 using TeamUp.Application.Organizations;
 using TeamUp.Domain.Enums;
@@ -13,23 +15,31 @@ namespace TeamUp.Api.Controllers;
 
 [Route("api/v1/organizations")]
 [Authorize]
-public sealed class OrganizationsController(IOrganizationService organizationService) : BaseApiController
+public sealed class OrganizationsController(
+    IOrganizationService organizationService,
+    IOutputCacheStore outputCacheStore) : BaseApiController
 {
+    #region Public Discovery
+
     [HttpGet("public")]
     [AllowAnonymous]
     [ProducesOk<PagedResult<OrganizationSummaryDto>>]
     public async Task<IActionResult> GetPublicOrganizations(
-        [FromQuery] string? search,
-        [FromQuery] string? category,
-        [FromQuery] OrganizationScope? scope = null,
-        [FromQuery] int? universityId = null,
-        [FromQuery] bool? recruitingOnly = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] OrganizationFilterQuery filter,
         CancellationToken ct = default)
     {
         var result = await organizationService.GetOrganizationsAsync(
-            search, category, new PageRequest(page, pageSize), scope, universityId, recruitingOnly, ct);
+            filter.Search, filter.Category, filter.ToPageRequest(), filter.Scope, filter.UniversityId, filter.RecruitingOnly, ct);
+        return OkResponse(result);
+    }
+
+    [HttpGet("public/categories")]
+    [AllowAnonymous]
+    [OutputCache(PolicyName = OpenApiAndCachingExtensions.CatalogOutputCachePolicyName, Tags = [CatalogOutputCacheTags.OrganizationCategories])]
+    [ProducesOk<IReadOnlyList<string>>]
+    public async Task<IActionResult> GetPublicOrganizationCategories(CancellationToken ct)
+    {
+        var result = await organizationService.GetOrganizationCategoriesAsync(ct);
         return OkResponse(result);
     }
 
@@ -47,9 +57,13 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     [ProducesOk<OrganizationHierarchyDto>, ProducesNotFound]
     public async Task<IActionResult> GetPublicHierarchy([FromRoute] int id, CancellationToken ct)
     {
-        var result = await organizationService.GetHierarchyAsync(id, includeEmails: false, ct);
+        var result = await organizationService.GetHierarchyAsync(id, includeEmails: false, ct: ct);
         return OkResponse(result);
     }
+
+    #endregion
+
+    #region Organization CRUD
 
     [HttpGet("my-applications")]
     [ProducesOk<IReadOnlyList<MembershipApplicationDto>>]
@@ -62,17 +76,11 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     [HttpGet]
     [ProducesOk<PagedResult<OrganizationSummaryDto>>]
     public async Task<IActionResult> GetOrganizations(
-        [FromQuery] string? search,
-        [FromQuery] string? category,
-        [FromQuery] OrganizationScope? scope = null,
-        [FromQuery] int? universityId = null,
-        [FromQuery] bool? recruitingOnly = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] OrganizationFilterQuery filter,
         CancellationToken ct = default)
     {
         var result = await organizationService.GetOrganizationsAsync(
-            search, category, new PageRequest(page, pageSize), scope, universityId, recruitingOnly, ct);
+            filter.Search, filter.Category, filter.ToPageRequest(), filter.Scope, filter.UniversityId, filter.RecruitingOnly, ct);
         return OkResponse(result);
     }
 
@@ -83,6 +91,7 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     public async Task<IActionResult> CreateOrganization([FromBody] CreateOrganizationRequest request, CancellationToken ct)
     {
         var result = await organizationService.CreateOrganizationAsync(CurrentStudentId, request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.OrganizationCategories, ct);
         return CreatedResponse(nameof(GetOrganizationById), new { id = result.OrganizationId }, result, "Organization created successfully.");
     }
 
@@ -90,7 +99,7 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     [ProducesOk<OrganizationDetailDto>, ProducesNotFound]
     public async Task<IActionResult> GetOrganizationById([FromRoute] int id, CancellationToken ct)
     {
-        var result = await organizationService.GetOrganizationByIdAsync(id, ct);
+        var result = await organizationService.GetOrganizationByIdAsync(id, CurrentStudentId, CurrentUserRole, ct);
         return OkResponse(result);
     }
 
@@ -100,6 +109,7 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     public async Task<IActionResult> UpdateOrganization([FromRoute] int id, [FromBody] UpdateOrganizationRequest request, CancellationToken ct)
     {
         var result = await organizationService.UpdateOrganizationAsync(id, CurrentStudentId, CurrentUserRole, request, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.OrganizationCategories, ct);
         return OkResponse(result, "Organization updated successfully.");
     }
 
@@ -109,14 +119,19 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     public async Task<IActionResult> DeleteOrganization([FromRoute] int id, CancellationToken ct)
     {
         await organizationService.DeleteOrganizationAsync(id, ct);
+        await outputCacheStore.EvictByTagAsync(CatalogOutputCacheTags.OrganizationCategories, ct);
         return NoContentResponse();
     }
+
+    #endregion
+
+    #region Members
 
     [HttpGet("{id:int}/members")]
     [ProducesOk<IReadOnlyList<OrganizationMemberDto>>, ProducesNotFound]
     public async Task<IActionResult> GetMembers([FromRoute] int id, CancellationToken ct)
     {
-        var result = await organizationService.GetMembersAsync(id, ct);
+        var result = await organizationService.GetMembersAsync(id, CurrentStudentId, CurrentUserRole, ct);
         return OkResponse(result);
     }
 
@@ -138,6 +153,10 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
         await organizationService.RemoveMemberAsync(id, studentId, CurrentStudentId, CurrentUserRole, ct);
         return NoContentResponse();
     }
+
+    #endregion
+
+    #region Membership Applications & Recruitment
 
     [HttpGet("{id:int}/applications")]
     [ProducesOk<IReadOnlyList<MembershipApplicationDto>>, ProducesForbidden, ProducesNotFound]
@@ -196,6 +215,10 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
         return File(Encoding.UTF8.GetBytes(csv), "text/csv; charset=utf-8", $"applications-org-{id}.csv");
     }
 
+    #endregion
+
+    #region Units, Hierarchy & Participants
+
     [HttpGet("{id:int}/units")]
     [ProducesOk<IReadOnlyList<OrganizationUnitDto>>, ProducesNotFound]
     public async Task<IActionResult> GetUnits([FromRoute] int id, CancellationToken ct)
@@ -236,7 +259,7 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
     [ProducesOk<OrganizationHierarchyDto>, ProducesNotFound]
     public async Task<IActionResult> GetHierarchy([FromRoute] int id, CancellationToken ct)
     {
-        var result = await organizationService.GetHierarchyAsync(id, includeEmails: true, ct);
+        var result = await organizationService.GetHierarchyAsync(id, includeEmails: true, CurrentStudentId, CurrentUserRole, ct);
         return OkResponse(result);
     }
 
@@ -247,6 +270,10 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
         var result = await organizationService.GetParticipantsAsync(id, ct);
         return OkResponse(result);
     }
+
+    #endregion
+
+    #region Creation Proposals
 
     [HttpPost("requests")]
     [ProducesCreated<OrganizationCreationRequestDto>]
@@ -273,4 +300,6 @@ public sealed class OrganizationsController(IOrganizationService organizationSer
         await organizationService.WithdrawOrganizationCreationRequestAsync(requestId, CurrentStudentId, ct);
         return NoContentResponse();
     }
+
+    #endregion
 }

@@ -11,9 +11,11 @@ import { useUniversityCatalog } from "@/features/catalog/useUniversityCatalogFal
 import { mapApiErrorsToForm } from "@/lib/formErrors";
 import {
   ORGANIZATION_CATEGORIES,
+  ORGANIZATION_SCOPE_OPTIONS,
   organizationFormSchema,
   type OrganizationFormValues,
 } from "../schemas/organizationSchemas";
+import { CategoryInput } from "./CategoryInput";
 
 export interface OrganizationFormModalProps {
   open: boolean;
@@ -23,18 +25,10 @@ export interface OrganizationFormModalProps {
   onSubmitPayload: (payload: OrganizationPayload) => Promise<void>;
 }
 
-const SCOPE_OPTIONS = [
-  { value: ORGANIZATION_SCOPES.UniversityBranch, label: "University Student Branch (e.g. IEEE SB)" },
-  { value: ORGANIZATION_SCOPES.FacultyChapter, label: "Faculty Chapter (e.g. FCAI Club)" },
-  { value: ORGANIZATION_SCOPES.CrossUniversity, label: "Cross-University Initiative (e.g. STP Egypt)" },
-  { value: ORGANIZATION_SCOPES.Independent, label: "Open / Independent Community (e.g. GDG)" },
-  { value: ORGANIZATION_SCOPES.NationalNetwork, label: "National Network" },
-];
-
 const DEFAULT_VALUES: OrganizationFormValues = {
   name: "",
   description: "",
-  category: ORGANIZATION_CATEGORIES[0],
+  category: "",
   logoUrl: "",
   scope: ORGANIZATION_SCOPES.UniversityBranch,
   universityId: "",
@@ -85,12 +79,14 @@ export function OrganizationFormModal({
     );
   }, [open, initial, form]);
 
-  const categoryOptions = useMemo(() => {
+  // Categories are free text on the backend; the constant list is only offered as suggestions,
+  // plus the current value when editing an organization whose category is not in the list.
+  const categorySuggestions = useMemo(() => {
     const base = [...ORGANIZATION_CATEGORIES] as string[];
     if (initial?.category && !base.includes(initial.category)) {
       base.unshift(initial.category);
     }
-    return base.map((value) => ({ value, label: value }));
+    return base;
   }, [initial?.category]);
 
   const universityOptions = useMemo(
@@ -165,10 +161,11 @@ export function OrganizationFormModal({
             {...form.register("name")}
           />
 
-          <Select
+          <CategoryInput
             label="Category"
             required
-            options={categoryOptions}
+            maxLength={50}
+            suggestions={categorySuggestions}
             error={form.formState.errors.category?.message}
             {...form.register("category")}
           />
@@ -178,7 +175,7 @@ export function OrganizationFormModal({
           <Select
             label="Activity scope"
             required
-            options={SCOPE_OPTIONS}
+            options={[...ORGANIZATION_SCOPE_OPTIONS]}
             error={form.formState.errors.scope?.message}
             {...form.register("scope")}
           />

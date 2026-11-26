@@ -14,14 +14,23 @@ namespace TeamUp.Application.Services;
 
 public sealed class GamificationService(
     IAppDbContext db,
-    IAuditLogService? auditLog = null) : IGamificationService
+    IAuditLogService? auditLog = null,
+    Microsoft.Extensions.Options.IOptions<GamificationOptions>? gamificationOptions = null,
+    TimeProvider? timeProvider = null) : IGamificationService
 {
+    private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
+    #region Level Calculation & Score Ledger
+
     public StudentScoreDto CalculateLevelMetrics(int studentId, int totalPoints)
     {
+        // LevelStepPoints is configurable; a non-positive configured value falls back to the default curve.
+        var step = gamificationOptions?.Value.LevelStepPoints > 0
+            ? gamificationOptions.Value.LevelStepPoints
+            : new GamificationOptions().LevelStepPoints;
         var effectivePoints = Math.Max(totalPoints, 0);
-        var level = (int)Math.Floor(Math.Sqrt(effectivePoints / 100.0)) + 1;
-        var currentLevelStart = (int)Math.Pow(level - 1, 2) * 100;
-        var nextLevelThreshold = (int)Math.Pow(level, 2) * 100;
+        var level = (int)Math.Floor(Math.Sqrt(effectivePoints / (double)step)) + 1;
+        var currentLevelStart = (int)Math.Pow(level - 1, 2) * step;
+        var nextLevelThreshold = (int)Math.Pow(level, 2) * step;
         var pointsToNext = Math.Max(nextLevelThreshold - totalPoints, 0);
 
         double progress = 0.0;
@@ -91,7 +100,7 @@ public sealed class GamificationService(
             Points = points,
             Reason = reason.Trim(),
             SourceType = sourceType,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = _time.GetUtcNow().UtcDateTime,
         };
 
         db.ScoreTransactions.Add(tx);
@@ -115,6 +124,10 @@ public sealed class GamificationService(
             tx.SourceType,
             tx.CreatedAt);
     }
+
+    #endregion
+
+    #region Campus Leaderboard
 
     public async Task<PagedResult<LeaderboardEntryDto>> GetLeaderboardAsync(PageRequest page, CancellationToken ct = default)
     {
@@ -165,4 +178,6 @@ public sealed class GamificationService(
 
         return new PagedResult<LeaderboardEntryDto>(entries, safePage, safePageSize, total);
     }
+
+    #endregion
 }

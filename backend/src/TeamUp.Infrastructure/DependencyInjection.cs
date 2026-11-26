@@ -1,7 +1,6 @@
-// Date: 2026-11-22
-// Purpose: Infrastructure DI registration wiring EF Core (with Development SQLite fallback when SQL Server is offline), JWT signing, SMTP/dev email transport, templates, and domain event dispatching.
+// Date: 2026-11-26
+// Purpose: Infrastructure DI registration wiring EF Core 11 (with Development SQLite fallback when SQL Server is offline), TimeProvider, JWT signing, SMTP/dev email transport, templates, and domain event dispatching.
 
-using System.Net.Sockets;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,12 +21,37 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
+        #region Options & Validation
+
         services.Configure<JwtOptions>(config.GetSection(JwtOptions.SectionName));
         services.Configure<EmailOptions>(config.GetSection(EmailOptions.SectionName));
-        services.Configure<AttendanceOptions>(config.GetSection(AttendanceOptions.SectionName));
-        services.Configure<AdminOptions>(config.GetSection(AdminOptions.SectionName));
-        services.Configure<RateLimitingOptions>(config.GetSection(RateLimitingOptions.SectionName));
+        services.AddOptions<AttendanceOptions>()
+            .Bind(config.GetSection(AttendanceOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddOptions<GamificationOptions>()
+            .Bind(config.GetSection(GamificationOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddOptions<NotificationOptions>()
+            .Bind(config.GetSection(NotificationOptions.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(o => o.DefaultInboxTake <= o.MaxInboxTake, "Notifications:DefaultInboxTake must be <= MaxInboxTake.")
+            .ValidateOnStart();
+        services.AddOptions<AdminOptions>()
+            .Bind(config.GetSection(AdminOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddOptions<RateLimitingOptions>()
+            .Bind(config.GetSection(RateLimitingOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
+        #endregion
+
+        #region Infrastructure Services
+
+        services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IPasswordHasher<Student>, PasswordHasher<Student>>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
@@ -46,6 +70,11 @@ public static class DependencyInjection
         }
 
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+
+        #endregion
+
+        #region Persistence & Interceptors
+
         services.AddSingleton<SoftDeleteInterceptor>();
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
@@ -60,9 +89,7 @@ public static class DependencyInjection
             // let the test host register its own shared in-memory SqliteConnection.
             if (!string.IsNullOrWhiteSpace(cs))
             {
-                services.AddDbContext<AppDbContext>((sp, o) => o
-                    .UseSqlite(cs)
-                    .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>()));
+                AddSqliteAppDbContext(services, cs);
             }
         }
         else if (!string.IsNullOrWhiteSpace(cs))
@@ -70,69 +97,48 @@ public static class DependencyInjection
             if (allowSqliteFallback && !IsSqlServerReachable(cs))
             {
                 var sqliteCs = config.GetConnectionString("SqliteFallback") ?? "Data Source=TeamUp.dev.db";
-                services.AddDbContext<AppDbContext>((sp, o) => o
-                    .UseSqlite(sqliteCs)
-                    .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>()));
+                AddSqliteAppDbContext(services, sqliteCs);
             }
             else
             {
                 services.AddDbContext<AppDbContext>((sp, o) => o
-                    .UseSqlServer(cs, sql => sql.EnableRetryOnFailure())
+                    .UseSqlServer(cs, sql => sql.EnableRetryOnFailure().UseCompatibilityLevel(160))
                     .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>()));
             }
         }
         else if (allowSqliteFallback)
         {
             var sqliteCs = config.GetConnectionString("SqliteFallback") ?? "Data Source=TeamUp.dev.db";
-            services.AddDbContext<AppDbContext>((sp, o) => o
-                .UseSqlite(sqliteCs)
-                .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>()));
+            AddSqliteAppDbContext(services, sqliteCs);
         }
 
+        #endregion
+
         return services;
+    }
+
+    private static void AddSqliteAppDbContext(IServiceCollection services, string sqliteConnectionString)
+    {
+        services.AddDbContext<AppDbContext>((sp, o) => o
+            .UseSqlite(sqliteConnectionString)
+            .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>()));
     }
 
     private static bool IsSqlServerReachable(string connectionString)
     {
         try
         {
-            var segments = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            string? serverSegment = null;
-            foreach (var segment in segments)
+            var builder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString)
             {
-                var idx = segment.IndexOf('=');
-                if (idx <= 0) continue;
-                var key = segment[..idx].Trim();
-                if (key.Equals("Server", StringComparison.OrdinalIgnoreCase) ||
-                    key.Equals("Data Source", StringComparison.OrdinalIgnoreCase))
-                {
-                    serverSegment = segment[(idx + 1)..].Trim();
-                    break;
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(serverSegment))
-                return true;
-
-            var host = serverSegment;
-            var port = 1433;
-            var commaIdx = serverSegment.IndexOf(',');
-            if (commaIdx > 0)
-            {
-                host = serverSegment[..commaIdx].Trim();
-                if (!int.TryParse(serverSegment[(commaIdx + 1)..].Trim(), out port))
-                    port = 1433;
-            }
-
-            if (host.StartsWith("tcp:", StringComparison.OrdinalIgnoreCase))
-                host = host[4..].Trim();
-
-            using var tcp = new TcpClient();
-            var connectTask = tcp.ConnectAsync(host, port);
-            return connectTask.Wait(TimeSpan.FromMilliseconds(750)) && tcp.Connected;
+                ConnectTimeout = 2,
+            };
+            using var conn = new Microsoft.Data.SqlClient.SqlConnection(builder.ConnectionString);
+            conn.Open();
+            return true;
         }
-        catch
+        catch (Microsoft.Data.SqlClient.SqlException ex)
         {
+            Console.Error.WriteLine($"[TeamUp] SQL Server unreachable ({ex.Message}); falling back to local SQLite.");
             return false;
         }
     }

@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
-import { isSafeAssetOrHttpUrl } from "@/lib/urlValidation";
+import { resolveMediaUrl } from "@/lib/urlValidation";
 
 export interface UniversityLogoProps {
   name: string;
@@ -66,35 +66,25 @@ export function UniversityLogo({ name, logoUrl, size = "md", className }: Univer
   }, [logoUrl, name]);
 
   const boxClass = SIZE_CLASSES[size];
-  const validPrimaryUrl = logoUrl && isSafeAssetOrHttpUrl(logoUrl) ? logoUrl.trim() : null;
+  const validPrimaryUrl = resolveMediaUrl(logoUrl);
   const backupPath = getOfficialBackupPath(name);
-
-  if (validPrimaryUrl && !primaryFailed) {
-    return (
-      <div
-        title={name}
-        className={cn(
-          "inline-flex shrink-0 items-center justify-center overflow-hidden border border-black/10 bg-white p-1 shadow-sm",
-          boxClass,
-          className,
-        )}
-      >
-        <img
-          src={validPrimaryUrl}
-          alt={`${name} official logo`}
-          decoding="async"
-          referrerPolicy="no-referrer"
-          onError={() => setPrimaryFailed(true)}
-          className="h-full w-full object-contain"
-        />
-      </div>
-    );
-  }
 
   // Only attempt cached official raster image when primary was missing cleanly or remote failed transiently,
   // unless an explicit unsafe URL was passed (in which case go straight to initials shield).
-  const isUnsafeExplicitUrl = Boolean(logoUrl && !validPrimaryUrl);
-  if (!isUnsafeExplicitUrl && backupPath && !backupFailed) {
+  const isUnsafeExplicitUrl = Boolean(logoUrl?.trim() && !validPrimaryUrl);
+  const activeSrc =
+    validPrimaryUrl && !primaryFailed
+      ? validPrimaryUrl
+      : !isUnsafeExplicitUrl && backupPath && !backupFailed
+        ? backupPath
+        : null;
+
+  if (activeSrc) {
+    const handleImageError =
+      validPrimaryUrl && !primaryFailed
+        ? () => setPrimaryFailed(true)
+        : () => setBackupFailed(true);
+
     return (
       <div
         title={name}
@@ -105,10 +95,12 @@ export function UniversityLogo({ name, logoUrl, size = "md", className }: Univer
         )}
       >
         <img
-          src={backupPath}
+          src={activeSrc}
           alt={`${name} official logo`}
+          loading="lazy"
           decoding="async"
-          onError={() => setBackupFailed(true)}
+          referrerPolicy="no-referrer"
+          onError={handleImageError}
           className="h-full w-full object-contain"
         />
       </div>

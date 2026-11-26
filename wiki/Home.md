@@ -1,6 +1,6 @@
 # TeamUp — Project Wiki
 
-> **Student Collaboration & Gamification Platform** · Clean Architecture .NET 10 Web API + React 19 SPA + EF Core 10 + Microsoft SQL Server 2022 · 24 runtime tables (23 core domain + `AuditLog`), 116 REST endpoints, 263/263 automated tests passing.
+> **Student Collaboration & Gamification Platform** · Clean Architecture .NET 11 Web API + React 19 SPA + EF Core 11 + Microsoft SQL Server 2022 · 100% Zero Cascades, OpenAPI 3.2 (100 paths / 143 operations), 348/348 automated tests passing.
 >
 > This folder is the project's documentation home. All architectural blueprints, database models, operational guides, and endpoint references are indexed here.
 
@@ -10,14 +10,14 @@
 
 | Dimension | Specification |
 |---|---|
-| **Backend Framework** | .NET 10 / ASP.NET Core Web API / C# 14 (`Nullable=enable`, `TreatWarningsAsErrors=true`) |
+| **Backend Framework** | .NET 11 / ASP.NET Core Web API / C# 15 (`Nullable=enable`, CPM via `Directory.Packages.props`) |
 | **Frontend Web App** | React 19 + Vite 8 + TypeScript + Tailwind CSS v4 SPA (`frontend/`) with React Router v7 & TanStack Query v5 |
 | **Architecture** | Clean Architecture / DDD Bounded Contexts / Modular Monolith (`Domain`, `Application`, `Infrastructure`, `Api`) |
-| **Database & ORM** | Microsoft SQL Server 2022 (with Development SQLite fallback) · EF Core 10 · 24 Runtime Tables (23 Core + `AuditLog`) · 31 Foreign Keys |
-| **Integrity Rules** | **Zero Cascades** (`ON DELETE NO ACTION`) · 22 `ISoftDelete` Tables (`DeletedAt`) · 2 `IAppendOnly` Ledgers (`ScoreTransaction`, `AuditLog`) · 11 Filtered Unique Indexes · 20 CHECK Constraints |
-| **Security & Auth** | JWT Bearer Auth (`SecurityStamp` validated) · PBKDF2 Password Hashing · SHA-256 Crypto Refresh Tokens (10s reuse grace) · Tiered Rate Limiting (`120/30/30/30` per 60s) · STRIDE Hardened |
-| **API Surface** | 116 RESTful Endpoints (115 Controller Actions across 19 Controllers + `/health`) · Uniform `ApiResponse<T>` / `BaseResponse<T>` Envelope |
-| **Test Suite** | **263 / 263 Passing Tests** (117 Unit + 75 Integration via `WebApplicationFactory` + 71 Frontend Vitest) + Playwright E2E Smoke Suite |
+| **Database & ORM** | Microsoft SQL Server 2022 (with Development SQLite fallback) · EF Core 11 · Zero Cascades · `StoredImage` storage |
+| **Integrity Rules** | **Zero Cascades** (`ON DELETE NO ACTION` / `Restrict`) · `ISoftDelete` (`DeletedAt`) · 2 `IAppendOnly` Ledgers (`ScoreTransaction`, `AuditLog`) · Filtered Unique Indexes · CHECK Constraints |
+| **Security & Auth** | JWT Bearer Auth (`SecurityStamp` validated) · PBKDF2 Password Hashing · SHA-256 Crypto Refresh Tokens (10s reuse grace) · Tiered Rate Limiting (`120/30/30/30/10` per 60s incl. `upload-policy`) · STRIDE Hardened |
+| **API Surface** | OpenAPI 3.2 (100 paths / 143 operations + `/health/live` & `/health/ready`) · Uniform `ApiResponse<T>` / `BaseResponse<T>` Envelope |
+| **Test Suite** | **348 / 348 Passing Tests** (144 Unit + 109 Integration via `WebApplicationFactory` + 95 Frontend Vitest) + Playwright E2E Smoke Suite |
 | **Engineering Team** | 4 Functional Contexts: M1 (Auth/Identity/Admin), M2 (Skills/Projects/Tasks), M3 (Orgs/Events/Attendance), M4 (Gamification/Badges/Alerts) |
 
 ---
@@ -70,7 +70,7 @@ TeamUp Documentation Home (wiki/Home.md)
 │
 ├── 🏛️ Architecture & Database
 │   ├── Architecture.md ─────────────────────────── Clean Architecture, Exception Flow & Domain Events
-│   ├── Technology Stack & Architecture.md ──────── .NET 10, React 19, EF Core 10 & Caching
+│   ├── Technology Stack & Architecture.md ──────── .NET 11, React 19, EF Core 11 & Caching
 │   ├── Backend Services.md ─────────────────────── Application, Security & Infra Services + 6 Domain Events
 │   └── Database Design & Relational Mapping.md ─── Chen ERD, 23 Core / 24 Runtime Tables & Zero Cascades
 │
@@ -118,5 +118,5 @@ TeamUp Documentation Home (wiki/Home.md)
 
 - **Repository:** <https://github.com/AhmedTyson/TeamUp>
 - **Primary Branch:** `main`
-- **Solution:** [`backend/TeamUp.sln`](../backend/TeamUp.sln) (.NET 10)
+- **Solution:** [`backend/TeamUp.sln`](../backend/TeamUp.sln) (.NET 11)
 - **Frontend Workspace:** [`frontend/package.json`](../frontend/package.json) (React 19 + Vite 8)

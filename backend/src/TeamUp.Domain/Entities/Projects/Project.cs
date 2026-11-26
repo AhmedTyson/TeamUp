@@ -13,6 +13,8 @@ public class Project : BaseEntity
     public int MaxTeamSize { get; set; }
     public int CreatorId { get; set; }
     public Student Creator { get; set; } = null!;
+    /// <summary>Optional custom cover; when null the API serves a generated default cover per project.</summary>
+    public string? CoverImageUrl { get; set; }
     public byte[] RowVersion { get; set; } = [];
     public ICollection<ProjectMember> Members { get; set; } = [];
     public ICollection<ProjectTask> Tasks { get; set; } = [];

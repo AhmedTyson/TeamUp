@@ -656,7 +656,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261102213307_InitialCreate', N'10.0.14');
+    VALUES (N'20261102213307_InitialCreate', N'11.0.0');
 END;
 
 COMMIT;
@@ -685,7 +685,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261102223340_AddStudentRefreshToken', N'10.0.14');
+    VALUES (N'20261102223340_AddStudentRefreshToken', N'11.0.0');
 END;
 
 COMMIT;
@@ -714,7 +714,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261103165211_AddPasswordResetToken', N'10.0.14');
+    VALUES (N'20261103165211_AddPasswordResetToken', N'11.0.0');
 END;
 
 COMMIT;
@@ -783,7 +783,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261104180000_AddActivityQueryIndexes', N'10.0.14');
+    VALUES (N'20261104180000_AddActivityQueryIndexes', N'11.0.0');
 END;
 
 COMMIT;
@@ -897,7 +897,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261121203306_AddStrideSecurityHardening', N'10.0.14');
+    VALUES (N'20261121203306_AddStrideSecurityHardening', N'11.0.0');
 END;
 
 COMMIT;
@@ -918,7 +918,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261122162218_AddUniversityLogoUrl', N'10.0.14');
+    VALUES (N'20261122162218_AddUniversityLogoUrl', N'11.0.0');
 END;
 
 COMMIT;
@@ -963,7 +963,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261124005253_AddAuthAbuseProtection', N'10.0.14');
+    VALUES (N'20261124005253_AddAuthAbuseProtection', N'11.0.0');
 END;
 
 COMMIT;
@@ -1026,7 +1026,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261124010511_AddScoreSourceReference', N'10.0.14');
+    VALUES (N'20261124010511_AddScoreSourceReference', N'11.0.0');
 END;
 
 COMMIT;
@@ -1063,7 +1063,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261124013710_AddStudentEmailPreferences', N'10.0.14');
+    VALUES (N'20261124013710_AddStudentEmailPreferences', N'11.0.0');
 END;
 
 COMMIT;
@@ -1076,10 +1076,9 @@ IF NOT EXISTS (
 )
 BEGIN
     DECLARE @var nvarchar(max);
-    SELECT @var = QUOTENAME([d].[name])
-    FROM [sys].[default_constraints] [d]
-    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
-    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Student]') AND [c].[name] = N'FacultyId');
+    SELECT @var = QUOTENAME(OBJECT_NAME([c].[default_object_id]))
+    FROM [sys].[columns] [c]
+    WHERE [c].[object_id] = OBJECT_ID(N'[Student]') AND [c].[name] = N'FacultyId';
     IF @var IS NOT NULL EXEC(N'ALTER TABLE [Student] DROP CONSTRAINT ' + @var + ';');
     ALTER TABLE [Student] ALTER COLUMN [FacultyId] int NULL;
 END;
@@ -1407,7 +1406,239 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20261124175844_AddFlexibleActivitiesAndHierarchy', N'10.0.14');
+    VALUES (N'20261124175844_AddFlexibleActivitiesAndHierarchy', N'11.0.0');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124231511_AddOrganizationCreationRequests'
+)
+BEGIN
+    CREATE TABLE [OrganizationCreationRequest] (
+        [RequestId] int NOT NULL IDENTITY,
+        [RequesterStudentId] int NOT NULL,
+        [Name] nvarchar(120) NOT NULL,
+        [Description] nvarchar(4000) NOT NULL,
+        [Category] nvarchar(50) NOT NULL,
+        [Scope] varchar(30) NOT NULL DEFAULT 'UniversityBranch',
+        [UniversityId] int NULL,
+        [City] nvarchar(100) NULL,
+        [LogoUrl] nvarchar(300) NULL,
+        [CoverImageUrl] nvarchar(500) NULL,
+        [WebsiteUrl] nvarchar(300) NULL,
+        [CurrentSeasonName] nvarchar(80) NULL,
+        [Justification] nvarchar(1000) NULL,
+        [Status] varchar(30) NOT NULL DEFAULT 'Pending',
+        [RequestedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
+        [ReviewedAt] datetime2 NULL,
+        [ReviewedByStudentId] int NULL,
+        [ReviewNotes] nvarchar(1000) NULL,
+        [CreatedOrganizationId] int NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_OrganizationCreationRequest] PRIMARY KEY ([RequestId]),
+        CONSTRAINT [CK_OrganizationCreationRequest_Scope] CHECK ([Scope] IN ('UniversityBranch', 'FacultyChapter', 'CrossUniversity', 'Independent', 'NationalNetwork')),
+        CONSTRAINT [CK_OrganizationCreationRequest_Status] CHECK ([Status] IN ('Pending', 'Accepted', 'Rejected', 'Withdrawn')),
+        CONSTRAINT [FK_OrganizationCreationRequest_Organization_CreatedOrganizationId] FOREIGN KEY ([CreatedOrganizationId]) REFERENCES [Organization] ([OrganizationId]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_OrganizationCreationRequest_Student_RequesterStudentId] FOREIGN KEY ([RequesterStudentId]) REFERENCES [Student] ([StudentId]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_OrganizationCreationRequest_Student_ReviewedByStudentId] FOREIGN KEY ([ReviewedByStudentId]) REFERENCES [Student] ([StudentId]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_OrganizationCreationRequest_University_UniversityId] FOREIGN KEY ([UniversityId]) REFERENCES [University] ([UniversityId]) ON DELETE NO ACTION
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124231511_AddOrganizationCreationRequests'
+)
+BEGIN
+    CREATE INDEX [IX_OrganizationCreationRequest_CreatedOrganizationId] ON [OrganizationCreationRequest] ([CreatedOrganizationId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124231511_AddOrganizationCreationRequests'
+)
+BEGIN
+    CREATE INDEX [IX_OrganizationCreationRequest_RequesterStudentId] ON [OrganizationCreationRequest] ([RequesterStudentId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124231511_AddOrganizationCreationRequests'
+)
+BEGIN
+    EXEC(N'CREATE UNIQUE INDEX [IX_OrganizationCreationRequest_RequesterStudentId_Name] ON [OrganizationCreationRequest] ([RequesterStudentId], [Name]) WHERE [DeletedAt] IS NULL AND [Status] = ''Pending''');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124231511_AddOrganizationCreationRequests'
+)
+BEGIN
+    CREATE INDEX [IX_OrganizationCreationRequest_ReviewedByStudentId] ON [OrganizationCreationRequest] ([ReviewedByStudentId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124231511_AddOrganizationCreationRequests'
+)
+BEGIN
+    EXEC(N'CREATE INDEX [IX_OrganizationCreationRequest_Status_RequestedAt] ON [OrganizationCreationRequest] ([Status], [RequestedAt]) WHERE [DeletedAt] IS NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124231511_AddOrganizationCreationRequests'
+)
+BEGIN
+    CREATE INDEX [IX_OrganizationCreationRequest_UniversityId] ON [OrganizationCreationRequest] ([UniversityId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261124231511_AddOrganizationCreationRequests'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261124231511_AddOrganizationCreationRequests', N'11.0.0');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261125064828_AddStoredImages'
+)
+BEGIN
+    ALTER TABLE [ScoreTransaction] DROP CONSTRAINT [CK_ScoreTransaction_SourceType];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261125064828_AddStoredImages'
+)
+BEGIN
+    CREATE TABLE [StoredImage] (
+        [StoredImageId] uniqueidentifier NOT NULL,
+        [UploadedByStudentId] int NOT NULL,
+        [Content] varbinary(max) NOT NULL,
+        [ContentType] nvarchar(50) NOT NULL,
+        [SizeBytes] bigint NOT NULL,
+        [UploadedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_StoredImage] PRIMARY KEY ([StoredImageId]),
+        CONSTRAINT [FK_StoredImage_Student_UploadedByStudentId] FOREIGN KEY ([UploadedByStudentId]) REFERENCES [Student] ([StudentId]) ON DELETE NO ACTION
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261125064828_AddStoredImages'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [ScoreTransaction] ADD CONSTRAINT [CK_ScoreTransaction_SourceType] CHECK ([SourceType] IN (''EventAttendance'', ''TaskCompleted'', ''ProjectDelivered'', ''Manual'', ''AttendanceRevocation''))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261125064828_AddStoredImages'
+)
+BEGIN
+    CREATE INDEX [IX_StoredImage_UploadedByStudentId] ON [StoredImage] ([UploadedByStudentId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261125064828_AddStoredImages'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261125064828_AddStoredImages', N'11.0.0');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261125121701_AddCoversAndSystemImages'
+)
+BEGIN
+    DECLARE @var1 nvarchar(max);
+    SELECT @var1 = QUOTENAME(OBJECT_NAME([c].[default_object_id]))
+    FROM [sys].[columns] [c]
+    WHERE [c].[object_id] = OBJECT_ID(N'[StoredImage]') AND [c].[name] = N'UploadedByStudentId';
+    IF @var1 IS NOT NULL EXEC(N'ALTER TABLE [StoredImage] DROP CONSTRAINT ' + @var1 + ';');
+    ALTER TABLE [StoredImage] ALTER COLUMN [UploadedByStudentId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261125121701_AddCoversAndSystemImages'
+)
+BEGIN
+    ALTER TABLE [Project] ADD [CoverImageUrl] nvarchar(max) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261125121701_AddCoversAndSystemImages'
+)
+BEGIN
+    ALTER TABLE [Event] ADD [CoverImageUrl] nvarchar(max) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261125121701_AddCoversAndSystemImages'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261125121701_AddCoversAndSystemImages', N'11.0.0');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126180429_HardenCoverImageUrlMaxLength'
+)
+BEGIN
+    DECLARE @var2 nvarchar(max);
+    SELECT @var2 = QUOTENAME(OBJECT_NAME([c].[default_object_id]))
+    FROM [sys].[columns] [c]
+    WHERE [c].[object_id] = OBJECT_ID(N'[Project]') AND [c].[name] = N'CoverImageUrl';
+    IF @var2 IS NOT NULL EXEC(N'ALTER TABLE [Project] DROP CONSTRAINT ' + @var2 + ';');
+    ALTER TABLE [Project] ALTER COLUMN [CoverImageUrl] nvarchar(500) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126180429_HardenCoverImageUrlMaxLength'
+)
+BEGIN
+    DECLARE @var3 nvarchar(max);
+    SELECT @var3 = QUOTENAME(OBJECT_NAME([c].[default_object_id]))
+    FROM [sys].[columns] [c]
+    WHERE [c].[object_id] = OBJECT_ID(N'[Event]') AND [c].[name] = N'CoverImageUrl';
+    IF @var3 IS NOT NULL EXEC(N'ALTER TABLE [Event] DROP CONSTRAINT ' + @var3 + ';');
+    ALTER TABLE [Event] ALTER COLUMN [CoverImageUrl] nvarchar(500) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126180429_HardenCoverImageUrlMaxLength'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261126180429_HardenCoverImageUrlMaxLength', N'11.0.0');
 END;
 
 COMMIT;

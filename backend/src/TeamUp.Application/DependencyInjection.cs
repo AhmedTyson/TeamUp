@@ -2,6 +2,7 @@
 // Purpose: Application layer DI registrations for services, validators, security guards, caching, and domain event handlers.
 
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TeamUp.Application.Admin;
@@ -26,8 +27,22 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        #region Validation & Caching
+
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddMemoryCache();
+        services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new HybridCacheEntryOptions
+            {
+                Expiration = CatalogCacheKeys.DefaultTtl,
+                LocalCacheExpiration = CatalogCacheKeys.DefaultTtl
+            };
+        });
+
+        #endregion
+
+        #region Security & Cross-Cutting
 
         // Security, multi-tenant authorization, rotating check-in tokens, and audit logging
         services.TryAddScoped<IRequestContext, NullRequestContext>();
@@ -35,6 +50,10 @@ public static class DependencyInjection
         services.AddScoped<ISecurityStampValidator, SecurityStampValidator>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddSingleton<IAttendanceCodeService, AttendanceCodeService>();
+
+        #endregion
+
+        #region Feature Services
 
         // Module 01: Auth, Identity, Profiles, Academic Catalog & Admin
         services.AddScoped<IAuthService, AuthService>();
@@ -63,7 +82,12 @@ public static class DependencyInjection
         services.AddScoped<IGamificationService, GamificationService>();
         services.AddScoped<IBadgeService, BadgeService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IDigestDispatchService, DigestDispatchService>();
+
+        #endregion
+
+        #region Domain Event Handlers
 
         // Domain event handlers (automatic XP awards, badge evaluation & notifications)
         services.AddScoped<IDomainEventHandler<TaskCompletedDomainEvent>, TaskCompletedDomainEventHandler>();
@@ -73,6 +97,8 @@ public static class DependencyInjection
         services.AddScoped<IDomainEventHandler<ApplicationReviewedDomainEvent>, ApplicationReviewedDomainEventHandler>();
         services.AddScoped<IDomainEventHandler<WaitlistPromotedDomainEvent>, WaitlistPromotedDomainEventHandler>();
         services.AddScoped<IDomainEventHandler<EventRegisteredDomainEvent>, EventRegisteredEmailDomainEventHandler>();
+
+        #endregion
 
         return services;
     }

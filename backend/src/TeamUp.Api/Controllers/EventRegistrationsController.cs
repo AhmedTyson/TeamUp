@@ -23,6 +23,16 @@ public sealed class EventRegistrationsController(IEventService eventService) : B
         return OkResponse(result);
     }
 
+    // The caller's own registration for this event (null when none). Keeps the event detail page's
+    // "am I registered?" check correct now that my-registrations is paginated.
+    [HttpGet("mine")]
+    [ProducesResponseType(typeof(BaseResponse<MyEventRegistrationDto?>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMyRegistration([FromRoute] int id, CancellationToken ct)
+    {
+        var result = await eventService.GetMyRegistrationForEventAsync(id, CurrentStudentId, ct);
+        return OkResponse(result);
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(BaseResponse<EventRegistrationDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> Register([FromRoute] int id, CancellationToken ct)

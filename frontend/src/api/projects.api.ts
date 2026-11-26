@@ -21,6 +21,7 @@ export interface ProjectListItemDto {
   creatorId: number;
   creatorName: string;
   createdAt: string;
+  coverImageUrl?: string | null;
 }
 
 export interface ProjectMemberDto {
@@ -166,6 +167,14 @@ export const projectsApi = {
   async getApplications(id: number, signal?: AbortSignal): Promise<ProjectApplicationDto[]> {
     const res = await apiClient.get<ApiResponse<ProjectApplicationDto[]>>(
       API_ENDPOINTS.projects.applications(id),
+      { signal },
+    );
+    return unwrapApiResponse(res);
+  },
+
+  async getMyApplication(id: number, signal?: AbortSignal): Promise<ProjectApplicationDto | null> {
+    const res = await apiClient.get<ApiResponse<ProjectApplicationDto | null>>(
+      API_ENDPOINTS.projects.myApplication(id),
       { signal },
     );
     return unwrapApiResponse(res);

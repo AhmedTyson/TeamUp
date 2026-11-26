@@ -53,6 +53,7 @@ const STATUS_VARIANT_MAP: Record<string, BadgeVariant> = {
   TaskCompleted: "success",
   ProjectDelivered: "accent",
   Manual: "warning",
+  AttendanceRevocation: "danger",
 
   // UserRole
   Student: "default",
@@ -67,6 +68,7 @@ const STATUS_LABEL_MAP: Record<string, string> = {
   EventAttendance: "Event Attendance",
   TaskCompleted: "Task Completed",
   ProjectDelivered: "Project Delivered",
+  AttendanceRevocation: "Attendance Revoked",
   PlatformAdmin: "Platform Admin",
   OrgAdmin: "Org Admin",
 };

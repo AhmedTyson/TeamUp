@@ -1,6 +1,7 @@
 // Date: 2026-11-24
 // Purpose: Canonical scoped organization roles and Egyptian student-activity hierarchy mapping (STRIDE THR-T-01 / THR-E-01).
 
+using System.Collections.Frozen;
 using TeamUp.Domain.Enums;
 
 namespace TeamUp.Domain.Common;
@@ -24,7 +25,7 @@ public static class OrganizationRoles
     public const string Member = "Member";
     public const string Participant = "Participant";
 
-    private static readonly HashSet<string> AdministrativeRoles = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly FrozenSet<string> AdministrativeRoles = new[]
     {
         Admin,
         OrgAdmin,
@@ -36,13 +37,16 @@ public static class OrganizationRoles
         Treasurer,
         Webmaster,
         Executive
-    };
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly HashSet<string> CommitteeLeaderExactRoles = new(StringComparer.OrdinalIgnoreCase)
+    // Array form exported so EF Core LINQ predicates translate `.Contains(...)` to SQL `IN (...)`.
+    public static readonly string[] AdministrativeRoleNames = [.. AdministrativeRoles];
+
+    private static readonly FrozenSet<string> CommitteeLeaderExactRoles = new[]
     {
         Head,
         ViceHead
-    };
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     public static bool IsAdminRole(string? role) =>
         !string.IsNullOrWhiteSpace(role) && AdministrativeRoles.Contains(role.Trim());

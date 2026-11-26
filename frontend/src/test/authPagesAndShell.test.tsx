@@ -17,12 +17,10 @@ import {
 import { AppCoreProviders } from "@/app/providers";
 import { AppShell } from "@/components/layout/AppShell";
 import { PrivacyPolicyPage } from "@/pages/PrivacyPolicyPage";
-import {
-  ForgotPasswordPage,
-  LoginPage,
-  RegisterPage,
-  ResetPasswordPage,
-} from "@/features/auth";
+import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage";
+import { LoginPage } from "@/features/auth/pages/LoginPage";
+import { RegisterPage } from "@/features/auth/pages/RegisterPage";
+import { ResetPasswordPage } from "@/features/auth/pages/ResetPasswordPage";
 import { tokenStorage } from "@/lib/tokenStorage";
 
 const MOCK_CATALOG: UniversityCatalogItem[] = [
@@ -423,6 +421,18 @@ describe("M1 Phase 1 — Auth Pages, Academic Catalog API & AppShell", () => {
           status: 200,
         } as never;
       }
+      if (url.includes("/notifications/unread-count")) {
+        return {
+          data: {
+            success: true,
+            message: "OK",
+            statusCode: 200,
+            data: 1,
+            timestamp: new Date().toISOString(),
+          },
+          status: 200,
+        } as never;
+      }
       if (url.includes("/notifications")) {
         return {
           data: {
@@ -590,16 +600,17 @@ describe("M1 Phase 1 — Auth Pages, Academic Catalog API & AppShell", () => {
   });
 
   it("expands and collapses mobile navbar module accordions, coordinates with NotificationBell, and dismisses on outside click", async () => {
-    vi.spyOn(apiClient, "get").mockResolvedValue({
-      data: {
-        success: true,
-        message: "OK",
-        statusCode: 200,
-        data: [],
-        timestamp: new Date().toISOString(),
-      },
-      status: 200,
-    } as never);
+    vi.spyOn(apiClient, "get").mockImplementation(((url: string) =>
+      Promise.resolve({
+        data: {
+          success: true,
+          message: "OK",
+          statusCode: 200,
+          data: url.includes("unread-count") ? 0 : [],
+          timestamp: new Date().toISOString(),
+        },
+        status: 200,
+      })) as never);
 
     render(
       <MemoryRouter initialEntries={["/"]}>

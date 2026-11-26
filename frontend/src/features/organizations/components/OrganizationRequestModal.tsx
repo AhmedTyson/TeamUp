@@ -6,12 +6,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Info } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
 import { ORGANIZATION_SCOPES, type CreateOrganizationProposalPayload } from "@/api";
 import { Button, ErrorBanner, Input, Modal, Select, Textarea } from "@/components/ui";
 import { useUniversityCatalog } from "@/features/catalog/useUniversityCatalogFallback";
 import { mapApiErrorsToForm } from "@/lib/formErrors";
-import { ORGANIZATION_CATEGORIES } from "../schemas/organizationSchemas";
+import {
+  ORGANIZATION_CATEGORIES,
+  ORGANIZATION_SCOPE_OPTIONS,
+  proposalFormSchema,
+  type ProposalFormValues,
+} from "../schemas/organizationSchemas";
+import { CategoryInput } from "./CategoryInput";
 
 export interface OrganizationRequestModalProps {
   open: boolean;
@@ -20,42 +25,9 @@ export interface OrganizationRequestModalProps {
   onSubmitProposal: (payload: CreateOrganizationProposalPayload) => Promise<void>;
 }
 
-const SCOPE_OPTIONS = [
-  { value: ORGANIZATION_SCOPES.UniversityBranch, label: "University Student Branch (e.g. IEEE SB)" },
-  { value: ORGANIZATION_SCOPES.FacultyChapter, label: "Faculty Chapter (e.g. BIS Helwan Club)" },
-  { value: ORGANIZATION_SCOPES.CrossUniversity, label: "Cross-University Initiative (e.g. STP Egypt)" },
-  { value: ORGANIZATION_SCOPES.Independent, label: "Open / Independent Community (e.g. GDG)" },
-  { value: ORGANIZATION_SCOPES.NationalNetwork, label: "National Network" },
-];
-
-const proposalFormSchema = z.object({
-  name: z.string().trim().min(2, "Organization name is required.").max(120),
-  category: z.string().trim().min(2, "Category is required.").max(50),
-  scope: z.nativeEnum(ORGANIZATION_SCOPES),
-  universityId: z.string().optional(),
-  city: z.string().trim().max(100).optional(),
-  description: z.string().trim().min(10, "Please describe the club mission (at least 10 characters).").max(4000),
-  websiteUrl: z
-    .string()
-    .trim()
-    .max(300)
-    .optional()
-    .refine((v) => !v || /^https?:\/\//i.test(v), "Must start with https:// or http://"),
-  logoUrl: z
-    .string()
-    .trim()
-    .max(300)
-    .optional()
-    .refine((v) => !v || /^https?:\/\//i.test(v), "Must start with https:// or http://"),
-  currentSeasonName: z.string().trim().max(80).optional(),
-  justification: z.string().trim().max(1000).optional(),
-});
-
-type ProposalFormValues = z.infer<typeof proposalFormSchema>;
-
 const DEFAULT_VALUES: ProposalFormValues = {
   name: "",
-  category: ORGANIZATION_CATEGORIES[0],
+  category: "",
   scope: ORGANIZATION_SCOPES.UniversityBranch,
   universityId: "",
   city: "",
@@ -87,11 +59,6 @@ export function OrganizationRequestModal({
     setSubmitError(null);
     form.reset(DEFAULT_VALUES);
   }, [open, form]);
-
-  const categoryOptions = useMemo(
-    () => ORGANIZATION_CATEGORIES.map((value) => ({ value, label: value })),
-    [],
-  );
 
   const universityOptions = useMemo(
     () =>
@@ -170,10 +137,11 @@ export function OrganizationRequestModal({
             {...form.register("name")}
           />
 
-          <Select
+          <CategoryInput
             label="Category"
             required
-            options={categoryOptions}
+            maxLength={50}
+            suggestions={ORGANIZATION_CATEGORIES}
             error={form.formState.errors.category?.message}
             {...form.register("category")}
           />
@@ -183,7 +151,7 @@ export function OrganizationRequestModal({
           <Select
             label="Activity scope"
             required
-            options={SCOPE_OPTIONS}
+            options={[...ORGANIZATION_SCOPE_OPTIONS]}
             error={form.formState.errors.scope?.message}
             {...form.register("scope")}
           />

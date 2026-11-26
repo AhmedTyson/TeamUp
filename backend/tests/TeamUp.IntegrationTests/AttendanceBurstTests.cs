@@ -24,11 +24,11 @@ public class AttendanceBurstTests(TeamUpApiFactory baseFactory) : IClassFixture<
         orgAdmin.DefaultRequestHeaders.Authorization = new("Bearer", baseFactory.CreateToken(911, "orgadmin_burst@teamup.test", "OrgAdmin"));
         var org = await ApiHelper.DataAsync<OrganizationDetailDto>(await orgAdmin.PostAsJsonAsync("/api/v1/organizations",
             new CreateOrganizationRequest($"Burst_{Guid.NewGuid():N}", "org", "Technology", null), ApiHelper.Json));
-        var start = DateTime.UtcNow.Date.AddDays(5);
+        var start = DateTime.UtcNow.AddHours(-1);
         var ev = await ApiHelper.DataAsync<EventDto>(await orgAdmin.PostAsJsonAsync("/api/v1/events",
             new CreateEventRequest("Burst Workshop", "d", EventType.Workshop, "Hall", start, start.AddDays(1), 10, org.OrganizationId), ApiHelper.Json));
         var session = await ApiHelper.DataAsync<EventSessionDto>(await orgAdmin.PostAsJsonAsync($"/api/v1/events/{ev.EventId}/sessions",
-            new CreateEventSessionRequest(1, "Opening", start.AddHours(1), start.AddHours(2), "A"), ApiHelper.Json));
+            new CreateEventSessionRequest(1, "Opening", DateTime.UtcNow.AddMinutes(-10), DateTime.UtcNow.AddHours(2), "A"), ApiHelper.Json));
         var clients = new List<HttpClient>();
         for (var i = 0; i < 3; i++)
         {
@@ -65,11 +65,11 @@ public class AttendanceBurstTests(TeamUpApiFactory baseFactory) : IClassFixture<
         var orgAdmin = api.Authed(baseFactory.CreateToken(912, "orgadmin_manual@teamup.test", "OrgAdmin"));
         var org = await ApiHelper.DataAsync<OrganizationDetailDto>(await orgAdmin.PostAsJsonAsync("/api/v1/organizations",
             new CreateOrganizationRequest($"ManualQr_{Guid.NewGuid():N}", "org", "Technology", null), ApiHelper.Json));
-        var start = DateTime.UtcNow.Date.AddDays(6);
+        var start = DateTime.UtcNow.AddHours(-1);
         var ev = await ApiHelper.DataAsync<EventDto>(await orgAdmin.PostAsJsonAsync("/api/v1/events",
             new CreateEventRequest("Manual QR Audit", "d", EventType.Workshop, "Hall", start, start.AddDays(1), 10, org.OrganizationId), ApiHelper.Json));
         var session = await ApiHelper.DataAsync<EventSessionDto>(await orgAdmin.PostAsJsonAsync($"/api/v1/events/{ev.EventId}/sessions",
-            new CreateEventSessionRequest(1, "Check-in", start.AddHours(1), start.AddHours(2), "B"), ApiHelper.Json));
+            new CreateEventSessionRequest(1, "Check-in", DateTime.UtcNow.AddMinutes(-10), DateTime.UtcNow.AddHours(2), "B"), ApiHelper.Json));
 
         var (studentClient, studentId, _, _) = await api.RegisterAsync("manualqr");
         Assert.Equal(HttpStatusCode.Created, (await studentClient.PostAsync($"/api/v1/events/{ev.EventId}/registrations", null)).StatusCode);

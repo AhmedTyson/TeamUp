@@ -184,6 +184,7 @@ export const SCORE_SOURCE_TYPES = {
   TaskCompleted: "TaskCompleted",
   ProjectDelivered: "ProjectDelivered",
   Manual: "Manual",
+  AttendanceRevocation: "AttendanceRevocation",
 } as const;
 export type ScoreSourceType = (typeof SCORE_SOURCE_TYPES)[keyof typeof SCORE_SOURCE_TYPES];
 

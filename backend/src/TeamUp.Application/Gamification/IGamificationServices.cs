@@ -25,7 +25,8 @@ public interface IBadgeService
 
 public interface INotificationService
 {
-    Task<IReadOnlyList<NotificationDto>> GetNotificationsAsync(int studentId, bool unreadOnly = false, CancellationToken ct = default);
+    Task<IReadOnlyList<NotificationDto>> GetNotificationsAsync(int studentId, bool unreadOnly = false, int? take = null, CancellationToken ct = default);
+    Task<int> GetUnreadCountAsync(int studentId, CancellationToken ct = default);
     Task MarkAsReadAsync(int studentId, int notificationId, CancellationToken ct = default);
     Task MarkAllAsReadAsync(int studentId, CancellationToken ct = default);
     Task DeleteNotificationAsync(int studentId, int notificationId, CancellationToken ct = default);
