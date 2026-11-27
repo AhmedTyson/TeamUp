@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TeamUp.Application.Common.Events;
 using TeamUp.Application.Common.Interfaces;
@@ -144,7 +145,8 @@ public sealed class WaitlistPromotedDomainEventHandler(
     ITemplateRenderer? templateRenderer = null,
     IEmailSender? emailSender = null,
     IOptions<EmailOptions>? emailOptions = null,
-    TimeProvider? timeProvider = null)
+    TimeProvider? timeProvider = null,
+    ILogger<WaitlistPromotedDomainEventHandler>? logger = null)
     : IDomainEventHandler<WaitlistPromotedDomainEvent>
 {
     private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
@@ -171,6 +173,7 @@ public sealed class WaitlistPromotedDomainEventHandler(
             domainEvent.StudentId,
             statusLabel: "PROMOTED FROM WAITLIST",
             summaryText: $"A seat opened up for '{domainEvent.EventTitle}' and your registration is now confirmed.",
+            logger,
             cancellationToken);
     }
 }
@@ -179,7 +182,8 @@ public sealed class EventRegisteredEmailDomainEventHandler(
     IAppDbContext db,
     ITemplateRenderer? templateRenderer = null,
     IEmailSender? emailSender = null,
-    IOptions<EmailOptions>? emailOptions = null)
+    IOptions<EmailOptions>? emailOptions = null,
+    ILogger<EventRegisteredEmailDomainEventHandler>? logger = null)
     : IDomainEventHandler<EventRegisteredDomainEvent>
 {
     public async Task HandleAsync(EventRegisteredDomainEvent domainEvent, CancellationToken cancellationToken = default)
@@ -199,12 +203,21 @@ public sealed class EventRegisteredEmailDomainEventHandler(
             domainEvent.StudentId,
             statusLabel,
             summaryText,
+            logger,
             cancellationToken);
     }
 }
 
-internal static class EventNotificationEmailHelper
+internal static partial class EventNotificationEmailHelper
 {
+    private static readonly TimeSpan EmailDispatchTimeout = TimeSpan.FromSeconds(8);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Best-effort event notification email failed for Event #{EventId}, Student #{StudentId} ({StatusLabel}).")]
+    private static partial void LogEventNoticeFailed(
+        ILogger logger, Exception ex, int eventId, int studentId, string statusLabel);
+
     public static async Task TrySendEventNoticeAsync(
         IAppDbContext db,
         ITemplateRenderer? templateRenderer,
@@ -214,6 +227,7 @@ internal static class EventNotificationEmailHelper
         int studentId,
         string statusLabel,
         string summaryText,
+        ILogger? logger,
         CancellationToken ct)
     {
         if (templateRenderer is null || emailSender is null)
@@ -259,14 +273,26 @@ internal static class EventNotificationEmailHelper
             ["PreferencesUrl"] = $"{baseUrl}/profile/me"
         };
 
-        var html = await templateRenderer.RenderEmailAsync("EventNotification.html", values, ct);
-        await emailSender.SendTemplatedEmailAsync(
-            new EmailDispatchRequest(
-                student.Email,
-                $"TeamUp Event Update · {evt.Title} ({statusLabel})",
-                html,
-                $"{statusLabel}: {evt.Title} ({evt.OrganizationName}) — {evt.Location}"),
-            ct);
+        try
+        {
+            using var emailTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            emailTimeoutCts.CancelAfter(EmailDispatchTimeout);
+            var emailCt = emailTimeoutCts.Token;
+
+            var html = await templateRenderer.RenderEmailAsync("EventNotification.html", values, emailCt);
+            await emailSender.SendTemplatedEmailAsync(
+                new EmailDispatchRequest(
+                    student.Email,
+                    $"TeamUp Event Update · {evt.Title} ({statusLabel})",
+                    html,
+                    $"{statusLabel}: {evt.Title} ({evt.OrganizationName}) — {evt.Location}"),
+                emailCt);
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            if (logger is not null)
+                LogEventNoticeFailed(logger, ex, eventId, studentId, statusLabel);
+        }
     }
 }
 

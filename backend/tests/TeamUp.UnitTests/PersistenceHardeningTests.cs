@@ -4,8 +4,10 @@
 using System.Data;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using TeamUp.Application.Common.Events;
 using TeamUp.Application.Common.Interfaces;
+using TeamUp.Application.Gamification.EventHandlers;
 using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
 using TeamUp.Domain.Enums;
@@ -255,5 +257,83 @@ public sealed class PersistenceHardeningTests
         Assert.Single(dispatcher.Dispatched);
         db.ChangeTracker.Clear();
         Assert.True(await db.Organizations.AnyAsync(o => o.Name == "Resilient Org"));
+    }
+
+    [Fact]
+    public async Task EventRegisteredEmailHandler_WhenEmailSenderThrows_CompletesWithoutThrowing()
+    {
+        using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(conn).Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+
+        var uni = new University { Name = "Resilient U", City = "Cairo", Country = "Egypt" };
+        var fac = new Faculty { Name = "CS", Code = "CS", University = uni };
+        db.Faculties.Add(fac);
+        await db.SaveChangesAsync();
+
+        var student = new Student
+        {
+            Email = "student@cu.edu.eg",
+            PasswordHash = "hash",
+            FirstName = "Salma",
+            LastName = "Nour",
+            AcademicYear = 2,
+            FacultyId = fac.FacultyId,
+            EmailNotificationsEnabled = true,
+        };
+        var org = new Organization { Name = "Resilient Org", Description = "d", Category = "Tech" };
+        db.Students.Add(student);
+        db.Organizations.Add(org);
+        await db.SaveChangesAsync();
+
+        var ev = new Event
+        {
+            Title = "Resilient Workshop",
+            Description = "d",
+            Type = EventType.Workshop,
+            Location = "Hall A",
+            StartDate = DateTime.UtcNow.AddDays(2),
+            EndDate = DateTime.UtcNow.AddDays(2).AddHours(2),
+            Capacity = 50,
+            OrganizationId = org.OrganizationId,
+        };
+        db.Events.Add(ev);
+        await db.SaveChangesAsync();
+
+        var handler = new EventRegisteredEmailDomainEventHandler(
+            db,
+            new StubTemplateRenderer(),
+            new ThrowingEmailSender(),
+            logger: NullLogger<EventRegisteredEmailDomainEventHandler>.Instance);
+
+        await handler.HandleAsync(new EventRegisteredDomainEvent(ev.EventId, student.StudentId, ev.Title, RegistrationStatus.Confirmed));
+    }
+
+    private sealed class StubTemplateRenderer : ITemplateRenderer
+    {
+        public Task<string> RenderEmailAsync(string templateFileName, IReadOnlyDictionary<string, string> values, CancellationToken ct = default)
+            => Task.FromResult("<html><body>Event</body></html>");
+
+        public Task<string> RenderEmailAsync(string templateFileName, IReadOnlyDictionary<string, string> scalarValues, IReadOnlyDictionary<string, SafeHtmlFragment>? rawFragments, CancellationToken ct = default)
+            => Task.FromResult("<html><body>Event</body></html>");
+
+        public IReadOnlyList<string> GetAvailableEmailTemplates() => [];
+
+        public Task<string> RenderReportAsync(string templateFileName, IReadOnlyDictionary<string, string> encodedValues, CancellationToken ct = default)
+            => Task.FromResult(string.Empty);
+    }
+
+    private sealed class ThrowingEmailSender : IEmailSender
+    {
+        public Task SendPasswordResetEmailAsync(string toEmail, string resetToken, CancellationToken ct = default)
+            => throw new InvalidOperationException("SMTP host not configured");
+
+        public Task SendEmailVerificationAsync(EmailVerificationMessage message, CancellationToken ct = default)
+            => throw new InvalidOperationException("SMTP host not configured");
+
+        public Task SendTemplatedEmailAsync(EmailDispatchRequest request, CancellationToken ct = default)
+            => throw new InvalidOperationException("SMTP host not configured");
     }
 }
