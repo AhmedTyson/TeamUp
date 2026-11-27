@@ -302,5 +302,8 @@ describe("Handshake UI primitive kit", () => {
       "src",
       "/api/v1/images/c0e70000-0000-4000-8000-000000000005",
     );
+
+    fireEvent.error(pioneerImg);
+    expect(screen.queryByAltText("Pioneer Asset")).not.toBeInTheDocument();
   });
 });

@@ -15,6 +15,39 @@ export interface BadgesGalleryProps {
   studentId: number;
 }
 
+function BadgeIcon({
+  src,
+  alt,
+  isUnlocked,
+}: {
+  src: string | null;
+  alt: string;
+  isUnlocked: boolean;
+}) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const canRenderImage = Boolean(src && failedUrl !== src);
+
+  if (canRenderImage && src) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onError={() => setFailedUrl(src)}
+        className="size-7 rounded-lg object-contain"
+      />
+    );
+  }
+
+  return isUnlocked ? (
+    <Award className="size-6" aria-hidden="true" />
+  ) : (
+    <Lock className="size-5" aria-hidden="true" />
+  );
+}
+
 export function BadgesGallery({ studentId }: BadgesGalleryProps) {
   const [filter, setFilter] = useState<"all" | "unlocked" | "locked">("all");
 
@@ -123,20 +156,11 @@ export function BadgesGallery({ studentId }: BadgesGalleryProps) {
                         : "bg-white/10 text-white/40"
                     }`}
                   >
-                    {resolvedIconUrl ? (
-                      <img
-                        src={resolvedIconUrl}
-                        alt={badge.name}
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        className="size-7 rounded-lg object-contain"
-                      />
-                    ) : badge.isUnlocked ? (
-                      <Award className="size-6" aria-hidden="true" />
-                    ) : (
-                      <Lock className="size-5" aria-hidden="true" />
-                    )}
+                    <BadgeIcon
+                      src={resolvedIconUrl}
+                      alt={badge.name}
+                      isUnlocked={badge.isUnlocked}
+                    />
                   </div>
                   {badge.isUnlocked ? (
                     <Badge variant="accent" size="sm" className="gap-1">
