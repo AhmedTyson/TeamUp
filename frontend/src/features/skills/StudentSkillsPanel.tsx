@@ -9,6 +9,7 @@ import { queryKeys } from "@/lib/queryKeys";
 export interface StudentSkillsPanelProps {
   studentId: number;
   editable?: boolean;
+  skillsData?: StudentSkillDto[];
 }
 
 const PROFICIENCY_OPTIONS = Object.values(PROFICIENCY_LEVELS).map((level) => ({
@@ -86,7 +87,11 @@ function SkillClaimCard({
   );
 }
 
-export function StudentSkillsPanel({ studentId, editable = false }: StudentSkillsPanelProps) {
+export function StudentSkillsPanel({
+  studentId,
+  editable = false,
+  skillsData,
+}: StudentSkillsPanelProps) {
   const queryClient = useQueryClient();
   const [selectedSkillId, setSelectedSkillId] = useState("");
   const [newLevel, setNewLevel] = useState<ProficiencyLevel>(PROFICIENCY_LEVELS.Beginner);
@@ -96,12 +101,15 @@ export function StudentSkillsPanel({ studentId, editable = false }: StudentSkill
   const skillsQuery = useQuery({
     queryKey: queryKeys.skills.list(),
     queryFn: ({ signal }) => skillsApi.list({}, signal),
+    enabled: editable,
+    staleTime: 5 * 60_000,
   });
   const claimsQuery = useQuery({
     queryKey: studentSkillsKey,
     queryFn: ({ signal }) => skillsApi.getStudentSkills(studentId, signal),
-    enabled: studentId > 0,
+    enabled: studentId > 0 && skillsData === undefined,
   });
+  const claimedSkills = skillsData ?? claimsQuery.data ?? [];
 
   const saveClaim = useMutation({
     mutationFn: ({
@@ -114,7 +122,10 @@ export function StudentSkillsPanel({ studentId, editable = false }: StudentSkill
       yearsOfExperience: number;
     }) => skillsApi.claimMine(skillId, { proficiencyLevel, yearsOfExperience }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: studentSkillsKey });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: studentSkillsKey }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.students.portfolio(studentId) }),
+      ]);
       toast.success("Skill claim saved.");
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not save skill."),
@@ -123,13 +134,16 @@ export function StudentSkillsPanel({ studentId, editable = false }: StudentSkill
   const removeClaim = useMutation({
     mutationFn: (skillId: number) => skillsApi.removeMine(skillId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: studentSkillsKey });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: studentSkillsKey }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.students.portfolio(studentId) }),
+      ]);
       toast.success("Skill removed from your profile.");
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not remove skill."),
   });
 
-  const claimedIds = new Set((claimsQuery.data ?? []).map((skill) => skill.skillId));
+  const claimedIds = new Set(claimedSkills.map((skill) => skill.skillId));
   const availableSkills = (skillsQuery.data ?? []).filter((skill) => !claimedIds.has(skill.skillId));
 
   const claimSelected = () => {
@@ -203,7 +217,7 @@ export function StudentSkillsPanel({ studentId, editable = false }: StudentSkill
       )}
 
       <div className="grid gap-3 @2xl:grid-cols-2">
-        {(claimsQuery.data ?? []).map((skill) => (
+        {claimedSkills.map((skill) => (
           <SkillClaimCard
             key={skill.skillId}
             skill={skill}
@@ -216,7 +230,9 @@ export function StudentSkillsPanel({ studentId, editable = false }: StudentSkill
           />
         ))}
       </div>
-      {!claimsQuery.isLoading && !claimsQuery.isError && (claimsQuery.data?.length ?? 0) === 0 && (
+      {!(skillsData === undefined && claimsQuery.isLoading) &&
+        !claimsQuery.isError &&
+        claimedSkills.length === 0 && (
         <p className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-white/55">
           {editable ? "You haven't claimed any skills yet." : "No skills have been added to this profile."}
         </p>

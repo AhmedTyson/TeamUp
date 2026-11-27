@@ -5,6 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   organizationsApi,
+  workspacesApi,
   type CreateOrganizationProposalPayload,
   type OrganizationApplicationPayload,
   type OrganizationListParams,
@@ -28,7 +29,7 @@ export function useOrganizations(params: OrganizationListParams, enabled = true)
   });
 }
 
-export function useOrganization(id: number) {
+export function useOrganization(id: number, enabled = true) {
   const { isAuthenticated } = useAuth();
   return useQuery({
     queryKey: [...queryKeys.organizations.detail(id), isAuthenticated],
@@ -36,8 +37,40 @@ export function useOrganization(id: number) {
       isAuthenticated
         ? organizationsApi.detail(id, signal)
         : organizationsApi.publicDetail(id, signal),
-    enabled: Number.isInteger(id) && id > 0,
+    enabled: enabled && Number.isInteger(id) && id > 0,
   });
+}
+
+/**
+ * Single-request organization workspace: loads org detail, authorization flags,
+ * and role-appropriate applications in one HTTP round-trip (anonymous falls back to public detail).
+ */
+export function useOrganizationWorkspace(id: number) {
+  const { isAuthenticated } = useAuth();
+  const isValid = Number.isInteger(id) && id > 0;
+
+  const workspaceQuery = useQuery({
+    queryKey: queryKeys.organizations.workspace(id),
+    queryFn: ({ signal }) => workspacesApi.organizationWorkspace(id, signal),
+    enabled: isValid && isAuthenticated,
+  });
+  const publicQuery = useOrganization(id, !isAuthenticated);
+  const active = isAuthenticated ? workspaceQuery : publicQuery;
+
+  return {
+    organization: isAuthenticated ? workspaceQuery.data?.organization : publicQuery.data,
+    canManage: isAuthenticated ? Boolean(workspaceQuery.data?.canManage) : false,
+    canReviewRecruitment: isAuthenticated
+      ? Boolean(workspaceQuery.data?.canReviewRecruitment)
+      : false,
+    isMember: isAuthenticated ? Boolean(workspaceQuery.data?.isMember) : false,
+    adminApplications: isAuthenticated ? (workspaceQuery.data?.adminApplications ?? []) : [],
+    myApplications: isAuthenticated ? workspaceQuery.data?.myApplications : undefined,
+    isLoading: active.isLoading,
+    isError: active.isError,
+    error: active.error,
+    refetch: active.refetch,
+  };
 }
 
 export function useOrganizationHierarchy(id: number, enabled = true) {
@@ -99,10 +132,16 @@ export function useOrganizationMutations(organizationId?: number) {
   const queryClient = useQueryClient();
 
   const invalidateOrg = async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.organizations.all });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.organizations.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboards.all }),
+    ]);
     if (organizationId && organizationId > 0) {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.organizations.detail(organizationId) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.organizations.workspace(organizationId),
+        }),
         queryClient.invalidateQueries({
           queryKey: queryKeys.organizations.applications(organizationId),
         }),

@@ -7,7 +7,14 @@ import { QueryClient } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
-import { eventsApi, organizationsApi, projectsApi, USER_ROLES, type AuthStudentSummary } from "@/api";
+import {
+  eventsApi,
+  organizationsApi,
+  projectsApi,
+  USER_ROLES,
+  workspacesApi,
+  type AuthStudentSummary,
+} from "@/api";
 import { AppCoreProviders } from "@/app/providers";
 import { ExplorePage } from "@/features/explore/ExplorePage";
 
@@ -41,9 +48,13 @@ function renderExplore() {
 }
 
 describe("ExplorePage", () => {
-  it("renders recruiting organizations, events and projects rails with detail links", async () => {
-    vi.spyOn(organizationsApi, "list").mockResolvedValue(
-      paged([
+  it("renders recruiting organizations, events and projects rails with detail links in a single request", async () => {
+    const orgsSpy = vi.spyOn(organizationsApi, "list");
+    const eventsSpy = vi.spyOn(eventsApi, "list");
+    const projectsSpy = vi.spyOn(projectsApi, "list");
+
+    vi.spyOn(workspacesApi, "exploreFeed").mockResolvedValue({
+      recruitingOrganizations: paged([
         {
           organizationId: 7,
           name: "Robotics Crew",
@@ -54,9 +65,7 @@ describe("ExplorePage", () => {
           coverImageUrl: null,
         },
       ] as never),
-    );
-    vi.spyOn(eventsApi, "list").mockResolvedValue(
-      paged([
+      upcomingEvents: paged([
         {
           eventId: 9,
           title: "Intro to ROS",
@@ -72,9 +81,7 @@ describe("ExplorePage", () => {
           sessions: [],
         },
       ] as never),
-    );
-    vi.spyOn(projectsApi, "list").mockResolvedValue(
-      paged([
+      projects: paged([
         {
           projectId: 3,
           title: "Line Follower Bot",
@@ -87,7 +94,7 @@ describe("ExplorePage", () => {
           createdAt: "2026-11-20T00:00:00Z",
         },
       ] as never),
-    );
+    });
 
     renderExplore();
 
@@ -95,6 +102,9 @@ describe("ExplorePage", () => {
     expect((await screen.findAllByText("Robotics Crew")).length).toBeGreaterThan(0);
     expect(await screen.findByText("Intro to ROS")).toBeInTheDocument();
     expect(await screen.findByText("Line Follower Bot")).toBeInTheDocument();
+    expect(orgsSpy).not.toHaveBeenCalled();
+    expect(eventsSpy).not.toHaveBeenCalled();
+    expect(projectsSpy).not.toHaveBeenCalled();
 
     expect(
       screen.getAllByRole("link", { name: /Robotics Crew/i }).some((link) => link.getAttribute("href") === "/organizations/7"),
@@ -107,9 +117,11 @@ describe("ExplorePage", () => {
   });
 
   it("shows friendly empty states when every rail has no data", async () => {
-    vi.spyOn(organizationsApi, "list").mockResolvedValue(paged([] as never[]));
-    vi.spyOn(eventsApi, "list").mockResolvedValue(paged([] as never[]));
-    vi.spyOn(projectsApi, "list").mockResolvedValue(paged([] as never[]));
+    vi.spyOn(workspacesApi, "exploreFeed").mockResolvedValue({
+      recruitingOrganizations: paged([] as never[]),
+      upcomingEvents: paged([] as never[]),
+      projects: paged([] as never[]),
+    });
 
     renderExplore();
 
@@ -118,15 +130,13 @@ describe("ExplorePage", () => {
     expect(await screen.findByText(/No open projects yet/i)).toBeInTheDocument();
   });
 
-  it("renders an error alert with retry when a discovery rail fails instead of a fake empty state", async () => {
-    vi.spyOn(organizationsApi, "list").mockRejectedValue(new Error("Directory temporarily unavailable"));
-    vi.spyOn(eventsApi, "list").mockResolvedValue(paged([] as never[]));
-    vi.spyOn(projectsApi, "list").mockResolvedValue(paged([] as never[]));
+  it("renders an error alert with retry when the discovery feed fails instead of a fake empty state", async () => {
+    vi.spyOn(workspacesApi, "exploreFeed").mockRejectedValue(new Error("Directory temporarily unavailable"));
 
     renderExplore();
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(/Directory temporarily unavailable/i);
+    expect((await screen.findAllByRole("alert"))[0]).toHaveTextContent(/Directory temporarily unavailable/i);
     expect(screen.queryByText(/No open recruitment right now/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /retry/i }).length).toBeGreaterThan(0);
   });
 });

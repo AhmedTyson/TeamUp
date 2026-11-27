@@ -12,6 +12,7 @@ import {
   organizationsApi,
   sessionsApi,
   USER_ROLES,
+  workspacesApi,
   type AuthStudentSummary,
   type EventSummary,
   type OrganizationDetail,
@@ -131,7 +132,14 @@ describe("M3 — Organizations, Events & Live Attendance", () => {
   });
 
   it("hides Apply form & admin applications query for existing org member and provides Leave action", async () => {
-    vi.spyOn(organizationsApi, "detail").mockResolvedValue(SAMPLE_ORG);
+    vi.spyOn(workspacesApi, "organizationWorkspace").mockResolvedValue({
+      organization: SAMPLE_ORG,
+      canManage: false,
+      canReviewRecruitment: false,
+      isMember: true,
+      adminApplications: null,
+      myApplications: [],
+    });
     const appsSpy = vi.spyOn(organizationsApi, "applications").mockResolvedValue([]);
     const removeMemberSpy = vi.spyOn(organizationsApi, "removeMember").mockResolvedValue();
 
@@ -163,8 +171,14 @@ describe("M3 — Organizations, Events & Live Attendance", () => {
   });
 
   it("handles full-capacity Waitlist registration and 409 sync + Cancel without calling BOLA-restricted GET /registrations for students", async () => {
-    vi.spyOn(eventsApi, "detail").mockResolvedValue(SAMPLE_EVENT);
-    vi.spyOn(organizationsApi, "detail").mockResolvedValue(SAMPLE_ORG);
+    vi.spyOn(workspacesApi, "eventWorkspace").mockResolvedValue({
+      event: SAMPLE_EVENT,
+      canManage: false,
+      myRegistration: null,
+      registrations: null,
+    });
+    const detailSpy = vi.spyOn(eventsApi, "detail").mockResolvedValue(SAMPLE_EVENT);
+    const orgSpy = vi.spyOn(organizationsApi, "detail").mockResolvedValue(SAMPLE_ORG);
     vi.spyOn(organizationsApi, "list").mockResolvedValue({
       items: [],
       page: 1,
@@ -172,7 +186,7 @@ describe("M3 — Organizations, Events & Live Attendance", () => {
       totalCount: 0,
       totalPages: 1,
     });
-    vi.spyOn(sessionsApi, "listForEvent").mockResolvedValue(SAMPLE_EVENT.sessions);
+    const sessionsSpy = vi.spyOn(sessionsApi, "listForEvent").mockResolvedValue(SAMPLE_EVENT.sessions);
     const regListSpy = vi.spyOn(eventsApi, "registrations").mockResolvedValue([]);
     const registerSpy = vi.spyOn(eventsApi, "register").mockRejectedValueOnce(
       new ApiClientError("You already have an active registration for this event.", 409),
@@ -191,6 +205,9 @@ describe("M3 — Organizations, Events & Live Attendance", () => {
 
     expect(await screen.findByText("Distributed Systems Workshop")).toBeInTheDocument();
     expect(regListSpy).not.toHaveBeenCalled();
+    expect(detailSpy).not.toHaveBeenCalled();
+    expect(orgSpy).not.toHaveBeenCalled();
+    expect(sessionsSpy).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: /Join waitlist/i }));
     await waitFor(() => expect(registerSpy).toHaveBeenCalledWith(5));
@@ -233,21 +250,26 @@ describe("M3 — Organizations, Events & Live Attendance", () => {
   });
 
   it("renders Self check-in label for matching RecordedByStudentId and sets allow-modals on HTML report iframe", async () => {
-    vi.spyOn(eventsApi, "detail").mockResolvedValue(SAMPLE_EVENT);
-    vi.spyOn(organizationsApi, "detail").mockResolvedValue(SAMPLE_ORG);
-    vi.spyOn(sessionsApi, "listForEvent").mockResolvedValue(SAMPLE_EVENT.sessions);
-    vi.spyOn(eventsApi, "registrations").mockResolvedValue([]);
-    vi.spyOn(attendanceApi, "list").mockResolvedValue([
-      {
-        sessionId: 12,
-        studentId: 10,
-        firstName: "Salma",
-        lastName: "Khaled",
-        checkInTime: "2026-12-01T14:05:00Z",
-        verificationMethod: "QRCode",
-        recordedByStudentId: 10,
-      },
-    ]);
+    vi.spyOn(workspacesApi, "sessionAttendanceWorkspace").mockResolvedValue({
+      event: SAMPLE_EVENT,
+      session: SAMPLE_EVENT.sessions[0]!,
+      canManage: true,
+      registrations: [],
+      attendance: [
+        {
+          sessionId: 12,
+          studentId: 10,
+          firstName: "Salma",
+          lastName: "Khaled",
+          checkInTime: "2026-12-01T14:05:00Z",
+          verificationMethod: "QRCode",
+          recordedByStudentId: 10,
+        },
+      ],
+    });
+    const evSpy = vi.spyOn(eventsApi, "detail").mockResolvedValue(SAMPLE_EVENT);
+    const attSpy = vi.spyOn(attendanceApi, "list").mockResolvedValue([]);
+    const regSpy = vi.spyOn(eventsApi, "registrations").mockResolvedValue([]);
     vi.spyOn(attendanceApi, "getReportHtml").mockResolvedValue("<html><body><h1>Attendance Report</h1></body></html>");
 
     render(
@@ -264,6 +286,9 @@ describe("M3 — Organizations, Events & Live Attendance", () => {
     );
 
     expect(await screen.findByText("Salma Khaled")).toBeInTheDocument();
+    expect(evSpy).not.toHaveBeenCalled();
+    expect(attSpy).not.toHaveBeenCalled();
+    expect(regSpy).not.toHaveBeenCalled();
     expect(screen.getByText("Self check-in")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Attendance report/i }));

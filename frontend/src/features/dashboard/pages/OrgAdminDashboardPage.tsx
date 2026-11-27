@@ -2,6 +2,7 @@
  * @date 2026-11-24
  * @purpose Dedicated OrgAdmin / High-Board Leadership Command Dashboard featuring scoped managed chapters, 4-stage recruitment funnel counts, hosted events & live QR Stage attendance launchpad.
  */
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Building2,
@@ -14,48 +15,31 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { RECRUITMENT_STAGES } from "@/api";
+import { RECRUITMENT_STAGES, workspacesApi } from "@/api";
 import { Badge, Card, EmptyState, Select, Skeleton } from "@/components/ui";
 import { useAuth } from "@/features/auth";
-import { useEvents } from "@/features/events";
-import {
-  useOrganizationApplications,
-  useOrganizations,
-} from "@/features/organizations";
+import { queryKeys } from "@/lib/queryKeys";
 import { DashboardRoleSwitcher } from "../components/DashboardRoleSwitcher";
 
 export function OrgAdminDashboardPage() {
   const { isPlatformAdmin, isOrgAdmin, orgAdminIds } = useAuth();
   const canLead = isPlatformAdmin || isOrgAdmin || orgAdminIds.length > 0;
-
-  const orgsQuery = useOrganizations({ page: 1, pageSize: 50 }, canLead);
-  const allOrgs = orgsQuery.data?.items ?? [];
-
-  const managedOrgs = useMemo(() => {
-    if (orgAdminIds.length > 0) {
-      const scoped = allOrgs.filter((org) => orgAdminIds.includes(org.organizationId));
-      return scoped.length > 0 ? scoped : allOrgs;
-    }
-    return allOrgs;
-  }, [allOrgs, orgAdminIds]);
-
   const [selectedOrgId, setSelectedOrgId] = useState<string>("");
+  const requestedOrgId = selectedOrgId ? Number(selectedOrgId) : undefined;
+
+  const dashboardQuery = useQuery({
+    queryKey: queryKeys.dashboards.org(requestedOrgId),
+    queryFn: ({ signal }) => workspacesApi.orgDashboard(requestedOrgId, signal),
+    enabled: canLead,
+  });
+
+  const managedOrgs = dashboardQuery.data?.managedOrganizations ?? [];
+  const primaryOrgId = dashboardQuery.data?.activeOrganizationId ?? 0;
   const activeOrg =
-    managedOrgs.find((org) => String(org.organizationId) === selectedOrgId) ?? managedOrgs[0];
-  const primaryOrgId = activeOrg?.organizationId ?? 0;
+    managedOrgs.find((org) => org.organizationId === primaryOrgId) ?? managedOrgs[0];
 
-  const appsQuery = useOrganizationApplications(primaryOrgId, canLead && primaryOrgId > 0);
-  const eventsQuery = useEvents(
-    {
-      organizationId: primaryOrgId || undefined,
-      page: 1,
-      pageSize: 6,
-    },
-    canLead && primaryOrgId > 0,
-  );
-
-  const applications = appsQuery.data ?? [];
-  const events = eventsQuery.data?.items ?? [];
+  const applications = dashboardQuery.data?.applications ?? [];
+  const events = dashboardQuery.data?.hostedEvents.items ?? [];
 
   const funnelCounts = useMemo(() => {
     const counts = {
@@ -203,7 +187,7 @@ export function OrgAdminDashboardPage() {
           )}
         </div>
 
-        {orgsQuery.isLoading || appsQuery.isLoading ? (
+        {dashboardQuery.isLoading ? (
           <Skeleton className="h-24 rounded-2xl" />
         ) : (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -259,7 +243,7 @@ export function OrgAdminDashboardPage() {
           </Link>
         </div>
 
-        {orgsQuery.isLoading || eventsQuery.isLoading ? (
+        {dashboardQuery.isLoading ? (
           <Skeleton className="h-36 rounded-2xl" />
         ) : events.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2">

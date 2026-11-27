@@ -13,6 +13,18 @@ export const queryKeys = {
     me: ["auth", "me"] as const,
   },
 
+  dashboards: {
+    all: ["dashboards"] as const,
+    student: (studentId: number) => ["dashboards", "student", studentId] as const,
+    org: (organizationId?: number) => ["dashboards", "org", organizationId ?? 0] as const,
+  },
+
+  explore: {
+    all: ["explore"] as const,
+    feed: (pageSize: number, isAuthenticated: boolean) =>
+      ["explore", "feed", { pageSize, isAuthenticated }] as const,
+  },
+
   universities: {
     all: ["universities"] as const,
     catalog: ["universities", "catalog"] as const,
@@ -43,6 +55,7 @@ export const queryKeys = {
     showcase: (limit = 6) => ["students", "showcase", { limit }] as const,
     directory: (params?: QueryParams) => ["students", "directory", params ?? {}] as const,
     detail: (id: number) => ["students", "detail", id] as const,
+    portfolio: (id: number) => ["students", "portfolio", id] as const,
     profile: (id: number) => ["students", "profile", id] as const,
     interests: (id: number) => ["students", "interests", id] as const,
     skills: (id: number) => ["students", "skills", id] as const,
@@ -52,6 +65,7 @@ export const queryKeys = {
     all: ["projects"] as const,
     list: (params?: QueryParams) => ["projects", "list", params ?? {}] as const,
     detail: (id: number) => ["projects", "detail", id] as const,
+    workspace: (id: number) => ["projects", "workspace", id] as const,
     requiredSkills: (id: number) => ["projects", id, "required-skills"] as const,
     members: (id: number) => ["projects", id, "members"] as const,
     applications: (id: number) => ["projects", id, "applications"] as const,
@@ -67,6 +81,7 @@ export const queryKeys = {
     myApplications: ["organizations", "my-applications"] as const,
     myCreationRequests: ["organizations", "my-creation-requests"] as const,
     detail: (id: number) => ["organizations", "detail", id] as const,
+    workspace: (id: number) => ["organizations", "workspace", id] as const,
     members: (id: number) => ["organizations", id, "members"] as const,
     units: (id: number) => ["organizations", id, "units"] as const,
     hierarchy: (id: number) => ["organizations", id, "hierarchy"] as const,
@@ -81,6 +96,7 @@ export const queryKeys = {
       ["events", "my-registrations", { page, pageSize }] as const,
     myRegistration: (id: number) => ["events", id, "my-registration"] as const,
     detail: (id: number) => ["events", "detail", id] as const,
+    workspace: (id: number) => ["events", "workspace", id] as const,
     sessions: (id: number) => ["events", id, "sessions"] as const,
     registrations: (id: number) => ["events", id, "registrations"] as const,
   },
@@ -88,11 +104,15 @@ export const queryKeys = {
   sessions: {
     all: ["sessions"] as const,
     attendance: (sessionId: number) => ["sessions", sessionId, "attendance"] as const,
+    attendanceWorkspace: (eventId: number, sessionId: number) =>
+      ["sessions", "workspace", eventId, sessionId] as const,
     attendanceReport: (sessionId: number) => ["sessions", sessionId, "attendance", "report"] as const,
   },
 
   gamification: {
     all: ["gamification"] as const,
+    hub: (studentId: number, ledgerPageSize: number) =>
+      ["gamification", "hub", studentId, ledgerPageSize] as const,
     score: (studentId: number) => ["gamification", "score", studentId] as const,
     ledger: (studentId: number) => ["gamification", "ledger", studentId] as const,
     leaderboard: (params?: QueryParams) => ["gamification", "leaderboard", params ?? {}] as const,
@@ -123,6 +143,7 @@ export async function invalidateGamification(
     queryClient.invalidateQueries({ queryKey: queryKeys.gamification.all }),
     queryClient.invalidateQueries({ queryKey: queryKeys.badges.all }),
     queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboards.all }),
   ];
 
   if (studentId !== undefined && studentId > 0) {
@@ -130,6 +151,7 @@ export async function invalidateGamification(
       queryClient.invalidateQueries({ queryKey: queryKeys.gamification.score(studentId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.gamification.ledger(studentId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.badges.student(studentId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.students.portfolio(studentId) }),
     );
   }
 

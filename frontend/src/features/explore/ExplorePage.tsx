@@ -4,16 +4,20 @@
  * upcoming events, and fresh projects from the live APIs, so discovery is data-driven instead of three siloed
  * directories. Every rail links to its full directory for filtering.
  */
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, Compass, FolderKanban, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { projectsApi, type EventSummary, type OrganizationSummary, type PagedResult, type ProjectListItemDto } from "@/api";
+import {
+  workspacesApi,
+  type EventSummary,
+  type OrganizationSummary,
+  type ProjectListItemDto,
+} from "@/api";
 import { Card, CoverImage, EmptyState, ErrorBanner, SkeletonCard } from "@/components/ui";
+import { useAuth } from "@/features/auth/AuthContext";
 import { formatDateTime } from "@/lib/formatters";
 import { queryKeys } from "@/lib/queryKeys";
-import { useEvents } from "@/features/events/hooks/useEventHooks";
-import { useOrganizations } from "@/features/organizations/hooks/useOrganizationHooks";
 
 const RAIL_SIZE = 6;
 
@@ -39,7 +43,11 @@ interface DiscoveryRailProps<T> {
   icon: ReactNode;
   title: string;
   viewAllTo: string;
-  query: UseQueryResult<PagedResult<T>, unknown>;
+  items: readonly T[];
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  onRetry: () => void;
   emptyTitle: string;
   emptyDescription: string;
   getKey: (item: T) => number | string;
@@ -51,25 +59,27 @@ function DiscoveryRail<T>({
   icon,
   title,
   viewAllTo,
-  query,
+  items,
+  isLoading,
+  isError,
+  error,
+  onRetry,
   emptyTitle,
   emptyDescription,
   getKey,
   renderCard,
 }: DiscoveryRailProps<T>) {
-  const items = query.data?.items ?? [];
-
   return (
     <section aria-label={ariaLabel} className="space-y-3">
       <RailHeader icon={icon} title={title} to={viewAllTo} />
-      {query.isLoading ? (
+      {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 3 }, (_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
-      ) : query.isError ? (
-        <ErrorBanner error={query.error} onRetry={() => void query.refetch()} />
+      ) : isError ? (
+        <ErrorBanner error={error} onRetry={onRetry} />
       ) : items.length === 0 ? (
         <EmptyState title={emptyTitle} description={emptyDescription} />
       ) : (
@@ -146,12 +156,15 @@ function ProjectRailCard({ project }: { project: ProjectListItemDto }) {
 }
 
 export function ExplorePage() {
-  const recruiting = useOrganizations({ recruitingOnly: true, pageSize: RAIL_SIZE, page: 1 });
-  const events = useEvents({ pageSize: RAIL_SIZE, page: 1 });
-  const projects = useQuery({
-    queryKey: queryKeys.projects.list({ pageSize: RAIL_SIZE, page: 1 }),
-    queryFn: ({ signal }) => projectsApi.list({ pageSize: RAIL_SIZE, page: 1 }, signal),
+  const { isAuthenticated } = useAuth();
+  const exploreQuery = useQuery({
+    queryKey: queryKeys.explore.feed(RAIL_SIZE, isAuthenticated),
+    queryFn: ({ signal }) => workspacesApi.exploreFeed(RAIL_SIZE, signal),
   });
+  const feed = exploreQuery.data;
+  const retry = () => {
+    void exploreQuery.refetch();
+  };
 
   return (
     <div className="space-y-8">
@@ -172,7 +185,11 @@ export function ExplorePage() {
         icon={<Users className="size-4 text-[#d3fb52]" aria-hidden="true" />}
         title="Recruiting now"
         viewAllTo="/organizations?scope=recruiting"
-        query={recruiting}
+        items={feed?.recruitingOrganizations.items ?? []}
+        isLoading={exploreQuery.isLoading}
+        isError={exploreQuery.isError}
+        error={exploreQuery.error}
+        onRetry={retry}
         emptyTitle="No open recruitment right now"
         emptyDescription="When organizations open a recruitment season they appear here automatically."
         getKey={(org) => org.organizationId}
@@ -184,7 +201,11 @@ export function ExplorePage() {
         icon={<CalendarDays className="size-4 text-[#d3fb52]" aria-hidden="true" />}
         title="Upcoming events"
         viewAllTo="/events"
-        query={events}
+        items={feed?.upcomingEvents.items ?? []}
+        isLoading={exploreQuery.isLoading}
+        isError={exploreQuery.isError}
+        error={exploreQuery.error}
+        onRetry={retry}
         emptyTitle="No events on the calendar yet"
         emptyDescription="New events from every organization show up here as soon as they are published."
         getKey={(event) => event.eventId}
@@ -196,7 +217,11 @@ export function ExplorePage() {
         icon={<FolderKanban className="size-4 text-[#d3fb52]" aria-hidden="true" />}
         title="Projects looking for teammates"
         viewAllTo="/projects"
-        query={projects}
+        items={feed?.projects.items ?? []}
+        isLoading={exploreQuery.isLoading}
+        isError={exploreQuery.isError}
+        error={exploreQuery.error}
+        onRetry={retry}
         emptyTitle="No open projects yet"
         emptyDescription="New team projects appear here the moment they are created."
         getKey={(project) => project.projectId}

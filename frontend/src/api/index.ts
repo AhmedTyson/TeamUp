@@ -195,3 +195,15 @@ export type {
 export { sessionsApi } from "./sessions.api";
 export { attendanceApi } from "./attendance.api";
 export type { SessionAttendance, SessionCheckInCode, ManualAttendancePayload } from "./attendance.api";
+export { workspacesApi } from "./workspaces.api";
+export type {
+  EventWorkspace,
+  SessionAttendanceWorkspace,
+  ProjectWorkspace,
+  OrganizationWorkspace,
+  StudentDashboard,
+  OrgAdminDashboard,
+  ExploreFeed,
+  GamificationHub,
+  StudentPortfolio,
+} from "./workspaces.api";

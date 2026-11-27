@@ -12,6 +12,7 @@ import {
   projectsApi,
   skillsApi,
   tasksApi,
+  workspacesApi,
   type AuthStudentSummary,
   type ProjectApplicationDto,
   type ProjectDetailDto,
@@ -148,12 +149,20 @@ describe("M2 Ossama skills and project workflows", () => {
       status: APPLICATION_STATUSES.Pending,
       appliedAt: "2026-11-22T09:00:00Z",
     };
-    vi.spyOn(projectsApi, "getById").mockResolvedValue(PROJECT);
-    vi.spyOn(projectsApi, "getRequiredSkills").mockResolvedValue([]);
-    vi.spyOn(projectsApi, "getMembers").mockResolvedValue(PROJECT.members);
-    vi.spyOn(projectsApi, "getApplications").mockResolvedValue([applicant]);
-    vi.spyOn(skillsApi, "list").mockResolvedValue([]);
-    vi.spyOn(skillsApi, "getStudentSkills").mockResolvedValue([]);
+    vi.spyOn(workspacesApi, "projectWorkspace").mockResolvedValue({
+      project: PROJECT,
+      isCreator: true,
+      isMember: true,
+      applications: [applicant],
+      myApplication: null,
+      tasks: [],
+      mySkills: [],
+      availableSkills: [],
+    });
+    const detailSpy = vi.spyOn(projectsApi, "getById").mockResolvedValue(PROJECT);
+    const reqSkillsSpy = vi.spyOn(projectsApi, "getRequiredSkills").mockResolvedValue([]);
+    const membersSpy = vi.spyOn(projectsApi, "getMembers").mockResolvedValue(PROJECT.members);
+    const appsSpy = vi.spyOn(projectsApi, "getApplications").mockResolvedValue([applicant]);
     vi.spyOn(projectsApi, "updateApplication").mockRejectedValue(
       new ApiClientError("The project team is full.", 409),
     );
@@ -168,6 +177,10 @@ describe("M2 Ossama skills and project workflows", () => {
         "The team is full. Refresh the project before accepting another applicant.",
       );
     });
+    expect(detailSpy).not.toHaveBeenCalled();
+    expect(reqSkillsSpy).not.toHaveBeenCalled();
+    expect(membersSpy).not.toHaveBeenCalled();
+    expect(appsSpy).not.toHaveBeenCalled();
     expect(projectsApi.updateApplication).toHaveBeenCalledWith(
       PROJECT.projectId,
       applicant.applicationId,
@@ -176,13 +189,17 @@ describe("M2 Ossama skills and project workflows", () => {
   });
 
   it("creates a task, moves it to Done, and invalidates the XP feedback", async () => {
-    vi.spyOn(projectsApi, "getById").mockResolvedValue(PROJECT);
-    vi.spyOn(projectsApi, "getRequiredSkills").mockResolvedValue([]);
-    vi.spyOn(projectsApi, "getMembers").mockResolvedValue(PROJECT.members);
-    vi.spyOn(projectsApi, "getApplications").mockResolvedValue([]);
-    vi.spyOn(skillsApi, "list").mockResolvedValue([]);
-    vi.spyOn(skillsApi, "getStudentSkills").mockResolvedValue([]);
-    vi.spyOn(tasksApi, "listForProject").mockResolvedValue([TASK]);
+    vi.spyOn(workspacesApi, "projectWorkspace").mockResolvedValue({
+      project: PROJECT,
+      isCreator: true,
+      isMember: true,
+      applications: [],
+      myApplication: null,
+      tasks: [TASK],
+      mySkills: [],
+      availableSkills: [],
+    });
+    const tasksSpy = vi.spyOn(tasksApi, "listForProject").mockResolvedValue([TASK]);
     const createTask = vi.spyOn(tasksApi, "createForProject").mockResolvedValue({
       ...TASK,
       taskId: 91,
@@ -196,6 +213,7 @@ describe("M2 Ossama skills and project workflows", () => {
 
     renderProject();
     fireEvent.click(await screen.findByRole("button", { name: "Sprint board" }));
+    expect(tasksSpy).not.toHaveBeenCalled();
     fireEvent.click(await screen.findByRole("button", { name: "Create task" }));
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "Add task form" } });

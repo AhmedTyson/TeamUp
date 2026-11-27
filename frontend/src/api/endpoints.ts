@@ -131,6 +131,19 @@ export const API_ENDPOINTS = {
     notificationsUnreadCount: `${V1}/notifications/unread-count`,
   },
 
+  workspaces: {
+    studentDashboard: `${V1}/dashboard/student`,
+    orgDashboard: `${V1}/dashboard/org`,
+    explore: `${V1}/explore`,
+    eventWorkspace: (id: number) => `${V1}/events/${id}/workspace`,
+    sessionAttendanceWorkspace: (eventId: number, sessionId: number) =>
+      `${V1}/events/${eventId}/sessions/${sessionId}/workspace`,
+    projectWorkspace: (id: number) => `${V1}/projects/${id}/workspace`,
+    organizationWorkspace: (id: number) => `${V1}/organizations/${id}/workspace`,
+    gamificationHub: `${V1}/gamification/hub`,
+    studentPortfolio: (id: number) => `${V1}/students/${id}/portfolio`,
+  },
+
   admin: {
     dashboard: `${V1}/admin/dashboard`,
     studentRole: (id: number) => `${V1}/admin/students/${id}/role`,

@@ -2,9 +2,9 @@
  * @date 2026-11-22
  * @purpose Gamification Hub (/gamification) composing Level Progress Card, Badges Gallery, Score Ledger, and Admin Governance.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Award, Loader2 } from "lucide-react";
-import { gamificationApi } from "@/api";
+import { workspacesApi } from "@/api";
 import { Badge, ErrorBanner } from "@/components/ui";
 import { useAuth } from "@/features/auth";
 import { queryKeys } from "@/lib/queryKeys";
@@ -13,13 +13,20 @@ import { BadgesGallery } from "./BadgesGallery";
 import { ScoreLedgerTable } from "./ScoreLedgerTable";
 import { XpLevelProgressCard } from "./XpLevelProgressCard";
 
+const LEDGER_PAGE_SIZE = 15;
+
 export function GamificationHubPage() {
   const { user, isPlatformAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const studentId = user?.studentId ?? 0;
 
-  const scoreQuery = useQuery({
-    queryKey: queryKeys.gamification.score(studentId),
-    queryFn: ({ signal }) => gamificationApi.getStudentScore(studentId, signal),
+  const hubQuery = useQuery({
+    queryKey: queryKeys.gamification.hub(studentId, LEDGER_PAGE_SIZE),
+    queryFn: async ({ signal }) => {
+      const hub = await workspacesApi.gamificationHub(LEDGER_PAGE_SIZE, signal);
+      queryClient.setQueryData(queryKeys.gamification.score(studentId), hub.score);
+      return hub;
+    },
     enabled: studentId > 0,
   });
 
@@ -31,7 +38,7 @@ export function GamificationHubPage() {
     );
   }
 
-  if (scoreQuery.isLoading) {
+  if (hubQuery.isLoading) {
     return (
       <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-sm text-[#9ca3af]">
         <Loader2 className="size-6 animate-spin text-[#d3fb52]" aria-hidden="true" />
@@ -40,20 +47,21 @@ export function GamificationHubPage() {
     );
   }
 
-  if (scoreQuery.isError || !scoreQuery.data) {
+  if (hubQuery.isError || !hubQuery.data) {
     return (
       <ErrorBanner
         message={
-          scoreQuery.error instanceof Error
-            ? scoreQuery.error.message
+          hubQuery.error instanceof Error
+            ? hubQuery.error.message
             : "Unable to load student score data."
         }
-        onRetry={() => void scoreQuery.refetch()}
+        onRetry={() => void hubQuery.refetch()}
       />
     );
   }
 
-  const score = scoreQuery.data;
+  const hub = hubQuery.data;
+  const score = hub.score;
 
   return (
     <div className="space-y-8">
@@ -84,10 +92,14 @@ export function GamificationHubPage() {
       <XpLevelProgressCard score={score} />
 
       {/* 2. Badges Showcase (Unlocked vs Locked) */}
-      <BadgesGallery studentId={studentId} />
+      <BadgesGallery
+        studentId={studentId}
+        catalog={hub.badgeCatalog}
+        earnedBadges={hub.earnedBadges}
+      />
 
       {/* 3. Read-Only Append-Only Score Transactions Ledger */}
-      <ScoreLedgerTable studentId={studentId} />
+      <ScoreLedgerTable studentId={studentId} initialPageData={hub.ledger} />
 
       {/* 4. PlatformAdmin Governance Console (CRUD Badges, Manual Award, Manual Score Adjust) */}
       {isPlatformAdmin && <AdminGamificationGovernance />}

@@ -44,6 +44,7 @@ export function ProjectsDiscoveryPage() {
   const skillsQuery = useQuery({
     queryKey: queryKeys.skills.list(),
     queryFn: ({ signal }) => skillsApi.list({}, signal),
+    staleTime: 5 * 60_000,
   });
 
   const items = projectsQuery.data?.items ?? [];

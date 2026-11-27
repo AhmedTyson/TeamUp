@@ -23,10 +23,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
   authApi,
-  gamificationApi,
-  notificationsApi,
-  projectsApi,
-  PROJECT_STATUSES,
+  workspacesApi,
 } from "@/api";
 import {
   Badge,
@@ -37,9 +34,6 @@ import {
   StatusPill,
 } from "@/components/ui";
 import { useAuth } from "@/features/auth";
-import { useMyEventRegistrations } from "@/features/events";
-import { useUnreadNotificationCount } from "@/features/notifications/useUnreadNotificationCount";
-import { useMyOrganizationApplications } from "@/features/organizations";
 import { queryKeys } from "@/lib/queryKeys";
 import { DashboardRoleSwitcher } from "../components/DashboardRoleSwitcher";
 
@@ -77,34 +71,23 @@ export function StudentDashboardPage() {
     },
   });
 
-  const scoreQuery = useQuery({
-    queryKey: queryKeys.gamification.score(studentId),
-    queryFn: ({ signal }) => gamificationApi.getStudentScore(studentId, signal),
+  const dashboardQuery = useQuery({
+    queryKey: queryKeys.dashboards.student(studentId),
+    queryFn: async ({ signal }) => {
+      const data = await workspacesApi.studentDashboard(signal);
+      queryClient.setQueryData(queryKeys.gamification.score(studentId), data.score);
+      queryClient.setQueryData(queryKeys.notifications.unreadCount, data.unreadNotificationsCount);
+      return data;
+    },
     enabled: studentId > 0,
   });
 
-  const myEventsQuery = useMyEventRegistrations(studentId > 0);
-  const myAppsQuery = useMyOrganizationApplications(studentId > 0);
-
-  const notificationsQuery = useQuery({
-    queryKey: queryKeys.notifications.inbox(false),
-    queryFn: ({ signal }) => notificationsApi.getNotifications(false, 15, signal),
-    enabled: studentId > 0,
-  });
-
-  const unreadCountQuery = useUnreadNotificationCount({ enabled: studentId > 0 });
-
-  const openProjectsQuery = useQuery({
-    queryKey: queryKeys.projects.list({ status: PROJECT_STATUSES.Recruiting, page: 1, pageSize: 4 }),
-    queryFn: ({ signal }) =>
-      projectsApi.list({ status: PROJECT_STATUSES.Recruiting, page: 1, pageSize: 4 }, signal),
-  });
-
-  const registrations = myEventsQuery.data?.items ?? [];
-  const applications = myAppsQuery.data ?? [];
-  const notifications = notificationsQuery.data ?? [];
-  const unreadNotificationsCount = unreadCountQuery.data ?? notifications.filter((n) => !n.isRead).length;
-  const openProjects = openProjectsQuery.data?.items ?? [];
+  const dashboard = dashboardQuery.data;
+  const registrations = dashboard?.myRegistrations.items ?? [];
+  const applications = dashboard?.myApplications ?? [];
+  const notifications = dashboard?.notifications ?? [];
+  const unreadNotificationsCount = dashboard?.unreadNotificationsCount ?? 0;
+  const openProjects = dashboard?.recruitingProjects.items ?? [];
 
   const affiliationText = user?.universityName
     ? `${user.universityName}${user.facultyName ? ` · ${user.facultyName}` : ""}`
@@ -197,9 +180,9 @@ export function StudentDashboardPage() {
           >
             <p className="text-xs font-medium text-[#9ca3af]">Level &amp; Verified XP</p>
             <p className="mt-1.5 break-words font-mono text-lg font-bold text-[#d3fb52] sm:text-2xl">
-              {scoreQuery.isLoading
+              {dashboardQuery.isLoading
                 ? "…"
-                : `Lvl ${scoreQuery.data?.level ?? 1} · ${scoreQuery.data?.totalPoints ?? 0} XP`}
+                : `Lvl ${dashboard?.score.level ?? 1} · ${dashboard?.score.totalPoints ?? 0} XP`}
             </p>
           </Link>
 
@@ -209,7 +192,7 @@ export function StudentDashboardPage() {
           >
             <p className="text-xs font-medium text-[#9ca3af]">My Event Passes</p>
             <p className="mt-1.5 font-mono text-lg font-bold text-white sm:text-2xl">
-              {myEventsQuery.isLoading ? "…" : (myEventsQuery.data?.totalCount ?? 0)}
+              {dashboardQuery.isLoading ? "…" : (dashboard?.myRegistrations.totalCount ?? 0)}
             </p>
           </Link>
 
@@ -219,7 +202,7 @@ export function StudentDashboardPage() {
           >
             <p className="text-xs font-medium text-[#9ca3af]">Club Applications</p>
             <p className="mt-1.5 font-mono text-lg font-bold text-white sm:text-2xl">
-              {myAppsQuery.isLoading ? "…" : applications.length}
+              {dashboardQuery.isLoading ? "…" : applications.length}
             </p>
           </Link>
 
@@ -229,7 +212,7 @@ export function StudentDashboardPage() {
           >
             <p className="text-xs font-medium text-[#9ca3af]">Unread Alerts</p>
             <p className="mt-1.5 font-mono text-lg font-bold text-sky-300 sm:text-2xl">
-              {unreadCountQuery.isLoading ? "…" : unreadNotificationsCount}
+              {dashboardQuery.isLoading ? "…" : unreadNotificationsCount}
             </p>
           </Link>
         </div>
@@ -251,7 +234,7 @@ export function StudentDashboardPage() {
             </Link>
           </div>
 
-          {myEventsQuery.isLoading ? (
+          {dashboardQuery.isLoading ? (
             <Skeleton className="h-36 rounded-2xl" />
           ) : registrations.length > 0 ? (
             <div className="space-y-2.5">
@@ -306,7 +289,7 @@ export function StudentDashboardPage() {
             </Link>
           </div>
 
-          {myAppsQuery.isLoading ? (
+          {dashboardQuery.isLoading ? (
             <Skeleton className="h-36 rounded-2xl" />
           ) : applications.length > 0 ? (
             <div className="space-y-2.5">
@@ -356,7 +339,7 @@ export function StudentDashboardPage() {
               All projects →
             </Link>
           </div>
-          {openProjectsQuery.isLoading ? (
+          {dashboardQuery.isLoading ? (
             <Skeleton className="h-32 rounded-2xl" />
           ) : openProjects.length > 0 ? (
             <div className="space-y-2.5">
@@ -391,7 +374,7 @@ export function StudentDashboardPage() {
               Open inbox →
             </Link>
           </div>
-          {notificationsQuery.isLoading ? (
+          {dashboardQuery.isLoading ? (
             <Skeleton className="h-32 rounded-2xl" />
           ) : notifications.length > 0 ? (
             <div className="space-y-2.5">

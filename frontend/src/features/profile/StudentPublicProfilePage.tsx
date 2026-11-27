@@ -15,7 +15,7 @@ import {
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { studentsApi } from "@/api";
+import { studentsApi, workspacesApi } from "@/api";
 import {
   Avatar,
   Badge,
@@ -41,9 +41,9 @@ export function StudentPublicProfilePage() {
 
   const isMe = user?.studentId === studentId;
 
-  const profileQuery = useQuery({
-    queryKey: queryKeys.students.detail(studentId),
-    queryFn: ({ signal }) => studentsApi.getById(studentId, signal),
+  const portfolioQuery = useQuery({
+    queryKey: queryKeys.students.portfolio(studentId),
+    queryFn: ({ signal }) => workspacesApi.studentPortfolio(studentId, signal),
     enabled: !Number.isNaN(studentId) && studentId > 0,
   });
 
@@ -75,7 +75,7 @@ export function StudentPublicProfilePage() {
     );
   }
 
-  if (profileQuery.isLoading) {
+  if (portfolioQuery.isLoading) {
     return (
       <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-sm text-[#9ca3af]">
         <Loader2 className="size-6 animate-spin text-[#d3fb52]" aria-hidden="true" />
@@ -84,20 +84,21 @@ export function StudentPublicProfilePage() {
     );
   }
 
-  if (profileQuery.isError || !profileQuery.data) {
+  if (portfolioQuery.isError || !portfolioQuery.data) {
     return (
       <ErrorBanner
         message={
-          profileQuery.error instanceof Error
-            ? profileQuery.error.message
+          portfolioQuery.error instanceof Error
+            ? portfolioQuery.error.message
             : "Student profile could not be found."
         }
-        onRetry={() => void profileQuery.refetch()}
+        onRetry={() => void portfolioQuery.refetch()}
       />
     );
   }
 
-  const student = profileQuery.data;
+  const portfolio = portfolioQuery.data;
+  const student = portfolio.profile;
   const fullName = `${student.firstName} ${student.lastName}`;
   const profile = student.profile;
 
@@ -261,12 +262,16 @@ export function StudentPublicProfilePage() {
           </div>
 
           {/* M2's Skills Panel */}
-          <StudentSkillsPanel studentId={studentId} editable={isMe} />
+          <StudentSkillsPanel studentId={studentId} editable={isMe} skillsData={portfolio.skills} />
         </div>
 
         {/* Right Column: Gamification & Badges Summary (5 cols) */}
         <div className="space-y-6 lg:col-span-5">
-          <StudentGamificationSummary studentId={studentId} />
+          <StudentGamificationSummary
+            studentId={studentId}
+            score={portfolio.score}
+            badges={portfolio.badges}
+          />
         </div>
       </div>
 

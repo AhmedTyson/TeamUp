@@ -18,17 +18,12 @@ import {
   Skeleton,
   StatusPill,
 } from "@/components/ui";
-import { useAuth } from "@/features/auth/AuthContext";
-import { canManageOrganization, useOrganization } from "@/features/organizations";
 import { triggerFileDownload } from "@/lib/downloadFile";
 import { ManualCheckInCard } from "../components/ManualCheckInCard";
 import { QrProjectorCard } from "../components/QrProjectorCard";
 import {
   useAttendanceMutations,
-  useEvent,
-  useEventRegistrations,
-  useEventSessions,
-  useSessionAttendance,
+  useSessionAttendanceWorkspace,
 } from "../hooks/useEventHooks";
 import { formatAttendanceRecorder } from "../utils/attendance";
 
@@ -37,29 +32,14 @@ export function SessionAttendancePage() {
   const eventId = Number(rawEventId);
   const sessionId = Number(rawSessionId);
   const navigate = useNavigate();
-  const { user, isPlatformAdmin, isOrgAdminOf } = useAuth();
 
   const isValidIds =
     Number.isInteger(eventId) && eventId > 0 && Number.isInteger(sessionId) && sessionId > 0;
 
-  const eventQuery = useEvent(eventId);
-  const event = eventQuery.data;
-  const orgQuery = useOrganization(event?.organizationId ?? 0);
-  const sessionsQuery = useEventSessions(eventId);
+  const workspace = useSessionAttendanceWorkspace(eventId, sessionId);
+  const event = workspace.event;
+  const canManage = workspace.canManage;
 
-  const canManage = Boolean(
-    event &&
-      canManageOrganization(
-        event.organizationId,
-        user?.studentId,
-        isPlatformAdmin,
-        isOrgAdminOf,
-        orgQuery.data?.members ?? [],
-      ),
-  );
-
-  const attendanceQuery = useSessionAttendance(sessionId, Boolean(event && canManage));
-  const registrationsQuery = useEventRegistrations(eventId, Boolean(event && canManage));
   const mutations = useAttendanceMutations(sessionId);
 
   const [revokeStudentId, setRevokeStudentId] = useState<number | null>(null);
@@ -81,19 +61,18 @@ export function SessionAttendancePage() {
     );
   }
 
-  if (eventQuery.isLoading || sessionsQuery.isLoading || (event && orgQuery.isLoading)) {
+  if (workspace.isLoading) {
     return <Skeleton className="h-[520px] rounded-3xl" />;
   }
 
-  if (eventQuery.isError || sessionsQuery.isError || !event) {
+  if (workspace.isError || !event) {
     return (
       <div className="space-y-4">
         <ErrorBanner
-          error={eventQuery.error ?? sessionsQuery.error}
+          error={workspace.error}
           message="Could not load event session attendance details."
           onRetry={() => {
-            void eventQuery.refetch();
-            void sessionsQuery.refetch();
+            void workspace.refetch();
           }}
         />
         <Button variant="outline" onClick={() => navigate(`/events/${eventId}`)}>
@@ -103,7 +82,7 @@ export function SessionAttendancePage() {
     );
   }
 
-  const session = (sessionsQuery.data ?? []).find((s) => s.sessionId === sessionId);
+  const session = workspace.session;
   if (!session) {
     return (
       <EmptyState
@@ -135,8 +114,8 @@ export function SessionAttendancePage() {
     );
   }
 
-  const attendance = attendanceQuery.data ?? [];
-  const registrations = registrationsQuery.data ?? [];
+  const attendance = workspace.attendance;
+  const registrations = workspace.registrations;
   const confirmedCount = registrations.filter((r) => r.status === "Confirmed").length;
   const pendingConfirmed = registrations.filter(
     (reg) =>
@@ -233,9 +212,9 @@ export function SessionAttendancePage() {
           </Button>
         </div>
 
-        {attendanceQuery.isError ? (
+        {workspace.isError ? (
           <div className="mt-4">
-            <ErrorBanner error={attendanceQuery.error} />
+            <ErrorBanner error={workspace.error} />
           </div>
         ) : attendance.length > 0 ? (
           <div className="mt-4 overflow-x-auto">

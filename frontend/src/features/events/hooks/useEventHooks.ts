@@ -5,6 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   attendanceApi,
+  workspacesApi,
   eventsApi,
   sessionsApi,
   type EventListParams,
@@ -25,16 +26,71 @@ export function useEvents(params: EventListParams, enabled = true) {
   });
 }
 
-export function useEvent(eventId: number) {
+export function useEvent(eventId: number, enabled = true) {
   const { isAuthenticated } = useAuth();
   return useQuery({
     queryKey: [...queryKeys.events.detail(eventId), isAuthenticated],
     queryFn: ({ signal }) =>
       isAuthenticated ? eventsApi.detail(eventId, signal) : eventsApi.publicDetail(eventId, signal),
-    enabled: Number.isInteger(eventId) && eventId > 0,
+    enabled: enabled && Number.isInteger(eventId) && eventId > 0,
   });
 }
 
+/**
+ * One request for the whole event screen: event + sessions, whether the caller can manage it, their own
+ * registration, and (organizers only) the registrations list. Anonymous visitors fall back to the public detail.
+ * `myRegistration` stays undefined for anonymous visitors so callers can use their local pass cache instead.
+ */
+export function useEventWorkspace(eventId: number) {
+  const { isAuthenticated } = useAuth();
+  const isValid = Number.isInteger(eventId) && eventId > 0;
+  const workspaceQuery = useQuery({
+    queryKey: queryKeys.events.workspace(eventId),
+    queryFn: ({ signal }) => workspacesApi.eventWorkspace(eventId, signal),
+    enabled: isValid && isAuthenticated,
+  });
+  const publicQuery = useEvent(eventId, !isAuthenticated);
+  const active = isAuthenticated ? workspaceQuery : publicQuery;
+
+  return {
+    event: isAuthenticated ? workspaceQuery.data?.event : publicQuery.data,
+    canManage: isAuthenticated ? Boolean(workspaceQuery.data?.canManage) : false,
+    myRegistration: isAuthenticated ? workspaceQuery.data?.myRegistration : undefined,
+    registrations: isAuthenticated ? (workspaceQuery.data?.registrations ?? null) : null,
+    isLoading: active.isLoading,
+    isError: active.isError,
+    error: active.error,
+    refetch: active.refetch,
+  };
+}
+
+/**
+ * Single-request organizer attendance workspace: loads event, session, permission check,
+ * registrations, and verified attendance in one round-trip.
+ */
+export function useSessionAttendanceWorkspace(eventId: number, sessionId: number) {
+  const { isAuthenticated } = useAuth();
+  const isValid =
+    Number.isInteger(eventId) && eventId > 0 && Number.isInteger(sessionId) && sessionId > 0;
+
+  const query = useQuery({
+    queryKey: queryKeys.sessions.attendanceWorkspace(eventId, sessionId),
+    queryFn: ({ signal }) => workspacesApi.sessionAttendanceWorkspace(eventId, sessionId, signal),
+    enabled: isValid && isAuthenticated,
+  });
+
+  return {
+    event: query.data?.event,
+    session: query.data?.session ?? null,
+    canManage: Boolean(query.data?.canManage),
+    registrations: query.data?.registrations ?? [],
+    attendance: query.data?.attendance ?? [],
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
+}
 export function useMyEventRegistrations(enabled = true, page = 1, pageSize = 20) {
   const { isAuthenticated } = useAuth();
   return useQuery({
@@ -86,10 +142,13 @@ export function useEventMutations(eventId?: number) {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.events.all }),
       queryClient.invalidateQueries({ queryKey: queryKeys.organizations.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboards.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all }),
     ]);
     if (eventId && eventId > 0) {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(eventId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.events.workspace(eventId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.events.sessions(eventId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.events.registrations(eventId) }),
       ]);
@@ -157,8 +216,9 @@ export function useAttendanceMutations(sessionId: number) {
 
   const syncAttendance = async (affectedStudentId?: number) => {
     await queryClient.invalidateQueries({
-      queryKey: queryKeys.sessions.attendance(sessionId),
+      queryKey: queryKeys.sessions.all,
     });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
     await invalidateGamification(queryClient, affectedStudentId ?? user?.studentId);
   };
 

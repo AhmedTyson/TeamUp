@@ -38,18 +38,11 @@ import { OrganizationParticipantsTab } from "../components/OrganizationParticipa
 import { OrganizationUnitsTab } from "../components/OrganizationUnitsTab";
 import { RecruitmentPipelineTab } from "../components/RecruitmentPipelineTab";
 import {
-  useMyOrganizationApplications,
-  useOrganization,
-  useOrganizationApplications,
   useOrganizationHierarchy,
   useOrganizationMutations,
   useOrganizationParticipants,
+  useOrganizationWorkspace,
 } from "../hooks/useOrganizationHooks";
-import {
-  canManageOrganization,
-  canReviewOrgRecruitment,
-  isOrganizationMember,
-} from "../utils/authorization";
 
 const VALID_ORG_TABS = new Set([
   "overview",
@@ -66,7 +59,7 @@ export function OrganizationDetailPage() {
   const id = Number(rawId);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAuthenticated, isPlatformAdmin, isOrgAdminOf } = useAuth();
+  const { user, isAuthenticated, isPlatformAdmin } = useAuth();
 
   const initialTab = searchParams.get("tab");
   const [tab, setTabState] = useState(() =>
@@ -86,19 +79,13 @@ export function OrganizationDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const isValidId = Number.isInteger(id) && id > 0;
-  const orgQuery = useOrganization(id);
-  const org = orgQuery.data;
+  const workspace = useOrganizationWorkspace(id);
+  const org = workspace.organization;
   const members = org?.members ?? [];
 
-  const canManage = Boolean(
-    org &&
-      canManageOrganization(id, user?.studentId, isPlatformAdmin, isOrgAdminOf, members),
-  );
-  const canReviewRecruitment = Boolean(
-    org &&
-      canReviewOrgRecruitment(id, user?.studentId, isPlatformAdmin, isOrgAdminOf, members),
-  );
-  const isMember = isOrganizationMember(user?.studentId, members);
+  const canManage = workspace.canManage;
+  const canReviewRecruitment = workspace.canReviewRecruitment;
+  const isMember = workspace.isMember;
 
   const units = org?.units ?? [];
   const hierarchyQuery = useOrganizationHierarchy(id, Boolean(org) && tab === "hierarchy");
@@ -106,10 +93,6 @@ export function OrganizationDetailPage() {
     id,
     Boolean(org) && isAuthenticated && tab === "participants",
   );
-  const myAppsQuery = useMyOrganizationApplications(
-    Boolean(org) && isAuthenticated && !canReviewRecruitment,
-  );
-  const appsQuery = useOrganizationApplications(id, Boolean(org && canReviewRecruitment));
   const mutations = useOrganizationMutations(id);
 
   if (!isValidId) {
@@ -127,17 +110,17 @@ export function OrganizationDetailPage() {
     );
   }
 
-  if (orgQuery.isLoading) {
+  if (workspace.isLoading) {
     return <Skeleton className="h-[460px] rounded-3xl" />;
   }
 
-  if (orgQuery.isError || !org) {
+  if (workspace.isError || !org) {
     return (
       <div className="space-y-4">
         <ErrorBanner
-          error={orgQuery.error}
+          error={workspace.error}
           message="Organization could not be loaded."
-          onRetry={() => void orgQuery.refetch()}
+          onRetry={() => void workspace.refetch()}
         />
         <Button variant="outline" onClick={() => navigate("/organizations")}>
           Back to organizations
@@ -146,7 +129,7 @@ export function OrganizationDetailPage() {
     );
   }
 
-  const adminApps = appsQuery.data ?? [];
+  const adminApps = workspace.adminApplications;
   const pendingAdminAppsCount = adminApps.filter((a) => a.status === "Pending").length;
 
   const handleExportApplicationsCsv = async () => {
@@ -283,10 +266,10 @@ export function OrganizationDetailPage() {
                     canManage={canManage}
                     isMember={isMember}
                     units={units}
-                    myApplications={myAppsQuery.data}
+                    myApplications={workspace.myApplications ?? undefined}
                     adminApplications={adminApps}
-                    isLoadingAdminApps={appsQuery.isLoading}
-                    adminAppsError={appsQuery.isError ? appsQuery.error : null}
+                    isLoadingAdminApps={false}
+                    adminAppsError={null}
                     isSubmitting={
                       mutations.apply.isPending ||
                       mutations.withdraw.isPending ||
@@ -374,9 +357,9 @@ export function OrganizationDetailPage() {
                   isMember={isMember}
                   units={units}
                   applications={adminApps}
-                  myApplications={myAppsQuery.data}
-                  isLoadingApps={appsQuery.isLoading}
-                  appsError={appsQuery.isError ? appsQuery.error : null}
+                  myApplications={workspace.myApplications ?? undefined}
+                  isLoadingApps={false}
+                  appsError={null}
                   isBusy={
                     mutations.apply.isPending ||
                     mutations.withdraw.isPending ||

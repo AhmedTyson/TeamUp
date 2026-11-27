@@ -7,6 +7,7 @@ import { History, Loader2 } from "lucide-react";
 import { useState } from "react";
 import {
   gamificationApi,
+  type PagedResult,
   type ScoreSourceType,
   type ScoreTransactionDto,
 } from "@/api";
@@ -24,6 +25,7 @@ import { queryKeys } from "@/lib/queryKeys";
 
 export interface ScoreLedgerTableProps {
   studentId: number;
+  initialPageData?: PagedResult<ScoreTransactionDto>;
 }
 
 const SOURCE_PILL_MAP: Record<ScoreSourceType, { variant: BadgeVariant; label: string }> = {
@@ -43,20 +45,24 @@ function renderSourcePill(source: ScoreSourceType) {
   );
 }
 
-export function ScoreLedgerTable({ studentId }: ScoreLedgerTableProps) {
+export function ScoreLedgerTable({ studentId, initialPageData }: ScoreLedgerTableProps) {
   const [page, setPage] = useState(1);
   const pageSize = 15;
+  const usingInitialPage = page === 1 && initialPageData !== undefined;
 
   const ledgerQuery = useQuery({
     queryKey: [...queryKeys.gamification.ledger(studentId), page, pageSize],
     queryFn: ({ signal }) =>
       gamificationApi.getScoreTransactions(studentId, { page, pageSize }, signal),
-    enabled: studentId > 0,
+    enabled: studentId > 0 && !usingInitialPage,
   });
 
-  const items = ledgerQuery.data?.items ?? [];
-  const totalCount = ledgerQuery.data?.totalCount ?? 0;
-  const totalPages = ledgerQuery.data?.totalPages ?? 1;
+  const pageData = usingInitialPage ? initialPageData : ledgerQuery.data;
+  const items = pageData?.items ?? [];
+  const totalCount = pageData?.totalCount ?? 0;
+  const totalPages = pageData?.totalPages ?? 1;
+  const isLoading = !usingInitialPage && ledgerQuery.isLoading;
+  const isError = !usingInitialPage && ledgerQuery.isError;
 
   const columns: readonly DataTableColumn<ScoreTransactionDto>[] = [
     {
@@ -124,12 +130,12 @@ export function ScoreLedgerTable({ studentId }: ScoreLedgerTableProps) {
         </span>
       </div>
 
-      {ledgerQuery.isLoading ? (
+      {isLoading ? (
         <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 text-sm text-[#9ca3af]">
           <Loader2 className="size-6 animate-spin text-[#d3fb52]" aria-hidden="true" />
           <span>Fetching ledger transactions…</span>
         </div>
-      ) : ledgerQuery.isError ? (
+      ) : isError ? (
         <ErrorBanner
           message={
             ledgerQuery.error instanceof Error

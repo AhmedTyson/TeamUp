@@ -5,30 +5,41 @@
 import { useQuery } from "@tanstack/react-query";
 import { Award, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import { badgesApi, gamificationApi } from "@/api";
+import {
+  badgesApi,
+  gamificationApi,
+  type StudentBadgeDto,
+  type StudentScoreDto,
+} from "@/api";
 import { Badge } from "@/components/ui";
 import { queryKeys } from "@/lib/queryKeys";
 import { computeLevelProgressPercent } from "./levelProgress";
 
 export interface StudentGamificationSummaryProps {
   studentId: number;
+  score?: StudentScoreDto;
+  badges?: StudentBadgeDto[];
 }
 
-export function StudentGamificationSummary({ studentId }: StudentGamificationSummaryProps) {
+export function StudentGamificationSummary({
+  studentId,
+  score: scoreProp,
+  badges: badgesProp,
+}: StudentGamificationSummaryProps) {
   const scoreQuery = useQuery({
     queryKey: queryKeys.gamification.score(studentId),
     queryFn: ({ signal }) => gamificationApi.getStudentScore(studentId, signal),
-    enabled: studentId > 0,
+    enabled: studentId > 0 && scoreProp === undefined,
   });
 
   const badgesQuery = useQuery({
     queryKey: queryKeys.badges.student(studentId),
     queryFn: ({ signal }) => badgesApi.getStudentBadges(studentId, signal),
-    enabled: studentId > 0,
+    enabled: studentId > 0 && badgesProp === undefined,
   });
 
-  const score = scoreQuery.data;
-  const badges = badgesQuery.data ?? [];
+  const score = scoreProp ?? scoreQuery.data;
+  const badges = badgesProp ?? badgesQuery.data ?? [];
   const pct = score ? computeLevelProgressPercent(score) : 0;
 
   return (

@@ -5,7 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Award, CheckCircle2, Lock } from "lucide-react";
 import { useState } from "react";
-import { badgesApi } from "@/api";
+import { badgesApi, type BadgeDto, type StudentBadgeDto } from "@/api";
 import { Badge } from "@/components/ui";
 import { formatDateTime } from "@/lib/formatters";
 import { queryKeys } from "@/lib/queryKeys";
@@ -13,6 +13,8 @@ import { resolveMediaUrl } from "@/lib/urlValidation";
 
 export interface BadgesGalleryProps {
   studentId: number;
+  catalog?: BadgeDto[];
+  earnedBadges?: StudentBadgeDto[];
 }
 
 function BadgeIcon({
@@ -48,22 +50,27 @@ function BadgeIcon({
   );
 }
 
-export function BadgesGallery({ studentId }: BadgesGalleryProps) {
+export function BadgesGallery({
+  studentId,
+  catalog: catalogProp,
+  earnedBadges: earnedProp,
+}: BadgesGalleryProps) {
   const [filter, setFilter] = useState<"all" | "unlocked" | "locked">("all");
 
   const catalogQuery = useQuery({
     queryKey: queryKeys.badges.catalog,
     queryFn: ({ signal }) => badgesApi.getBadgeCatalog(signal),
+    enabled: catalogProp === undefined,
   });
 
   const studentBadgesQuery = useQuery({
     queryKey: queryKeys.badges.student(studentId),
     queryFn: ({ signal }) => badgesApi.getStudentBadges(studentId, signal),
-    enabled: studentId > 0,
+    enabled: studentId > 0 && earnedProp === undefined,
   });
 
-  const catalog = catalogQuery.data ?? [];
-  const earnedBadges = studentBadgesQuery.data ?? [];
+  const catalog = catalogProp ?? catalogQuery.data ?? [];
+  const earnedBadges = earnedProp ?? studentBadgesQuery.data ?? [];
 
   const earnedMap = new Map(earnedBadges.map((b) => [b.badgeId, b]));
 

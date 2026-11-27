@@ -18,8 +18,6 @@ import {
 } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
 import {
-  canManageOrganization,
-  useOrganization,
   useOrganizations,
 } from "@/features/organizations";
 import { downloadEventIcs } from "@/lib/calendarExport";
@@ -29,10 +27,8 @@ import { EventRegistrationsPanel } from "../components/EventRegistrationsPanel";
 import { EventSessionsPanel } from "../components/EventSessionsPanel";
 import { SessionFormModal } from "../components/SessionFormModal";
 import {
-  useEvent,
   useEventMutations,
-  useEventRegistrations,
-  useMyEventRegistration,
+  useEventWorkspace,
 } from "../hooks/useEventHooks";
 import { myEventRegistrationStorage } from "../utils/attendance";
 
@@ -41,27 +37,15 @@ export function EventDetailPage() {
   const eventId = Number(rawId);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated, isPlatformAdmin, isOrgAdminOf, orgAdminIds } = useAuth();
+  const { user, isAuthenticated, isPlatformAdmin, orgAdminIds } = useAuth();
 
   const isValidId = Number.isInteger(eventId) && eventId > 0;
-  const eventQuery = useEvent(eventId);
-  const event = eventQuery.data;
+  const workspace = useEventWorkspace(eventId);
+  const event = workspace.event;
 
-  const orgQuery = useOrganization(event?.organizationId ?? 0);
 
-  const canManage = Boolean(
-    event &&
-      canManageOrganization(
-        event.organizationId,
-        user?.studentId,
-        isPlatformAdmin,
-        isOrgAdminOf,
-        orgQuery.data?.members ?? [],
-      ),
-  );
+  const canManage = workspace.canManage;
 
-  const registrationsQuery = useEventRegistrations(eventId, Boolean(event && canManage));
-  const myRegQuery = useMyEventRegistration(eventId, Boolean(event && isAuthenticated));
   const mutations = useEventMutations(eventId);
 
   const [editEventOpen, setEditEventOpen] = useState(false);
@@ -79,7 +63,7 @@ export function EventDetailPage() {
     myEventRegistrationStorage.get(user?.studentId, eventId)?.status ?? null,
   );
 
-  const backendMyReg = myRegQuery.data ?? null;
+  const backendMyReg = workspace.myRegistration ?? null;
 
   useEffect(() => {
     if (backendMyReg) {
@@ -88,7 +72,7 @@ export function EventDetailPage() {
         registeredAt: backendMyReg.registeredAt,
       });
       setSavedStudentStatus(backendMyReg.status);
-    } else if (myRegQuery.data !== undefined) {
+    } else if (workspace.myRegistration !== undefined) {
       myEventRegistrationStorage.clear(user?.studentId, eventId);
       setSavedStudentStatus(null);
     } else {
@@ -113,17 +97,17 @@ export function EventDetailPage() {
     );
   }
 
-  if (eventQuery.isLoading) {
+  if (workspace.isLoading) {
     return <Skeleton className="h-[460px] rounded-3xl" />;
   }
 
-  if (eventQuery.isError || !event) {
+  if (workspace.isError || !event) {
     return (
       <div className="space-y-4">
         <ErrorBanner
-          error={eventQuery.error}
+          error={workspace.error}
           message="Event could not be loaded."
-          onRetry={() => void eventQuery.refetch()}
+          onRetry={() => void workspace.refetch()}
         />
         <Button variant="outline" onClick={() => navigate("/events")}>
           Back to events
@@ -133,7 +117,7 @@ export function EventDetailPage() {
   }
 
   const sessions = event.sessions;
-  const registrations = registrationsQuery.data ?? [];
+  const registrations = workspace.registrations ?? [];
   const adminOwnReg = canManage
     ? registrations.find((reg) => reg.studentId === user?.studentId)
     : undefined;
@@ -342,9 +326,9 @@ export function EventDetailPage() {
           {canManage && (
             <EventRegistrationsPanel
               registrations={registrations}
-              isLoading={registrationsQuery.isLoading}
-              isError={registrationsQuery.isError}
-              error={registrationsQuery.error}
+              isLoading={false}
+              isError={false}
+              error={null}
               onCancelRegistration={(studentId) => setCancelTargetStudentId(studentId)}
             />
           )}

@@ -10,8 +10,8 @@ import {
   PROJECT_TASK_STATUSES,
   TASK_PRIORITIES,
   projectsApi,
-  skillsApi,
   tasksApi,
+  workspacesApi,
   type ApplicationStatus,
   type ProjectApplicationDto,
   type ProjectStatus,
@@ -67,44 +67,17 @@ export function ProjectDetailPage() {
   const [taskPriority, setTaskPriority] = useState<TaskPriority>(TASK_PRIORITIES.Medium);
 
   const validProjectId = Number.isInteger(projectId) && projectId > 0;
-  const projectKey = queryKeys.projects.detail(projectId);
-  const projectQuery = useQuery({
-    queryKey: projectKey,
-    queryFn: ({ signal }) => projectsApi.getById(projectId, signal),
+  const workspaceKey = queryKeys.projects.workspace(projectId);
+  const workspaceQuery = useQuery({
+    queryKey: workspaceKey,
+    queryFn: ({ signal }) => workspacesApi.projectWorkspace(projectId, signal),
     enabled: validProjectId,
   });
-  const project = projectQuery.data;
+  const workspace = workspaceQuery.data;
+  const project = workspace?.project;
   const currentMember = project?.members.find((member) => member.studentId === user?.studentId);
-  const isCreator = Boolean(project && user && project.creatorId === user.studentId);
-  const isMember = Boolean(currentMember);
-
-  // The applications list is creator-only on the backend; non-creators used to fire it on every
-  // page view, always got 403, and therefore could never see or withdraw their own application.
-  const applicationsQuery = useQuery({
-    queryKey: queryKeys.projects.applications(projectId),
-    queryFn: ({ signal }) => projectsApi.getApplications(projectId, signal),
-    enabled: validProjectId && isCreator,
-  });
-  const myApplicationQuery = useQuery({
-    queryKey: queryKeys.projects.myApplication(projectId, user?.studentId),
-    queryFn: ({ signal }) => projectsApi.getMyApplication(projectId, signal),
-    enabled: validProjectId && Boolean(project) && !isCreator && Boolean(user),
-  });
-  const tasksQuery = useQuery({
-    queryKey: queryKeys.projects.tasks(projectId),
-    queryFn: ({ signal }) => tasksApi.listForProject(projectId, signal),
-    enabled: validProjectId && isMember,
-  });
-  const skillsQuery = useQuery({
-    queryKey: queryKeys.skills.list(),
-    queryFn: ({ signal }) => skillsApi.list({}, signal),
-    enabled: isCreator,
-  });
-  const studentSkillsQuery = useQuery({
-    queryKey: queryKeys.students.skills(user?.studentId ?? 0),
-    queryFn: ({ signal }) => skillsApi.getStudentSkills(user!.studentId, signal),
-    enabled: Boolean(user?.studentId),
-  });
+  const isCreator = Boolean(workspace?.isCreator ?? (project && user && project.creatorId === user.studentId));
+  const isMember = Boolean(workspace?.isMember ?? currentMember);
 
   useEffect(() => {
     if (!project) return;
@@ -116,11 +89,10 @@ export function ProjectDetailPage() {
 
   const invalidateProjectData = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: projectKey }),
+      queryClient.invalidateQueries({ queryKey: workspaceKey }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.all }),
-                  queryClient.invalidateQueries({ queryKey: queryKeys.projects.applications(projectId) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.myApplication(projectId, user?.studentId) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.tasks(projectId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboards.all }),
     ]);
   };
 
@@ -219,7 +191,7 @@ export function ProjectDetailPage() {
   });
 
   const invalidateTasks = async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.projects.tasks(projectId) });
+    await queryClient.invalidateQueries({ queryKey: workspaceKey });
   };
   const saveTask = useMutation({
     mutationFn: async () => {
@@ -279,22 +251,24 @@ export function ProjectDetailPage() {
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not unassign task."),
   });
 
+  const creatorApplications = workspace?.applications ?? [];
+  const projectTasks = workspace?.tasks ?? [];
   const tasksByStatus = useMemo(() => {
     const groups = new Map<ProjectTaskStatus, ProjectTaskDto[]>(
       TASK_STATUSES.map((item) => [item, []]),
     );
-    for (const task of tasksQuery.data ?? []) {
+    for (const task of projectTasks) {
       groups.get(task.status)?.push(task);
     }
     return groups;
-  }, [tasksQuery.data]);
+  }, [projectTasks]);
   const myApplication = isCreator
-    ? (applicationsQuery.data ?? []).find((application) => application.studentId === user?.studentId)
-    : (myApplicationQuery.data ?? undefined);
-  const availableSkills = (skillsQuery.data ?? []).filter(
+    ? creatorApplications.find((application) => application.studentId === user?.studentId)
+    : (workspace?.myApplication ?? undefined);
+  const availableSkills = (workspace?.availableSkills ?? []).filter(
     (skill) => !(project?.requiredSkills ?? []).some((required) => required.skillId === skill.skillId),
   );
-  const claimedSkillIds = new Set((studentSkillsQuery.data ?? []).map((skill) => skill.skillId));
+  const claimedSkillIds = new Set((workspace?.mySkills ?? []).map((skill) => skill.skillId));
 
   const openNewTask = () => {
     setEditingTask(null);
@@ -321,14 +295,12 @@ export function ProjectDetailPage() {
   if (!validProjectId) {
     return <p role="alert" className="text-sm text-red-300">Invalid project ID.</p>;
   }
-  if (projectQuery.isLoading) {
+  if (workspaceQuery.isLoading) {
     return <p role="status" className="py-12 text-center text-sm text-white/60">Loading project…</p>;
   }
-  if (projectQuery.isError || !project) {
-    return <ErrorBanner error={projectQuery.error} onRetry={() => void projectQuery.refetch()} />;
+  if (workspaceQuery.isError || !project) {
+    return <ErrorBanner error={workspaceQuery.error} onRetry={() => void workspaceQuery.refetch()} />;
   }
-
-  const applicationsError = applicationsQuery.isError;
 
   return (
     <div className="space-y-6">
@@ -405,7 +377,6 @@ export function ProjectDetailPage() {
         <section className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
           <div className="rounded-2xl border border-white/10 bg-[#1b1d26] p-5">
             <h2 className="text-lg font-semibold text-white">Required skills</h2>
-            {studentSkillsQuery.isError && <ErrorBanner className="mt-3" error={studentSkillsQuery.error} title="Could not compare your claimed skills" />}
             <div className="mt-4 flex flex-wrap gap-2">
               {project.requiredSkills.map((skill) => (
                 <div key={skill.skillId} className="flex flex-wrap items-center gap-2 rounded-xl bg-[#14151c] px-3 py-2 text-xs text-white/80">
@@ -452,7 +423,6 @@ export function ProjectDetailPage() {
             </div>
             {isCreator && (
               <div className="mt-5 grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-2">
-                {skillsQuery.isError && <ErrorBanner className="sm:col-span-2" error={skillsQuery.error} title="Could not load skill catalog" />}
                 <Select
                   label="Add a required skill"
                   value={requiredSkillId}
@@ -484,12 +454,6 @@ export function ProjectDetailPage() {
               <p className="mt-3 text-sm text-[#d3fb52]">Your application was accepted.</p>
             ) : (
               <div className="mt-3 space-y-3">
-                {myApplicationQuery.isError && (
-                  <ErrorBanner
-                    error={myApplicationQuery.error}
-                    onRetry={() => void myApplicationQuery.refetch()}
-                  />
-                )}
                 <Button onClick={() => setApplicationModalOpen(true)} disabled={project.teamSize >= project.maxTeamSize}>Apply to join</Button>
                 {project.teamSize >= project.maxTeamSize && <p className="text-xs text-amber-200">This team has reached its capacity.</p>}
               </div>
@@ -543,10 +507,8 @@ export function ProjectDetailPage() {
             <h2 className="text-xl font-semibold text-white">{isCreator ? "Applicant queue" : "Your application"}</h2>
             <p className="mt-1 text-sm text-white/50">{isCreator ? "Review applicants and manage team capacity." : "Track your request to join this team."}</p>
           </div>
-          {applicationsError && <ErrorBanner error={applicationsQuery.error} onRetry={() => void applicationsQuery.refetch()} />}
-          {myApplicationQuery.isError && <ErrorBanner error={myApplicationQuery.error} onRetry={() => void myApplicationQuery.refetch()} />}
           {isCreator &&
-            (applicationsQuery.data ?? []).map((application) => (
+            creatorApplications.map((application) => (
               <ApplicationRow
                 key={application.applicationId}
                 application={application}
@@ -556,7 +518,7 @@ export function ProjectDetailPage() {
                 onWithdraw={() => withdraw.mutate(application.applicationId)}
               />
             ))}
-          {isCreator && !applicationsQuery.isLoading && !applicationsError && (applicationsQuery.data ?? []).length === 0 && (
+          {isCreator && creatorApplications.length === 0 && (
             <p className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-white/55">No applications yet.</p>
           )}
           {!isCreator && myApplication && (
@@ -567,7 +529,7 @@ export function ProjectDetailPage() {
               onWithdraw={() => withdraw.mutate(myApplication.applicationId)}
             />
           )}
-          {!isCreator && !myApplicationQuery.isLoading && !myApplicationQuery.isError && !myApplication && (
+          {!isCreator && !myApplication && (
             <p className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-white/55">You have not applied to this project.</p>
           )}
         </section>
@@ -580,7 +542,6 @@ export function ProjectDetailPage() {
             {isMember && <Button onClick={openNewTask}>Create task</Button>}
           </div>
           {!isMember && <p className="rounded-xl border border-white/10 p-5 text-sm text-white/55">Only project members can view the sprint board.</p>}
-          {tasksQuery.isError && isMember && <ErrorBanner error={tasksQuery.error} onRetry={() => void tasksQuery.refetch()} />}
           {isMember && (
             <div className="grid gap-4 xl:grid-cols-4">
               {TASK_STATUSES.map((taskStatus) => (

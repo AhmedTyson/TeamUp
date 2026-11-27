@@ -20,6 +20,7 @@ import {
   RECRUITMENT_STAGES,
   universitiesApi,
   USER_ROLES,
+  workspacesApi,
   type AuthStudentSummary,
   type EventSummary,
   type MembershipApplication,
@@ -175,47 +176,56 @@ describe("20-Item Plan & Role Dashboards Suite", () => {
     expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin");
   });
 
-  it("renders StudentDashboardPage with live XP, event passes, and community applications", async () => {
-    vi.spyOn(gamificationApi, "getStudentScore").mockResolvedValueOnce({
-      studentId: 10,
-      totalPoints: 1250,
-      level: 4,
-      currentLevelStart: 900,
-      nextLevelThreshold: 1500,
-      pointsToNext: 250,
-      progress: 0.58,
-    });
-    vi.spyOn(eventsApi, "myRegistrations").mockResolvedValueOnce({
-      items: [
-      {
-        eventId: 1,
-        eventTitle: "Auxilio Engineering & AI Bootcamp 2026",
-        organizationId: 1,
-        organizationName: "IEEE Helwan Student Branch",
-        eventType: EVENT_TYPES.Workshop,
-        deliveryMode: "Hybrid",
-        location: "Helwan Main Hall",
-        startDate: "2026-12-01T09:00:00Z",
-        endDate: "2026-12-03T16:00:00Z",
-        status: "Confirmed",
-        registeredAt: "2026-11-20T10:00:00Z",
-        sessionsAttendedCount: 1,
-        totalSessionsCount: 3,
+  it("renders StudentDashboardPage with live XP, event passes, and community applications in one request", async () => {
+    const scoreSpy = vi.spyOn(gamificationApi, "getStudentScore");
+    const myRegSpy = vi.spyOn(eventsApi, "myRegistrations");
+    const myAppsSpy = vi.spyOn(organizationsApi, "myApplications");
+    const notifSpy = vi.spyOn(notificationsApi, "getNotifications");
+    const projSpy = vi.spyOn(projectsApi, "list");
+
+    vi.spyOn(workspacesApi, "studentDashboard").mockResolvedValueOnce({
+      score: {
+        studentId: 10,
+        totalPoints: 1250,
+        level: 4,
+        currentLevelStart: 900,
+        nextLevelThreshold: 1500,
+        pointsToNext: 250,
+        progress: 0.58,
       },
-      ],
-      page: 1,
-      pageSize: 20,
-      totalCount: 1,
-      totalPages: 1,
-    });
-    vi.spyOn(organizationsApi, "myApplications").mockResolvedValueOnce([]);
-    vi.spyOn(notificationsApi, "getNotifications").mockResolvedValueOnce([]);
-    vi.spyOn(projectsApi, "list").mockResolvedValueOnce({
-      items: [],
-      page: 1,
-      pageSize: 4,
-      totalCount: 0,
-      totalPages: 1,
+      myRegistrations: {
+        items: [
+          {
+            eventId: 1,
+            eventTitle: "Auxilio Engineering & AI Bootcamp 2026",
+            organizationId: 1,
+            organizationName: "IEEE Helwan Student Branch",
+            eventType: EVENT_TYPES.Workshop,
+            deliveryMode: "Hybrid",
+            location: "Helwan Main Hall",
+            startDate: "2026-12-01T09:00:00Z",
+            endDate: "2026-12-03T16:00:00Z",
+            status: "Confirmed",
+            registeredAt: "2026-11-20T10:00:00Z",
+            sessionsAttendedCount: 1,
+            totalSessionsCount: 3,
+          },
+        ],
+        page: 1,
+        pageSize: 20,
+        totalCount: 1,
+        totalPages: 1,
+      },
+      myApplications: [],
+      notifications: [],
+      unreadNotificationsCount: 0,
+      recruitingProjects: {
+        items: [],
+        page: 1,
+        pageSize: 4,
+        totalCount: 0,
+        totalPages: 1,
+      },
     });
 
     render(
@@ -239,11 +249,20 @@ describe("20-Item Plan & Role Dashboards Suite", () => {
     expect(
       await screen.findByText(/Auxilio Engineering & AI Bootcamp 2026/i),
     ).toBeInTheDocument();
+    expect(scoreSpy).not.toHaveBeenCalled();
+    expect(myRegSpy).not.toHaveBeenCalled();
+    expect(myAppsSpy).not.toHaveBeenCalled();
+    expect(notifSpy).not.toHaveBeenCalled();
+    expect(projSpy).not.toHaveBeenCalled();
   });
 
-  it("renders OrgAdminDashboardPage with 4-stage recruitment funnel and hosted event QR links", async () => {
-    vi.spyOn(organizationsApi, "list").mockResolvedValue({
-      items: [
+  it("renders OrgAdminDashboardPage with 4-stage recruitment funnel and hosted event QR links in one request", async () => {
+    const orgsSpy = vi.spyOn(organizationsApi, "list");
+    const appsSpy = vi.spyOn(organizationsApi, "applications");
+    const eventsSpy = vi.spyOn(eventsApi, "list");
+
+    vi.spyOn(workspacesApi, "orgDashboard").mockResolvedValue({
+      managedOrganizations: [
         {
           organizationId: 1,
           name: "IEEE Helwan Student Branch",
@@ -259,58 +278,55 @@ describe("20-Item Plan & Role Dashboards Suite", () => {
           unitCount: 9,
         },
       ],
-      totalCount: 1,
-      totalPages: 1,
-      page: 1,
-      pageSize: 50,
-    });
-    vi.spyOn(organizationsApi, "applications").mockResolvedValue([
-      {
-        applicationId: 1,
-        organizationId: 1,
-        studentId: 50,
-        studentFirstName: "Tarek",
-        studentLastName: "Nabil",
-        studentEmail: "tarek@indie.dev",
-        status: "Pending",
-        stage: RECRUITMENT_STAGES.HrScreening,
-        message: "Joining CS",
-        appliedAt: "2026-11-24T10:00:00Z",
-        reviewedAt: null,
-      },
-    ]);
-    vi.spyOn(eventsApi, "list").mockResolvedValue({
-      items: [
+      activeOrganizationId: 1,
+      applications: [
         {
-          eventId: 1,
-          title: "Auxilio Bootcamp",
-          description: "Hands-on engineering bootcamp",
-          type: EVENT_TYPES.Workshop,
-          location: "Main Hall",
-          startDate: "2026-12-01T09:00:00Z",
-          endDate: "2026-12-03T16:00:00Z",
-          capacity: 120,
-          registeredCount: 8,
+          applicationId: 1,
           organizationId: 1,
-          organizationName: "IEEE Helwan Student Branch",
-          deliveryMode: "Hybrid",
-          sessions: [
-            {
-              sessionId: 11,
-              eventId: 1,
-              sessionNo: 1,
-              title: "Opening Keynote",
-              startTime: "2026-12-01T09:00:00Z",
-              endTime: "2026-12-01T12:00:00Z",
-              room: "A1",
-            },
-          ],
+          studentId: 50,
+          studentFirstName: "Tarek",
+          studentLastName: "Nabil",
+          studentEmail: "tarek@indie.dev",
+          status: "Pending",
+          stage: RECRUITMENT_STAGES.HrScreening,
+          message: "Joining CS",
+          appliedAt: "2026-11-24T10:00:00Z",
+          reviewedAt: null,
         },
       ],
-      totalCount: 1,
-      totalPages: 1,
-      page: 1,
-      pageSize: 6,
+      hostedEvents: {
+        items: [
+          {
+            eventId: 1,
+            title: "Auxilio Bootcamp",
+            description: "Hands-on engineering bootcamp",
+            type: EVENT_TYPES.Workshop,
+            location: "Main Hall",
+            startDate: "2026-12-01T09:00:00Z",
+            endDate: "2026-12-03T16:00:00Z",
+            capacity: 120,
+            registeredCount: 8,
+            organizationId: 1,
+            organizationName: "IEEE Helwan Student Branch",
+            deliveryMode: "Hybrid",
+            sessions: [
+              {
+                sessionId: 11,
+                eventId: 1,
+                sessionNo: 1,
+                title: "Opening Keynote",
+                startTime: "2026-12-01T09:00:00Z",
+                endTime: "2026-12-01T12:00:00Z",
+                room: "A1",
+              },
+            ],
+          },
+        ],
+        totalCount: 1,
+        totalPages: 1,
+        page: 1,
+        pageSize: 6,
+      },
     });
 
     render(
@@ -336,6 +352,9 @@ describe("20-Item Plan & Role Dashboards Suite", () => {
       "href",
       "/events/1/sessions/11/attendance",
     );
+    expect(orgsSpy).not.toHaveBeenCalled();
+    expect(appsSpy).not.toHaveBeenCalled();
+    expect(eventsSpy).not.toHaveBeenCalled();
   });
 
   it("guards OrgAdminDashboardPage when viewed by a Student account", () => {

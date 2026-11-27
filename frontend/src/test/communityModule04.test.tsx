@@ -11,8 +11,10 @@ import {
   gamificationApi,
   invalidateGamification,
   notificationsApi,
+  skillsApi,
   studentsApi,
   USER_ROLES,
+  workspacesApi,
   type AuthStudentSummary,
   type LeaderboardEntryDto,
   type NotificationDto,
@@ -25,6 +27,7 @@ import {
 import { AppCoreProviders } from "@/app/providers";
 import {
   CampusLeaderboardPage,
+  GamificationHubPage,
   XpLevelProgressCard,
 } from "@/features/gamification";
 import { computeLevelProgressPercent } from "@/features/gamification/levelProgress";
@@ -140,17 +143,26 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
         email: "layla@cu.edu.eg",
       };
 
-      vi.spyOn(studentsApi, "getById").mockResolvedValue(mockProfile);
-      vi.spyOn(gamificationApi, "getStudentScore").mockResolvedValue({
-        studentId: 55,
-        totalPoints: 1600,
-        level: 5,
-        currentLevelStart: 1600,
-        nextLevelThreshold: 2500,
-        pointsToNext: 900,
-        progress: 0.15,
+      const profileSpy = vi.spyOn(studentsApi, "getById");
+      const scoreSpy = vi.spyOn(gamificationApi, "getStudentScore");
+      const badgesSpy = vi.spyOn(badgesApi, "getStudentBadges");
+      const skillsSpy = vi.spyOn(skillsApi, "getStudentSkills");
+      const catalogSkillsSpy = vi.spyOn(skillsApi, "list");
+
+      vi.spyOn(workspacesApi, "studentPortfolio").mockResolvedValue({
+        profile: mockProfile,
+        skills: [],
+        score: {
+          studentId: 55,
+          totalPoints: 1600,
+          level: 5,
+          currentLevelStart: 1600,
+          nextLevelThreshold: 2500,
+          pointsToNext: 900,
+          progress: 0.15,
+        },
+        badges: [],
       });
-      vi.spyOn(badgesApi, "getStudentBadges").mockResolvedValue([]);
 
       render(
         <MemoryRouter initialEntries={["/students/55"]}>
@@ -163,6 +175,11 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
       );
 
       expect(await screen.findByText("Layla Ibrahim")).toBeInTheDocument();
+      expect(profileSpy).not.toHaveBeenCalled();
+      expect(scoreSpy).not.toHaveBeenCalled();
+      expect(badgesSpy).not.toHaveBeenCalled();
+      expect(skillsSpy).not.toHaveBeenCalled();
+      expect(catalogSkillsSpy).not.toHaveBeenCalled();
       expect(screen.getByText(/vision-language models/i)).toBeInTheDocument();
 
       // Verify opted-in email is rendered as mailto link (THR-I-01)
@@ -179,27 +196,30 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
     });
 
     it("masks Public Portfolio email as private when viewer is not permitted", async () => {
-      vi.spyOn(studentsApi, "getById").mockResolvedValue({
-        studentId: 56,
-        firstName: "Karim",
-        lastName: "Mansour",
-        academicYear: 3,
-        facultyName: "Engineering",
-        universityName: "Ain Shams University",
-        profile: null,
-        interests: [],
-        email: null,
+      vi.spyOn(workspacesApi, "studentPortfolio").mockResolvedValue({
+        profile: {
+          studentId: 56,
+          firstName: "Karim",
+          lastName: "Mansour",
+          academicYear: 3,
+          facultyName: "Engineering",
+          universityName: "Ain Shams University",
+          profile: null,
+          interests: [],
+          email: null,
+        },
+        skills: [],
+        score: {
+          studentId: 56,
+          totalPoints: 200,
+          level: 2,
+          currentLevelStart: 100,
+          nextLevelThreshold: 400,
+          pointsToNext: 200,
+          progress: 0.33,
+        },
+        badges: [],
       });
-      vi.spyOn(gamificationApi, "getStudentScore").mockResolvedValue({
-        studentId: 56,
-        totalPoints: 200,
-        level: 2,
-        currentLevelStart: 100,
-        nextLevelThreshold: 400,
-        pointsToNext: 200,
-        progress: 0.33,
-      });
-      vi.spyOn(badgesApi, "getStudentBadges").mockResolvedValue([]);
 
       render(
         <MemoryRouter initialEntries={["/students/56"]}>
@@ -489,6 +509,78 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
           progress: 0.33,
         }),
       ).toBe(33);
+    });
+
+    it("renders GamificationHubPage in a single workspace request without redundant badge/score/ledger fetches", async () => {
+      const scoreSpy = vi.spyOn(gamificationApi, "getStudentScore");
+      const catalogSpy = vi.spyOn(badgesApi, "getBadgeCatalog");
+      const studentBadgesSpy = vi.spyOn(badgesApi, "getStudentBadges");
+      const txSpy = vi.spyOn(gamificationApi, "getScoreTransactions");
+
+      vi.spyOn(workspacesApi, "gamificationHub").mockResolvedValue({
+        score: {
+          studentId: 10,
+          totalPoints: 250,
+          level: 2,
+          currentLevelStart: 100,
+          nextLevelThreshold: 400,
+          pointsToNext: 150,
+          progress: 50,
+        },
+        badgeCatalog: [
+          {
+            badgeId: 1,
+            name: "First Steps",
+            description: "Earn 100 XP",
+            iconUrl: "",
+            criteriaType: "PointsThreshold",
+            criteriaValue: 100,
+          },
+        ],
+        earnedBadges: [
+          {
+            studentId: 10,
+            badgeId: 1,
+            badgeName: "First Steps",
+            description: "Earn 100 XP",
+            iconUrl: "",
+            criteriaType: "PointsThreshold",
+            criteriaValue: 100,
+            awardedAt: new Date().toISOString(),
+          },
+        ],
+        ledger: {
+          items: [
+            {
+              transactionId: 7,
+              studentId: 10,
+              points: 250,
+              reason: "Session check-in",
+              sourceType: "EventAttendance",
+              createdAt: new Date().toISOString(),
+            },
+          ],
+          page: 1,
+          pageSize: 15,
+          totalCount: 1,
+          totalPages: 1,
+        },
+      });
+
+      render(
+        <MemoryRouter initialEntries={["/gamification"]}>
+          <AppCoreProviders initialUser={MOCK_STUDENT}>
+            <GamificationHubPage />
+          </AppCoreProviders>
+        </MemoryRouter>,
+      );
+
+      expect(await screen.findByText("First Steps")).toBeInTheDocument();
+      expect(screen.getByText("Session check-in")).toBeInTheDocument();
+      expect(scoreSpy).not.toHaveBeenCalled();
+      expect(catalogSpy).not.toHaveBeenCalled();
+      expect(studentBadgesSpy).not.toHaveBeenCalled();
+      expect(txSpy).not.toHaveBeenCalled();
     });
 
     it("invalidates all cross-module gamification query keys via invalidateGamification()", async () => {
