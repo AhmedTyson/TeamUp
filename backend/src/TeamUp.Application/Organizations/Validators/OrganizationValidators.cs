@@ -118,7 +118,10 @@ public sealed class UpdateApplicationStageRequestValidator : AbstractValidator<U
 {
     public UpdateApplicationStageRequestValidator()
     {
-        RuleFor(x => x.Stage).IsInEnum();
+        RuleFor(x => x.Stage)
+            .IsInEnum()
+            .NotEqual(TeamUp.Domain.Enums.RecruitmentStage.Withdrawn)
+            .WithMessage("Reviewers cannot set an application stage to Withdrawn.");
         RuleFor(x => x.EvaluationScore).InclusiveBetween(0m, 10m).When(x => x.EvaluationScore.HasValue);
         RuleFor(x => x.InterviewNotes).MaximumLength(1000);
     }

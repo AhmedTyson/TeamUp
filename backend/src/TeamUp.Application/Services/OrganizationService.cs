@@ -816,7 +816,7 @@ public sealed class OrganizationService(
             if (request.OrganizationUnitId.HasValue)
                 application.OrganizationUnitId = request.OrganizationUnitId.Value > 0 ? request.OrganizationUnitId.Value : null;
             if (request.EvaluationScore.HasValue)
-                application.EvaluationScore = request.EvaluationScore.Value;
+                application.EvaluationScore = Math.Round(request.EvaluationScore.Value, 2, MidpointRounding.AwayFromZero);
             if (request.InterviewNotes is not null)
                 application.InterviewNotes = NormalizeOptional(request.InterviewNotes);
 
@@ -831,6 +831,11 @@ public sealed class OrganizationService(
 
                 if (decisionStatus == ApplicationStatus.Accepted)
                 {
+                    var applicantActive = await db.Students.AsNoTracking()
+                        .AnyAsync(s => s.StudentId == application.StudentId, token);
+                    if (!applicantActive)
+                        throw new ConflictException("Cannot accept an application for an inactive student account.");
+
                     var previousMembership = await db.OrganizationMembers.IgnoreQueryFilters([QueryFilterNames.SoftDelete])
                         .FirstOrDefaultAsync(x => x.OrganizationId == organizationId && x.StudentId == application.StudentId, token);
                     if (previousMembership is null)
@@ -859,7 +864,7 @@ public sealed class OrganizationService(
                 application.ReviewedAt = _time.GetUtcNow().UtcDateTime;
                 application.AddDomainEvent(new ApplicationReviewedDomainEvent(
                     application.StudentId,
-                    application.Organization.Name,
+                    application.Organization?.Name ?? "Organization",
                     "Organization",
                     decisionStatus));
             }
@@ -930,9 +935,9 @@ public sealed class OrganizationService(
             app.ApplicationId,
             app.OrganizationId,
             app.StudentId,
-            app.Student.FirstName,
-            app.Student.LastName,
-            app.Student.Email,
+            app.Student?.FirstName ?? "Former",
+            app.Student?.LastName ?? "Student",
+            app.Student?.Email ?? string.Empty,
             app.Message,
             app.Status,
             app.AppliedAt,
@@ -944,7 +949,7 @@ public sealed class OrganizationService(
             app.Stage,
             app.EvaluationScore,
             app.InterviewNotes,
-            app.Organization.Name);
+            app.Organization?.Name ?? string.Empty);
     }
 
     #endregion

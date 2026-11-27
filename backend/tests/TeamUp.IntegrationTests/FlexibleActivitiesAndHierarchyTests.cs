@@ -233,7 +233,7 @@ public sealed class FlexibleActivitiesAndHierarchyTests(TeamUpApiFactory factory
         var myApps = await Data<List<MembershipApplicationDto>>(myAppsRes);
         Assert.Contains(myApps, a => a.ApplicationId == createdApp.ApplicationId);
 
-        // Delegated HR Head moves candidate Applied -> HrScreening -> Accepted with score & notes
+        // Delegated HR Head moves candidate Applied -> HrScreening -> CommitteeInterview -> Accepted with score & notes
         var screenRes = await hrClient.PatchAsJsonAsync(
             $"/api/v1/organizations/{org.OrganizationId}/applications/{createdApp.ApplicationId}/stage",
             new UpdateApplicationStageRequest(RecruitmentStage.HrScreening, 8.5m, "Strong teamwork motivation"));
@@ -241,6 +241,14 @@ public sealed class FlexibleActivitiesAndHierarchyTests(TeamUpApiFactory factory
         var screened = await Data<MembershipApplicationDto>(screenRes);
         Assert.Equal(RecruitmentStage.HrScreening, screened.Stage);
         Assert.Equal(8.5m, screened.EvaluationScore);
+
+        var interviewRes = await hrClient.PatchAsJsonAsync(
+            $"/api/v1/organizations/{org.OrganizationId}/applications/{createdApp.ApplicationId}/stage",
+            new UpdateApplicationStageRequest(RecruitmentStage.CommitteeInterview, 8.888m, "Passed technical panel", rasUnit.OrganizationUnitId));
+        Assert.Equal(HttpStatusCode.OK, interviewRes.StatusCode);
+        var interviewed = await Data<MembershipApplicationDto>(interviewRes);
+        Assert.Equal(RecruitmentStage.CommitteeInterview, interviewed.Stage);
+        Assert.Equal(8.89m, interviewed.EvaluationScore);
 
         var acceptRes = await hrClient.PatchAsJsonAsync(
             $"/api/v1/organizations/{org.OrganizationId}/applications/{createdApp.ApplicationId}/stage",
