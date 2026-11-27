@@ -232,4 +232,28 @@ public sealed class PersistenceHardeningTests
 
         Assert.Single(dispatcher.Dispatched);
     }
+
+    [Fact]
+    public async Task PostCommitDomainEventHandlerFailure_DoesNotFailCommittedTransaction()
+    {
+        using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(conn).Options;
+        var dispatcher = new RecordingDispatcher { OnDispatch = _ => throw new InvalidOperationException("SMTP down") };
+        await using var db = new AppDbContext(options, dispatcher);
+        await db.Database.EnsureCreatedAsync();
+
+        var org = new Organization { Name = "Resilient Org", Description = "d", Category = "Tech" };
+        org.AddDomainEvent(new WaitlistPromotedDomainEvent(1, 1, "Evt"));
+        db.Organizations.Add(org);
+
+        await db.ExecuteInTransactionAsync(IsolationLevel.Serializable, async token =>
+        {
+            await db.SaveChangesAsync(token);
+        });
+
+        Assert.Single(dispatcher.Dispatched);
+        db.ChangeTracker.Clear();
+        Assert.True(await db.Organizations.AnyAsync(o => o.Name == "Resilient Org"));
+    }
 }

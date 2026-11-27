@@ -96,7 +96,20 @@ public class AppDbContext(
 
         var snapshot = _deferredDomainEvents.ToList();
         _deferredDomainEvents.Clear();
-        await dispatcher.DispatchAsync(snapshot, cancellationToken);
+
+        // Runs strictly AFTER the transaction committed: the primary write already succeeded, so a failing
+        // side effect (SMTP outage, notification insert, ...) must never turn it into a 500. The dispatcher
+        // logs each handler failure; we isolate per event so one bad handler cannot starve the others.
+        foreach (var domainEvent in snapshot)
+        {
+            try
+            {
+                await dispatcher.DispatchAsync([domainEvent], cancellationToken);
+            }
+            catch (Exception) when (!cancellationToken.IsCancellationRequested)
+            {
+            }
+        }
     }
 
     public void ClearDeferredDomainEvents()
