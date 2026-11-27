@@ -97,3 +97,18 @@ public sealed class ResetPasswordRequestValidator : AbstractValidator<ResetPassw
             .Matches("[0-9]").WithMessage("New password must contain at least one digit.");
     }
 }
+
+public sealed class VerifyEmailRequestValidator : AbstractValidator<VerifyEmailRequest>
+{
+    public VerifyEmailRequestValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email address is required.")
+            .EmailAddress().WithMessage("A valid email address is required.")
+            .MaximumLength(150).WithMessage("Email must not exceed 150 characters.");
+
+        RuleFor(x => x.Token)
+            .NotEmpty().WithMessage("Verification token is required.")
+            .MaximumLength(512).WithMessage("Verification token is invalid.");
+    }
+}

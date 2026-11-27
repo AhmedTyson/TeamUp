@@ -50,7 +50,8 @@ public sealed record StudentDetailDto(
     bool ReceiveLeaderboardDigests = true,
     bool ReceiveProjectMatchEmails = true,
     AffiliationType AffiliationType = AffiliationType.UniversityStudent,
-    string? City = null
+    string? City = null,
+    bool IsEmailVerified = false
 );
 
 public sealed record StudentCardDto(
@@ -66,7 +67,8 @@ public sealed record StudentCardDto(
     IReadOnlyList<string> Interests,
     string? PhotoUrl = null,
     AffiliationType AffiliationType = AffiliationType.UniversityStudent,
-    string? City = null
+    string? City = null,
+    bool IsEmailVerified = false
 );
 
 public sealed record PublicStudentShowcaseDto(
@@ -83,7 +85,8 @@ public sealed record PublicStudentShowcaseDto(
     int TotalPoints,
     int Level,
     int BadgesCount,
-    IReadOnlyList<string> TopSkills
+    IReadOnlyList<string> TopSkills,
+    bool IsEmailVerified = false
 );
 
 public sealed record StudentPublicProfileDto(
@@ -97,7 +100,8 @@ public sealed record StudentPublicProfileDto(
     IReadOnlyList<string> Interests,
     string? Email = null,
     AffiliationType AffiliationType = AffiliationType.UniversityStudent,
-    string? City = null
+    string? City = null,
+    bool IsEmailVerified = false
 );
 
 public sealed record StudentDirectoryQuery(

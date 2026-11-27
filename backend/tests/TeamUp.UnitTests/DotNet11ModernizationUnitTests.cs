@@ -18,6 +18,7 @@ using TeamUp.Application.Common.Security;
 using TeamUp.Application.Common.Validation;
 using TeamUp.Application.Gamification;
 using TeamUp.Application.Services;
+using TeamUp.Domain.Enums;
 using TeamUp.Application.Universities;
 using TeamUp.Domain.Common;
 using TeamUp.Domain.Entities;
@@ -280,5 +281,88 @@ public sealed class DotNet11ModernizationUnitTests : IDisposable
         Assert.Contains("&lt;script&gt;alert(1)&lt;/script&gt;", rowsHtml.Html, StringComparison.Ordinal);
         Assert.Contains("#01", rowsHtml.Html, StringComparison.Ordinal);
         Assert.Contains("1,200", rowsHtml.Html, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AuthService_EmailVerification_SucceedsBeforeExpiryAndRejectsAfterExpiryOrReplay()
+    {
+        var fakeTime = new FakeTimeProvider(new DateTimeOffset(2026, 11, 27, 10, 0, 0, TimeSpan.Zero));
+        await using var db = CreateDb(fakeTime);
+
+        var student = new Student
+        {
+            Email = "verify-unit@cu.edu.eg",
+            PasswordHash = "hash",
+            FirstName = "Nour",
+            LastName = "Hassan",
+            AcademicYear = 3,
+            SecurityStamp = Guid.NewGuid(),
+        };
+        db.Students.Add(student);
+        await db.SaveChangesAsync();
+
+        using var memCache = new MemoryCache(new MemoryCacheOptions());
+        var jwt = new JwtTokenService(Options.Create(TestJwtOptions), fakeTime);
+        var emailSender = new InMemoryEmailSender(NullLogger<InMemoryEmailSender>.Instance, fakeTime);
+        var orgAuth = new OrganizationAuthorizationService(db);
+        var stampValidator = new SecurityStampValidator(db, memCache);
+        var auth = new AuthService(
+            db, jwt, new PasswordHasher<Student>(), emailSender, Options.Create(TestJwtOptions), orgAuth, stampValidator,
+            NullLogger<AuthService>.Instance, fakeTime);
+
+        var sendRes = await auth.SendVerificationEmailAsync(student.StudentId);
+        Assert.False(sendRes.AlreadyVerified);
+        var tok1 = emailSender.GetLastVerificationToken(student.Email);
+        Assert.False(string.IsNullOrWhiteSpace(tok1));
+
+        // Advance past default 60-minute expiry window -> expired token rejected cleanly
+        fakeTime.Advance(TimeSpan.FromMinutes(61));
+        await Assert.ThrowsAsync<UnauthorizedException>(() =>
+            auth.VerifyEmailAsync(new VerifyEmailRequest(student.Email, tok1!)));
+
+        // Issue fresh token and verify within validity window
+        await auth.SendVerificationEmailAsync(student.StudentId);
+        var tok2 = emailSender.GetLastVerificationToken(student.Email);
+        Assert.NotNull(tok2);
+
+        await auth.VerifyEmailAsync(new VerifyEmailRequest(student.Email, tok2!));
+        var reloaded = await db.Students.SingleAsync(s => s.StudentId == student.StudentId);
+        Assert.True(reloaded.IsEmailVerified);
+        Assert.Null(reloaded.EmailVerificationToken);
+
+        var resendRes = await auth.SendVerificationEmailAsync(student.StudentId);
+        Assert.True(resendRes.AlreadyVerified);
+    }
+
+    [Fact]
+    public async Task OrganizationStageValidatorAndService_RejectsWithdrawnAndSoftDeletedApplicantsGracefully()
+    {
+        var validator = new TeamUp.Application.Organizations.Validators.UpdateApplicationStageRequestValidator();
+        var invalidResult = validator.Validate(new TeamUp.Application.Organizations.UpdateApplicationStageRequest(RecruitmentStage.Withdrawn));
+        Assert.False(invalidResult.IsValid);
+
+        var fakeTime = new FakeTimeProvider(new DateTimeOffset(2026, 11, 27, 11, 0, 0, TimeSpan.Zero));
+        await using var db = CreateDb(fakeTime);
+
+        var admin = new Student { Email = "lead@org.eg", PasswordHash = "h", FirstName = "A", LastName = "B", AcademicYear = 4, Role = UserRole.PlatformAdmin };
+        var applicant = new Student { Email = "gone@org.eg", PasswordHash = "h", FirstName = "C", LastName = "D", AcademicYear = 2 };
+        var org = new Organization { Name = "IEEE Test Branch", Description = "Desc", Category = "Engineering" };
+        db.Students.AddRange(admin, applicant);
+        db.Organizations.Add(org);
+        await db.SaveChangesAsync();
+
+        var app = new MembershipApplication { OrganizationId = org.OrganizationId, StudentId = applicant.StudentId, Stage = RecruitmentStage.CommitteeInterview };
+        db.MembershipApplications.Add(app);
+        await db.SaveChangesAsync();
+
+        // Soft-delete applicant before acceptance -> ConflictException (409), never NullReferenceException (500)
+        applicant.DeletedAt = fakeTime.GetUtcNow().UtcDateTime;
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+
+        var service = new OrganizationService(db, new OrganizationAuthorizationService(db), new SecurityStampValidator(db, new MemoryCache(new MemoryCacheOptions())), new AuditLogService(db, new NullRequestContext()), fakeTime);
+        await Assert.ThrowsAsync<ConflictException>(() =>
+            service.UpdateApplicationStageAsync(org.OrganizationId, app.ApplicationId, admin.StudentId, nameof(UserRole.PlatformAdmin),
+                new TeamUp.Application.Organizations.UpdateApplicationStageRequest(RecruitmentStage.Accepted, 9.129m, "Notes")));
     }
 }

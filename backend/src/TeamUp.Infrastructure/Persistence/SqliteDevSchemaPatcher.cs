@@ -25,6 +25,9 @@ public static class SqliteDevSchemaPatcher
         ("Student", "ReceiveProjectMatchEmails", "ALTER TABLE \"Student\" ADD COLUMN \"ReceiveProjectMatchEmails\" INTEGER NOT NULL DEFAULT 1;"),
         ("Student", "AffiliationType", "ALTER TABLE \"Student\" ADD COLUMN \"AffiliationType\" TEXT NOT NULL DEFAULT 'UniversityStudent';"),
         ("Student", "City", "ALTER TABLE \"Student\" ADD COLUMN \"City\" TEXT NULL;"),
+        ("Student", "EmailVerifiedAtUtc", "ALTER TABLE \"Student\" ADD COLUMN \"EmailVerifiedAtUtc\" TEXT NULL;"),
+        ("Student", "EmailVerificationToken", "ALTER TABLE \"Student\" ADD COLUMN \"EmailVerificationToken\" TEXT NULL;"),
+        ("Student", "EmailVerificationTokenExpiresAt", "ALTER TABLE \"Student\" ADD COLUMN \"EmailVerificationTokenExpiresAt\" TEXT NULL;"),
         ("Organization", "Scope", "ALTER TABLE \"Organization\" ADD COLUMN \"Scope\" TEXT NOT NULL DEFAULT 'UniversityBranch';"),
         ("Organization", "UniversityId", "ALTER TABLE \"Organization\" ADD COLUMN \"UniversityId\" INTEGER NULL;"),
         ("Organization", "City", "ALTER TABLE \"Organization\" ADD COLUMN \"City\" TEXT NULL;"),
@@ -153,6 +156,9 @@ public static class SqliteDevSchemaPatcher
                 "RefreshTokenExpiresAt" TEXT NULL,
                 "PasswordResetToken" TEXT NULL,
                 "PasswordResetTokenExpiresAt" TEXT NULL,
+                "EmailVerifiedAtUtc" TEXT NULL,
+                "EmailVerificationToken" TEXT NULL,
+                "EmailVerificationTokenExpiresAt" TEXT NULL,
                 "DeletedAt" TEXT NULL,
                 "FailedLoginCount" INTEGER NOT NULL DEFAULT 0,
                 "LockoutEndUtc" TEXT NULL,
@@ -170,7 +176,8 @@ public static class SqliteDevSchemaPatcher
             INSERT INTO "Student" (
                 "StudentId", "Email", "PasswordHash", "FirstName", "LastName", "AcademicYear", "Role",
                 "SecurityStamp", "ShowEmailInDirectory", "FacultyId", "RefreshToken", "RefreshTokenExpiresAt",
-                "PasswordResetToken", "PasswordResetTokenExpiresAt", "DeletedAt", "FailedLoginCount",
+                "PasswordResetToken", "PasswordResetTokenExpiresAt", "EmailVerifiedAtUtc",
+                "EmailVerificationToken", "EmailVerificationTokenExpiresAt", "DeletedAt", "FailedLoginCount",
                 "LockoutEndUtc", "PreviousRefreshToken", "PreviousRefreshTokenRotatedAt",
                 "EmailNotificationsEnabled", "ReceiveLeaderboardDigests", "ReceiveProjectMatchEmails",
                 "AffiliationType", "City"
@@ -178,7 +185,8 @@ public static class SqliteDevSchemaPatcher
             SELECT
                 "StudentId", "Email", "PasswordHash", "FirstName", "LastName", "AcademicYear", "Role",
                 "SecurityStamp", "ShowEmailInDirectory", "FacultyId", "RefreshToken", "RefreshTokenExpiresAt",
-                "PasswordResetToken", "PasswordResetTokenExpiresAt", "DeletedAt", "FailedLoginCount",
+                "PasswordResetToken", "PasswordResetTokenExpiresAt", "EmailVerifiedAtUtc",
+                "EmailVerificationToken", "EmailVerificationTokenExpiresAt", "DeletedAt", "FailedLoginCount",
                 "LockoutEndUtc", "PreviousRefreshToken", "PreviousRefreshTokenRotatedAt",
                 "EmailNotificationsEnabled", "ReceiveLeaderboardDigests", "ReceiveProjectMatchEmails",
                 "AffiliationType", "City"

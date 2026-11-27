@@ -34,11 +34,22 @@ public sealed class EmailOptions
         set => field = value?.Trim().TrimEnd('/') ?? string.Empty;
     } = "https://teamup.edu/reset-password";
 
+    public string VerifyEmailUrlBase
+    {
+        get;
+        set => field = value?.Trim().TrimEnd('/') ?? string.Empty;
+    } = string.Empty;
+
     public string FrontendBaseUrl
     {
         get;
         set => field = value?.Trim().TrimEnd('/') ?? string.Empty;
     } = "https://teamup-ieee.vercel.app";
+
+    public string ResolveVerifyEmailUrlBase() =>
+        !string.IsNullOrWhiteSpace(VerifyEmailUrlBase)
+            ? VerifyEmailUrlBase
+            : $"{FrontendBaseUrl.TrimEnd('/')}/auth/verify-email";
 }
 
 public sealed class AdminOptions

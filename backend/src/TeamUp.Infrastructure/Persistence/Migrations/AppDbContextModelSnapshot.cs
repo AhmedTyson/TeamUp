@@ -16,7 +16,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261126180429_HardenCoverImageUrlMaxLength";
+    public override string LastMigrationId => "20261126232753_AddStudentEmailVerification";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -1190,6 +1190,16 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .ValueGeneratedOnAdd()
                     .HasColumnType("bit")
                     .HasDefaultValue(true);
+
+                b.Property<string>("EmailVerificationToken")
+                    .HasMaxLength(256)
+                    .HasColumnType("nvarchar(256)");
+
+                b.Property<DateTime?>("EmailVerificationTokenExpiresAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<DateTime?>("EmailVerifiedAtUtc")
+                    .HasColumnType("datetime2");
 
                 b.Property<int?>("FacultyId")
                     .HasColumnType("int");

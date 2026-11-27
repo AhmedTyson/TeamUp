@@ -37,5 +37,6 @@ public sealed record LeaderboardEntryDto(
     string UniversityName,
     int TotalPoints,
     int Level,
-    string? PhotoUrl = null
+    string? PhotoUrl = null,
+    bool IsEmailVerified = false
 );

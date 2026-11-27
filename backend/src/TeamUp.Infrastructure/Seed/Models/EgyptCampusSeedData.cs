@@ -58,6 +58,7 @@ public sealed record StudentSeedItem
     public string? City { get; init; }
     public string? FacultyCode { get; init; }
     public int Points { get; init; }
+    public bool? IsEmailVerified { get; init; }
     public string? PhotoUrl { get; init; }
     public string? Bio { get; init; }
     public string? GitHubUrl { get; init; }

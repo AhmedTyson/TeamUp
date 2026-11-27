@@ -31,6 +31,10 @@ public class Student : BaseEntity
     public DateTime? LockoutEndUtc { get; set; }
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetTokenExpiresAt { get; set; }
+    public DateTime? EmailVerifiedAtUtc { get; set; }
+    public string? EmailVerificationToken { get; set; }
+    public DateTime? EmailVerificationTokenExpiresAt { get; set; }
+    public bool IsEmailVerified => EmailVerifiedAtUtc.HasValue;
     public ICollection<StudentInterest> Interests { get; set; } = [];
     public ICollection<StudentSkill> Skills { get; set; } = [];
 }

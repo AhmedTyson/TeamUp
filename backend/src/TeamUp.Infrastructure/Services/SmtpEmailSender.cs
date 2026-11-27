@@ -24,6 +24,9 @@ public sealed partial class SmtpEmailSender(
     [LoggerMessage(Level = LogLevel.Information, Message = "Dispatched password reset email via SMTP to {Email}")]
     private static partial void LogPasswordResetSent(ILogger logger, string email);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Dispatched email verification message via SMTP to {Email}")]
+    private static partial void LogEmailVerificationSent(ILogger logger, string email);
+
     [LoggerMessage(Level = LogLevel.Information, Message = "Dispatched templated email '{Subject}' with {AttachmentCount} attachment(s) via SMTP to {Email}")]
     private static partial void LogTemplatedEmailSent(ILogger logger, string subject, int attachmentCount, string email);
 
@@ -78,6 +81,56 @@ public sealed partial class SmtpEmailSender(
 
         await client.SendMailAsync(message, ct);
         LogPasswordResetSent(logger, toEmail);
+    }
+
+    public async Task SendEmailVerificationAsync(EmailVerificationMessage message, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(_email.SmtpHost))
+            throw new InvalidOperationException("Email:SmtpHost must be configured when Email:Provider is Smtp.");
+
+        var verifyBase = _email.ResolveVerifyEmailUrlBase();
+        var separator = verifyBase.Contains('?') ? "&" : "?";
+        var verifyUrl = $"{verifyBase}{separator}email={Uri.EscapeDataString(message.ToEmail)}&token={Uri.EscapeDataString(message.VerificationToken)}";
+
+        var htmlBody = await templateRenderer.RenderEmailAsync(
+            "EmailVerification.html",
+            new Dictionary<string, string>
+            {
+                ["FirstName"] = message.FirstName,
+                ["UniversityName"] = message.UniversityName,
+                ["FacultyName"] = message.FacultyName,
+                ["Email"] = message.ToEmail,
+                ["VerifyUrl"] = verifyUrl,
+                ["ExpiresMinutes"] = message.ExpiresMinutes.ToString(),
+                ["VerificationCode"] = message.VerificationToken
+            },
+            ct);
+
+        var plainText = $"Verify your TeamUp campus email\nHello {message.FirstName},\nAccount: {message.ToEmail}\nInstitution: {message.UniversityName} ({message.FacultyName})\nLink (valid for {message.ExpiresMinutes} minutes): {verifyUrl}\nVerification Code: {message.VerificationToken}";
+
+        using var mail = BuildMailMessage(
+            _email.FromAddress,
+            _email.FromName,
+            message.ToEmail,
+            "Verify your TeamUp campus email",
+            htmlBody,
+            plainText,
+            attachments: null,
+            _email.FrontendBaseUrl);
+
+        using var client = new SmtpClient(_email.SmtpHost, _email.SmtpPort)
+        {
+            EnableSsl = _email.UseSsl,
+            DeliveryMethod = SmtpDeliveryMethod.Network
+        };
+
+        if (!string.IsNullOrWhiteSpace(_email.Username))
+        {
+            client.Credentials = new NetworkCredential(_email.Username, _email.Password);
+        }
+
+        await client.SendMailAsync(mail, ct);
+        LogEmailVerificationSent(logger, message.ToEmail);
     }
 
     public async Task SendTemplatedEmailAsync(EmailDispatchRequest request, CancellationToken ct = default)

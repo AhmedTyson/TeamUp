@@ -1644,3 +1644,40 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126232753_AddStudentEmailVerification'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [EmailVerificationToken] nvarchar(256) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126232753_AddStudentEmailVerification'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [EmailVerificationTokenExpiresAt] datetime2 NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126232753_AddStudentEmailVerification'
+)
+BEGIN
+    ALTER TABLE [Student] ADD [EmailVerifiedAtUtc] datetime2 NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126232753_AddStudentEmailVerification'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261126232753_AddStudentEmailVerification', N'11.0.0');
+END;
+
+COMMIT;
+GO
+

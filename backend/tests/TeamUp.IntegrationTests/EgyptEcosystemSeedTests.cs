@@ -102,6 +102,8 @@ public class EgyptEcosystemSeedTests
         Assert.Contains(students, s => s.AffiliationType == AffiliationType.IndependentLearner);
         Assert.Contains(students, s => s.AffiliationType == AffiliationType.FreshGraduate);
         Assert.Contains(students, s => s.AffiliationType == AffiliationType.HighSchoolTech);
+        Assert.Contains(students, s => s.IsEmailVerified);
+        Assert.Contains(students, s => !s.IsEmailVerified);
 
         // Integrity on projects, events, and 4 Kanban recruitment stages
         Assert.True(projCount1 >= 15);
@@ -134,5 +136,27 @@ public class EgyptEcosystemSeedTests
             Assert.DoesNotContain("fake", p.Description, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("dummy", p.Description, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    [Fact]
+    public async Task SeedAsync_InDevelopmentMode_KeepsCredentialTestingAccountsUnverified()
+    {
+        using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        await using var db = CreateSqliteDb(conn);
+
+        var hasher = new PasswordHasher<Student>();
+        var devHash = hasher.HashPassword(new Student { Email = "seed@teamup.local" }, "DevPass2026!");
+        await DbSeeder.SeedAsync(db, devHash, isDevelopment: true);
+
+        var admin = await db.Students.SingleAsync(s => s.Email == "admin@teamup.local");
+        var orgAdminDemo = await db.Students.SingleAsync(s => s.Email == "nour@cu.edu.eg");
+        Assert.False(admin.IsEmailVerified);
+        Assert.False(orgAdminDemo.IsEmailVerified);
+
+        var verifiedCount = await db.Students.CountAsync(s => s.EmailVerifiedAtUtc != null);
+        var unverifiedCount = await db.Students.CountAsync(s => s.EmailVerifiedAtUtc == null);
+        Assert.True(verifiedCount > 20, $"Expected > 20 verified seeded students, got {verifiedCount}");
+        Assert.True(unverifiedCount >= 2, $"Expected >= 2 unverified accounts including credential testers, got {unverifiedCount}");
     }
 }

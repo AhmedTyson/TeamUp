@@ -50,7 +50,7 @@ public sealed class ProfileService(
             AffiliationFormatting.GetUniversityDisplay(student),
             profileDto, interests, student.ShowEmailInDirectory,
             student.EmailNotificationsEnabled, student.ReceiveLeaderboardDigests, student.ReceiveProjectMatchEmails,
-            student.AffiliationType, student.City);
+            student.AffiliationType, student.City, student.IsEmailVerified);
     }
 
     public async Task<StudentDetailDto> UpdateMyAccountAsync(int studentId, UpdateStudentRequest req, CancellationToken ct = default)
@@ -153,6 +153,7 @@ public sealed class ProfileService(
                 s.FacultyId,
                 s.AffiliationType,
                 s.City,
+                IsEmailVerified = s.EmailVerifiedAtUtc != null,
                 FacultyName = s.Faculty != null ? s.Faculty.Name : null,
                 UniversityName = s.Faculty != null ? s.Faculty.University.Name : null,
                 Interests = s.Interests.Select(i => i.Interest).ToList(),
@@ -173,7 +174,8 @@ public sealed class ProfileService(
             r.Interests,
             r.PhotoUrl,
             r.AffiliationType,
-            r.City)).ToList();
+            r.City,
+            r.IsEmailVerified)).ToList();
 
         return new PagedResult<StudentCardDto>(items, page.SafePage, page.SafePageSize, total);
     }
@@ -195,6 +197,7 @@ public sealed class ProfileService(
                 s.AcademicYear,
                 s.AffiliationType,
                 s.City,
+                IsEmailVerified = s.EmailVerifiedAtUtc != null,
                 FacultyName = s.Faculty != null ? s.Faculty.Name : null,
                 FacultyCode = s.Faculty != null ? s.Faculty.Code : null,
                 UniversityName = s.Faculty != null ? s.Faculty.University.Name : null,
@@ -238,7 +241,8 @@ public sealed class ProfileService(
                     row.TotalPoints,
                     level,
                     row.BadgesCount,
-                    row.TopSkills);
+                    row.TopSkills,
+                    row.IsEmailVerified);
             })
             .ToList();
     }
@@ -279,7 +283,8 @@ public sealed class ProfileService(
             interests,
             visibleEmail,
             student.AffiliationType,
-            student.City);
+            student.City,
+            student.IsEmailVerified);
     }
 
     public async Task DeleteStudentAccountAsync(int studentId, CancellationToken ct = default)

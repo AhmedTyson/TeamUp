@@ -63,4 +63,22 @@ public sealed class AuthController(IAuthService authService) : BaseApiController
         await authService.ResetPasswordAsync(request, ct);
         return OkMessage("Password reset successfully. You can now login with your new credentials.");
     }
+
+    [HttpPost("send-verification-email")]
+    [Authorize]
+    [ProducesOk<SendVerificationEmailResponse>]
+    public async Task<IActionResult> SendVerificationEmail(CancellationToken ct)
+    {
+        var result = await authService.SendVerificationEmailAsync(CurrentStudentId, ct);
+        return OkResponse(result, result.Message);
+    }
+
+    [HttpPost("verify-email")]
+    [AllowAnonymous]
+    [ProducesOk]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request, CancellationToken ct)
+    {
+        await authService.VerifyEmailAsync(request, ct);
+        return OkMessage("Email verified successfully. Your Verified Student badge is now active.");
+    }
 }

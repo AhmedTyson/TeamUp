@@ -22,6 +22,16 @@ public static class DbSeeder
     public const string EcosystemSeedEntityType = "SystemSeed";
 
     /// <summary>
+    /// Credentials-testing accounts (used by PlatformAdmin & OrgAdmin quick-fill demos) MUST stay unverified
+    /// at seed time so testers can exercise the full campus email verification workflow end to end.
+    /// </summary>
+    public static readonly IReadOnlySet<string> CredentialTestingEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "admin@teamup.local",
+        "nour@cu.edu.eg",
+    };
+
+    /// <summary>
     /// Seeds the full Egyptian campus ecosystem catalog and ensures the bootstrap PlatformAdmin account exists.
     /// Outside Development (<paramref name="isDevelopment"/> false), existing passwords are never overwritten,
     /// no demo OrgAdmin credential is created, and all showcase accounts receive unique unusable random hashes.
@@ -54,6 +64,7 @@ public static class DbSeeder
                 Role = UserRole.PlatformAdmin,
                 FacultyId = firstFaculty.FacultyId,
                 SecurityStamp = Guid.NewGuid(),
+                EmailVerifiedAtUtc = null,
             };
             db.Students.Add(admin);
             await db.SaveChangesAsync(ct);
@@ -74,6 +85,7 @@ public static class DbSeeder
         else if (isDevelopment)
         {
             existingAdmin.PasswordHash = adminPasswordHash;
+            existingAdmin.EmailVerifiedAtUtc = null;
             await db.SaveChangesAsync(ct);
         }
 
@@ -94,6 +106,7 @@ public static class DbSeeder
                 Role = UserRole.OrgAdmin,
                 FacultyId = firstFaculty.FacultyId,
                 SecurityStamp = Guid.NewGuid(),
+                EmailVerifiedAtUtc = null,
             };
             db.Students.Add(existingOrgAdmin);
             await db.SaveChangesAsync(ct);
@@ -101,6 +114,7 @@ public static class DbSeeder
         else
         {
             existingOrgAdmin.PasswordHash = adminPasswordHash;
+            existingOrgAdmin.EmailVerifiedAtUtc = null;
             await db.SaveChangesAsync(ct);
         }
 
@@ -333,6 +347,7 @@ public static class DbSeeder
             s => s.Email,
             s => s.DeletedAt is null);
 
+        var studentIndex = 0;
         foreach (var def in seedStudents)
         {
             var affiliation = Enum.TryParse<AffiliationType>(def.AffiliationType, true, out var parsedAff)
@@ -343,11 +358,20 @@ public static class DbSeeder
                 ? fac.FacultyId
                 : null;
 
+            var normalizedEmail = def.Email.Trim().ToLowerInvariant();
+            var isCredentialAccount = CredentialTestingEmails.Contains(normalizedEmail);
+            // ~2/3 of seeded ecosystem students start verified; credential-testing accounts remain unverified.
+            var shouldSeedVerified = !isCredentialAccount && (def.IsEmailVerified ?? (studentIndex % 3 != 2));
+            var verifiedTimestamp = shouldSeedVerified
+                ? DateTime.UtcNow.AddDays(-(7 + (studentIndex % 30)))
+                : (DateTime?)null;
+            studentIndex++;
+
             if (!studentsByEmail.TryGetValue(def.Email, out var student))
             {
                 student = new Student
                 {
-                    Email = def.Email.Trim().ToLowerInvariant(),
+                    Email = normalizedEmail,
                     PasswordHash = devPasswordHash ?? CreateUnusablePasswordHash(),
                     FirstName = def.FirstName,
                     LastName = def.LastName,
@@ -358,6 +382,7 @@ public static class DbSeeder
                     ShowEmailInDirectory = false,
                     FacultyId = facultyId,
                     SecurityStamp = Guid.NewGuid(),
+                    EmailVerifiedAtUtc = verifiedTimestamp,
                 };
                 db.Students.Add(student);
                 studentsByEmail[student.Email] = student;
@@ -371,6 +396,10 @@ public static class DbSeeder
                 student.AffiliationType = affiliation;
                 if (string.IsNullOrWhiteSpace(student.City) && !string.IsNullOrWhiteSpace(def.City))
                     student.City = def.City;
+                if (isCredentialAccount)
+                    student.EmailVerifiedAtUtc = null;
+                else if (shouldSeedVerified && student.EmailVerifiedAtUtc is null)
+                    student.EmailVerifiedAtUtc = verifiedTimestamp;
             }
         }
 

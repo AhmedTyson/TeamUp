@@ -15,9 +15,19 @@ public sealed record EmailDispatchRequest(
     string? PlainTextBody = null,
     IReadOnlyList<EmailAttachment>? Attachments = null);
 
+public sealed record EmailVerificationMessage(
+    string ToEmail,
+    string FirstName,
+    string UniversityName,
+    string FacultyName,
+    string VerificationToken,
+    int ExpiresMinutes);
+
 public interface IEmailSender
 {
     Task SendPasswordResetEmailAsync(string toEmail, string resetToken, CancellationToken ct = default);
+
+    Task SendEmailVerificationAsync(EmailVerificationMessage message, CancellationToken ct = default);
 
     Task SendTemplatedEmailAsync(EmailDispatchRequest request, CancellationToken ct = default);
 }

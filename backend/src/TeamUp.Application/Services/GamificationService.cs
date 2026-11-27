@@ -146,6 +146,7 @@ public sealed class GamificationService(
                 s.LastName,
                 s.AffiliationType,
                 s.City,
+                IsEmailVerified = s.EmailVerifiedAtUtc != null,
                 FacultyName = s.Faculty != null ? s.Faculty.Name : null,
                 UniversityName = s.Faculty != null ? s.Faculty.University.Name : null,
                 PhotoUrl = s.Profile != null ? s.Profile.PhotoUrl : null,
@@ -172,7 +173,8 @@ public sealed class GamificationService(
                     row.UniversityName ?? (string.IsNullOrWhiteSpace(row.City) ? "Egypt Open Community" : $"{row.City} Community"),
                     row.TotalPoints,
                     metrics.Level,
-                    row.PhotoUrl);
+                    row.PhotoUrl,
+                    row.IsEmailVerified);
             })
             .ToList();
 

@@ -8,4 +8,6 @@ public interface IAuthService
     Task LogoutAsync(int studentId, CancellationToken ct = default);
     Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest req, CancellationToken ct = default);
     Task ResetPasswordAsync(ResetPasswordRequest req, CancellationToken ct = default);
+    Task<SendVerificationEmailResponse> SendVerificationEmailAsync(int studentId, CancellationToken ct = default);
+    Task VerifyEmailAsync(VerifyEmailRequest req, CancellationToken ct = default);
 }

@@ -28,11 +28,16 @@ public sealed partial class InMemoryEmailSender(ILogger<InMemoryEmailSender> log
     [LoggerMessage(Level = LogLevel.Information, Message = "Dispatched password reset message via development sink to {Email}")]
     private static partial void LogPasswordResetDispatched(ILogger logger, string email);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Dispatched email verification message via development sink to {Email}")]
+    private static partial void LogEmailVerificationDispatched(ILogger logger, string email);
+
     [LoggerMessage(Level = LogLevel.Information, Message = "Recorded templated email '{Subject}' with {AttachmentCount} attachment(s) via development sink to {Email}")]
     private static partial void LogTemplatedEmailRecorded(ILogger logger, string subject, int attachmentCount, string email);
 
     private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
     private readonly ConcurrentDictionary<string, (string Token, DateTime ExpiresAtUtc)> _lastResetTokens =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, (string Token, DateTime ExpiresAtUtc)> _lastVerificationTokens =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<RecordedEmailDispatch> _sentMessages = new();
 
@@ -41,6 +46,15 @@ public sealed partial class InMemoryEmailSender(ILogger<InMemoryEmailSender> log
         PurgeExpired();
         _lastResetTokens[toEmail] = (resetToken, _time.GetUtcNow().UtcDateTime.Add(TokenRetentionWindow));
         LogPasswordResetDispatched(logger, toEmail);
+        return Task.CompletedTask;
+    }
+
+    public Task SendEmailVerificationAsync(EmailVerificationMessage message, CancellationToken ct = default)
+    {
+        PurgeExpired();
+        var ttl = TimeSpan.FromMinutes(Math.Clamp(message.ExpiresMinutes, 15, 1440));
+        _lastVerificationTokens[message.ToEmail] = (message.VerificationToken, _time.GetUtcNow().UtcDateTime.Add(ttl));
+        LogEmailVerificationDispatched(logger, message.ToEmail);
         return Task.CompletedTask;
     }
 
@@ -88,9 +102,20 @@ public sealed partial class InMemoryEmailSender(ILogger<InMemoryEmailSender> log
         return null;
     }
 
+    public string? GetLastVerificationToken(string email)
+    {
+        PurgeExpired();
+        if (_lastVerificationTokens.TryGetValue(email, out var entry) && entry.ExpiresAtUtc > _time.GetUtcNow().UtcDateTime)
+            return entry.Token;
+
+        _lastVerificationTokens.TryRemove(email, out _);
+        return null;
+    }
+
     public void Clear()
     {
         _lastResetTokens.Clear();
+        _lastVerificationTokens.Clear();
         while (_sentMessages.TryDequeue(out _))
         {
         }
@@ -103,6 +128,11 @@ public sealed partial class InMemoryEmailSender(ILogger<InMemoryEmailSender> log
         {
             if (kvp.Value.ExpiresAtUtc <= now)
                 _lastResetTokens.TryRemove(kvp.Key, out _);
+        }
+        foreach (var kvp in _lastVerificationTokens)
+        {
+            if (kvp.Value.ExpiresAtUtc <= now)
+                _lastVerificationTokens.TryRemove(kvp.Key, out _);
         }
     }
 }

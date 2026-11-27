@@ -9,4 +9,5 @@ public class JwtOptions
     public int AccessTokenMinutes { get; set; } = 15;
     public int RefreshTokenDays { get; set; } = 7;
     public int PasswordResetTokenMinutes { get; set; } = 15;
+    public int EmailVerificationTokenMinutes { get; set; } = 60;
 }

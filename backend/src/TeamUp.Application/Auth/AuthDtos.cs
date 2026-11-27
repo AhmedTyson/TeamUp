@@ -39,6 +39,16 @@ public sealed record ResetPasswordRequest(
     string NewPassword
 );
 
+public sealed record SendVerificationEmailResponse(
+    string Message,
+    bool AlreadyVerified = false
+);
+
+public sealed record VerifyEmailRequest(
+    string Email,
+    string Token
+);
+
 public sealed record StudentSummaryDto(
     int StudentId,
     string FirstName,
@@ -55,7 +65,8 @@ public sealed record StudentSummaryDto(
     bool ReceiveLeaderboardDigests = true,
     bool ReceiveProjectMatchEmails = true,
     AffiliationType AffiliationType = AffiliationType.UniversityStudent,
-    string? City = null
+    string? City = null,
+    bool IsEmailVerified = false
 );
 
 public sealed record AuthResponse(

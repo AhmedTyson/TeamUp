@@ -462,4 +462,47 @@ public class AuthAndProfileTests(TeamUpApiFactory factory) : IClassFixture<TeamU
             }
         }
     }
+
+    [Fact]
+    public async Task EmailVerification_FullFlow_ActivatesVerifiedStudentBadgeAcrossEndpoints()
+    {
+        var email = $"verify_{Guid.NewGuid():N}@cu.edu.eg";
+        var reg = new RegisterRequest("Hana", "Verified", email, "Password123!", 3, factory.SeededFacultyId);
+        var regRes = await _client.PostAsJsonAsync("/api/v1/auth/register", reg);
+        Assert.Equal(HttpStatusCode.Created, regRes.StatusCode);
+        var auth = await GetDataAsync<AuthResponse>(regRes);
+        Assert.False(auth.Student.IsEmailVerified);
+
+        using var authClient = factory.CreateClient();
+        authClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        var sendRes = await authClient.PostAsync("/api/v1/auth/send-verification-email", null);
+        Assert.Equal(HttpStatusCode.OK, sendRes.StatusCode);
+        var sendDto = await GetDataAsync<SendVerificationEmailResponse>(sendRes);
+        Assert.False(sendDto.AlreadyVerified);
+
+        var sender = factory.Services.GetRequiredService<InMemoryEmailSender>();
+        var rawToken = sender.GetLastVerificationToken(email);
+        Assert.False(string.IsNullOrWhiteSpace(rawToken));
+
+        // Invalid token is rejected cleanly with 401 Unauthorized
+        var badRes = await _client.PostAsJsonAsync("/api/v1/auth/verify-email", new VerifyEmailRequest(email, "wrong_token"));
+        Assert.Equal(HttpStatusCode.Unauthorized, badRes.StatusCode);
+
+        // Valid verification link token activates verified student status
+        var verifyRes = await _client.PostAsJsonAsync("/api/v1/auth/verify-email", new VerifyEmailRequest(email, rawToken!));
+        Assert.Equal(HttpStatusCode.OK, verifyRes.StatusCode);
+
+        var me = await GetDataAsync<StudentDetailDto>(await authClient.GetAsync("/api/v1/students/me"));
+        Assert.True(me.IsEmailVerified);
+
+        var publicProfile = await GetDataAsync<StudentPublicProfileDto>(await authClient.GetAsync($"/api/v1/students/{auth.Student.StudentId}"));
+        Assert.True(publicProfile.IsEmailVerified);
+
+        var dir = await GetDataAsync<PagedResult<StudentCardDto>>(await authClient.GetAsync("/api/v1/students?search=Verified"));
+        Assert.Contains(dir.Items, s => s.StudentId == auth.Student.StudentId && s.IsEmailVerified);
+
+        var resendAfter = await GetDataAsync<SendVerificationEmailResponse>(await authClient.PostAsync("/api/v1/auth/send-verification-email", null));
+        Assert.True(resendAfter.AlreadyVerified);
+    }
 }

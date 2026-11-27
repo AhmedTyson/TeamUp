@@ -40,6 +40,9 @@ public sealed partial class AuthService(
     [LoggerMessage(Level = LogLevel.Warning, Message = "Refresh token reuse detected for StudentId {StudentId}; session revoked.")]
     private static partial void LogRefreshTokenReuseDetected(ILogger logger, int studentId);
 
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Initial verification email dispatch failed for StudentId {StudentId}; registration still succeeded.")]
+    private static partial void LogInitialVerificationDispatchFailed(ILogger logger, int studentId, Exception exception);
+
     private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
     /// <summary>Failures allowed before escalating per-account delays start.</summary>
     public const int FreeFailedLoginAttempts = 5;
@@ -82,7 +85,10 @@ public sealed partial class AuthService(
         }
 
         var city = string.IsNullOrWhiteSpace(req.City) ? null : req.City.Trim();
+        var utcNow = _time.GetUtcNow().UtcDateTime;
         var rawRefreshToken = jwt.GenerateRefreshToken();
+        var rawVerificationToken = jwt.GenerateRefreshToken();
+        var verificationExpiryMinutes = Math.Clamp(_jwtOptions.EmailVerificationTokenMinutes, 15, 1440);
         var student = new Student
         {
             Email = email,
@@ -98,7 +104,9 @@ public sealed partial class AuthService(
             ReceiveProjectMatchEmails = req.EmailNotificationsEnabled && req.ReceiveProjectMatchEmails,
             SecurityStamp = Guid.NewGuid(),
             RefreshToken = jwt.HashToken(rawRefreshToken),
-            RefreshTokenExpiresAt = _time.GetUtcNow().UtcDateTime.AddDays(_jwtOptions.RefreshTokenDays),
+            RefreshTokenExpiresAt = utcNow.AddDays(_jwtOptions.RefreshTokenDays),
+            EmailVerificationToken = jwt.HashToken(rawVerificationToken),
+            EmailVerificationTokenExpiresAt = utcNow.AddMinutes(verificationExpiryMinutes),
         };
         student.PasswordHash = hasher.HashPassword(student, req.Password);
 
@@ -106,6 +114,23 @@ public sealed partial class AuthService(
         await db.SaveChangesAsync(ct);
 
         student.Faculty = faculty;
+
+        try
+        {
+            await emailSender.SendEmailVerificationAsync(
+                new EmailVerificationMessage(
+                    student.Email,
+                    student.FirstName,
+                    AffiliationFormatting.GetUniversityDisplay(student),
+                    AffiliationFormatting.GetFacultyDisplay(student),
+                    rawVerificationToken,
+                    verificationExpiryMinutes),
+                ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            LogInitialVerificationDispatchFailed(logger, student.StudentId, ex);
+        }
 
         var (accessToken, expiresAt) = jwt.GenerateAccessToken(
             student.StudentId,
@@ -127,7 +152,8 @@ public sealed partial class AuthService(
             student.ReceiveLeaderboardDigests,
             student.ReceiveProjectMatchEmails,
             student.AffiliationType,
-            student.City);
+            student.City,
+            student.IsEmailVerified);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
@@ -209,7 +235,8 @@ public sealed partial class AuthService(
             student.ReceiveLeaderboardDigests,
             student.ReceiveProjectMatchEmails,
             student.AffiliationType,
-            student.City);
+            student.City,
+            student.IsEmailVerified);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
@@ -271,7 +298,8 @@ public sealed partial class AuthService(
             student.ReceiveLeaderboardDigests,
             student.ReceiveProjectMatchEmails,
             student.AffiliationType,
-            student.City);
+            student.City,
+            student.IsEmailVerified);
 
         return new AuthResponse(accessToken, rawRefreshToken, expiresAt, summary);
     }
@@ -369,6 +397,70 @@ public sealed partial class AuthService(
 
         await db.SaveChangesAsync(ct);
         stampValidator.Invalidate(student.StudentId);
+    }
+
+    #endregion
+
+    #region Email Verification
+
+    public async Task<SendVerificationEmailResponse> SendVerificationEmailAsync(int studentId, CancellationToken ct = default)
+    {
+        var student = await db.Students
+            .Include(s => s.Faculty!)
+            .ThenInclude(f => f.University)
+            .FirstOrDefaultAsync(s => s.StudentId == studentId, ct)
+            ?? throw new NotFoundException($"Student with ID {studentId} was not found.");
+
+        if (student.IsEmailVerified)
+            return new SendVerificationEmailResponse("Your campus email is already verified.", AlreadyVerified: true);
+
+        var utcNow = _time.GetUtcNow().UtcDateTime;
+        var expiresMinutes = Math.Clamp(_jwtOptions.EmailVerificationTokenMinutes, 15, 1440);
+        var rawToken = jwt.GenerateRefreshToken();
+
+        student.EmailVerificationToken = jwt.HashToken(rawToken);
+        student.EmailVerificationTokenExpiresAt = utcNow.AddMinutes(expiresMinutes);
+        await db.SaveChangesAsync(ct);
+
+        await emailSender.SendEmailVerificationAsync(
+            new EmailVerificationMessage(
+                student.Email,
+                student.FirstName,
+                AffiliationFormatting.GetUniversityDisplay(student),
+                AffiliationFormatting.GetFacultyDisplay(student),
+                rawToken,
+                expiresMinutes),
+            ct);
+
+        return new SendVerificationEmailResponse("A verification link has been sent to your registered email address.", AlreadyVerified: false);
+    }
+
+    public async Task VerifyEmailAsync(VerifyEmailRequest req, CancellationToken ct = default)
+    {
+        var email = req.Email.Trim().ToLowerInvariant();
+        var student = await db.Students.FirstOrDefaultAsync(s => s.Email == email, ct)
+            ?? throw new UnauthorizedException("Invalid or expired email verification link.");
+
+        if (student.IsEmailVerified)
+            return;
+
+        var incomingHash = jwt.HashToken(req.Token.Trim());
+        var utcNow = _time.GetUtcNow().UtcDateTime;
+
+        if (string.IsNullOrWhiteSpace(student.EmailVerificationToken) ||
+            !CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(student.EmailVerificationToken),
+                Encoding.UTF8.GetBytes(incomingHash)) ||
+            student.EmailVerificationTokenExpiresAt is null ||
+            student.EmailVerificationTokenExpiresAt <= utcNow)
+        {
+            throw new UnauthorizedException("Invalid or expired email verification link.");
+        }
+
+        student.EmailVerifiedAtUtc = utcNow;
+        student.EmailVerificationToken = null;
+        student.EmailVerificationTokenExpiresAt = null;
+        await db.SaveChangesAsync(ct);
     }
 
     #endregion

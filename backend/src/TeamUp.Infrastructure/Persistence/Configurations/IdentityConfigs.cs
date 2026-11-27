@@ -59,6 +59,8 @@ public sealed class StudentConfig : IEntityTypeConfiguration<Student>
         builder.Property(x => x.RefreshToken).HasMaxLength(256);
         builder.Property(x => x.PreviousRefreshToken).HasMaxLength(256);
         builder.Property(x => x.PasswordResetToken).HasMaxLength(256);
+        builder.Property(x => x.EmailVerificationToken).HasMaxLength(256);
+        builder.Ignore(x => x.IsEmailVerified);
         builder.Property(x => x.AffiliationType).HasDefaultValue(Domain.Enums.AffiliationType.UniversityStudent);
         builder.Property(x => x.City).HasMaxLength(100);
         builder.HasOne(x => x.Faculty).WithMany(f => f.Students).HasForeignKey(x => x.FacultyId).IsRequired(false);
