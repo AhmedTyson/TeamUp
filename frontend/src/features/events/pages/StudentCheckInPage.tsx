@@ -112,7 +112,7 @@ export function StudentCheckInPage() {
               <div className="pt-1">
                 <Link
                   to="/gamification"
-                  className="text-xs font-semibold text-[#d3fb52] hover:underline"
+                  className="text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
                 >
                   View updated XP & badges →
                 </Link>

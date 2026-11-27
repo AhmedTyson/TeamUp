@@ -122,7 +122,7 @@ export function PrivacyPolicyPage() {
               </p>
               <Link
                 to="/profile/me"
-                className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-[#d3fb52] hover:underline"
+                className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
               >
                 Open Profile Studio
                 <ArrowRight className="size-3.5" aria-hidden="true" />

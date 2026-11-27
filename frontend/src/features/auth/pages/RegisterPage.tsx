@@ -303,7 +303,7 @@ export function RegisterPage() {
           Already registered?{" "}
           <Link
             to="/auth/login"
-            className="font-semibold text-[#d3fb52] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+            className="font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
           >
             Sign in to your account
           </Link>
@@ -532,7 +532,7 @@ export function RegisterPage() {
           unless you opt in. Read our{" "}
           <Link
             to="/privacy"
-            className="font-semibold text-[#d3fb52] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+            className="font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
           >
             Privacy &amp; Policy
           </Link>

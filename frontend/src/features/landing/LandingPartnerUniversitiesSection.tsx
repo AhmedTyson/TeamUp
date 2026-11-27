@@ -95,7 +95,7 @@ export function LandingPartnerUniversitiesSection({
               <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-3 text-xs">
                 <Link
                   to="/auth/register"
-                  className="font-semibold text-[#d3fb52] hover:underline"
+                  className="font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
                 >
                   Register from this campus →
                 </Link>

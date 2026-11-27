@@ -89,6 +89,14 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+@layer base {
+  a,
+  a:hover,
+  a:focus-visible {
+    text-decoration: none;
+  }
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

@@ -151,7 +151,7 @@ export function NotificationBell({ isScrolled = false, onOpenChange }: Notificat
                 onClick={() => {
                   markAllReadMutation.mutate();
                 }}
-                className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-[#d3fb52] hover:underline disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a] disabled:opacity-50"
               >
                 <CheckCheck className="size-3.5" aria-hidden="true" />
                 Mark all read
@@ -199,7 +199,7 @@ export function NotificationBell({ isScrolled = false, onOpenChange }: Notificat
             <Link
               to="/notifications"
               onClick={() => setIsOpen(false)}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#d3fb52] hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
             >
               View full inbox
               <ExternalLink className="size-3" aria-hidden="true" />

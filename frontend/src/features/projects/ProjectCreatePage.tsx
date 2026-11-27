@@ -149,7 +149,7 @@ export function ProjectCreatePage() {
           {requiredSkills.map((item) => (
             <div key={item.skillId} className="flex items-center justify-between gap-3 rounded-xl bg-[#14151c] px-3 py-2 text-sm">
               <span className="text-white">{skillName(item.skillId, skillsQuery.data ?? [])} · {item.requiredLevel} · {item.isMandatory ? "Mandatory" : "Preferred"}</span>
-              <button type="button" className="text-xs text-red-300 hover:underline" onClick={() => setRequiredSkills((items) => items.filter((skill) => skill.skillId !== item.skillId))}>Remove</button>
+              <button type="button" className="text-xs text-red-300 no-underline transition-colors hover:text-red-200" onClick={() => setRequiredSkills((items) => items.filter((skill) => skill.skillId !== item.skillId))}>Remove</button>
             </div>
           ))}
         </section>

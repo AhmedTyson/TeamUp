@@ -76,13 +76,13 @@ export function ForgotPasswordPage() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Link
             to="/auth/login"
-            className="font-medium text-white/80 hover:text-[#d3fb52] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+            className="font-medium text-white/80 no-underline transition-colors hover:text-[#d3fb52] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
           >
             Back to Sign In
           </Link>
           <Link
             to="/auth/reset-password"
-            className="font-semibold text-[#d3fb52] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+            className="font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
           >
             Already have a reset token?
           </Link>

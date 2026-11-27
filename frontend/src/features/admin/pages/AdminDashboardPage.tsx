@@ -203,7 +203,7 @@ export function AdminDashboardPage() {
                 <CardContent>
                   <Link
                     to="/admin/organization-requests"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#d3fb52] hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
                   >
                     Review &amp; promote founders <ArrowRight className="size-3.5" aria-hidden="true" />
                   </Link>
@@ -230,7 +230,7 @@ export function AdminDashboardPage() {
                 <CardContent>
                   <Link
                     to="/admin/roles"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#d3fb52] hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
                   >
                     Manage student roles <ArrowRight className="size-3.5" aria-hidden="true" />
                   </Link>
@@ -265,7 +265,7 @@ export function AdminDashboardPage() {
                 <CardContent>
                   <Link
                     to="/admin/catalog"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#d3fb52] hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
                   >
                     Open university catalog <ArrowRight className="size-3.5" aria-hidden="true" />
                   </Link>
@@ -292,7 +292,7 @@ export function AdminDashboardPage() {
                 <CardContent>
                   <Link
                     to="/admin/catalog"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#d3fb52] hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
                   >
                     Inspect faculties <ArrowRight className="size-3.5" aria-hidden="true" />
                   </Link>
@@ -312,7 +312,7 @@ export function AdminDashboardPage() {
                   </div>
                   <Link
                     to="/admin/catalog"
-                    className="shrink-0 text-xs font-semibold text-[#d3fb52] hover:underline"
+                    className="shrink-0 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
                   >
                     View all →
                   </Link>
