@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { UserCog, Users } from "lucide-react";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
   USER_ROLES,
@@ -119,25 +120,38 @@ export function AdminRolesPage() {
     {
       key: "student",
       header: "Student",
+      headerClassName: "lg:w-[30%]",
+      cellClassName: "min-w-0",
       cell: (row) => (
-        <div className="flex items-center gap-3">
-          <Avatar name={`${row.firstName} ${row.lastName}`} size="sm" />
-          <div className="space-y-0.5">
-            <p className="font-semibold text-white">
+        <Link to={`/students/${row.studentId}`} className="group flex min-w-0 items-center gap-3">
+          <Avatar
+            name={`${row.firstName} ${row.lastName}`}
+            size="sm"
+            className="shrink-0 ring-1 ring-white/15 group-hover:ring-[#d3fb52]"
+          />
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <p
+              title={`${row.firstName} ${row.lastName}`}
+              className="truncate font-semibold text-white transition-colors group-hover:text-[#d3fb52]"
+            >
               {row.firstName} {row.lastName}
             </p>
-            <p className="text-xs text-[#9ca3af]">{row.email ?? "Email private"}</p>
+            <p title={row.email ?? "Email private"} className="truncate text-xs text-[#9ca3af]">
+              {row.email ?? "Email private"}
+            </p>
           </div>
-        </div>
+        </Link>
       ),
     },
     {
       key: "affiliation",
       header: "Academic Affiliation",
+      headerClassName: "lg:w-[34%]",
+      cellClassName: "min-w-0",
       cell: (row) => (
-        <div className="text-xs">
-          <p className="text-white/90">{row.universityName}</p>
-          <p className="text-[#9ca3af]">
+        <div className="min-w-0 text-xs">
+          <p title={row.universityName} className="truncate text-white/90">{row.universityName}</p>
+          <p title={`${row.facultyName} · Year ${row.academicYear}`} className="truncate text-[#9ca3af]">
             {row.facultyName} · Year {row.academicYear}
           </p>
         </div>
@@ -146,6 +160,8 @@ export function AdminRolesPage() {
     {
       key: "role",
       header: "Current Role",
+      headerClassName: "lg:w-[18%]",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <Badge
           variant={
@@ -163,6 +179,8 @@ export function AdminRolesPage() {
     {
       key: "action",
       header: "Governance",
+      headerClassName: "lg:w-[18%] text-right",
+      cellClassName: "whitespace-nowrap text-right",
       cell: (row) => (
         <Button
           size="sm"
@@ -233,6 +251,7 @@ export function AdminRolesPage() {
         data={filteredStudents}
         keyExtractor={(row) => row.studentId}
         isLoading={studentsQuery.isPending}
+        tableClassName="min-w-[640px] lg:min-w-0 lg:table-fixed"
         emptyState={
           <EmptyState
             icon={<Users className="size-6" aria-hidden="true" />}

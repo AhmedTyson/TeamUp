@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { badgesApi, gamificationApi } from "@/api";
 import { Badge } from "@/components/ui";
 import { queryKeys } from "@/lib/queryKeys";
+import { computeLevelProgressPercent } from "./levelProgress";
 
 export interface StudentGamificationSummaryProps {
   studentId: number;
@@ -28,7 +29,7 @@ export function StudentGamificationSummary({ studentId }: StudentGamificationSum
 
   const score = scoreQuery.data;
   const badges = badgesQuery.data ?? [];
-  const pct = score ? Math.min(100, Math.max(0, Math.round(score.progress * 100))) : 0;
+  const pct = score ? computeLevelProgressPercent(score) : 0;
 
   return (
     <div className="space-y-4 rounded-2xl border border-white/[0.085] bg-[#14151c] p-5">
@@ -41,7 +42,7 @@ export function StudentGamificationSummary({ studentId }: StudentGamificationSum
         </div>
         <Link
           to="/leaderboard"
-          className="text-xs font-semibold text-[#d3fb52] hover:underline"
+          className="text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
         >
           View Leaderboard →
         </Link>
@@ -90,7 +91,7 @@ export function StudentGamificationSummary({ studentId }: StudentGamificationSum
           <span className="text-xs font-semibold text-[#9ca3af]">
             Earned Badges ({badges.length})
           </span>
-          <Link to="/gamification" className="text-[11px] text-[#d3fb52] hover:underline">
+          <Link to="/gamification" className="text-[11px] text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]">
             All Badges
           </Link>
         </div>

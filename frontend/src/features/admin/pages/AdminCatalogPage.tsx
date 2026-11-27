@@ -153,19 +153,20 @@ export function AdminCatalogPage() {
     {
       key: "name",
       header: "University",
+      cellClassName: "min-w-0",
       cell: (row) => {
         const isSelected = selectedUniversity?.universityId === row.universityId;
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <UniversityLogo
               name={row.name}
               logoUrl={row.logoUrl}
               size="md"
-              className={cn(isSelected && "ring-2 ring-[#d3fb52]")}
+              className={cn("shrink-0", isSelected && "ring-2 ring-[#d3fb52]")}
             />
-            <div className="space-y-0.5">
-              <p className="font-semibold text-white">{row.name}</p>
-              <p className="text-xs text-[#9ca3af]">
+            <div className="min-w-0 space-y-0.5">
+              <p title={row.name} className="truncate font-semibold text-white">{row.name}</p>
+              <p className="truncate text-xs text-[#9ca3af]">
                 {row.city}, {row.country}
               </p>
             </div>
@@ -182,10 +183,12 @@ export function AdminCatalogPage() {
             href={row.website}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-medium text-[#d3fb52] hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-medium text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
           >
-            {row.website}
-            <ExternalLink className="size-3" aria-hidden="true" />
+            <span className="max-w-[180px] truncate" title={row.website}>
+              {row.website}
+            </span>
+            <ExternalLink className="size-3 shrink-0" aria-hidden="true" />
           </a>
         ) : (
           <span className="text-xs text-white/45">No public URL</span>
@@ -194,6 +197,7 @@ export function AdminCatalogPage() {
     {
       key: "facultyCount",
       header: "Faculties",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <Badge variant="default" className="tabular-nums">
           {row.facultyCount}
@@ -203,6 +207,7 @@ export function AdminCatalogPage() {
     {
       key: "actions",
       header: "Actions",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => {
         const isSelected = selectedUniversity?.universityId === row.universityId;
         return (

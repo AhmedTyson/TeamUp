@@ -62,6 +62,7 @@ export function ScoreLedgerTable({ studentId }: ScoreLedgerTableProps) {
     {
       key: "id",
       header: "Tx ID",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <span className="font-mono text-xs text-white/50">#{row.transactionId}</span>
       ),
@@ -69,6 +70,7 @@ export function ScoreLedgerTable({ studentId }: ScoreLedgerTableProps) {
     {
       key: "points",
       header: "Points Awarded",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <span
           className={`font-mono text-xs font-bold tabular-nums ${
@@ -82,16 +84,19 @@ export function ScoreLedgerTable({ studentId }: ScoreLedgerTableProps) {
     {
       key: "source",
       header: "Source Type",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => renderSourcePill(row.sourceType),
     },
     {
       key: "reason",
       header: "Reason & Milestone Description",
+      cellClassName: "min-w-0 break-words",
       cell: (row) => <span className="text-xs text-white/90">{row.reason}</span>,
     },
     {
       key: "createdAt",
       header: "Timestamp",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <span className="font-mono text-xs text-[#9ca3af]">
           {formatDateTime(row.createdAt)}

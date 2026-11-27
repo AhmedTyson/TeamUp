@@ -88,6 +88,7 @@ export function AdminAuditLogsPage() {
     {
       key: "target",
       header: "Entity",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <span className="text-xs font-medium text-white">
           {row.entityType} <span className="font-mono text-[#9ca3af]">#{row.entityId}</span>
@@ -99,13 +100,19 @@ export function AdminAuditLogsPage() {
       header: "Administrator",
       cell: (row) => (
         <div className="text-xs">
-          <p className="text-white/90">{row.actorEmail ?? "System"}</p>
+          <p
+            title={row.actorEmail ?? "System"}
+            className="max-w-[200px] truncate text-white/90"
+          >
+            {row.actorEmail ?? "System"}
+          </p>
         </div>
       ),
     },
     {
       key: "clientIp",
       header: "Client IP",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <span className="font-mono text-xs text-[#9ca3af]">{row.clientIp ?? "—"}</span>
       ),
@@ -113,6 +120,7 @@ export function AdminAuditLogsPage() {
     {
       key: "diff",
       header: "Details",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <Button
           size="sm"

@@ -21,6 +21,7 @@ export interface TabsProps {
   onValueChange?: (id: string) => void;
   className?: string;
   listClassName?: string;
+  tabClassName?: string;
   panelClassName?: string;
 }
 
@@ -31,6 +32,7 @@ export function Tabs({
   onValueChange,
   className,
   listClassName,
+  tabClassName,
   panelClassName,
 }: TabsProps) {
   const baseId = useId();
@@ -103,12 +105,13 @@ export function Tabs({
               onClick={() => selectTab(item.id)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               className={cn(
-                "relative inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium transition-colors",
+                "relative inline-flex min-h-[40px] shrink-0 cursor-pointer items-center gap-2 rounded-t-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52] focus-visible:ring-inset",
                 "disabled:cursor-not-allowed disabled:opacity-40",
                 isSelected
                   ? "text-[#d3fb52] after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-[#d3fb52]"
                   : "text-white/65 hover:bg-white/5 hover:text-white",
+                tabClassName,
               )}
             >
               {item.icon && <span aria-hidden="true">{item.icon}</span>}

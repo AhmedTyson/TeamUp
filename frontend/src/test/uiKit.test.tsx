@@ -148,12 +148,14 @@ describe("Handshake UI primitive kit", () => {
     render(
       <div>
         <Tabs
+          tabClassName="px-2.5 text-[13px]"
           items={[
             { id: "overview", label: "Overview", content: <p>Overview content</p> },
             { id: "board", label: "Board", content: <p>Kanban content</p> },
           ]}
         />
         <DataTable
+          tableClassName="sm:table-fixed"
           columns={[
             { key: "name", header: "Student", cell: (row: { id: number; name: string }) => row.name },
           ]}
@@ -174,9 +176,11 @@ describe("Handshake UI primitive kit", () => {
     );
 
     const overviewTab = screen.getByRole("tab", { name: "Overview" });
+    expect(overviewTab).toHaveClass("px-2.5", "text-[13px]");
     fireEvent.keyDown(overviewTab, { key: "ArrowRight" });
     expect(screen.getByText("Kanban content")).toBeInTheDocument();
 
+    expect(screen.getByRole("table")).toHaveClass("sm:table-fixed");
     expect(screen.getByText("Youssef")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Next page" }));
     expect(onPageChange).toHaveBeenCalledWith(3);

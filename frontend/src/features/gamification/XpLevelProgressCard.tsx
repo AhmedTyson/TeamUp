@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { gamificationApi, type StudentScoreDto } from "@/api";
 import { ErrorBanner } from "@/components/ui";
 import { queryKeys } from "@/lib/queryKeys";
+import { computeLevelProgressPercent } from "./levelProgress";
 
 export interface XpLevelProgressCardProps {
   score?: StudentScoreDto;
@@ -58,7 +59,7 @@ export function XpLevelProgressCard({ score: scoreProp, studentId }: XpLevelProg
   const currentLevel = score.level;
   const currentPts = score.totalPoints;
   const ptsToNext = score.pointsToNext;
-  const progressPct = Math.min(100, Math.max(0, Math.round(score.progress * 100)));
+  const progressPct = computeLevelProgressPercent(score);
 
   // Bounds for Level formula: Level = FLOOR(SQRT(pts / 100)) + 1
   const currentLevelMinPts = Math.pow(currentLevel - 1, 2) * 100;
@@ -117,7 +118,7 @@ export function XpLevelProgressCard({ score: scoreProp, studentId }: XpLevelProg
 
       {/* Progress Bar Section */}
       <div className="relative z-10 mt-6 space-y-2 border-t border-white/[0.08] pt-5">
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           <span className="font-mono text-[#9ca3af]">
             Level {currentLevel} ({currentLevelMinPts.toLocaleString()} XP)
           </span>

@@ -15,6 +15,7 @@ import {
   ErrorBanner,
   Pagination,
   SearchInput,
+  VerifiedStudentBadge,
   type DataTableColumn,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -52,6 +53,8 @@ export function CampusLeaderboardPage() {
     {
       key: "rank",
       header: "Rank",
+      headerClassName: "w-[68px] sm:w-[76px]",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <span
           className={cn(
@@ -72,12 +75,14 @@ export function CampusLeaderboardPage() {
     {
       key: "student",
       header: "Student Builder",
+      headerClassName: "sm:w-[37%]",
+      cellClassName: "min-w-0",
       cell: (row) => {
         const fullName = `${row.firstName} ${row.lastName}`;
         return (
           <Link
             to={`/students/${row.studentId}`}
-            className="group flex items-center gap-3 focus-visible:outline-none"
+            className="group flex min-w-0 items-center gap-3 focus-visible:outline-none"
           >
             <Avatar
               src={row.photoUrl ?? undefined}
@@ -85,11 +90,12 @@ export function CampusLeaderboardPage() {
               size="sm"
               className="shrink-0 ring-1 ring-white/15 group-hover:ring-[#d3fb52]"
             />
-            <div className="min-w-0">
-              <p className="font-semibold text-white group-hover:text-[#d3fb52] transition-colors truncate">
-                {fullName}
+            <div className="min-w-0 flex-1">
+              <p className="flex min-w-0 items-center gap-1.5 font-semibold text-white transition-colors group-hover:text-[#d3fb52]">
+                <span title={fullName} className="truncate">{fullName}</span>
+                <VerifiedStudentBadge verified={Boolean(row.isEmailVerified)} compact />
               </p>
-              <p className="text-[11px] text-[#9ca3af] truncate">{row.facultyName}</p>
+              <p title={row.facultyName} className="truncate text-[11px] text-[#9ca3af]">{row.facultyName}</p>
             </div>
           </Link>
         );
@@ -98,13 +104,22 @@ export function CampusLeaderboardPage() {
     {
       key: "university",
       header: "University",
+      headerClassName: "sm:w-[32%]",
+      cellClassName: "min-w-0",
       cell: (row) => (
-        <span className="text-xs text-white/80 font-medium truncate">{row.universityName}</span>
+        <span
+          title={row.universityName}
+          className="block truncate text-xs font-medium text-white/80"
+        >
+          {row.universityName}
+        </span>
       ),
     },
     {
       key: "level",
       header: "Level",
+      headerClassName: "w-[96px] sm:w-[112px]",
+      cellClassName: "whitespace-nowrap",
       cell: (row) => (
         <Badge variant="accent" size="sm">
           Level {row.level}
@@ -114,6 +129,8 @@ export function CampusLeaderboardPage() {
     {
       key: "points",
       header: "Verified XP",
+      headerClassName: "w-[112px] sm:w-[132px] text-right",
+      cellClassName: "whitespace-nowrap text-right",
       cell: (row) => (
         <span className="font-mono text-xs font-bold tabular-nums text-[#d3fb52]">
           {row.totalPoints.toLocaleString()} XP
@@ -150,7 +167,10 @@ export function CampusLeaderboardPage() {
           <div className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3">
             {/* Rank 2 (Silver / Emerald) */}
             {top3[1] && (
-              <div className="order-2 flex min-w-0 flex-col items-center justify-between rounded-2xl border border-white/10 bg-[#1b1d26]/90 p-5 text-center shadow-lg backdrop-blur-md sm:order-1 sm:translate-y-3">
+              <Link
+                to={`/students/${top3[1].studentId}`}
+                className="group order-2 flex min-w-0 flex-col items-center justify-between rounded-2xl border border-white/10 bg-[#1b1d26]/90 p-5 text-center shadow-lg backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-[#10b981]/60 sm:order-1 sm:translate-y-3"
+              >
                 <div className="relative">
                   <Avatar
                     src={top3[1].photoUrl ?? undefined}
@@ -162,14 +182,14 @@ export function CampusLeaderboardPage() {
                     #2
                   </span>
                 </div>
-                <div className="mt-4 space-y-1">
-                  <Link
-                    to={`/students/${top3[1].studentId}`}
-                    className="block font-bold text-white hover:text-[#d3fb52] transition-colors"
-                  >
-                    {top3[1].firstName} {top3[1].lastName}
-                  </Link>
-                  <p className="truncate text-xs text-[#9ca3af]">{top3[1].universityName}</p>
+                <div className="mt-4 w-full min-w-0 space-y-1">
+                  <span className="flex min-w-0 items-center justify-center gap-1.5 font-bold text-white transition-colors group-hover:text-[#d3fb52]">
+                    <span title={`${top3[1].firstName} ${top3[1].lastName}`} className="truncate">
+                      {top3[1].firstName} {top3[1].lastName}
+                    </span>
+                    <VerifiedStudentBadge verified={Boolean(top3[1].isEmailVerified)} compact />
+                  </span>
+                  <p title={top3[1].universityName} className="truncate text-xs text-[#9ca3af]">{top3[1].universityName}</p>
                 </div>
                 <div className="mt-3 flex items-center gap-2">
                   <Badge variant="success" size="sm">
@@ -179,12 +199,15 @@ export function CampusLeaderboardPage() {
                     {top3[1].totalPoints.toLocaleString()} XP
                   </span>
                 </div>
-              </div>
+              </Link>
             )}
 
             {/* Rank 1 (Gold / Lime) */}
             {top3[0] && (
-              <div className="order-1 flex min-w-0 flex-col items-center justify-between rounded-2xl border-2 border-[#d3fb52] bg-[#1b1d26] p-6 text-center shadow-[0_0_36px_rgba(211,251,82,0.18)] sm:order-2 sm:-translate-y-2">
+              <Link
+                to={`/students/${top3[0].studentId}`}
+                className="group order-1 flex min-w-0 flex-col items-center justify-between rounded-2xl border-2 border-[#d3fb52] bg-[#1b1d26] p-6 text-center shadow-[0_0_36px_rgba(211,251,82,0.18)] transition-all hover:shadow-[0_0_44px_rgba(211,251,82,0.28)] sm:order-2 sm:-translate-y-2"
+              >
                 <div className="relative">
                   <Avatar
                     src={top3[0].photoUrl ?? undefined}
@@ -197,14 +220,14 @@ export function CampusLeaderboardPage() {
                     #1
                   </span>
                 </div>
-                <div className="mt-4 space-y-1">
-                  <Link
-                    to={`/students/${top3[0].studentId}`}
-                    className="block text-base font-bold text-white hover:text-[#d3fb52] transition-colors"
-                  >
-                    {top3[0].firstName} {top3[0].lastName}
-                  </Link>
-                  <p className="truncate text-xs text-[#9ca3af]">{top3[0].universityName}</p>
+                <div className="mt-4 w-full min-w-0 space-y-1">
+                  <span className="flex min-w-0 items-center justify-center gap-1.5 text-base font-bold text-white transition-colors group-hover:text-[#d3fb52]">
+                    <span title={`${top3[0].firstName} ${top3[0].lastName}`} className="truncate">
+                      {top3[0].firstName} {top3[0].lastName}
+                    </span>
+                    <VerifiedStudentBadge verified={Boolean(top3[0].isEmailVerified)} compact />
+                  </span>
+                  <p title={top3[0].universityName} className="truncate text-xs text-[#9ca3af]">{top3[0].universityName}</p>
                 </div>
                 <div className="mt-3 flex items-center gap-2">
                   <Badge variant="accent" size="sm">
@@ -214,12 +237,15 @@ export function CampusLeaderboardPage() {
                     {top3[0].totalPoints.toLocaleString()} XP
                   </span>
                 </div>
-              </div>
+              </Link>
             )}
 
             {/* Rank 3 (Bronze / Forest) */}
             {top3[2] && (
-              <div className="order-3 flex min-w-0 flex-col items-center justify-between rounded-2xl border border-white/10 bg-[#1b1d26]/90 p-5 text-center shadow-lg backdrop-blur-md sm:translate-y-5">
+              <Link
+                to={`/students/${top3[2].studentId}`}
+                className="group order-3 flex min-w-0 flex-col items-center justify-between rounded-2xl border border-white/10 bg-[#1b1d26]/90 p-5 text-center shadow-lg backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-[#15733f]/80 sm:translate-y-5"
+              >
                 <div className="relative">
                   <Avatar
                     src={top3[2].photoUrl ?? undefined}
@@ -231,14 +257,14 @@ export function CampusLeaderboardPage() {
                     #3
                   </span>
                 </div>
-                <div className="mt-4 space-y-1">
-                  <Link
-                    to={`/students/${top3[2].studentId}`}
-                    className="block font-bold text-white hover:text-[#d3fb52] transition-colors"
-                  >
-                    {top3[2].firstName} {top3[2].lastName}
-                  </Link>
-                  <p className="truncate text-xs text-[#9ca3af]">{top3[2].universityName}</p>
+                <div className="mt-4 w-full min-w-0 space-y-1">
+                  <span className="flex min-w-0 items-center justify-center gap-1.5 font-bold text-white transition-colors group-hover:text-[#d3fb52]">
+                    <span title={`${top3[2].firstName} ${top3[2].lastName}`} className="truncate">
+                      {top3[2].firstName} {top3[2].lastName}
+                    </span>
+                    <VerifiedStudentBadge verified={Boolean(top3[2].isEmailVerified)} compact />
+                  </span>
+                  <p title={top3[2].universityName} className="truncate text-xs text-[#9ca3af]">{top3[2].universityName}</p>
                 </div>
                 <div className="mt-3 flex items-center gap-2">
                   <Badge variant="default" size="sm">
@@ -248,7 +274,7 @@ export function CampusLeaderboardPage() {
                     {top3[2].totalPoints.toLocaleString()} XP
                   </span>
                 </div>
-              </div>
+              </Link>
             )}
           </div>
         )}
@@ -274,7 +300,7 @@ export function CampusLeaderboardPage() {
               value={search}
               onChange={setSearch}
               placeholder="Search builder or university..."
-              containerClassName="w-full sm:w-64"
+              containerClassName="w-full sm:w-72"
             />
             <button
               type="button"
@@ -315,6 +341,7 @@ export function CampusLeaderboardPage() {
               columns={columns}
               data={tableItems}
               keyExtractor={(row) => row.studentId}
+              tableClassName="min-w-[600px] sm:min-w-0 sm:table-fixed"
               caption="Campus leaderboard standings"
             />
 

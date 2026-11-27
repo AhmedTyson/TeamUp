@@ -27,6 +27,7 @@ import {
   CampusLeaderboardPage,
   XpLevelProgressCard,
 } from "@/features/gamification";
+import { computeLevelProgressPercent } from "@/features/gamification/levelProgress";
 import { NotificationsInboxPage } from "@/features/notifications/NotificationsInboxPage";
 import {
   SelfProfileStudioPage,
@@ -454,6 +455,40 @@ describe("Frontend Module 04 — Landing, Profiles, Gamification & Notifications
       expect(screen.getAllByText("Omar Mostafa").length).toBeGreaterThan(0);
       // Rank 4 in table
       expect(screen.getByText("Nour Hassan")).toBeInTheDocument();
+
+      // Table uses desktop fixed layout and block-truncates long university names without expanding container
+      expect(screen.getByRole("table")).toHaveClass("sm:table-fixed");
+      const uniCell = screen.getByTitle("Alexandria University");
+      expect(uniCell).toHaveClass("block", "truncate");
+    });
+
+    it("computes clamped level progress percentage across 0..100 backend DTOs and 0..1 mocks", () => {
+      expect(
+        computeLevelProgressPercent({
+          totalPoints: 1730,
+          currentLevelStart: 1600,
+          nextLevelThreshold: 2500,
+          progress: 14.44,
+        }),
+      ).toBe(14);
+
+      expect(
+        computeLevelProgressPercent({
+          totalPoints: 950,
+          currentLevelStart: 900,
+          nextLevelThreshold: 1600,
+          progress: 0.07,
+        }),
+      ).toBe(7);
+
+      expect(
+        computeLevelProgressPercent({
+          totalPoints: 0,
+          currentLevelStart: 0,
+          nextLevelThreshold: 0,
+          progress: 0.33,
+        }),
+      ).toBe(33);
     });
 
     it("invalidates all cross-module gamification query keys via invalidateGamification()", async () => {

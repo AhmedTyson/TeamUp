@@ -23,6 +23,7 @@ export interface DataTableProps<T> {
   emptyState?: ReactNode;
   onRowClick?: (row: T) => void;
   className?: string;
+  tableClassName?: string;
   caption?: string;
 }
 
@@ -35,6 +36,7 @@ export function DataTable<T>({
   emptyState,
   onRowClick,
   className,
+  tableClassName,
   caption,
 }: DataTableProps<T>) {
   if (!isLoading && data.length === 0 && emptyState) {
@@ -49,7 +51,7 @@ export function DataTable<T>({
       )}
     >
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
+        <table className={cn("w-full border-collapse text-left text-sm", tableClassName)}>
           {caption && <caption className="sr-only">{caption}</caption>}
           <thead>
             <tr className="border-b border-white/[0.085] bg-[#14151c]/70">
@@ -72,7 +74,10 @@ export function DataTable<T>({
               Array.from({ length: loadingRows }).map((_, rowIdx) => (
                 <tr key={`skeleton-row-${rowIdx}`}>
                   {columns.map((column) => (
-                    <td key={`${column.key}-sk-${rowIdx}`} className="px-4 py-3.5">
+                    <td
+                      key={`${column.key}-sk-${rowIdx}`}
+                      className={cn("px-4 py-3.5", column.cellClassName)}
+                    >
                       <Skeleton className="h-4 w-3/4" />
                     </td>
                   ))}
