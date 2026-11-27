@@ -163,6 +163,17 @@ public sealed class OpenApiAndPostmanTests(TeamUpApiFactory factory) : IClassFix
                     CreateRequest("Preview Email Template", "GET", "{{baseUrl}}/api/v1/admin/templates/preview/LeaderboardDigest"),
                     CreateRequest("Dispatch Leaderboard Digest", "POST", "{{baseUrl}}/api/v1/admin/communications/leaderboard-digest", "{\"mode\":\"TestToMe\",\"dryRun\":true}"),
                     CreateRequest("Dispatch Project Match Digest", "POST", "{{baseUrl}}/api/v1/admin/communications/project-matches", "{\"mode\":\"TestToMe\",\"dryRun\":true}")
+                ]),
+                CreateFolder("10. Composite Workspaces (Single-Request)", [
+                    CreateRequest("Student Dashboard Workspace", "GET", "{{baseUrl}}/api/v1/dashboard/student"),
+                    CreateRequest("Org Leadership Dashboard Workspace", "GET", "{{baseUrl}}/api/v1/dashboard/org"),
+                    CreateRequest("Unified Explore Feed", "GET", "{{baseUrl}}/api/v1/explore?pageSize=6"),
+                    CreateRequest("Event Detail Workspace", "GET", "{{baseUrl}}/api/v1/events/1/workspace"),
+                    CreateRequest("Session Attendance Workspace", "GET", "{{baseUrl}}/api/v1/events/1/sessions/1/workspace"),
+                    CreateRequest("Project Detail Workspace", "GET", "{{baseUrl}}/api/v1/projects/1/workspace"),
+                    CreateRequest("Organization Detail Workspace", "GET", "{{baseUrl}}/api/v1/organizations/1/workspace"),
+                    CreateRequest("Gamification Hub Workspace", "GET", "{{baseUrl}}/api/v1/gamification/hub?ledgerPageSize=15"),
+                    CreateRequest("Student Portfolio Workspace", "GET", "{{baseUrl}}/api/v1/students/{{studentId}}/portfolio")
                 ])
             }
         };

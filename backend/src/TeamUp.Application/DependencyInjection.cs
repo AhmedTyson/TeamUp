@@ -85,6 +85,9 @@ public static class DependencyInjection
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IDigestDispatchService, DigestDispatchService>();
 
+        // Composite single-request page payloads
+        services.AddScoped<TeamUp.Application.Workspaces.IWorkspaceService, TeamUp.Application.Workspaces.WorkspaceService>();
+
         #endregion
 
         #region Domain Event Handlers
