@@ -40,6 +40,16 @@ export interface ResetPasswordPayload {
   newPassword: string;
 }
 
+export interface SendVerificationEmailResult {
+  message: string;
+  alreadyVerified: boolean;
+}
+
+export interface VerifyEmailPayload {
+  email: string;
+  token: string;
+}
+
 export interface AuthStudentProfileSummary {
   bio: string | null;
   photoUrl: string | null;
@@ -65,6 +75,7 @@ export interface AuthStudentSummary {
   emailNotificationsEnabled?: boolean;
   receiveLeaderboardDigests?: boolean;
   receiveProjectMatchEmails?: boolean;
+  isEmailVerified?: boolean;
 }
 
 export interface AuthResult {
@@ -111,6 +122,21 @@ export const authApi = {
       payload,
     );
     return res.data.message || "Password reset successfully.";
+  },
+
+  async sendVerificationEmail(): Promise<SendVerificationEmailResult> {
+    const res = await apiClient.post<ApiResponse<SendVerificationEmailResult>>(
+      API_ENDPOINTS.auth.sendVerificationEmail,
+    );
+    return unwrapApiResponse(res);
+  },
+
+  async verifyEmail(payload: VerifyEmailPayload): Promise<string> {
+    const res = await apiClient.post<ApiResponse<undefined>>(
+      API_ENDPOINTS.auth.verifyEmail,
+      payload,
+    );
+    return res.data.message || "Email verified successfully.";
   },
 
   async getCurrentStudent(signal?: AbortSignal): Promise<AuthStudentSummary> {

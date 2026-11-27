@@ -4,7 +4,8 @@
  */
 import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
-import { ProtectedRoute } from "@/features/auth";
+import { USER_ROLES } from "@/api";
+import { ProtectedRoute, RoleGuard } from "@/features/auth";
 import { HomePage } from "@/pages/HomePage";
 
 const ProposedHeroDemo = lazy(() =>
@@ -120,7 +121,14 @@ export const communityRoutes: RouteObject[] = [
       },
       {
         path: "dashboard/org",
-        element: <OrgAdminDashboardPage />,
+        element: (
+          <RoleGuard
+            roles={[USER_ROLES.OrgAdmin, USER_ROLES.PlatformAdmin]}
+            allowScopedOrgAdmin
+          >
+            <OrgAdminDashboardPage />
+          </RoleGuard>
+        ),
       },
     ],
   },

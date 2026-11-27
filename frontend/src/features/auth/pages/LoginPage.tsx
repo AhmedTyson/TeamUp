@@ -72,11 +72,17 @@ export function LoginPage() {
       toast.success(`Welcome back, ${result.student.firstName}!`);
 
       const state = location.state as RedirectLocationState | null;
+      const queryRedirect = searchParams.get("redirect");
       const fromPath = state?.from?.pathname;
       const fromSearch = state?.from?.search ?? "";
-      const safeRedirect =
-        fromPath && fromPath.startsWith("/") && !fromPath.startsWith("/auth")
-          ? `${fromPath}${fromSearch}`
+      const isSafeRelative = (target: string | null | undefined): target is string =>
+        Boolean(target && target.startsWith("/") && !target.startsWith("//") && !target.startsWith("/auth"));
+
+      const stateTarget = fromPath ? `${fromPath}${fromSearch}` : null;
+      const safeRedirect = isSafeRelative(stateTarget)
+        ? stateTarget
+        : isSafeRelative(queryRedirect)
+          ? queryRedirect
           : "/projects";
 
       void navigate(safeRedirect, { replace: true });
@@ -141,14 +147,14 @@ export function LoginPage() {
             New to TeamUp?{" "}
             <Link
               to="/auth/register"
-              className="font-semibold text-[#d3fb52] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+              className="font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
             >
               Create a student account
             </Link>
           </span>
           <Link
             to="/auth/forgot-password"
-            className="font-medium text-white/80 hover:text-[#d3fb52] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
+            className="font-medium text-white/80 no-underline transition-colors hover:text-[#d3fb52] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
           >
             Forgot password?
           </Link>

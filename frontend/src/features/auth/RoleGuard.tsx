@@ -13,6 +13,8 @@ export interface RoleGuardProps {
   roles: readonly UserRole[];
   /** Optional scoped organization ID; allows PlatformAdmin or scoped org_admin of this club. */
   requireOrgAdminOf?: number;
+  /** When true, also grants access to students holding at least one scoped organization admin assignment. */
+  allowScopedOrgAdmin?: boolean;
   fallback?: ReactNode;
   children?: ReactNode;
 }
@@ -20,10 +22,11 @@ export interface RoleGuardProps {
 export function RoleGuard({
   roles,
   requireOrgAdminOf,
+  allowScopedOrgAdmin = false,
   fallback,
   children,
 }: RoleGuardProps) {
-  const { user, isAuthenticated, isLoading, isOrgAdminOf } = useAuth();
+  const { user, isAuthenticated, isLoading, isOrgAdminOf, orgAdminIds } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -43,7 +46,8 @@ export function RoleGuard({
     return <Navigate to="/auth/login" replace state={{ from: location }} />;
   }
 
-  const hasRequiredRole = roles.includes(user.role);
+  const hasRequiredRole =
+    roles.includes(user.role) || (allowScopedOrgAdmin && orgAdminIds.length > 0);
   const hasScopedOrgAccess =
     requireOrgAdminOf === undefined || isOrgAdminOf(requireOrgAdminOf);
 

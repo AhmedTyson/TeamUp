@@ -67,3 +67,6 @@ export type { ErrorBannerProps, ErrorBannerVariant } from "./ErrorBanner";
 
 export { UniversityLogo } from "./UniversityLogo";
 export type { UniversityLogoProps } from "./UniversityLogo";
+
+export { VerifiedStudentBadge } from "./VerifiedStudentBadge";
+export type { VerifiedStudentBadgeProps } from "./VerifiedStudentBadge";

@@ -1,10 +1,11 @@
 /**
  * @date 2026-11-22
- * @purpose Student Directory Card component enforcing THR-I-01 email privacy masking and safe routing.
+ * @purpose Student Directory Card component enforcing THR-I-01 email privacy masking, Verified Student badge, and full-card clickability.
  */
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { StudentCardDto } from "@/api/students.api";
-import { Avatar, Badge } from "@/components/ui";
+import { Avatar, Badge, VerifiedStudentBadge } from "@/components/ui";
 import { useAuth } from "@/features/auth";
 
 export interface StudentCardProps {
@@ -16,9 +17,10 @@ export function StudentCard({ student }: StudentCardProps) {
   const fullName = `${student.firstName} ${student.lastName}`;
   const isSelfPrivate =
     user?.studentId === student.studentId && user.showEmailInDirectory === false;
+  const profileUrl = `/students/${student.studentId}`;
 
   return (
-    <article className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#1b1d26] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/40 shadow-sm">
+    <article className="group relative flex min-w-0 cursor-pointer flex-col justify-between gap-4 rounded-2xl border border-white/[0.085] bg-[#1b1d26] p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/40">
       <div className="space-y-3">
         {/* Top Header */}
         <div className="flex items-start gap-3.5">
@@ -26,14 +28,19 @@ export function StudentCard({ student }: StudentCardProps) {
             src={student.photoUrl ?? undefined}
             name={fullName}
             size="md"
-            className="ring-2 ring-white/10 shrink-0"
+            className="shrink-0 ring-2 ring-white/10 transition-all group-hover:ring-[#d3fb52]/50"
           />
           <div className="min-w-0 flex-1">
             <h3
               className="truncate text-base font-bold text-white"
               style={{ fontFamily: "var(--font-heading)" }}
             >
-              {fullName}
+              <Link
+                to={profileUrl}
+                className="transition-colors group-hover:text-[#d3fb52] after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+              >
+                {fullName}
+              </Link>
             </h3>
             <p className="truncate text-xs text-[#9ca3af]">
               {student.facultyName} · Year {student.academicYear}
@@ -43,13 +50,13 @@ export function StudentCard({ student }: StudentCardProps) {
         </div>
 
         {/* Email Privacy Mask (STRIDE THR-I-01) */}
-        <div className="rounded-xl border border-white/[0.06] bg-[#14151c] px-3 py-1.5 text-xs flex flex-wrap items-center gap-x-1.5 gap-y-1">
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-xl border border-white/[0.06] bg-[#14151c] px-3 py-1.5 text-xs">
           <span className="text-[#9ca3af]">Directory Email:</span>
           {student.email ? (
             <>
               <a
                 href={`mailto:${student.email}`}
-                className="font-mono text-white/90 hover:text-[#d3fb52] hover:underline break-all"
+                className="relative z-10 break-all font-mono text-white/90 transition-colors hover:text-[#d3fb52]"
               >
                 {student.email}
               </a>
@@ -73,7 +80,7 @@ export function StudentCard({ student }: StudentCardProps) {
               </Badge>
             ))}
             {student.interests.length > 4 && (
-              <span className="text-[10px] text-[#9ca3af] self-center">
+              <span className="self-center text-[10px] text-[#9ca3af]">
                 +{student.interests.length - 4} more
               </span>
             )}
@@ -82,14 +89,19 @@ export function StudentCard({ student }: StudentCardProps) {
       </div>
 
       {/* Bottom CTA */}
-      <div className="flex items-center justify-between border-t border-white/[0.07] pt-3 text-xs">
-        <span className="font-mono text-[11px] text-[#d3fb52]">Verified Student</span>
-        <Link
-          to={`/students/${student.studentId}`}
-          className="font-semibold text-white/90 hover:text-[#d3fb52] focus-visible:outline-none focus-visible:underline"
-        >
-          View Portfolio →
-        </Link>
+      <div className="flex items-center justify-between gap-2 border-t border-white/[0.07] pt-3 text-xs">
+        {student.isEmailVerified ? (
+          <VerifiedStudentBadge verified size="sm" />
+        ) : (
+          <span className="font-mono text-[11px] text-white/45">Unverified Account</span>
+        )}
+        <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 font-semibold text-white/90 transition-all duration-200 group-hover:bg-[#d3fb52]/12 group-hover:text-[#d3fb52]">
+          <span>View Portfolio</span>
+          <ArrowRight
+            className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
+            aria-hidden="true"
+          />
+        </span>
       </div>
     </article>
   );

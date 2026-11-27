@@ -43,6 +43,7 @@ export interface LeaderboardEntryDto {
   totalPoints: number;
   level: number;
   photoUrl?: string | null;
+  isEmailVerified?: boolean;
 }
 
 export interface LeaderboardQueryParams {

@@ -6,14 +6,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
+  BadgeCheck,
   Bell,
   Camera,
   Eye,
   EyeOff,
   GraduationCap,
   Loader2,
+  MailCheck,
   Plus,
   Save,
+  Send,
   Trash2,
 } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
@@ -22,6 +25,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   AFFILIATION_TYPES,
+  authApi,
   studentsApi,
   type StudentDetailDto,
 } from "@/api";
@@ -33,6 +37,7 @@ import {
   Input,
   Select,
   Textarea,
+  VerifiedStudentBadge,
 } from "@/components/ui";
 import { useAuth } from "@/features/auth";
 import { StudentSkillsPanel } from "@/features/skills/StudentSkillsPanel";
@@ -56,6 +61,22 @@ export function SelfProfileStudioPage() {
   const [newInterest, setNewInterest] = useState("");
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+
+  const sendVerificationMutation = useMutation({
+    mutationFn: () => authApi.sendVerificationEmail(),
+    onSuccess: async (res) => {
+      setVerificationSent(true);
+      toast.success(res.message);
+      if (res.alreadyVerified) {
+        await queryClient.invalidateQueries({ queryKey: queryKeys.auth.me });
+        await refreshSession();
+      }
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Could not send verification email.");
+    },
+  });
 
   const meQuery = useQuery({
     queryKey: queryKeys.auth.me,
@@ -270,10 +291,17 @@ export function SelfProfileStudioPage() {
               className="ring-4 ring-white/15 shrink-0"
             />
             <div className="space-y-1">
-              <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-[#d3fb52]">
-                <GraduationCap className="size-3.5" aria-hidden="true" />
-                Account &amp; Portfolio Studio
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-[#d3fb52]">
+                  <GraduationCap className="size-3.5" aria-hidden="true" />
+                  Account &amp; Portfolio Studio
+                </span>
+                <VerifiedStudentBadge
+                  verified={Boolean(student.isEmailVerified)}
+                  showUnverified
+                  size="sm"
+                />
+              </div>
               <h1
                 className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
                 style={{ fontFamily: "var(--font-heading)" }}
@@ -363,6 +391,53 @@ export function SelfProfileStudioPage() {
                 </div>
               </div>
 
+              {/* Campus Email Verification Card */}
+              {student.isEmailVerified ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-100">
+                  <div className="flex items-center gap-2.5">
+                    <BadgeCheck className="size-4 shrink-0 text-[#d3fb52]" aria-hidden="true" />
+                    <div>
+                      <p className="font-semibold text-white">Verified Student Status Active</p>
+                      <p className="text-[11px] text-emerald-200/80">
+                        Your email ({student.email}) is verified and displayed on your profile.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col justify-between gap-3 rounded-2xl border border-amber-400/30 bg-amber-400/[0.07] p-4 sm:flex-row sm:items-center">
+                  <div className="flex items-start gap-2.5">
+                    <MailCheck className="mt-0.5 size-4 shrink-0 text-amber-300" aria-hidden="true" />
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-white">Verify your campus email</p>
+                      <p className="text-[11px] leading-relaxed text-white/75">
+                        {verificationSent
+                          ? "Verification email dispatched. Open the link from your inbox or enter the token on the verification screen."
+                          : "Confirm your email address to unlock your Verified Student badge across directories and squads."}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="primary"
+                      isLoading={sendVerificationMutation.isPending}
+                      leftIcon={<Send className="size-3.5" aria-hidden="true" />}
+                      onClick={() => sendVerificationMutation.mutate()}
+                    >
+                      {verificationSent ? "Resend Link" : "Send Verification Link"}
+                    </Button>
+                    <Link
+                      to="/auth/verify-email"
+                      className="inline-flex h-8 items-center rounded-xl border border-white/15 bg-[#14151c] px-3 text-xs font-semibold text-white/85 transition-colors hover:border-[#d3fb52]/45 hover:text-[#d3fb52]"
+                    >
+                      Enter Token
+                    </Link>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Select
                   name="affiliationType"
@@ -439,7 +514,7 @@ export function SelfProfileStudioPage() {
                       and faculty to contact you directly.{" "}
                       <Link
                         to="/privacy"
-                        className="font-semibold text-[#d3fb52] hover:underline focus-visible:outline-none focus-visible:underline"
+                        className="font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d3fb52]"
                       >
                         Read Privacy &amp; Policy →
                       </Link>
@@ -662,15 +737,15 @@ export function SelfProfileStudioPage() {
               <Input
                 value={newInterest}
                 onChange={(e) => setNewInterest(e.target.value)}
-                placeholder="e.g. Machine Learning, Robotics..."
-                className="h-9 text-xs"
+                placeholder="e.g. Machine Learning, Robotics"
+                containerClassName="min-w-0 flex-1"
               />
               <Button
                 type="submit"
                 variant="primary"
-                size="sm"
+                size="md"
                 disabled={!newInterest.trim() || addInterestMutation.isPending}
-                className="h-9 shrink-0 gap-1"
+                className="shrink-0 gap-1"
               >
                 <Plus className="size-3.5" aria-hidden="true" />
                 Add

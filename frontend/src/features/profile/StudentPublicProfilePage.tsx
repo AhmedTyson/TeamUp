@@ -23,6 +23,7 @@ import {
   ConfirmDialog,
   EmptyState,
   ErrorBanner,
+  VerifiedStudentBadge,
 } from "@/components/ui";
 import { useAuth } from "@/features/auth";
 import { StudentGamificationSummary } from "@/features/gamification/StudentGamificationSummary";
@@ -113,11 +114,16 @@ export function StudentPublicProfilePage() {
               className="ring-4 ring-white/15 shrink-0"
             />
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-full border border-[#d3fb52]/35 bg-[#d3fb52]/10 px-2.5 py-0.5 text-xs font-bold text-[#d3fb52]">
                   <GraduationCap className="size-3" aria-hidden="true" />
                   Year {student.academicYear} Student
                 </span>
+                <VerifiedStudentBadge
+                  verified={Boolean(student.isEmailVerified)}
+                  showUnverified
+                  size="sm"
+                />
                 {isMe && (
                   <Badge variant="accent" size="sm">
                     You

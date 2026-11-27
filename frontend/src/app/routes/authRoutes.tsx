@@ -27,6 +27,11 @@ const ResetPasswordPage = lazy(() =>
     default: m.ResetPasswordPage,
   })),
 );
+const VerifyEmailPage = lazy(() =>
+  import("@/features/auth/pages/VerifyEmailPage").then((m) => ({
+    default: m.VerifyEmailPage,
+  })),
+);
 
 const AdminDashboardPage = lazy(() =>
   import("@/features/admin").then((m) => ({ default: m.AdminDashboardPage })),
@@ -54,6 +59,10 @@ export const authRoutes: RouteObject[] = [
   {
     path: "auth",
     element: <Navigate to="/auth/login" replace />,
+  },
+  {
+    path: "auth/verify-email",
+    element: <VerifyEmailPage />,
   },
   {
     element: <GuestOnlyRoute />,

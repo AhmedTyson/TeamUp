@@ -17,6 +17,8 @@ export const API_ENDPOINTS = {
     logout: `${V1}/auth/logout`,
     forgotPassword: `${V1}/auth/forgot-password`,
     resetPassword: `${V1}/auth/reset-password`,
+    sendVerificationEmail: `${V1}/auth/send-verification-email`,
+    verifyEmail: `${V1}/auth/verify-email`,
   },
 
   universities: {

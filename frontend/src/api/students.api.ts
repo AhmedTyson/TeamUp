@@ -22,6 +22,7 @@ export interface PublicStudentShowcaseItem {
   level: number;
   badgesCount: number;
   topSkills: readonly string[];
+  isEmailVerified?: boolean;
 }
 
 export interface StudentProfileDto {
@@ -69,6 +70,7 @@ export interface StudentDetailDto {
   receiveProjectMatchEmails?: boolean;
   affiliationType?: AffiliationType;
   city?: string | null;
+  isEmailVerified?: boolean;
 }
 
 export interface StudentCardDto {
@@ -85,6 +87,7 @@ export interface StudentCardDto {
   photoUrl?: string | null;
   affiliationType?: AffiliationType;
   city?: string | null;
+  isEmailVerified?: boolean;
 }
 
 export interface StudentPublicProfileDto {
@@ -99,6 +102,7 @@ export interface StudentPublicProfileDto {
   email?: string | null;
   affiliationType?: AffiliationType;
   city?: string | null;
+  isEmailVerified?: boolean;
 }
 
 export interface StudentDirectoryQueryParams {

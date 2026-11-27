@@ -2,7 +2,7 @@
  * @date 2026-11-24
  * @purpose Dedicated Student Dashboard summarizing XP & level progress, registered Event Digital Passes, active community applications, open squads, notifications, and full platform directory.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   Award,
@@ -10,14 +10,19 @@ import {
   Building2,
   CalendarDays,
   FolderKanban,
+  MailCheck,
   Plus,
   QrCode,
+  Send,
   Sparkles,
   Trophy,
   UserCheck,
 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import {
+  authApi,
   gamificationApi,
   notificationsApi,
   projectsApi,
@@ -25,6 +30,7 @@ import {
 } from "@/api";
 import {
   Badge,
+  Button,
   Card,
   EmptyState,
   Skeleton,
@@ -51,8 +57,25 @@ const QUICK_WORKSPACE_LINKS = [
 ] as const;
 
 export function StudentDashboardPage() {
-  const { user } = useAuth();
+  const { user, refreshSession } = useAuth();
+  const queryClient = useQueryClient();
+  const [verificationSent, setVerificationSent] = useState(false);
   const studentId = user?.studentId ?? 0;
+
+  const sendVerificationMutation = useMutation({
+    mutationFn: () => authApi.sendVerificationEmail(),
+    onSuccess: async (res) => {
+      setVerificationSent(true);
+      toast.success(res.message);
+      if (res.alreadyVerified) {
+        await queryClient.invalidateQueries({ queryKey: queryKeys.auth.me });
+        await refreshSession();
+      }
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "Could not send verification email.");
+    },
+  });
 
   const scoreQuery = useQuery({
     queryKey: queryKeys.gamification.score(studentId),
@@ -90,6 +113,39 @@ export function StudentDashboardPage() {
   return (
     <div className="space-y-6">
       <DashboardRoleSwitcher />
+
+      {user && !user.isEmailVerified && (
+        <div className="flex flex-col justify-between gap-3 rounded-2xl border border-amber-400/35 bg-amber-400/[0.08] px-5 py-4 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-3">
+            <MailCheck className="mt-0.5 size-5 shrink-0 text-amber-300" aria-hidden="true" />
+            <div>
+              <p className="text-sm font-bold text-white">Verify your campus email address</p>
+              <p className="text-xs text-white/75">
+                {verificationSent
+                  ? "Verification link sent! Check your inbox or enter your token to earn your Verified Student badge."
+                  : `Confirm ${user.email} to activate your Verified Student badge across the directory and leaderboards.`}
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="primary"
+              isLoading={sendVerificationMutation.isPending}
+              leftIcon={<Send className="size-3.5" aria-hidden="true" />}
+              onClick={() => sendVerificationMutation.mutate()}
+            >
+              {verificationSent ? "Resend Verification Link" : "Send Verification Link"}
+            </Button>
+            <Link
+              to="/auth/verify-email"
+              className="inline-flex h-8 items-center rounded-xl border border-white/15 bg-[#14151c] px-3 text-xs font-semibold text-white transition-colors hover:border-[#d3fb52]/40 hover:text-[#d3fb52]"
+            >
+              Verify Token
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Student Welcome & KPI Header */}
       <section className="rounded-[28px] border border-white/10 bg-[radial-gradient(ellipse_at_85%_0%,rgba(211,251,82,0.16),transparent_48%),linear-gradient(135deg,#1b1d26,#14151c)] p-6 shadow-2xl sm:p-8">
@@ -190,7 +246,7 @@ export function StudentDashboardPage() {
                 Synced cross-device with attendance counts and calendar passes.
               </p>
             </div>
-            <Link to="/events" className="text-xs font-semibold text-[#d3fb52] hover:underline">
+            <Link to="/events" className="text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]">
               Browse events →
             </Link>
           </div>
@@ -244,7 +300,7 @@ export function StudentDashboardPage() {
             </div>
             <Link
               to="/organizations?scope=recruiting"
-              className="text-xs font-semibold text-[#d3fb52] hover:underline"
+              className="text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
             >
               Open recruitment →
             </Link>
@@ -296,7 +352,7 @@ export function StudentDashboardPage() {
         <Card className="space-y-4 p-5 sm:p-6">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-lg font-bold text-white">Recruiting Project Squads</h2>
-            <Link to="/projects" className="text-xs font-semibold text-[#d3fb52] hover:underline">
+            <Link to="/projects" className="text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]">
               All projects →
             </Link>
           </div>
@@ -330,7 +386,7 @@ export function StudentDashboardPage() {
             <h2 className="text-lg font-bold text-white">Recent Notifications</h2>
             <Link
               to="/notifications"
-              className="text-xs font-semibold text-[#d3fb52] hover:underline"
+              className="text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
             >
               Open inbox →
             </Link>
