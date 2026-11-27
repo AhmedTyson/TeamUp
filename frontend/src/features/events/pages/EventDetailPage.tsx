@@ -32,7 +32,6 @@ import {
   useEvent,
   useEventMutations,
   useEventRegistrations,
-  useEventSessions,
   useMyEventRegistration,
 } from "../hooks/useEventHooks";
 import { myEventRegistrationStorage } from "../utils/attendance";
@@ -49,7 +48,6 @@ export function EventDetailPage() {
   const event = eventQuery.data;
 
   const orgQuery = useOrganization(event?.organizationId ?? 0);
-  const sessionsQuery = useEventSessions(eventId);
 
   const canManage = Boolean(
     event &&
@@ -134,7 +132,7 @@ export function EventDetailPage() {
     );
   }
 
-  const sessions = sessionsQuery.data ?? event.sessions;
+  const sessions = event.sessions;
   const registrations = registrationsQuery.data ?? [];
   const adminOwnReg = canManage
     ? registrations.find((reg) => reg.studentId === user?.studentId)

@@ -78,16 +78,6 @@ export function ProjectDetailPage() {
   const isCreator = Boolean(project && user && project.creatorId === user.studentId);
   const isMember = Boolean(currentMember);
 
-  const requiredSkillsQuery = useQuery({
-    queryKey: queryKeys.projects.requiredSkills(projectId),
-    queryFn: ({ signal }) => projectsApi.getRequiredSkills(projectId, signal),
-    enabled: validProjectId,
-  });
-  const membersQuery = useQuery({
-    queryKey: queryKeys.projects.members(projectId),
-    queryFn: ({ signal }) => projectsApi.getMembers(projectId, signal),
-    enabled: validProjectId,
-  });
   // The applications list is creator-only on the backend; non-creators used to fire it on every
   // page view, always got 403, and therefore could never see or withdraw their own application.
   const applicationsQuery = useQuery({
@@ -128,9 +118,7 @@ export function ProjectDetailPage() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: projectKey }),
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.all }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.requiredSkills(projectId) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.members(projectId) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.applications(projectId) }),
+                  queryClient.invalidateQueries({ queryKey: queryKeys.projects.applications(projectId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.myApplication(projectId, user?.studentId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.tasks(projectId) }),
     ]);
@@ -304,7 +292,7 @@ export function ProjectDetailPage() {
     ? (applicationsQuery.data ?? []).find((application) => application.studentId === user?.studentId)
     : (myApplicationQuery.data ?? undefined);
   const availableSkills = (skillsQuery.data ?? []).filter(
-    (skill) => !(requiredSkillsQuery.data ?? []).some((required) => required.skillId === skill.skillId),
+    (skill) => !(project?.requiredSkills ?? []).some((required) => required.skillId === skill.skillId),
   );
   const claimedSkillIds = new Set((studentSkillsQuery.data ?? []).map((skill) => skill.skillId));
 
@@ -417,10 +405,9 @@ export function ProjectDetailPage() {
         <section className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
           <div className="rounded-2xl border border-white/10 bg-[#1b1d26] p-5">
             <h2 className="text-lg font-semibold text-white">Required skills</h2>
-            {requiredSkillsQuery.isError && <ErrorBanner className="mt-4" error={requiredSkillsQuery.error} />}
             {studentSkillsQuery.isError && <ErrorBanner className="mt-3" error={studentSkillsQuery.error} title="Could not compare your claimed skills" />}
             <div className="mt-4 flex flex-wrap gap-2">
-              {(requiredSkillsQuery.data ?? project.requiredSkills).map((skill) => (
+              {project.requiredSkills.map((skill) => (
                 <div key={skill.skillId} className="flex flex-wrap items-center gap-2 rounded-xl bg-[#14151c] px-3 py-2 text-xs text-white/80">
                   <span>{skill.name}</span>
                   {user && (
@@ -461,7 +448,7 @@ export function ProjectDetailPage() {
                   )}
                 </div>
               ))}
-              {(requiredSkillsQuery.data ?? project.requiredSkills).length === 0 && <p className="text-sm text-white/50">No skills added yet.</p>}
+              {project.requiredSkills.length === 0 && <p className="text-sm text-white/50">No skills added yet.</p>}
             </div>
             {isCreator && (
               <div className="mt-5 grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-2">
@@ -514,8 +501,7 @@ export function ProjectDetailPage() {
       {tab === "team" && (
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-white">Team roster</h2>
-          {membersQuery.isError && <ErrorBanner error={membersQuery.error} onRetry={() => void membersQuery.refetch()} />}
-          {(membersQuery.data ?? project.members).map((member) => (
+          {project.members.map((member) => (
             <article key={member.studentId} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#1b1d26] p-4">
               <Link to={`/students/${member.studentId}`} className="flex items-center gap-3 hover:opacity-80">
                 <Avatar name={`${member.firstName} ${member.lastName}`} size="md" />
@@ -547,7 +533,7 @@ export function ProjectDetailPage() {
               </div>
             </article>
           ))}
-          {(membersQuery.data ?? project.members).length === 0 && <p className="text-sm text-white/55">No team members yet.</p>}
+          {project.members.length === 0 && <p className="text-sm text-white/55">No team members yet.</p>}
         </section>
       )}
 
@@ -643,10 +629,10 @@ export function ProjectDetailPage() {
                                   label="Assign to member"
                                   value={task.assignedStudentId ?? ""}
                                   placeholder="Unassigned"
-                                  options={(membersQuery.data ?? project.members).map((member) => ({ value: member.studentId, label: `${member.firstName} ${member.lastName}` }))}
+                                  options={project.members.map((member) => ({ value: member.studentId, label: `${member.firstName} ${member.lastName}` }))}
                                   onChange={(event) => {
                                     const nextId = Number(event.target.value);
-                                    if (event.target.value && (membersQuery.data ?? project.members).some((member) => member.studentId === nextId)) {
+                                    if (event.target.value && project.members.some((member) => member.studentId === nextId)) {
                                       assignTask.mutate({ taskId: task.taskId, studentId: nextId });
                                     } else {
                                       unassignTask.mutate(task.taskId);

@@ -44,7 +44,6 @@ import {
   useOrganizationHierarchy,
   useOrganizationMutations,
   useOrganizationParticipants,
-  useOrganizationUnits,
 } from "../hooks/useOrganizationHooks";
 import {
   canManageOrganization,
@@ -101,8 +100,7 @@ export function OrganizationDetailPage() {
   );
   const isMember = isOrganizationMember(user?.studentId, members);
 
-  const unitsQuery = useOrganizationUnits(id, Boolean(org) && isAuthenticated);
-  const units = unitsQuery.data ?? org?.units ?? [];
+  const units = org?.units ?? [];
   const hierarchyQuery = useOrganizationHierarchy(id, Boolean(org) && tab === "hierarchy");
   const participantsQuery = useOrganizationParticipants(
     id,
