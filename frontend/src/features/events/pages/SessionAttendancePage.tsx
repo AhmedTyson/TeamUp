@@ -4,7 +4,7 @@
  */
 import { ArrowLeft, ClipboardList, Download, Printer } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Badge,
@@ -253,7 +253,12 @@ export function SessionAttendancePage() {
                 {attendance.map((record) => (
                   <tr key={record.studentId} className="border-t border-white/10">
                     <td className="p-3 font-medium text-white">
-                      {record.firstName} {record.lastName}
+                      <Link
+                        to={`/students/${record.studentId}`}
+                        className="transition-colors hover:text-[#d3fb52]"
+                      >
+                        {record.firstName} {record.lastName}
+                      </Link>
                     </td>
                     <td className="p-3 text-white/75">
                       {new Date(record.checkInTime).toLocaleTimeString()}

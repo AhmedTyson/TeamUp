@@ -518,36 +518,41 @@ describe("20-Item Plan & Role Dashboards Suite", () => {
     ];
 
     render(
-      <RecruitmentPipelineTab
-        organizationId={7}
-        currentStudentId={1}
-        canManage
-        canReviewRecruitment
-        isMember
-        units={[
-          {
-            organizationUnitId: 1,
-            organizationId: 7,
-            name: "Computer Society (CS)",
-            code: "CS",
-            description: "Backend & AI",
-            unitType: ORGANIZATION_UNIT_TYPES.TechnicalChapter,
-            isRecruiting: true,
-            openSeats: 10,
-            memberCount: 5,
-          },
-        ]}
-        applications={apps}
-        isLoadingApps={false}
-        appsError={null}
-        isBusy={false}
-        onApply={vi.fn()}
-        onWithdraw={vi.fn()}
-        onReview={vi.fn()}
-        onUpdateStage={updateStageMock}
-        onExportCsv={vi.fn()}
-      />,
+      <MemoryRouter>
+        <RecruitmentPipelineTab
+          organizationId={7}
+          currentStudentId={1}
+          canManage
+          canReviewRecruitment
+          isMember
+          units={[
+            {
+              organizationUnitId: 1,
+              organizationId: 7,
+              name: "Computer Society (CS)",
+              code: "CS",
+              description: "Backend & AI",
+              unitType: ORGANIZATION_UNIT_TYPES.TechnicalChapter,
+              isRecruiting: true,
+              openSeats: 10,
+              memberCount: 5,
+            },
+          ]}
+          applications={apps}
+          isLoadingApps={false}
+          appsError={null}
+          isBusy={false}
+          onApply={vi.fn()}
+          onWithdraw={vi.fn()}
+          onReview={vi.fn()}
+          onUpdateStage={updateStageMock}
+          onExportCsv={vi.fn()}
+        />
+      </MemoryRouter>,
     );
+
+    const applicantLink = screen.getByRole("link", { name: "Hana Mahmoud" });
+    expect(applicantLink).toHaveAttribute("href", "/students/50");
 
     expect(screen.getByText("1. Applied")).toBeInTheDocument();
     expect(screen.getByText("2. HR Screening")).toBeInTheDocument();

@@ -12,7 +12,7 @@ import {
   type OrganizationUnit,
   type UpdateMemberRolePayload,
 } from "@/api";
-import { Badge, Button, ConfirmDialog, EmptyState, Select, StatusPill } from "@/components/ui";
+import { Avatar, Badge, Button, ConfirmDialog, EmptyState, Select, StatusPill } from "@/components/ui";
 
 export interface OrganizationMembersTabProps {
   members: readonly OrganizationMember[];
@@ -94,12 +94,13 @@ export function OrganizationMembersTab({
             className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#14151c] p-4"
           >
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <Link
                   to={`/students/${member.studentId}`}
-                  className="font-semibold text-white transition-colors hover:text-[#d3fb52]"
+                  className="group inline-flex items-center gap-2 font-semibold text-white transition-colors hover:text-[#d3fb52]"
                 >
-                  {fullName}
+                  <Avatar name={fullName} size="xs" className="ring-1 ring-white/15 group-hover:ring-[#d3fb52]" />
+                  <span>{fullName}</span>
                 </Link>
                 {isSelf && <StatusPill status="Confirmed" label="You" showDot={false} />}
                 {member.unitCode && (
@@ -125,7 +126,7 @@ export function OrganizationMembersTab({
                     value={member.role}
                     disabled={isBusy}
                     containerClassName="w-full sm:w-auto"
-                    className="h-9 w-full bg-[#1b1d26] text-xs sm:min-w-[140px]"
+                    className="h-9 min-h-[36px] w-full bg-[#1b1d26] py-1.5 text-xs sm:min-h-[36px] sm:min-w-[140px]"
                     onChange={async (e) => {
                       const nextRole = e.target.value;
                       try {
@@ -146,7 +147,7 @@ export function OrganizationMembersTab({
                       value={member.organizationUnitId ? String(member.organizationUnitId) : "0"}
                       disabled={isBusy}
                       containerClassName="w-full sm:w-auto"
-                      className="h-9 w-full bg-[#1b1d26] text-xs sm:min-w-[155px]"
+                      className="h-9 min-h-[36px] w-full bg-[#1b1d26] py-1.5 text-xs sm:min-h-[36px] sm:min-w-[155px]"
                       onChange={async (e) => {
                         const val = Number(e.target.value);
                         try {

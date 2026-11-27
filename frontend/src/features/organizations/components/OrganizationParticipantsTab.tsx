@@ -4,6 +4,7 @@
  */
 import { Award, CalendarCheck2, GraduationCap } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import type { OrganizationParticipant } from "@/api";
 import { Avatar, Badge, Button, Card, EmptyState, Modal, Skeleton } from "@/components/ui";
 
@@ -62,12 +63,20 @@ export function OrganizationParticipantsTab({
         {participants.map((p) => {
           const fullName = `${p.firstName} ${p.lastName}`;
           return (
-            <Card key={p.studentId} className="flex flex-col justify-between gap-3 bg-[#14151c] p-4">
+            <Card
+              key={p.studentId}
+              className="group relative flex cursor-pointer flex-col justify-between gap-3 bg-[#14151c] p-4 transition-colors hover:border-[#d3fb52]/40"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <Avatar name={fullName} size="sm" />
+                  <Avatar name={fullName} size="sm" className="ring-1 ring-white/15 group-hover:ring-[#d3fb52]" />
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-white">{fullName}</p>
+                    <Link
+                      to={`/students/${p.studentId}`}
+                      className="block truncate font-semibold text-white transition-colors group-hover:text-[#d3fb52] after:absolute after:inset-0 after:content-['']"
+                    >
+                      {fullName}
+                    </Link>
                     <p className="truncate text-xs text-white/55">{p.affiliationLabel}</p>
                   </div>
                 </div>
@@ -84,6 +93,7 @@ export function OrganizationParticipantsTab({
                 <Button
                   size="sm"
                   variant="ghost"
+                  className="relative z-10"
                   leftIcon={<Award className="size-3.5 text-[#d3fb52]" />}
                   onClick={() => setCertTarget(p)}
                 >
@@ -107,7 +117,13 @@ export function OrganizationParticipantsTab({
                 TEAMUP VERIFIED ACTIVITY RECORD
               </p>
               <h3 className="mt-3 text-2xl font-bold text-white">
-                {certTarget.firstName} {certTarget.lastName}
+                <Link
+                  to={`/students/${certTarget.studentId}`}
+                  onClick={() => setCertTarget(null)}
+                  className="transition-colors hover:text-[#d3fb52]"
+                >
+                  {certTarget.firstName} {certTarget.lastName}
+                </Link>
               </h3>
               <p className="mt-1 text-xs text-white/60">{certTarget.affiliationLabel}</p>
               <p className="mt-4 text-sm leading-relaxed text-white/80">

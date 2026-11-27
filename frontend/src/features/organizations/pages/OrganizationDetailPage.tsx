@@ -104,8 +104,13 @@ export function OrganizationDetailPage() {
   const unitsQuery = useOrganizationUnits(id, Boolean(org) && isAuthenticated);
   const units = unitsQuery.data ?? org?.units ?? [];
   const hierarchyQuery = useOrganizationHierarchy(id, Boolean(org) && tab === "hierarchy");
-  const participantsQuery = useOrganizationParticipants(id, Boolean(org) && tab === "participants");
-  const myAppsQuery = useMyOrganizationApplications(Boolean(org) && !canReviewRecruitment);
+  const participantsQuery = useOrganizationParticipants(
+    id,
+    Boolean(org) && isAuthenticated && tab === "participants",
+  );
+  const myAppsQuery = useMyOrganizationApplications(
+    Boolean(org) && isAuthenticated && !canReviewRecruitment,
+  );
   const appsQuery = useOrganizationApplications(id, Boolean(org && canReviewRecruitment));
   const mutations = useOrganizationMutations(id);
 
@@ -215,7 +220,7 @@ export function OrganizationDetailPage() {
                   href={org.websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[#d3fb52] hover:underline"
+                  className="inline-flex items-center gap-1 text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
                 >
                   <Globe className="size-3.5" aria-hidden="true" />
                   Official website
@@ -243,6 +248,8 @@ export function OrganizationDetailPage() {
         <Tabs
           value={tab}
           onValueChange={setTab}
+          listClassName="gap-0.5 sm:gap-1"
+          tabClassName="px-2.5 sm:px-3 text-[13px]"
           items={[
             {
               id: "overview",

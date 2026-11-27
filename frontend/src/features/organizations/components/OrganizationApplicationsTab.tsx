@@ -115,9 +115,12 @@ export function OrganizationApplicationsTab({
           >
             <div className="min-w-0 space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-semibold text-white">
+                <Link
+                  to={`/students/${app.studentId}`}
+                  className="font-semibold text-white transition-colors hover:text-[#d3fb52]"
+                >
                   {app.studentFirstName} {app.studentLastName}
-                </p>
+                </Link>
                 {app.unitCode && (
                   <Badge variant="outline" size="sm">
                     {app.unitCode}

@@ -114,7 +114,7 @@ export function OrganizationHierarchyTab({
             value={unitFilter}
             onChange={(e) => setUnitFilter(e.target.value)}
             containerClassName="w-full sm:w-auto"
-            className="h-9 w-full bg-[#1b1d26] text-xs sm:min-w-[200px]"
+            className="h-9 min-h-[36px] w-full bg-[#1b1d26] py-1.5 text-xs sm:min-h-[36px] sm:min-w-[200px]"
           />
           <div className="inline-flex items-center rounded-xl border border-white/15 bg-[#1b1d26] p-0.5">
             <button
@@ -265,17 +265,26 @@ export function OrganizationHierarchyTab({
 
           {selectedMember ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Avatar name={`${selectedMember.firstName} ${selectedMember.lastName}`} size="md" />
+              <Link
+                to={`/students/${selectedMember.studentId}`}
+                className="group flex items-center gap-3 rounded-xl p-1 -m-1 transition-colors hover:bg-white/[0.04]"
+              >
+                <Avatar
+                  name={`${selectedMember.firstName} ${selectedMember.lastName}`}
+                  size="md"
+                  className="ring-1 ring-white/15 group-hover:ring-[#d3fb52]"
+                />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-[#d3fb52]">{selectedMember.role}</p>
+                  <p className="text-sm font-semibold text-[#d3fb52] group-hover:text-[#e6ff8a]">
+                    {selectedMember.role}
+                  </p>
                   <p className="text-xs text-white/60">
                     {selectedMember.unitName
                       ? `${selectedMember.unitCode} · ${selectedMember.unitName}`
                       : "Organization-Wide"}
                   </p>
                 </div>
-              </div>
+              </Link>
 
               <div className="space-y-1.5">
                 <p className="text-xs font-semibold uppercase tracking-wider text-white/55">

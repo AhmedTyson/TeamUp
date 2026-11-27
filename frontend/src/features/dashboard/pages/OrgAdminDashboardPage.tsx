@@ -196,7 +196,7 @@ export function OrgAdminDashboardPage() {
           {activeOrg && (
             <Link
               to={`/organizations/${activeOrg.organizationId}?tab=applications`}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#d3fb52] hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
             >
               Manage Kanban <ArrowRight className="size-3.5" aria-hidden="true" />
             </Link>
@@ -207,28 +207,40 @@ export function OrgAdminDashboardPage() {
           <Skeleton className="h-24 rounded-2xl" />
         ) : (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4">
+            <Link
+              to={activeOrg ? `/organizations/${activeOrg.organizationId}?tab=applications` : "/organizations"}
+              className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4 transition-colors hover:border-[#d3fb52]/40"
+            >
               <p className="text-xs font-medium text-[#9ca3af]">1. Applied</p>
               <p className="mt-1 font-mono text-xl font-bold text-white sm:text-2xl">{funnelCounts.Applied}</p>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4">
+            </Link>
+            <Link
+              to={activeOrg ? `/organizations/${activeOrg.organizationId}?tab=applications` : "/organizations"}
+              className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4 transition-colors hover:border-amber-300/45"
+            >
               <p className="text-xs font-medium text-[#9ca3af]">2. HR Screening</p>
               <p className="mt-1 font-mono text-xl font-bold text-amber-300 sm:text-2xl">
                 {funnelCounts.HrScreening}
               </p>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4">
+            </Link>
+            <Link
+              to={activeOrg ? `/organizations/${activeOrg.organizationId}?tab=applications` : "/organizations"}
+              className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4 transition-colors hover:border-sky-300/45"
+            >
               <p className="text-xs font-medium text-[#9ca3af]">3. Committee Interview</p>
               <p className="mt-1 font-mono text-xl font-bold text-sky-300 sm:text-2xl">
                 {funnelCounts.CommitteeInterview}
               </p>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4">
+            </Link>
+            <Link
+              to={activeOrg ? `/organizations/${activeOrg.organizationId}?tab=applications` : "/organizations"}
+              className="min-w-0 rounded-2xl border border-white/10 bg-[#14151c] p-4 transition-colors hover:border-[#d3fb52]/45"
+            >
               <p className="text-xs font-medium text-[#9ca3af]">4. Accepted</p>
               <p className="mt-1 font-mono text-xl font-bold text-[#d3fb52] sm:text-2xl">
                 {funnelCounts.Accepted}
               </p>
-            </div>
+            </Link>
           </div>
         )}
       </Card>
@@ -242,7 +254,7 @@ export function OrgAdminDashboardPage() {
               Jump straight to live session check-in consoles, stage QR projectors, or CSV exports.
             </p>
           </div>
-          <Link to="/events" className="text-xs font-semibold text-[#d3fb52] hover:underline">
+          <Link to="/events" className="text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]">
             All Events →
           </Link>
         </div>
@@ -254,13 +266,13 @@ export function OrgAdminDashboardPage() {
             {events.map((ev) => (
               <div
                 key={ev.eventId}
-                className="flex flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-[#14151c] p-4"
+                className="group relative flex cursor-pointer flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-[#14151c] p-4 transition-colors hover:border-[#d3fb52]/40"
               >
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
                     <Link
                       to={`/events/${ev.eventId}`}
-                      className="truncate text-sm font-bold text-white hover:text-[#d3fb52]"
+                      className="truncate text-sm font-bold text-white transition-colors group-hover:text-[#d3fb52] after:absolute after:inset-0 after:content-['']"
                     >
                       {ev.title}
                     </Link>
@@ -274,17 +286,14 @@ export function OrgAdminDashboardPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
-                  <Link
-                    to={`/events/${ev.eventId}`}
-                    className="rounded-lg border border-white/15 px-2.5 py-1 text-xs font-semibold text-white/85 hover:border-[#d3fb52]/40 hover:text-[#d3fb52]"
-                  >
+                  <span className="rounded-lg border border-white/15 px-2.5 py-1 text-xs font-semibold text-white/85 transition-colors group-hover:border-[#d3fb52]/40 group-hover:text-[#d3fb52]">
                     Event Hub
-                  </Link>
+                  </span>
                   {ev.sessions.slice(0, 2).map((session) => (
                     <Link
                       key={session.sessionId}
                       to={`/events/${ev.eventId}/sessions/${session.sessionId}/attendance`}
-                      className="inline-flex items-center gap-1 rounded-lg bg-[#d3fb52]/15 px-2.5 py-1 text-xs font-semibold text-[#d3fb52] hover:bg-[#d3fb52]/25"
+                      className="relative z-10 inline-flex items-center gap-1 rounded-lg bg-[#d3fb52]/15 px-2.5 py-1 text-xs font-semibold text-[#d3fb52] transition-colors hover:bg-[#d3fb52]/25"
                     >
                       <QrCode className="size-3" aria-hidden="true" />
                       Session #{session.sessionNo} QR

@@ -52,8 +52,8 @@ export function EventsDirectoryPage() {
   const [searchDraft, setSearchDraft] = useState(searchParam);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { isOrgAdmin, isPlatformAdmin, orgAdminIds } = useAuth();
-  const canCreate = isOrgAdmin || isPlatformAdmin;
+  const { isPlatformAdmin, orgAdminIds } = useAuth();
+  const canCreate = isPlatformAdmin || orgAdminIds.length > 0;
 
   const orgsQuery = useOrganizations({ page: 1, pageSize: 100 });
   const orgList = orgsQuery.data?.items ?? [];
@@ -237,15 +237,14 @@ export function EventsDirectoryPage() {
                 <SpotlightCard
                   key={ev.eventId}
                   showCornerArrow
-                  className="flex flex-col rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 transition hover:-translate-y-0.5 hover:border-[#d3fb52]/30"
+                  className="relative flex cursor-pointer flex-col rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 sm:p-5 transition hover:-translate-y-0.5 hover:border-[#d3fb52]/30"
                 >
                   <CoverImage
                     url={ev.coverImageUrl}
                     alt={`${ev.title} cover`}
                     className="-mx-5 -mt-5 mb-4 aspect-[2/1] rounded-t-2xl"
                   />
-                  {/* Reserved pe-12 prevents overlap with top-end corner arrow */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pe-12">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <StatusPill status={ev.type} />
                       {ev.deliveryMode && (
@@ -263,7 +262,7 @@ export function EventsDirectoryPage() {
                     <h2 className="text-lg font-semibold leading-snug text-white">
                       <Link
                         to={`/events/${ev.eventId}`}
-                        className="transition-colors hover:text-[#d3fb52]"
+                        className="transition-colors group-hover:text-[#d3fb52] after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
                       >
                         {ev.title}
                       </Link>
@@ -283,12 +282,9 @@ export function EventsDirectoryPage() {
                         {ev.registeredCount}/{ev.capacity} ·{" "}
                         {seatsLeft > 0 ? `${seatsLeft} left` : "Waitlist open"}
                       </span>
-                      <Link
-                        to={`/events/${ev.eventId}`}
-                        className="font-semibold text-[#d3fb52] hover:underline"
-                      >
+                      <span className="rounded-lg px-2 py-0.5 font-semibold text-[#d3fb52] transition-colors group-hover:bg-[#d3fb52]/12 group-hover:text-[#e6ff8a]">
                         View details
-                      </Link>
+                      </span>
                     </div>
                   </div>
                 </SpotlightCard>

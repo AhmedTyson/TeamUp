@@ -114,20 +114,39 @@ export function ProjectsDiscoveryPage() {
               ? Math.min(100, Math.round((project.teamSize / project.maxTeamSize) * 100))
               : 0;
             return (
-              <SpotlightCard key={project.projectId} className="flex flex-col justify-between rounded-2xl border border-white/10 bg-[#1b1d26] p-5 transition-colors hover:border-[#d3fb52]/40" showCornerArrow>
-                <div>
+              <SpotlightCard
+                key={project.projectId}
+                className="relative flex cursor-pointer flex-col justify-between rounded-2xl border border-white/10 bg-[#1b1d26] p-5 sm:p-5 transition hover:-translate-y-0.5 hover:border-[#d3fb52]/40"
+                showCornerArrow
+              >
+                <div className="flex-1">
                   <CoverImage
                     url={project.coverImageUrl}
                     alt={`${project.title} cover`}
                     className="-mx-5 -mt-5 mb-4 aspect-[2/1] rounded-t-2xl"
                   />
-                  <div className="flex items-start justify-between gap-3 pr-12">
+                  <div className="flex items-start justify-between gap-3">
                     <StatusPill status={project.status} />
                     <span className="text-xs text-white/50 tabular-nums">{new Date(project.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <h2 className="mt-4 text-lg font-bold text-white">{project.title}</h2>
+                  <h2 className="mt-4 text-lg font-bold text-white">
+                    <Link
+                      to={`/projects/${project.projectId}`}
+                      className="transition-colors group-hover:text-[#d3fb52] after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+                    >
+                      {project.title}
+                    </Link>
+                  </h2>
                   <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-white/60">{project.description}</p>
-                  <p className="mt-4 text-xs text-white/50">Created by {project.creatorName}</p>
+                  <p className="mt-4 text-xs text-white/50">
+                    Created by{" "}
+                    <Link
+                      to={`/students/${project.creatorId}`}
+                      className="relative z-10 font-semibold text-white/80 transition-colors hover:text-[#d3fb52]"
+                    >
+                      {project.creatorName}
+                    </Link>
+                  </p>
                 </div>
                 <div className="mt-5 space-y-3">
                   <div className="flex items-center justify-between text-xs text-white/65">
@@ -145,9 +164,9 @@ export function ProjectsDiscoveryPage() {
                     <div className="h-full rounded-full bg-[#d3fb52]" style={{ width: `${capacity}%` }} />
                   </div>
                   {selectedSkill && <p className="text-xs text-white/45">Filtered by {selectedSkill.name}</p>}
-                  <Link to={`/projects/${project.projectId}`} className="inline-flex items-center gap-2 text-sm font-semibold text-[#d3fb52] hover:underline">
-                    View project <ArrowRight size={15} />
-                  </Link>
+                  <span className="inline-flex items-center gap-2 rounded-lg px-2 py-1 text-sm font-semibold text-[#d3fb52] transition-all duration-200 group-hover:bg-[#d3fb52]/12 group-hover:text-[#e6ff8a]">
+                    View project <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
                 </div>
               </SpotlightCard>
             );

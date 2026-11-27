@@ -38,10 +38,6 @@ const TASK_PRIORITIES_LIST = Object.values(TASK_PRIORITIES);
 const PROJECT_STATUSES_LIST = Object.values(PROJECT_STATUSES);
 const PROFICIENCY_LIST = Object.values(PROFICIENCY_LEVELS);
 
-function isLeadRole(role: string | undefined): boolean {
-  return Boolean(role && /lead/i.test(role));
-}
-
 function dateInputValue(value: string | null): string {
   return value ? value.slice(0, 10) : "";
 }
@@ -79,9 +75,6 @@ export function ProjectDetailPage() {
   });
   const project = projectQuery.data;
   const currentMember = project?.members.find((member) => member.studentId === user?.studentId);
-  const isLead = Boolean(
-    project && user && (project.creatorId === user.studentId || isLeadRole(currentMember?.role)),
-  );
   const isCreator = Boolean(project && user && project.creatorId === user.studentId);
   const isMember = Boolean(currentMember);
 
@@ -115,7 +108,7 @@ export function ProjectDetailPage() {
   const skillsQuery = useQuery({
     queryKey: queryKeys.skills.list(),
     queryFn: ({ signal }) => skillsApi.list({}, signal),
-    enabled: isLead,
+    enabled: isCreator,
   });
   const studentSkillsQuery = useQuery({
     queryKey: queryKeys.students.skills(user?.studentId ?? 0),
@@ -357,13 +350,21 @@ export function ProjectDetailPage() {
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill status={project.status} />
-              <span className="text-xs text-white/45">Created by {project.creatorName}</span>
+              <span className="text-xs text-white/45">
+                Created by{" "}
+                <Link
+                  to={`/students/${project.creatorId}`}
+                  className="font-semibold text-white/80 transition-colors hover:text-[#d3fb52]"
+                >
+                  {project.creatorName}
+                </Link>
+              </span>
             </div>
             <h1 className="mt-3 text-3xl font-bold text-white">{project.title}</h1>
             <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-white/60">{project.description}</p>
             <p className="mt-4 text-xs text-white/45">{project.teamSize} of {project.maxTeamSize} team members</p>
           </div>
-          {isLead && (
+          {isCreator && (
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={() => setEditing((current) => !current)}>{editing ? "Cancel edit" : "Edit project"}</Button>
               <Button variant="danger" onClick={() => {
@@ -372,7 +373,7 @@ export function ProjectDetailPage() {
             </div>
           )}
         </div>
-        {editing && isLead && (
+        {editing && isCreator && (
           <form
             className="mt-6 grid gap-3 border-t border-white/10 pt-5 md:grid-cols-2"
             onSubmit={(event) => {
@@ -427,7 +428,7 @@ export function ProjectDetailPage() {
                       {claimedSkillIds.has(skill.skillId) ? "You have this skill" : "Not claimed"}
                     </span>
                   )}
-                  {isLead ? (
+                  {isCreator ? (
                     <>
                       <select
                         aria-label={`Required level for ${skill.name}`}
@@ -462,7 +463,7 @@ export function ProjectDetailPage() {
               ))}
               {(requiredSkillsQuery.data ?? project.requiredSkills).length === 0 && <p className="text-sm text-white/50">No skills added yet.</p>}
             </div>
-            {isLead && (
+            {isCreator && (
               <div className="mt-5 grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-2">
                 {skillsQuery.isError && <ErrorBanner className="sm:col-span-2" error={skillsQuery.error} title="Could not load skill catalog" />}
                 <Select
@@ -521,7 +522,7 @@ export function ProjectDetailPage() {
                 <span><strong className="block text-sm text-white">{member.firstName} {member.lastName}</strong><span className="text-xs text-white/50">{member.role}</span></span>
               </Link>
               <div className="flex items-center gap-2">
-                {isLead && member.studentId !== project.creatorId && (
+                {isCreator && member.studentId !== project.creatorId && (
                   <>
                     <select
                       aria-label={`Role for ${member.firstName} ${member.lastName}`}
@@ -538,7 +539,7 @@ export function ProjectDetailPage() {
                     }}>Remove</Button>
                   </>
                 )}
-                {!isLead && member.studentId === user?.studentId && (
+                {!isCreator && member.studentId === user?.studentId && (
                   <Button size="sm" variant="outline" onClick={() => {
                     if (window.confirm("Leave this project? Your task assignments will be cleared.")) removeMember.mutate(member.studentId);
                   }}>Leave team</Button>
@@ -614,37 +615,57 @@ export function ProjectDetailPage() {
                           {task.description && <p className="mt-2 text-xs text-white/50">{task.description}</p>}
                           {task.dueDate && <p className={`mt-2 text-xs ${overdue ? "font-semibold text-red-300" : "text-white/45"}`}>{overdue ? "Overdue · " : "Due · "}{new Date(task.dueDate).toLocaleDateString()}</p>}
                           <div className="mt-2 flex items-center gap-2 text-xs text-white/50">
-                            {task.assignedStudentName && <Avatar name={task.assignedStudentName} size="xs" />}
-                            <span>Assignee: {task.assignedStudentName ?? "Unassigned"}</span>
+                            {task.assignedStudentId && task.assignedStudentName ? (
+                              <Link
+                                to={`/students/${task.assignedStudentId}`}
+                                className="inline-flex items-center gap-2 font-medium text-white/80 transition-colors hover:text-[#d3fb52]"
+                              >
+                                <Avatar name={task.assignedStudentName} size="xs" />
+                                <span>Assignee: {task.assignedStudentName}</span>
+                              </Link>
+                            ) : (
+                              <span>Assignee: Unassigned</span>
+                            )}
                           </div>
                           <div className="mt-3 space-y-2">
-                            <Select
-                              label={`Move ${task.title}`}
-                              value={task.status}
-                              options={TASK_STATUSES.map((item) => ({ value: item, label: item }))}
-                              onChange={(event) => updateTask.mutate({ task, nextStatus: event.target.value as ProjectTaskStatus })}
-                            />
-                            <Select
-                              aria-label={`Assignee for ${task.title}`}
-                              label="Assign to member"
-                              value={task.assignedStudentId ?? ""}
-                              placeholder="Unassigned"
-                              options={(membersQuery.data ?? project.members).map((member) => ({ value: member.studentId, label: `${member.firstName} ${member.lastName}` }))}
-                              onChange={(event) => {
-                                const nextId = Number(event.target.value);
-                                if (event.target.value && (membersQuery.data ?? project.members).some((member) => member.studentId === nextId)) {
-                                  assignTask.mutate({ taskId: task.taskId, studentId: nextId });
-                                } else {
-                                  unassignTask.mutate(task.taskId);
-                                }
-                              }}
-                            />
-                            <div className="flex justify-between gap-2">
-                              <Button size="sm" variant="ghost" onClick={() => openEditTask(task)}>Edit</Button>
-                              <Button size="sm" variant="ghost" className="text-red-300" onClick={() => {
-                                if (window.confirm(`Delete "${task.title}"?`)) deleteTask.mutate(task.taskId);
-                              }}>Delete</Button>
-                            </div>
+                            {(isCreator || task.assignedStudentId === user?.studentId || !task.assignedStudentId) && (
+                              <Select
+                                label={`Move ${task.title}`}
+                                value={task.status}
+                                options={TASK_STATUSES.map((item) => ({ value: item, label: item }))}
+                                onChange={(event) => updateTask.mutate({ task, nextStatus: event.target.value as ProjectTaskStatus })}
+                              />
+                            )}
+                            {isCreator && (
+                              <>
+                                <Select
+                                  aria-label={`Assignee for ${task.title}`}
+                                  label="Assign to member"
+                                  value={task.assignedStudentId ?? ""}
+                                  placeholder="Unassigned"
+                                  options={(membersQuery.data ?? project.members).map((member) => ({ value: member.studentId, label: `${member.firstName} ${member.lastName}` }))}
+                                  onChange={(event) => {
+                                    const nextId = Number(event.target.value);
+                                    if (event.target.value && (membersQuery.data ?? project.members).some((member) => member.studentId === nextId)) {
+                                      assignTask.mutate({ taskId: task.taskId, studentId: nextId });
+                                    } else {
+                                      unassignTask.mutate(task.taskId);
+                                    }
+                                  }}
+                                />
+                                <div className="flex justify-between gap-2">
+                                  <Button size="sm" variant="ghost" onClick={() => openEditTask(task)}>Edit</Button>
+                                  <Button size="sm" variant="ghost" className="text-red-300" onClick={() => {
+                                    if (window.confirm(`Delete "${task.title}"?`)) deleteTask.mutate(task.taskId);
+                                  }}>Delete</Button>
+                                </div>
+                              </>
+                            )}
+                            {!isCreator && (
+                              <div className="flex justify-end">
+                                <Button size="sm" variant="ghost" onClick={() => openEditTask(task)}>Edit</Button>
+                              </div>
+                            )}
                           </div>
                         </article>
                       );
@@ -703,7 +724,14 @@ function ApplicationRow({
   return (
     <article className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#1b1d26] p-4">
       <div>
-        <h3 className="font-semibold text-white">{application.studentName}</h3>
+        <h3 className="font-semibold text-white">
+          <Link
+            to={`/students/${application.studentId}`}
+            className="transition-colors hover:text-[#d3fb52]"
+          >
+            {application.studentName}
+          </Link>
+        </h3>
         {application.message && <p className="mt-1 max-w-2xl text-sm text-white/55">{application.message}</p>}
         <p className="mt-1 text-xs text-white/40">{new Date(application.appliedAt).toLocaleDateString()} · {application.status}</p>
       </div>

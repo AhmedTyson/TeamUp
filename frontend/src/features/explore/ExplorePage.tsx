@@ -24,7 +24,10 @@ function RailHeader({ icon, title, to }: { icon: ReactNode; title: string; to: s
         {icon}
         {title}
       </h2>
-      <Link to={to} className="text-xs font-medium text-[#d3fb52] hover:underline">
+      <Link
+        to={to}
+        className="rounded-lg px-2.5 py-1 text-xs font-semibold text-[#d3fb52] no-underline transition-colors hover:bg-[#d3fb52]/12 hover:text-[#e6ff8a]"
+      >
         View all
       </Link>
     </div>
@@ -116,18 +119,29 @@ function EventRailCard({ event }: { event: EventSummary }) {
 
 function ProjectRailCard({ project }: { project: ProjectListItemDto }) {
   return (
-    <Link to={`/projects/${project.projectId}`} className="block">
-      <Card className="h-full overflow-hidden transition-colors hover:border-[#d3fb52]/40">
-        <CoverImage url={project.coverImageUrl} alt={`${project.title} cover`} className="aspect-[2/1]" />
-        <div className="space-y-2 p-4">
-          <p className="line-clamp-1 text-sm font-semibold text-white">{project.title}</p>
-          <p className="line-clamp-2 text-xs text-white/60">{project.description}</p>
-          <p className="text-[11px] font-medium text-[#d3fb52]">
-            {project.teamSize}/{project.maxTeamSize} teammates · by {project.creatorName}
-          </p>
-        </div>
-      </Card>
-    </Link>
+    <Card className="group relative h-full cursor-pointer overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-[#d3fb52]/40">
+      <CoverImage url={project.coverImageUrl} alt={`${project.title} cover`} className="aspect-[2/1]" />
+      <div className="space-y-2 p-4">
+        <p className="line-clamp-1 text-sm font-semibold text-white">
+          <Link
+            to={`/projects/${project.projectId}`}
+            className="transition-colors group-hover:text-[#d3fb52] after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+          >
+            {project.title}
+          </Link>
+        </p>
+        <p className="line-clamp-2 text-xs text-white/60">{project.description}</p>
+        <p className="text-[11px] font-medium text-[#d3fb52]">
+          {project.teamSize}/{project.maxTeamSize} teammates · by{" "}
+          <Link
+            to={`/students/${project.creatorId}`}
+            className="relative z-10 no-underline transition-colors hover:text-white"
+          >
+            {project.creatorName}
+          </Link>
+        </p>
+      </div>
+    </Card>
   );
 }
 

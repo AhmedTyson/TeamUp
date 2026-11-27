@@ -155,7 +155,14 @@ export function AdminOrganizationRequestsPage() {
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#9ca3af]">
                           <span className="inline-flex items-center gap-1 text-white/85">
                             <UserCheck className="size-3.5 text-[#d3fb52]" aria-hidden="true" />
-                            Founder: <strong className="font-semibold">{req.requesterName}</strong> ({req.requesterEmail})
+                            Founder:{" "}
+                            <Link
+                              to={`/students/${req.requesterStudentId}`}
+                              className="font-semibold text-white transition-colors hover:text-[#d3fb52]"
+                            >
+                              {req.requesterName}
+                            </Link>{" "}
+                            ({req.requesterEmail})
                           </span>
                           {(req.universityName || req.city) && (
                             <span className="inline-flex items-center gap-1 text-[#539886]">
@@ -169,7 +176,7 @@ export function AdminOrganizationRequestsPage() {
                               href={req.websiteUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[#d3fb52] hover:underline"
+                              className="inline-flex items-center gap-1 text-[#d3fb52] no-underline transition-colors hover:text-[#e6ff8a]"
                             >
                               Website <ExternalLink className="size-3" aria-hidden="true" />
                             </a>

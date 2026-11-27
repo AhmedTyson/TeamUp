@@ -4,6 +4,7 @@
  */
 import { ArrowRight, Download, Filter, KanbanSquare, Star } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
   RECRUITMENT_STAGES,
@@ -192,7 +193,7 @@ export function RecruitmentPipelineTab({
             value={unitFilter}
             onChange={(e) => setUnitFilter(e.target.value)}
             containerClassName="min-w-0 flex-1 sm:w-auto sm:flex-initial"
-            className="h-9 w-full bg-[#1b1d26] text-xs sm:min-w-[190px]"
+            className="h-9 min-h-[36px] w-full bg-[#1b1d26] py-1.5 text-xs sm:min-h-[36px] sm:min-w-[190px]"
           />
           <Button
             size="sm"
@@ -248,9 +249,12 @@ export function RecruitmentPipelineTab({
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-white">
+                          <Link
+                            to={`/students/${app.studentId}`}
+                            className="block truncate text-sm font-semibold text-white transition-colors hover:text-[#d3fb52]"
+                          >
                             {app.studentFirstName} {app.studentLastName}
-                          </p>
+                          </Link>
                           <p className="truncate text-[11px] text-white/50">{app.studentEmail}</p>
                         </div>
                         {app.unitCode && (
@@ -335,9 +339,12 @@ export function RecruitmentPipelineTab({
                 key={app.applicationId}
                 className="flex items-center justify-between rounded-xl border border-white/10 bg-[#1b1d26] px-3 py-2 text-xs"
               >
-                <span className="text-white/80">
+                <Link
+                  to={`/students/${app.studentId}`}
+                  className="font-medium text-white/85 transition-colors hover:text-[#d3fb52]"
+                >
                   {app.studentFirstName} {app.studentLastName}
-                </span>
+                </Link>
                 <StatusPill status="Rejected" />
               </div>
             ))}

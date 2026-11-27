@@ -250,15 +250,14 @@ export function OrganizationsDirectoryPage() {
               <SpotlightCard
                 key={org.organizationId}
                 showCornerArrow
-                className="flex flex-col rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 transition hover:-translate-y-0.5 hover:border-[#d3fb52]/30"
+                className="relative flex cursor-pointer flex-col rounded-2xl border border-white/[0.085] bg-[#14151c] p-5 sm:p-5 transition hover:-translate-y-0.5 hover:border-[#d3fb52]/30"
               >
                 <CoverImage
                   url={org.coverImageUrl}
                   alt={`${org.name} cover`}
                   className="-mx-5 -mt-5 mb-4 aspect-[2/1] rounded-t-2xl"
                 />
-                {/* Reserved pe-12 ensures the corner arrow never overlaps category/recruiting pills */}
-                <div className="flex items-start justify-between gap-3 pe-12">
+                <div className="flex items-start justify-between gap-3">
                   <OrganizationMark name={org.name} logoUrl={org.logoUrl} />
                   <div className="flex flex-wrap justify-end gap-1.5">
                     <Badge variant="outline" size="sm">
@@ -273,24 +272,24 @@ export function OrganizationsDirectoryPage() {
                   </div>
                 </div>
 
-            <div className="mt-4 min-w-0 flex-1 space-y-2">
-              <h2 className="break-words text-lg font-semibold leading-snug text-white">
-                <Link
-                  to={`/organizations/${org.organizationId}`}
-                  className="transition-colors hover:text-[#d3fb52]"
-                >
-                  {org.name}
-                </Link>
-              </h2>
-              {(org.universityName || org.city || org.scope) && (
-                <p className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs font-medium text-[#539886]">
-                  <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
-                  <span className="min-w-0 break-words">
-                    {org.universityName ?? org.city ?? "Egypt Open Community"}
-                    {org.scope ? ` · ${org.scope}` : ""}
-                  </span>
-                </p>
-              )}
+                <div className="mt-4 min-w-0 flex-1 space-y-2">
+                  <h2 className="break-words text-lg font-semibold leading-snug text-white">
+                    <Link
+                      to={`/organizations/${org.organizationId}`}
+                      className="transition-colors group-hover:text-[#d3fb52] after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+                    >
+                      {org.name}
+                    </Link>
+                  </h2>
+                  {(org.universityName || org.city || org.scope) && (
+                    <p className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs font-medium text-[#539886]">
+                      <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+                      <span className="min-w-0 break-words">
+                        {org.universityName ?? org.city ?? "Egypt Open Community"}
+                        {org.scope ? ` · ${org.scope}` : ""}
+                      </span>
+                    </p>
+                  )}
                   <p className="line-clamp-3 text-sm leading-relaxed text-white/65">
                     {org.description}
                   </p>
@@ -309,12 +308,13 @@ export function OrganizationsDirectoryPage() {
                       </span>
                     )}
                   </div>
-                  <Link
-                    to={`/organizations/${org.organizationId}`}
-                    className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[#d3fb52] hover:underline"
-                  >
-                    Explore <ExternalLink className="size-3.5" aria-hidden="true" />
-                  </Link>
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-[#d3fb52] no-underline transition-all duration-200 group-hover:bg-[#d3fb52]/12 group-hover:text-[#e6ff8a]">
+                    Explore{" "}
+                    <ExternalLink
+                      className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      aria-hidden="true"
+                    />
+                  </span>
                 </div>
               </SpotlightCard>
             ))}
@@ -367,7 +367,9 @@ export function OrganizationsDirectoryPage() {
             {myRequestsQuery.data.map((req) => (
               <div
                 key={req.requestId}
-                className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-[#14151c] p-4"
+                className={`relative flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-[#14151c] p-4 transition-colors ${
+                  req.createdOrganizationId ? "group cursor-pointer hover:border-[#d3fb52]/35" : ""
+                }`}
               >
                 <div className="min-w-0 space-y-1.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -389,6 +391,7 @@ export function OrganizationsDirectoryPage() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="relative z-10"
                       isLoading={mutations.withdrawCreationRequest.isPending}
                       onClick={async () => {
                         await mutations.withdrawCreationRequest.mutateAsync(req.requestId);
@@ -406,7 +409,7 @@ export function OrganizationsDirectoryPage() {
                       </Badge>
                       <Link
                         to={`/organizations/${req.createdOrganizationId}`}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#d3fb52] hover:underline"
+                        className="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-semibold text-[#d3fb52] no-underline transition-colors group-hover:bg-[#d3fb52]/12 group-hover:text-[#e6ff8a] after:absolute after:inset-0 after:content-['']"
                       >
                         Open Organization <ExternalLink className="size-3" aria-hidden="true" />
                       </Link>
